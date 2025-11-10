@@ -4,8 +4,11 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IMedicationRepository } from '../database/repositories/interfaces/medication.repository.interface';
-import { Medication, CreateMedicationData, UpdateMedicationData } from '../database/repositories/interfaces/medication.repository.interface';
+import {
+  CreateMedicationData,
+  Medication,
+  UpdateMedicationData,
+} from '../database/repositories/interfaces/medication.repository.interface';
 
 /**
  * Medication list result with pagination
@@ -44,7 +47,11 @@ export interface IMedicationService {
    * @param search - Search query
    * @returns Promise resolving to medication list result
    */
-  getMedications(page?: number, limit?: number, search?: string): Promise<MedicationListResult>;
+  getMedications(
+    page?: number,
+    limit?: number,
+    search?: string,
+  ): Promise<MedicationListResult>;
 
   /**
    * Get a single medication by ID
@@ -115,7 +122,11 @@ export interface IMedicationService {
  * Segregated interface for basic CRUD operations (ISP compliance)
  */
 export interface IMedicationCrudService {
-  getMedications(page?: number, limit?: number, search?: string): Promise<MedicationListResult>;
+  getMedications(
+    page?: number,
+    limit?: number,
+    search?: string,
+  ): Promise<MedicationListResult>;
   getMedicationById(id: string): Promise<Medication | null>;
   createMedication(data: CreateMedicationData): Promise<Medication>;
   updateMedication(id: string, data: UpdateMedicationData): Promise<Medication>;

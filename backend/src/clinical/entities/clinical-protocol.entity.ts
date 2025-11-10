@@ -10,6 +10,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  ClinicalProtocol
-} from '../../database/models/clinical-protocol.model';
+export { ClinicalProtocol } from '../../database/models/clinical-protocol.model';

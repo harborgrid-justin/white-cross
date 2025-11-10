@@ -9,14 +9,8 @@ import { EmailService } from '../email.service';
 import { EmailTemplateService } from '../email-template.service';
 import { EmailQueueService } from '../email-queue.service';
 import { EmailRateLimiterService } from '../email-rate-limiter.service';
-import {
-  AlertEmailData,
-  GenericEmailData,
-  EmailTemplate,
-  EmailPriority,
-  SendEmailDto,
-} from '../dto/email.dto';
-import { AlertSeverity, AlertCategory } from '../../../alerts/alerts.service';
+import { AlertEmailData, EmailTemplate, GenericEmailData, SendEmailDto } from '../dto';
+import { AlertCategory, AlertSeverity } from '../../../alerts/alerts.service';
 
 describe('EmailService', () => {
   let service: EmailService;

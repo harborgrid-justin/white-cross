@@ -8,16 +8,7 @@
  */
 
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import {
-  IsUUID,
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsDate,
-  IsBoolean,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -202,7 +193,8 @@ export class HealthDomainCreateExemptionDto {
 
   @ApiProperty({
     description: 'Additional notes or context',
-    example: 'Family physician will monitor for future administration possibility',
+    example:
+      'Family physician will monitor for future administration possibility',
     required: false,
     maxLength: 2000,
   })
@@ -223,7 +215,9 @@ export class HealthDomainCreateExemptionDto {
  * Update Exemption DTO
  * Partial update of existing exemption
  */
-export class UpdateExemptionDto extends PartialType(HealthDomainCreateExemptionDto) {
+export class UpdateExemptionDto extends PartialType(
+  HealthDomainCreateExemptionDto,
+) {
   @ApiProperty({
     description: 'Exemption status',
     enum: ExemptionStatus,

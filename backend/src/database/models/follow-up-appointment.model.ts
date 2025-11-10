@@ -1,19 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { FollowUpStatus } from '../../clinical/enums/follow-up-status.enum';
@@ -49,10 +48,10 @@ export interface FollowUpAppointmentAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'follow_up_appointments',
@@ -60,25 +59,28 @@ export interface FollowUpAppointmentAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['studentId', 'status']
-  },
+      fields: ['studentId', 'status'],
+    },
     {
-      fields: ['originalVisitId']
-  },
+      fields: ['originalVisitId'],
+    },
     {
-      fields: ['scheduledDate']
-  },
+      fields: ['scheduledDate'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_follow_up_appointment_created_at'
+      name: 'idx_follow_up_appointment_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_follow_up_appointment_updated_at'
-    }
-  ]
-  })
-export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> implements FollowUpAppointmentAttributes {
+      name: 'idx_follow_up_appointment_updated_at',
+    },
+  ],
+})
+export class FollowUpAppointment
+  extends Model<FollowUpAppointmentAttributes>
+  implements FollowUpAppointmentAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -86,7 +88,7 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   studentId: string;
@@ -94,22 +96,25 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   originalVisitId?: string;
 
-  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'originalVisitId', as: 'originalVisit' })
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, {
+    foreignKey: 'originalVisitId',
+    as: 'originalVisit',
+  })
   declare originalVisit?: any;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   scheduledBy: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   scheduledDate: Date;
@@ -117,108 +122,111 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 30
+    defaultValue: 30,
   })
   durationMinutes: number;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   reason: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   type: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(FollowUpStatus)]
+      isIn: [Object.values(FollowUpStatus)],
     },
     allowNull: false,
-    defaultValue: FollowUpStatus.SCHEDULED
+    defaultValue: FollowUpStatus.SCHEDULED,
   })
   @Index
   status: FollowUpStatus;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   assignedTo?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   reminderSent: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   reminderSentAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   confirmedAt?: Date;
 
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   completedVisitId?: string;
 
-  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'completedVisitId', as: 'completedVisit' })
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, {
+    foreignKey: 'completedVisitId',
+    as: 'completedVisit',
+  })
   declare completedVisit?: any;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   completedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   cancelledAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   cancellationReason?: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   rescheduledFromId?: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   rescheduledToId?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   notes?: string;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    defaultValue: 'normal'
+    defaultValue: 'normal',
   })
   priority: string;
 
@@ -242,8 +250,8 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
     return (
       new Date() < this.scheduledDate &&
       (this.status === FollowUpStatus.SCHEDULED ||
-       this.status === FollowUpStatus.CONFIRMED ||
-       this.status === FollowUpStatus.REMINDED)
+        this.status === FollowUpStatus.CONFIRMED ||
+        this.status === FollowUpStatus.REMINDED)
     );
   }
 
@@ -255,7 +263,9 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
     if (this.reminderSent) return false;
     if (this.status !== FollowUpStatus.SCHEDULED) return false;
 
-    const reminderTime = new Date(this.scheduledDate.getTime() - reminderHours * 60 * 60 * 1000);
+    const reminderTime = new Date(
+      this.scheduledDate.getTime() - reminderHours * 60 * 60 * 1000,
+    );
     return new Date() >= reminderTime;
   }
 
@@ -298,9 +308,10 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
    * Get appointment end time
    */
   getEndTime(): Date {
-    return new Date(this.scheduledDate.getTime() + this.durationMinutes * 60 * 1000);
+    return new Date(
+      this.scheduledDate.getTime() + this.durationMinutes * 60 * 1000,
+    );
   }
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -308,7 +319,9 @@ export class FollowUpAppointment extends Model<FollowUpAppointmentAttributes> im
   static async auditPHIAccess(instance: FollowUpAppointment) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] FollowUpAppointment ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] FollowUpAppointment ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

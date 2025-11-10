@@ -4,7 +4,8 @@
  * @description Trims whitespace from string inputs
  */
 
-import { PipeTransform, Injectable } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
+import { TransformableObject, TransformableValue } from '../types/utility-types';
 
 /**
  * Trim Pipe
@@ -38,15 +39,19 @@ import { PipeTransform, Injectable } from '@nestjs/common';
 export class TrimPipe implements PipeTransform {
   /**
    * Transform value by trimming all strings
+   * @param value - Value to trim
+   * @returns Trimmed value
    */
-  transform(value: any): any {
-    return this.trim(value);
+  transform<T extends TransformableValue>(value: T): T {
+    return this.trim(value) as T;
   }
 
   /**
    * Recursively trim all strings in the value
+   * @param value - Value to trim
+   * @returns Trimmed value
    */
-  private trim(value: any): any {
+  private trim(value: TransformableValue): TransformableValue {
     // Handle null/undefined
     if (value === null || value === undefined) {
       return value;
@@ -64,16 +69,16 @@ export class TrimPipe implements PipeTransform {
 
     // Handle objects
     if (typeof value === 'object') {
-      const trimmedObject: any = {};
+      const trimmedObject: TransformableObject = {};
       for (const key in value) {
-        if (value.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
           trimmedObject[key] = this.trim(value[key]);
         }
       }
       return trimmedObject;
     }
 
-    // Return other types as-is
+    // Return other types as-is (numbers, booleans)
     return value;
   }
 }

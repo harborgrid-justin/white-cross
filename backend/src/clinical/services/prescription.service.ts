@@ -1,11 +1,6 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 import { Prescription } from '../entities/prescription.entity';
 import { PrescriptionStatus } from '../enums/prescription-status.enum';
 import { CreatePrescriptionDto } from '../dto/prescription/create-prescription.dto';
@@ -30,7 +25,9 @@ export class PrescriptionService {
    * Create a new prescription
    */
   async create(createDto: CreatePrescriptionDto): Promise<Prescription> {
-    this.logger.log(`Creating prescription for student ${createDto.studentId}: ${createDto.drugName}`);
+    this.logger.log(
+      `Creating prescription for student ${createDto.studentId}: ${createDto.drugName}`,
+    );
 
     return this.prescriptionModel.create(createDto as any);
   }
@@ -85,16 +82,17 @@ export class PrescriptionService {
 
     if (filters.activeOnly) {
       whereClause.status = {
-        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP],
       };
     }
 
-    const { rows: prescriptions, count: total } = await this.prescriptionModel.findAndCountAll({
-      where: whereClause,
-      offset: filters.offset || 0,
-      limit: filters.limit || 20,
-      order: [['createdAt', 'DESC']],
-    });
+    const { rows: prescriptions, count: total } =
+      await this.prescriptionModel.findAndCountAll({
+        where: whereClause,
+        offset: filters.offset || 0,
+        limit: filters.limit || 20,
+        order: [['createdAt', 'DESC']],
+      });
 
     return { prescriptions, total };
   }
@@ -102,7 +100,10 @@ export class PrescriptionService {
   /**
    * Get prescriptions by student ID
    */
-  async findByStudent(studentId: string, limit: number = 10): Promise<Prescription[]> {
+  async findByStudent(
+    studentId: string,
+    limit: number = 10,
+  ): Promise<Prescription[]> {
     return this.prescriptionModel.findAll({
       where: { studentId },
       order: [['createdAt', 'DESC']],
@@ -118,8 +119,8 @@ export class PrescriptionService {
       where: {
         studentId,
         status: {
-          [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
-        }
+          [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP],
+        },
       },
       order: [['startDate', 'DESC']],
     });
@@ -128,7 +129,10 @@ export class PrescriptionService {
   /**
    * Update prescription
    */
-  async update(id: string, updateDto: UpdatePrescriptionDto): Promise<Prescription> {
+  async update(
+    id: string,
+    updateDto: UpdatePrescriptionDto,
+  ): Promise<Prescription> {
     const prescription = await this.findOne(id);
 
     Object.assign(prescription, updateDto);
@@ -147,14 +151,16 @@ export class PrescriptionService {
       prescription.status !== PrescriptionStatus.SENT
     ) {
       throw new BadRequestException(
-        `Cannot fill prescription with status: ${prescription.status}`
+        `Cannot fill prescription with status: ${prescription.status}`,
       );
     }
 
     // Validate refills
     if (fillDto.refillNumber && fillDto.refillNumber > 0) {
       if (!prescription.hasRefillsRemaining()) {
-        throw new BadRequestException('No refills remaining for this prescription');
+        throw new BadRequestException(
+          'No refills remaining for this prescription',
+        );
       }
       prescription.refillsUsed = fillDto.refillNumber;
     }
@@ -186,7 +192,9 @@ export class PrescriptionService {
     const prescription = await this.findOne(id);
 
     if (prescription.status !== PrescriptionStatus.FILLED) {
-      throw new BadRequestException('Can only mark filled prescriptions as picked up');
+      throw new BadRequestException(
+        'Can only mark filled prescriptions as picked up',
+      );
     }
 
     prescription.status = PrescriptionStatus.PICKED_UP;
@@ -206,7 +214,9 @@ export class PrescriptionService {
       prescription.status === PrescriptionStatus.FILLED ||
       prescription.status === PrescriptionStatus.PICKED_UP
     ) {
-      throw new BadRequestException('Cannot cancel a filled or picked up prescription');
+      throw new BadRequestException(
+        'Cannot cancel a filled or picked up prescription',
+      );
     }
 
     prescription.status = PrescriptionStatus.CANCELLED;
@@ -219,7 +229,7 @@ export class PrescriptionService {
    */
   async remove(id: string): Promise<void> {
     const deletedCount = await this.prescriptionModel.destroy({
-      where: { id }
+      where: { id },
     });
 
     if (deletedCount === 0) {
@@ -236,12 +246,12 @@ export class PrescriptionService {
     return this.prescriptionModel.findAll({
       where: {
         status: {
-          [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+          [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP],
         },
         [Op.and]: [
           { refillsAuthorized: { [Op.gt]: { [Op.col]: 'refillsUsed' } } },
-          literal('refillsAuthorized - refillsUsed <= 1')
-        ]
+          literal('refillsAuthorized - refillsUsed <= 1'),
+        ],
       },
       order: [['endDate', 'ASC']],
     });

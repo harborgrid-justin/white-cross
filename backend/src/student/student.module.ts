@@ -8,11 +8,22 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { StudentService } from './student.service';
 import { StudentController } from './student.controller';
-import { Student } from '../database/models/student.model';
-import { User } from '../database/models/user.model';
-import { HealthRecord } from '../database/models/health-record.model';
-import { MentalHealthRecord } from '../database/models/mental-health-record.model';
-import { AcademicTranscriptModule } from '../academic-transcript/academic-transcript.module';
+import { StudentCoreController } from './controllers/student-core.controller';
+import { StudentStatusController } from './controllers/student-status.controller';
+import {
+  StudentCrudService,
+  StudentQueryService,
+  StudentHealthRecordsService,
+  StudentAcademicService,
+  StudentPhotoService,
+  StudentBarcodeService,
+  StudentWaitlistService,
+  StudentValidationService,
+  StudentStatusService,
+} from './services';
+import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
+import { AcademicTranscriptModule } from '@/academic-transcript';
+import { AuditModule } from '@/audit';
 
 /**
  * Student Module
@@ -33,18 +44,42 @@ import { AcademicTranscriptModule } from '../academic-transcript/academic-transc
 @Module({
   imports: [
     // Register models with Sequelize
-    SequelizeModule.forFeature([
-      Student,
-      User,
-      HealthRecord,
-      MentalHealthRecord,
-    ]),
+    SequelizeModule.forFeature([Student, User, HealthRecord, MentalHealthRecord]),
 
     // Import AcademicTranscriptModule for transcript-related operations
     AcademicTranscriptModule,
+
+    // Import AuditModule to access PHIAccessLogger for HealthRecordAuditInterceptor
+    AuditModule,
   ],
-  controllers: [StudentController],
-  providers: [StudentService],
-  exports: [StudentService], // Export for use in other modules
+  controllers: [
+    StudentController, // Keep original for backward compatibility
+    StudentCoreController,
+    StudentStatusController,
+  ],
+  providers: [
+    StudentService, // Main facade service for backward compatibility
+    StudentCrudService,
+    StudentQueryService,
+    StudentHealthRecordsService,
+    StudentAcademicService,
+    StudentPhotoService,
+    StudentBarcodeService,
+    StudentWaitlistService,
+    StudentValidationService,
+    StudentStatusService,
+  ],
+  exports: [
+    StudentService, // Main facade service for backward compatibility
+    StudentCrudService,
+    StudentQueryService,
+    StudentHealthRecordsService,
+    StudentAcademicService,
+    StudentPhotoService,
+    StudentBarcodeService,
+    StudentWaitlistService,
+    StudentValidationService,
+    StudentStatusService,
+  ],
 })
 export class StudentModule {}

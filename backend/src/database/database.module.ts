@@ -14,159 +14,157 @@
  * - Query result caching with automatic invalidation
  */
 
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Sequelize } from 'sequelize-typescript';
 
 // Services
-import { CacheService } from './services/cache.service';
-import { AuditService } from './services/audit.service';
-import { ModelAuditHelper } from './services/model-audit-helper.service';
-import { SequelizeUnitOfWorkService } from './uow/sequelize-unit-of-work.service';
-import { ConnectionMonitorService } from './services/connection-monitor.service';
-import { QueryLoggerService } from './services/query-logger.service';
-import { QueryCacheService } from './services/query-cache.service';
-import { CacheMonitoringService } from './services/cache-monitoring.service';
+import {
+  AuditService,
+  AuditLoggingService,
+  AuditQueryService,
+  AuditStatisticsService,
+  AuditComplianceService,
+  AuditExportService,
+  AuditRetentionService,
+  AuditHelperService,
+  CacheMonitoringService,
+  CacheService,
+  ConnectionMonitorService,
+  MaterializedViewService,
+  ModelAuditHelper,
+  QueryCacheService,
+  QueryLoggerService,
+} from './services';
+import { SequelizeUnitOfWorkService } from './uow';
 
 // Core Models
-import { AuditLog } from './models/audit-log.model';
-import { Student } from './models/student.model';
-import { User } from './models/user.model';
-import { Contact } from './models/contact.model';
-import { District } from './models/district.model';
-import { School } from './models/school.model';
-import { EmergencyContact } from './models/emergency-contact.model';
-
 // Academic Models
-import { AcademicTranscript } from './models/academic-transcript.model';
-
 // Healthcare Models
-import { Appointment } from './models/appointment.model';
-import { AppointmentReminder } from './models/appointment-reminder.model';
-import { AppointmentWaitlist } from './models/appointment-waitlist.model';
-import { GrowthTracking } from './models/growth-tracking.model';
-import { HealthRecord } from './models/health-record.model';
-import { HealthScreening } from './models/health-screening.model';
-import { Immunization } from './models/immunization.model';
-import { LabResults } from './models/lab-results.model';
-import { MedicalHistory } from './models/medical-history.model';
-import { MentalHealthRecord } from './models/mental-health-record.model';
-import { TreatmentPlan } from './models/treatment-plan.model';
-import { VitalSigns } from './models/vital-signs.model';
-import { Prescription } from './models/prescription.model';
-import { ClinicVisit } from './models/clinic-visit.model';
-import { ClinicalNote } from './models/clinical-note.model';
-import { ClinicalProtocol } from './models/clinical-protocol.model';
-import { FollowUpAction } from './models/follow-up-action.model';
-import { FollowUpAppointment } from './models/follow-up-appointment.model';
-
 // Communication Models
-import { EmergencyBroadcast } from './models/emergency-broadcast.model';
-import { Message } from './models/message.model';
-import { MessageDelivery } from './models/message-delivery.model';
-import { MessageTemplate } from './models/message-template.model';
-import { PushNotification } from './models/push-notification.model';
-import { DeviceToken } from './models/device-token.model';
-
 // System Models
-import { Supplier } from './models/supplier.model';
-import { SyncState } from './models/sync-state.model';
-import { SystemConfig } from './models/system-config.model';
-import { ThreatDetection } from './models/threat-detection.model';
-import { Webhook } from './models/webhook.model';
-import { License } from './models/license.model';
-import { ConfigurationHistory } from './models/configuration-history.model';
-import { BackupLog } from './models/backup-log.model';
-import { PerformanceMetric } from './models/performance-metric.model';
-
 // Health Risk Assessment Models
-import { Allergy } from './models/allergy.model';
-import { ChronicCondition } from './models/chronic-condition.model';
-import { StudentMedication } from './models/student-medication.model';
-import { IncidentReport } from './models/incident-report.model';
-import { MedicationLog } from './models/medication-log.model';
-import { WitnessStatement } from './models/witness-statement.model';
-
 // Medication Models
-import { Medication } from './models/medication.model';
-import { Vaccination } from './models/vaccination.model';
-
 // Clinical Models
-import { DrugCatalog } from './models/drug-catalog.model';
-import { DrugInteraction } from './models/drug-interaction.model';
-import { StudentDrugAllergy } from './models/student-drug-allergy.model';
-
 // Analytics Models
-import { AnalyticsReport } from './models/analytics-report.model';
-import { HealthMetricSnapshot } from './models/health-metric-snapshot.model';
-
 // Inventory Models
-import { InventoryItem } from './models/inventory-item.model';
-import { InventoryTransaction } from './models/inventory-transaction.model';
-import { MaintenanceLog } from './models/maintenance-log.model';
-import { PurchaseOrder } from './models/purchase-order.model';
-import { PurchaseOrderItem } from './models/purchase-order-item.model';
-import { Vendor } from './models/vendor.model';
-
 // Compliance Models
-import { ConsentForm } from './models/consent-form.model';
-import { ConsentSignature } from './models/consent-signature.model';
-import { ComplianceReport } from './models/compliance-report.model';
-import { ComplianceChecklistItem } from './models/compliance-checklist-item.model';
-import { ComplianceViolation } from './models/compliance-violation.model';
-import { PolicyDocument } from './models/policy-document.model';
-import { PolicyAcknowledgment } from './models/policy-acknowledgment.model';
-import { DataRetentionPolicy } from './models/data-retention-policy.model';
-import { PhiDisclosure } from './models/phi-disclosure.model';
-import { PhiDisclosureAudit } from './models/phi-disclosure-audit.model';
-import { RemediationAction } from './models/remediation-action.model';
-
 // Alert Models
-import { Alert } from './models/alert.model';
-import { AlertRule } from './models/alert-rule.model';
-import { AlertPreferences } from './models/alert-preferences.model';
-import { DeliveryLog } from './models/delivery-log.model';
-
 // Integration & Sync Models
-import { IntegrationConfig } from './models/integration-config.model';
-import { IntegrationLog } from './models/integration-log.model';
-import { SyncSession } from './models/sync-session.model';
-import { SyncConflict } from './models/sync-conflict.model';
-import { SyncQueueItem } from './models/sync-queue-item.model';
-import { SISSyncConflict } from './models/sis-sync-conflict.model';
-
 // Budget Models
-import { BudgetCategory } from './models/budget-category.model';
-import { BudgetTransaction } from './models/budget-transaction.model';
-
 // Report Models
-import { ReportTemplate } from './models/report-template.model';
-import { ReportExecution } from './models/report-execution.model';
-import { ReportSchedule } from './models/report-schedule.model';
-
 // Training Models
-import { TrainingModule } from './models/training-module.model';
+import {
+  AcademicTranscript,
+  Alert,
+  AlertPreferences,
+  AlertRule,
+  Allergy,
+  AnalyticsReport,
+  Appointment,
+  AppointmentReminder,
+  AppointmentWaitlist,
+  AuditLog,
+  BackupLog,
+  BudgetCategory,
+  BudgetTransaction,
+  ChronicCondition,
+  ClinicalNote,
+  ClinicalProtocol,
+  ClinicVisit,
+  ComplianceChecklistItem,
+  ComplianceReport,
+  ComplianceViolation,
+  ConfigurationHistory,
+  ConsentForm,
+  ConsentSignature,
+  Contact,
+  DataRetentionPolicy,
+  DeliveryLog,
+  DeviceToken,
+  District,
+  DrugCatalog,
+  DrugInteraction,
+  EmergencyBroadcast,
+  EmergencyContact,
+  FollowUpAction,
+  FollowUpAppointment,
+  GrowthTracking,
+  HealthMetricSnapshot,
+  HealthRecord,
+  HealthScreening,
+  Immunization,
+  IncidentReport,
+  IntegrationConfig,
+  IntegrationLog,
+  InventoryItem,
+  InventoryTransaction,
+  LabResults,
+  License,
+  MaintenanceLog,
+  MedicalHistory,
+  Medication,
+  MedicationLog,
+  MentalHealthRecord,
+  Message,
+  MessageDelivery,
+  MessageTemplate,
+  PerformanceMetric,
+  PhiDisclosure,
+  PhiDisclosureAudit,
+  PolicyAcknowledgment,
+  PolicyDocument,
+  Prescription,
+  PurchaseOrder,
+  PurchaseOrderItem,
+  PushNotification,
+  RemediationAction,
+  ReportExecution,
+  ReportSchedule,
+  ReportTemplate,
+  School,
+  SISSyncConflict,
+  Student,
+  StudentDrugAllergy,
+  StudentMedication,
+  Supplier,
+  SyncConflict,
+  SyncQueueItem,
+  SyncSession,
+  SyncState,
+  SystemConfig,
+  ThreatDetection,
+  TrainingModule,
+  TreatmentPlan,
+  User,
+  Vaccination,
+  Vendor,
+  VitalSigns,
+  Webhook,
+  WitnessStatement,
+} from '@/database/models';
 
 // Sample Repositories (add more as they are migrated)
-import { StudentRepository } from './repositories/impl/student.repository';
-import { AcademicTranscriptRepository } from './repositories/impl/academic-transcript.repository';
-import { ConsentFormRepository } from './repositories/impl/consent-form.repository';
-import { ConsentSignatureRepository } from './repositories/impl/consent-signature.repository';
-import { ComplianceChecklistItemRepository } from './repositories/impl/compliance-checklist-item.repository';
-import { PolicyDocumentRepository } from './repositories/impl/policy-document.repository';
-import { DataRetentionPolicyRepository } from './repositories/impl/data-retention-policy.repository';
-import { ComplianceViolationRepository } from './repositories/impl/compliance-violation.repository';
-import { EmergencyBroadcastRepository } from './repositories/impl/emergency-broadcast.repository';
-import { ComplianceReportRepository } from './repositories/impl/compliance-report.repository';
-import { AppointmentRepository } from './repositories/impl/appointment.repository';
-import { HealthRecordRepository } from './repositories/impl/health-record.repository';
-import { MedicationLogRepository } from './repositories/impl/medication-log.repository';
-import { IncidentReportRepository } from './repositories/impl/incident-report.repository';
-import { AllergyRepository } from './repositories/impl/allergy.repository';
-import { ChronicConditionRepository } from './repositories/impl/chronic-condition.repository';
-import { AppointmentReminderRepository } from './repositories/impl/appointment-reminder.repository';
-import { AppointmentWaitlistRepository } from './repositories/impl/appointment-waitlist.repository';
+import {
+  AcademicTranscriptRepository,
+  AllergyRepository,
+  AppointmentReminderRepository,
+  AppointmentRepository,
+  AppointmentWaitlistRepository,
+  ChronicConditionRepository,
+  ComplianceChecklistItemRepository,
+  ComplianceReportRepository,
+  ComplianceViolationRepository,
+  ConsentFormRepository,
+  ConsentSignatureRepository,
+  DataRetentionPolicyRepository,
+  EmergencyBroadcastRepository,
+  HealthRecordRepository,
+  IncidentReportRepository,
+  MedicationLogRepository,
+  PolicyDocumentRepository,
+  StudentRepository,
+} from '@/database/repositories/impl';
 
 /**
  * Database Module
@@ -189,22 +187,26 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             dialect: 'postgres',
             uri: databaseUrl,
             autoLoadModels: true,
-            synchronize: false,
-            alter: false,
+            synchronize: configService.get('database.synchronize', false),
+            alter: configService.get('database.synchronize', false),
             // OPTIMIZATION: Enhanced logging with slow query detection
             // HIPAA COMPLIANCE: Always log in production for audit trail
             logging: isProduction
               ? (sql: string, timing?: number) => {
                   // Always log queries in production for HIPAA compliance
-                  console.log(`[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`);
+                  console.log(
+                    `[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`,
+                  );
                   // Also warn about slow queries
                   if (timing && timing > 1000) {
-                    console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
+                    console.warn(
+                      `SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`,
+                    );
                   }
                 }
               : isDevelopment
-              ? console.log
-              : false,
+                ? console.log
+                : false,
             benchmark: true,
             // V6 recommended options
             define: {
@@ -214,15 +216,21 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             },
             // OPTIMIZATION: Production-ready connection pool configuration from environment
             pool: {
-              max: configService.get<number>('DB_POOL_MAX', isProduction ? 20 : 10),
-              min: configService.get<number>('DB_POOL_MIN', isProduction ? 5 : 2),
+              max: configService.get<number>(
+                'DB_POOL_MAX',
+                isProduction ? 20 : 10,
+              ),
+              min: configService.get<number>(
+                'DB_POOL_MIN',
+                isProduction ? 5 : 2,
+              ),
               acquire: configService.get<number>('DB_ACQUIRE_TIMEOUT', 60000),
               idle: configService.get<number>('DB_IDLE_TIMEOUT', 10000),
-              evict: 1000,                  // Check for idle connections every 1s
+              evict: 1000, // Check for idle connections every 1s
               handleDisconnects: true,
               validate: (connection: any) => {
                 return connection && !connection._closed;
-              }
+              },
             },
             // Retry configuration for connection failures
             retry: {
@@ -236,28 +244,31 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
                 /ENETUNREACH/,
                 /EAI_AGAIN/,
                 /connection is insecure/,
-                /SSL connection has been closed unexpectedly/
+                /SSL connection has been closed unexpectedly/,
               ],
-              max: 5  // Increased retry attempts for cloud databases
+              max: 5, // Increased retry attempts for cloud databases
             },
             dialectOptions: {
-              ...(databaseUrl.includes('sslmode=require') ? {
-                ssl: {
-                  require: true,
-                  // SECURITY: Only validate certificates in production for security
-                  rejectUnauthorized: isProduction
-                }
-              } : {}),
+              ...(databaseUrl.includes('sslmode=require')
+                ? {
+                    ssl: {
+                      require: true,
+                      // SECURITY: Only validate certificates in production for security
+                      rejectUnauthorized: isProduction,
+                    },
+                  }
+                : {}),
               application_name: 'white-cross-app',
-              statement_timeout: 60000,  // Increased to 60s for index operations
-              idle_in_transaction_session_timeout: 30000
+              statement_timeout: 60000, // Increased to 60s for index operations
+              idle_in_transaction_session_timeout: 30000,
             },
           };
         } else {
           // Use individual connection parameters for local development
-          const sslEnabled = configService.get<boolean>('database.ssl', false) || 
-                            configService.get<boolean>('DB_SSL', false);
-          
+          const sslEnabled =
+            configService.get<boolean>('database.ssl', false) ||
+            configService.get<boolean>('DB_SSL', false);
+
           return {
             dialect: 'postgres',
             host: configService.get('database.host', 'localhost'),
@@ -266,22 +277,26 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             password: configService.get('database.password'),
             database: configService.get('database.database', 'whitecross'),
             autoLoadModels: true,
-            synchronize: isDevelopment,
-            alter: isDevelopment,
+            synchronize: configService.get('database.synchronize', false),
+            alter: configService.get('database.synchronize', false),
             // OPTIMIZATION: Enhanced logging with slow query detection
             // HIPAA COMPLIANCE: Always log in production for audit trail
             logging: isProduction
               ? (sql: string, timing?: number) => {
                   // Always log queries in production for HIPAA compliance
-                  console.log(`[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`);
+                  console.log(
+                    `[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`,
+                  );
                   // Also warn about slow queries
                   if (timing && timing > 1000) {
-                    console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
+                    console.warn(
+                      `SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`,
+                    );
                   }
                 }
               : isDevelopment
-              ? console.log
-              : false,
+                ? console.log
+                : false,
             benchmark: true,
             // V6 recommended options
             define: {
@@ -291,15 +306,21 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
             },
             // OPTIMIZATION: Production-ready connection pool configuration from environment
             pool: {
-              max: configService.get<number>('DB_POOL_MAX', isProduction ? 20 : 10),
-              min: configService.get<number>('DB_POOL_MIN', isProduction ? 5 : 2),
+              max: configService.get<number>(
+                'DB_POOL_MAX',
+                isProduction ? 20 : 10,
+              ),
+              min: configService.get<number>(
+                'DB_POOL_MIN',
+                isProduction ? 5 : 2,
+              ),
               acquire: configService.get<number>('DB_ACQUIRE_TIMEOUT', 60000),
               idle: configService.get<number>('DB_IDLE_TIMEOUT', 10000),
-              evict: 1000,                  // Check for idle connections every 1s
+              evict: 1000, // Check for idle connections every 1s
               handleDisconnects: true,
               validate: (connection: any) => {
                 return connection && !connection._closed;
-              }
+              },
             },
             // Retry configuration for connection failures
             retry: {
@@ -313,21 +334,23 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
                 /ENETUNREACH/,
                 /EAI_AGAIN/,
                 /connection is insecure/,
-                /SSL connection has been closed unexpectedly/
+                /SSL connection has been closed unexpectedly/,
               ],
-              max: 5  // Increased retry attempts for cloud databases
+              max: 5, // Increased retry attempts for cloud databases
             },
             dialectOptions: {
-              ...(sslEnabled ? {
-                ssl: {
-                  require: true,
-                  // SECURITY: Only validate certificates in production for security
-                  rejectUnauthorized: isProduction
-                }
-              } : {}),
+              ...(sslEnabled
+                ? {
+                    ssl: {
+                      require: true,
+                      // SECURITY: Only validate certificates in production for security
+                      rejectUnauthorized: isProduction,
+                    },
+                  }
+                : {}),
               application_name: 'white-cross-app',
-              statement_timeout: 60000,    // 60s query timeout for index operations
-              idle_in_transaction_session_timeout: 30000  // 30s idle transaction timeout
+              statement_timeout: 60000, // 60s query timeout for index operations
+              idle_in_transaction_session_timeout: 30000, // 30s idle transaction timeout
             },
           };
         }
@@ -453,25 +476,32 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
 
       // Training Models
       TrainingModule,
-    ])
+    ]),
   ],
   providers: [
     // Core Services with interface tokens
     {
       provide: 'ICacheManager',
-      useClass: CacheService
+      useClass: CacheService,
     },
     {
       provide: 'IAuditLogger',
-      useClass: AuditService
+      useClass: AuditService,
     },
     {
       provide: 'IUnitOfWork',
-      useClass: SequelizeUnitOfWorkService
+      useClass: SequelizeUnitOfWorkService,
     },
 
     // Audit Services
     AuditService,
+    AuditHelperService,
+    AuditLoggingService,
+    AuditQueryService,
+    AuditStatisticsService,
+    AuditComplianceService,
+    AuditExportService,
+    AuditRetentionService,
     ModelAuditHelper,
 
     // Performance Monitoring Services
@@ -479,6 +509,9 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
     QueryLoggerService,
     QueryCacheService,
     CacheMonitoringService,
+
+    // Materialized View Management
+    MaterializedViewService,
 
     // Repository Implementations
     // Add repositories as they are migrated following this pattern:
@@ -515,6 +548,13 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
 
     // Export audit services
     AuditService,
+    AuditHelperService,
+    AuditLoggingService,
+    AuditQueryService,
+    AuditStatisticsService,
+    AuditComplianceService,
+    AuditExportService,
+    AuditRetentionService,
     ModelAuditHelper,
 
     // Export performance monitoring services
@@ -522,6 +562,9 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
     QueryLoggerService,
     QueryCacheService,
     CacheMonitoringService,
+
+    // Export materialized view management
+    MaterializedViewService,
 
     // Export repositories as they are added
     StudentRepository,
@@ -543,6 +586,6 @@ import { AppointmentWaitlistRepository } from './repositories/impl/appointment-w
     AllergyRepository,
     ChronicConditionRepository,
     // etc.
-  ]
+  ],
 })
 export class DatabaseModule {}

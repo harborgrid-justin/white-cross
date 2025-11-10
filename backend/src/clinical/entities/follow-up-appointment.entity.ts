@@ -9,6 +9,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  FollowUpAppointment
-} from '../../database/models/follow-up-appointment.model';
+export { FollowUpAppointment } from '../../database/models/follow-up-appointment.model';

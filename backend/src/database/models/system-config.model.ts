@@ -5,20 +5,19 @@
  */
 
 import {
-  Table,
+  AllowNull,
+  BeforeCreate,
+  BeforeUpdate,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   HasMany,
   Index,
-  AllowNull,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 /**
  * Configuration categories
@@ -38,7 +37,7 @@ export enum ConfigCategory {
   FILE_UPLOAD = 'FILE_UPLOAD',
   RATE_LIMITING = 'RATE_LIMITING',
   SESSION = 'SESSION',
-  EMAIL = 'EMAIL'
+  EMAIL = 'EMAIL',
 }
 
 /**
@@ -56,7 +55,7 @@ export enum ConfigValueType {
   EMAIL = 'EMAIL',
   URL = 'URL',
   COLOR = 'COLOR',
-  ENUM = 'ENUM'
+  ENUM = 'ENUM',
 }
 
 /**
@@ -66,7 +65,7 @@ export enum ConfigScope {
   SYSTEM = 'SYSTEM',
   DISTRICT = 'DISTRICT',
   SCHOOL = 'SCHOOL',
-  USER = 'USER'
+  USER = 'USER',
 }
 
 /**
@@ -126,10 +125,10 @@ export interface CreateSystemConfigAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'system_configurations',
@@ -141,15 +140,18 @@ export interface CreateSystemConfigAttributes {
     { fields: ['scope'] },
     {
       fields: ['createdAt'],
-      name: 'idx_system_config_created_at'
+      name: 'idx_system_config_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_system_config_updated_at'
-    }
-  ]
+      name: 'idx_system_config_updated_at',
+    },
+  ],
 })
-export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConfigAttributes> {
+export class SystemConfig extends Model<
+  SystemConfigAttributes,
+  CreateSystemConfigAttributes
+> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -159,7 +161,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    comment: 'Unique configuration key'
+    comment: 'Unique configuration key',
   })
   @Index
   key: string;
@@ -168,7 +170,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.TEXT,
     allowNull: false,
-    comment: 'Configuration value as string'
+    comment: 'Configuration value as string',
   })
   value: string;
 
@@ -176,11 +178,11 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConfigCategory)]
+      isIn: [Object.values(ConfigCategory)],
     },
     allowNull: false,
     defaultValue: ConfigCategory.GENERAL,
-    comment: 'Configuration category'
+    comment: 'Configuration category',
   })
   @Index
   category: ConfigCategory;
@@ -189,11 +191,11 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConfigValueType)]
+      isIn: [Object.values(ConfigValueType)],
     },
     allowNull: false,
     defaultValue: ConfigValueType.STRING,
-    comment: 'Data type of the configuration value'
+    comment: 'Data type of the configuration value',
   })
   valueType: ConfigValueType;
 
@@ -201,7 +203,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'Sub-category for further organization'
+    comment: 'Sub-category for further organization',
   })
   subCategory?: string;
 
@@ -209,7 +211,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Human-readable description of the configuration'
+    comment: 'Human-readable description of the configuration',
   })
   description?: string;
 
@@ -217,7 +219,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Default value for the configuration'
+    comment: 'Default value for the configuration',
   })
   defaultValue?: string;
 
@@ -225,7 +227,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: true,
-    comment: 'Array of valid values for enum-type configurations'
+    comment: 'Array of valid values for enum-type configurations',
   })
   validValues?: string[];
 
@@ -233,7 +235,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: true,
-    comment: 'Minimum allowed value for numeric configurations'
+    comment: 'Minimum allowed value for numeric configurations',
   })
   minValue?: number;
 
@@ -241,7 +243,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: true,
-    comment: 'Maximum allowed value for numeric configurations'
+    comment: 'Maximum allowed value for numeric configurations',
   })
   maxValue?: number;
 
@@ -250,7 +252,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether this configuration is publicly accessible'
+    comment: 'Whether this configuration is publicly accessible',
   })
   isPublic?: boolean;
 
@@ -259,7 +261,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-    comment: 'Whether this configuration can be edited'
+    comment: 'Whether this configuration can be edited',
   })
   isEditable?: boolean;
 
@@ -268,7 +270,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether changing this configuration requires a system restart'
+    comment: 'Whether changing this configuration requires a system restart',
   })
   requiresRestart?: boolean;
 
@@ -276,11 +278,11 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConfigScope)]
+      isIn: [Object.values(ConfigScope)],
     },
     allowNull: false,
     defaultValue: ConfigScope.SYSTEM,
-    comment: 'Scope of the configuration (system, district, school, user)'
+    comment: 'Scope of the configuration (system, district, school, user)',
   })
   @Index
   scope: ConfigScope;
@@ -289,7 +291,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of the scope entity (district, school, or user)'
+    comment: 'ID of the scope entity (district, school, or user)',
   })
   scopeId?: string;
 
@@ -297,7 +299,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: true,
-    comment: 'Tags for categorization and filtering'
+    comment: 'Tags for categorization and filtering',
   })
   tags?: string[];
 
@@ -306,7 +308,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Sort order for display purposes'
+    comment: 'Sort order for display purposes',
   })
   sortOrder?: number;
 
@@ -314,7 +316,7 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the configuration was created'
+    comment: 'Timestamp when the configuration was created',
   })
   declare createdAt?: Date;
 
@@ -322,17 +324,19 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the configuration was last updated'
+    comment: 'Timestamp when the configuration was last updated',
   })
   declare updatedAt?: Date;
 
   // Relationships
-  @HasMany(() => require('./configuration-history.model').ConfigurationHistory, {
-    foreignKey: 'configurationId',
-    as: 'history'
-  })
+  @HasMany(
+    () => require('./configuration-history.model').ConfigurationHistory,
+    {
+      foreignKey: 'configurationId',
+      as: 'history',
+    },
+  )
   declare history?: any[];
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -340,7 +344,9 @@ export class SystemConfig extends Model<SystemConfigAttributes, CreateSystemConf
   static async auditPHIAccess(instance: SystemConfig) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] SystemConfig ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] SystemConfig ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

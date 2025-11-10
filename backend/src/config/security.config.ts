@@ -61,7 +61,9 @@ export default registerAs('security', (): SecurityConfig => {
       tokenLifetimeMs: 24 * 60 * 60 * 1000, // 24 hours
     },
     encryption: {
-      algorithm: (process.env.ENCRYPTION_ALGORITHM as 'aes-256-gcm' | 'aes-256-cbc') || 'aes-256-gcm',
+      algorithm:
+        (process.env.ENCRYPTION_ALGORITHM as 'aes-256-gcm' | 'aes-256-cbc') ||
+        'aes-256-gcm',
       keySize: parseInt(process.env.ENCRYPTION_KEY_SIZE || '32', 10),
       ivSize: parseInt(process.env.ENCRYPTION_IV_SIZE || '16', 10),
       configKey: process.env.CONFIG_ENCRYPTION_KEY || null,
@@ -71,10 +73,15 @@ export default registerAs('security', (): SecurityConfig => {
     },
     keyRotation: {
       enabled: process.env.KEY_ROTATION_ENABLED !== 'false',
-      intervalDays: parseInt(process.env.KEY_ROTATION_INTERVAL_DAYS || '90', 10),
+      intervalDays: parseInt(
+        process.env.KEY_ROTATION_INTERVAL_DAYS || '90',
+        10,
+      ),
     },
     cors: {
-      origin: process.env.CORS_ORIGIN || (isDevelopment ? 'http://localhost:3000' : ''),
+      origin:
+        process.env.CORS_ORIGIN ||
+        (isDevelopment ? 'http://localhost:3000' : ''),
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [

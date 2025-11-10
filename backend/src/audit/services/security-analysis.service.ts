@@ -1,7 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
+import { literal, Op } from 'sequelize';
+import { AuditLog } from '@/database';
+import { SecurityReport, SuspiciousLoginDetection } from '../types/audit.types';
 
 /**
  * SecurityAnalysisService - Security monitoring and threat detection
@@ -26,18 +27,15 @@ export class SecurityAnalysisService {
    * @param endDate - End date for the analysis
    * @returns Promise with suspicious login patterns
    */
-  async detectSuspiciousLogins(startDate: Date, endDate: Date): Promise<any> {
+  async detectSuspiciousLogins(startDate: Date, endDate: Date): Promise<SuspiciousLoginDetection> {
     try {
       const failedLogins = await this.auditLogModel.findAll({
         where: {
           createdAt: {
-            [Op.between]: [startDate, endDate]
+            [Op.between]: [startDate, endDate],
           },
           action: 'LOGIN',
-          [Op.and]: [
-            literal(`changes->>'success' = 'false'`),
-            { ipAddress: { [Op.ne]: null } }
-          ]
+          [Op.and]: [literal(`changes->>'success' = 'false'`), { ipAddress: { [Op.ne]: null } }],
         },
         order: [['createdAt', 'DESC']],
       });
@@ -76,7 +74,7 @@ export class SecurityAnalysisService {
    * @param endDate - End date for the security analysis
    * @returns Promise with comprehensive security analysis
    */
-  async generateSecurityReport(startDate: Date, endDate: Date): Promise<any> {
+  async generateSecurityReport(startDate: Date, endDate: Date): Promise<SecurityReport> {
     try {
       const suspiciousLogins = await this.detectSuspiciousLogins(startDate, endDate);
 
@@ -86,7 +84,13 @@ export class SecurityAnalysisService {
       else if (suspiciousLogins.riskLevel === 'LOW') overallRiskScore += 1;
 
       const riskLevel =
-        overallRiskScore >= 10 ? 'CRITICAL' : overallRiskScore >= 6 ? 'HIGH' : overallRiskScore >= 3 ? 'MEDIUM' : 'LOW';
+        overallRiskScore >= 10
+          ? 'CRITICAL'
+          : overallRiskScore >= 6
+            ? 'HIGH'
+            : overallRiskScore >= 3
+              ? 'MEDIUM'
+              : 'LOW';
 
       return {
         period: { start: startDate, end: endDate },

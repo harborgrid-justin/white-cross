@@ -5,7 +5,7 @@
 
 import { MessageAttributes } from '../../models/message.model';
 import { MessageTemplateAttributes } from '../../models/message-template.model';
-import { MessageDeliveryAttributes, DeliveryStatus } from '../../models/message-delivery.model';
+import { DeliveryStatus, MessageDeliveryAttributes } from '../../models/message-delivery.model';
 import { IRepository } from './repository.interface';
 
 export interface CreateMessageDTO {
@@ -67,19 +67,30 @@ export interface UpdateMessageDeliveryDTO {
   externalId?: string;
 }
 
-export interface IMessageRepository extends IRepository<MessageAttributes, CreateMessageDTO, UpdateMessageDTO> {
+export interface IMessageRepository
+  extends IRepository<MessageAttributes, CreateMessageDTO, UpdateMessageDTO> {
   findByCategory(category: string): Promise<MessageAttributes[]>;
   findBySender(senderId: string): Promise<MessageAttributes[]>;
   findScheduled(): Promise<MessageAttributes[]>;
 }
 
-export interface IMessageTemplateRepository extends IRepository<MessageTemplateAttributes, CreateMessageTemplateDTO, UpdateMessageTemplateDTO> {
+export interface IMessageTemplateRepository
+  extends IRepository<
+    MessageTemplateAttributes,
+    CreateMessageTemplateDTO,
+    UpdateMessageTemplateDTO
+  > {
   findByType(type: string): Promise<MessageTemplateAttributes[]>;
   findByCategory(category: string): Promise<MessageTemplateAttributes[]>;
   findActive(): Promise<MessageTemplateAttributes[]>;
 }
 
-export interface IMessageDeliveryRepository extends IRepository<MessageDeliveryAttributes, CreateMessageDeliveryDTO, UpdateMessageDeliveryDTO> {
+export interface IMessageDeliveryRepository
+  extends IRepository<
+    MessageDeliveryAttributes,
+    CreateMessageDeliveryDTO,
+    UpdateMessageDeliveryDTO
+  > {
   findByMessage(messageId: string): Promise<MessageDeliveryAttributes[]>;
   findByRecipient(recipientId: string): Promise<MessageDeliveryAttributes[]>;
   findByStatus(status: DeliveryStatus): Promise<MessageDeliveryAttributes[]>;

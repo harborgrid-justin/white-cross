@@ -1,14 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsUUID,
-  IsBoolean,
-  IsNumber,
-  MinLength,
-  Min,
-} from 'class-validator';
+import { IsBoolean, IsEmail, IsNumber, IsOptional, IsString, IsUUID, Min, MinLength } from 'class-validator';
 
 /**
  * DTO for creating a user via admin

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
-import { InventoryAlertDto, AlertType, AlertSeverity, AlertSummaryDto } from '../dto/inventory-alert.dto';
+import { AlertSeverity, AlertSummaryDto, AlertType, InventoryAlertDto } from '../dto/inventory-alert.dto';
 
 interface StockQueryResult {
   id: string;
@@ -35,7 +35,9 @@ export class AlertsService {
     try {
       const alerts: InventoryAlertDto[] = [];
       const now = new Date();
-      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const thirtyDaysFromNow = new Date(
+        now.getTime() + 30 * 24 * 60 * 60 * 1000,
+      );
 
       // Get items with current stock and expiration info
       const query = `
@@ -66,7 +68,9 @@ export class AlertsService {
         WHERE i.is_active = true
       `;
 
-      const [results] = await this.sequelize.query(query, { type: QueryTypes.SELECT });
+      const [results] = await this.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
       const items: StockQueryResult[] = results as StockQueryResult[];
 
       for (const item of items) {
@@ -74,8 +78,14 @@ export class AlertsService {
         if (item.current_stock <= item.reorder_level) {
           alerts.push({
             id: `low_stock_${item.id}`,
-            type: item.current_stock === 0 ? AlertType.OUT_OF_STOCK : AlertType.LOW_STOCK,
-            severity: item.current_stock === 0 ? AlertSeverity.CRITICAL : AlertSeverity.HIGH,
+            type:
+              item.current_stock === 0
+                ? AlertType.OUT_OF_STOCK
+                : AlertType.LOW_STOCK,
+            severity:
+              item.current_stock === 0
+                ? AlertSeverity.CRITICAL
+                : AlertSeverity.HIGH,
             message:
               item.current_stock === 0
                 ? `${item.name} is out of stock`
@@ -106,7 +116,10 @@ export class AlertsService {
             alerts.push({
               id: `near_expiry_${item.id}`,
               type: AlertType.NEAR_EXPIRY,
-              severity: daysUntilExpiration <= 7 ? AlertSeverity.HIGH : AlertSeverity.MEDIUM,
+              severity:
+                daysUntilExpiration <= 7
+                  ? AlertSeverity.HIGH
+                  : AlertSeverity.MEDIUM,
               message: `${item.name} expires in ${daysUntilExpiration} days`,
               itemId: item.id,
               itemName: item.name,
@@ -153,7 +166,9 @@ export class AlertsService {
         [AlertSeverity.MEDIUM]: 2,
         [AlertSeverity.LOW]: 3,
       };
-      alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+      alerts.sort(
+        (a, b) => severityOrder[a.severity] - severityOrder[b.severity],
+      );
 
       return alerts;
     } catch (error) {
@@ -168,7 +183,9 @@ export class AlertsService {
   async getCriticalAlerts(): Promise<InventoryAlertDto[]> {
     try {
       const allAlerts = await this.getInventoryAlerts();
-      return allAlerts.filter((alert) => alert.severity === AlertSeverity.CRITICAL);
+      return allAlerts.filter(
+        (alert) => alert.severity === AlertSeverity.CRITICAL,
+      );
     } catch (error) {
       this.logger.error('Error getting critical alerts:', error);
       throw error;
@@ -191,7 +208,9 @@ export class AlertsService {
   /**
    * Get alerts by severity
    */
-  async getAlertsBySeverity(severity: AlertSeverity): Promise<InventoryAlertDto[]> {
+  async getAlertsBySeverity(
+    severity: AlertSeverity,
+  ): Promise<InventoryAlertDto[]> {
     try {
       const allAlerts = await this.getInventoryAlerts();
       return allAlerts.filter((alert) => alert.severity === severity);
@@ -211,16 +230,23 @@ export class AlertsService {
       const counts = {
         total: alerts.length,
         byType: {
-          LOW_STOCK: alerts.filter((a) => a.type === AlertType.LOW_STOCK).length,
-          OUT_OF_STOCK: alerts.filter((a) => a.type === AlertType.OUT_OF_STOCK).length,
+          LOW_STOCK: alerts.filter((a) => a.type === AlertType.LOW_STOCK)
+            .length,
+          OUT_OF_STOCK: alerts.filter((a) => a.type === AlertType.OUT_OF_STOCK)
+            .length,
           EXPIRED: alerts.filter((a) => a.type === AlertType.EXPIRED).length,
-          NEAR_EXPIRY: alerts.filter((a) => a.type === AlertType.NEAR_EXPIRY).length,
-          MAINTENANCE_DUE: alerts.filter((a) => a.type === AlertType.MAINTENANCE_DUE).length,
+          NEAR_EXPIRY: alerts.filter((a) => a.type === AlertType.NEAR_EXPIRY)
+            .length,
+          MAINTENANCE_DUE: alerts.filter(
+            (a) => a.type === AlertType.MAINTENANCE_DUE,
+          ).length,
         },
         bySeverity: {
-          CRITICAL: alerts.filter((a) => a.severity === AlertSeverity.CRITICAL).length,
+          CRITICAL: alerts.filter((a) => a.severity === AlertSeverity.CRITICAL)
+            .length,
           HIGH: alerts.filter((a) => a.severity === AlertSeverity.HIGH).length,
-          MEDIUM: alerts.filter((a) => a.severity === AlertSeverity.MEDIUM).length,
+          MEDIUM: alerts.filter((a) => a.severity === AlertSeverity.MEDIUM)
+            .length,
           LOW: alerts.filter((a) => a.severity === AlertSeverity.LOW).length,
         },
       };
@@ -278,21 +304,31 @@ export class AlertsService {
   private generateRecommendations(alerts: InventoryAlertDto[]): string[] {
     const recommendations: string[] = [];
 
-    const criticalAlerts = alerts.filter((a) => a.severity === AlertSeverity.CRITICAL);
-    const outOfStockAlerts = alerts.filter((a) => a.type === AlertType.OUT_OF_STOCK);
+    const criticalAlerts = alerts.filter(
+      (a) => a.severity === AlertSeverity.CRITICAL,
+    );
+    const outOfStockAlerts = alerts.filter(
+      (a) => a.type === AlertType.OUT_OF_STOCK,
+    );
     const expiredAlerts = alerts.filter((a) => a.type === AlertType.EXPIRED);
     const lowStockAlerts = alerts.filter((a) => a.type === AlertType.LOW_STOCK);
 
     if (criticalAlerts.length > 0) {
-      recommendations.push(`Address ${criticalAlerts.length} critical alert(s) immediately`);
+      recommendations.push(
+        `Address ${criticalAlerts.length} critical alert(s) immediately`,
+      );
     }
 
     if (outOfStockAlerts.length > 0) {
-      recommendations.push(`Reorder ${outOfStockAlerts.length} out-of-stock item(s) urgently`);
+      recommendations.push(
+        `Reorder ${outOfStockAlerts.length} out-of-stock item(s) urgently`,
+      );
     }
 
     if (expiredAlerts.length > 0) {
-      recommendations.push(`Remove ${expiredAlerts.length} expired item(s) from inventory`);
+      recommendations.push(
+        `Remove ${expiredAlerts.length} expired item(s) from inventory`,
+      );
     }
 
     if (lowStockAlerts.length > 5) {

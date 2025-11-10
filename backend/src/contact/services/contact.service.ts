@@ -2,17 +2,11 @@
  * Contact Service
  * @description Service for managing general contacts (guardians, staff, vendors, providers)
  */
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  Logger
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Contact } from '../../database/models/contact.model';
-import { CreateContactDto, UpdateContactDto, ContactQueryDto } from '../dto';
+import { ContactQueryDto, CreateContactDto, UpdateContactDto } from '../dto';
 import { ContactType } from '../enums';
 
 @Injectable()
@@ -21,21 +15,28 @@ export class ContactService {
 
   constructor(
     @InjectModel(Contact)
-    private readonly contactModel: typeof Contact
+    private readonly contactModel: typeof Contact,
   ) {}
 
   /**
    * Get all contacts with pagination and filters
    */
   async getContacts(query: ContactQueryDto) {
-    const { page = 1, limit = 20, orderBy = 'lastName', orderDirection = 'ASC' } = query;
+    const {
+      page = 1,
+      limit = 20,
+      orderBy = 'lastName',
+      orderDirection = 'ASC',
+    } = query;
     const offset = (page - 1) * limit;
 
     // Build where clause
     const where: any = {};
 
     if (query.type) {
-      where.type = Array.isArray(query.type) ? { [Op.in]: query.type } : query.type;
+      where.type = Array.isArray(query.type)
+        ? { [Op.in]: query.type }
+        : query.type;
     }
 
     if (query.isActive !== undefined) {
@@ -53,20 +54,23 @@ export class ContactService {
         { firstName: { [Op.iLike]: `%${query.search}%` } },
         { lastName: { [Op.iLike]: `%${query.search}%` } },
         { email: { [Op.iLike]: `%${query.search}%` } },
-        { organization: { [Op.iLike]: `%${query.search}%` } }
+        { organization: { [Op.iLike]: `%${query.search}%` } },
       ];
     }
 
     const finalWhere = searchWhere ? { [Op.or]: searchWhere, ...where } : where;
 
-    const { rows: contacts, count: total } = await this.contactModel.findAndCountAll({
-      where: finalWhere,
-      offset,
-      limit,
-      order: [[orderBy, orderDirection]],
-    });
+    const { rows: contacts, count: total } =
+      await this.contactModel.findAndCountAll({
+        where: finalWhere,
+        offset,
+        limit,
+        order: [[orderBy, orderDirection]],
+      });
 
-    this.logger.log(`Retrieved ${contacts.length} contacts (page ${page}, total ${total})`);
+    this.logger.log(
+      `Retrieved ${contacts.length} contacts (page ${page}, total ${total})`,
+    );
 
     return {
       contacts,
@@ -90,7 +94,9 @@ export class ContactService {
       throw new NotFoundException(`Contact with ID ${id} not found`);
     }
 
-    this.logger.log(`Retrieved contact: ${contact.firstName} ${contact.lastName}`);
+    this.logger.log(
+      `Retrieved contact: ${contact.firstName} ${contact.lastName}`,
+    );
     return contact;
   }
 
@@ -113,25 +119,27 @@ export class ContactService {
         where: {
           email: dto.email,
           type: dto.type,
-          isActive: true
-        }
+          isActive: true,
+        },
       });
 
       if (existingContact) {
         throw new ConflictException(
-          `A ${dto.type} contact with this email already exists`
+          `A ${dto.type} contact with this email already exists`,
         );
       }
     }
 
     const contact = this.contactModel.build({
       ...dto,
-      isActive: dto.isActive !== undefined ? dto.isActive : true
+      isActive: dto.isActive !== undefined ? dto.isActive : true,
     } as any);
 
     await contact.save();
 
-    this.logger.log(`Created contact ${contact.id} (${contact.firstName} ${contact.lastName})`);
+    this.logger.log(
+      `Created contact ${contact.id} (${contact.firstName} ${contact.lastName})`,
+    );
 
     return contact;
   }
@@ -149,12 +157,14 @@ export class ContactService {
           email: dto.email,
           type: dto.type || contact.type,
           isActive: true,
-          id: { [Op.ne]: id }
-        }
+          id: { [Op.ne]: id },
+        },
       });
 
       if (existingContact) {
-        throw new ConflictException('Another contact with this email already exists');
+        throw new ConflictException(
+          'Another contact with this email already exists',
+        );
       }
     }
 
@@ -168,7 +178,9 @@ export class ContactService {
   /**
    * Delete contact (soft delete)
    */
-  async deleteContact(id: string): Promise<{ success: boolean; message: string }> {
+  async deleteContact(
+    id: string,
+  ): Promise<{ success: boolean; message: string }> {
     const contact = await this.getContactById(id);
     contact.isActive = false;
     await contact.save();
@@ -212,10 +224,13 @@ export class ContactService {
   /**
    * Get contacts by relation (e.g., all guardians for a student)
    */
-  async getContactsByRelation(relationTo: string, type?: ContactType): Promise<Contact[]> {
+  async getContactsByRelation(
+    relationTo: string,
+    type?: ContactType,
+  ): Promise<Contact[]> {
     const where: any = {
       relationTo,
-      isActive: true
+      isActive: true,
     };
 
     if (type) {
@@ -227,7 +242,9 @@ export class ContactService {
       order: [['lastName', 'ASC']],
     });
 
-    this.logger.log(`Retrieved ${contacts.length} contacts for relation ${relationTo}`);
+    this.logger.log(
+      `Retrieved ${contacts.length} contacts for relation ${relationTo}`,
+    );
     return contacts;
   }
 
@@ -240,20 +257,25 @@ export class ContactService {
         { firstName: { [Op.iLike]: `%${query}%` }, isActive: true },
         { lastName: { [Op.iLike]: `%${query}%` }, isActive: true },
         { email: { [Op.iLike]: `%${query}%` }, isActive: true },
-        { organization: { [Op.iLike]: `%${query}%` }, isActive: true }
+        { organization: { [Op.iLike]: `%${query}%` }, isActive: true },
       ],
       limit,
       order: [['lastName', 'ASC']],
     });
 
-    this.logger.log(`Search for "${query}" returned ${contacts.length} results`);
+    this.logger.log(
+      `Search for "${query}" returned ${contacts.length} results`,
+    );
     return contacts;
   }
 
   /**
    * Get contact statistics
    */
-  async getContactStats(): Promise<{ total: number; byType: Record<string, number> }> {
+  async getContactStats(): Promise<{
+    total: number;
+    byType: Record<string, number>;
+  }> {
     const total = await this.contactModel.count({ where: { isActive: true } });
 
     // Get count by type
@@ -261,7 +283,13 @@ export class ContactService {
       where: { isActive: true },
       attributes: [
         'type',
-        [this.contactModel.sequelize!.fn('COUNT', this.contactModel.sequelize!.col('id')), 'count']
+        [
+          this.contactModel.sequelize!.fn(
+            'COUNT',
+            this.contactModel.sequelize!.col('id'),
+          ),
+          'count',
+        ],
       ],
       group: ['type'],
       raw: true,
@@ -272,7 +300,9 @@ export class ContactService {
       byType[result.type] = parseInt(result.count, 10);
     });
 
-    this.logger.log(`Contact statistics: ${total} total, ${Object.keys(byType).length} types`);
+    this.logger.log(
+      `Contact statistics: ${total} total, ${Object.keys(byType).length} types`,
+    );
 
     return { total, byType };
   }
@@ -285,15 +315,15 @@ export class ContactService {
     try {
       const contacts = await this.contactModel.findAll({
         where: {
-          id: { [Op.in]: ids }
-        }
+          id: { [Op.in]: ids },
+        },
       });
 
       // Create a map for O(1) lookup
-      const contactMap = new Map(contacts.map(c => [c.id, c]));
+      const contactMap = new Map(contacts.map((c) => [c.id, c]));
 
       // Return in same order as requested IDs, null for missing
-      return ids.map(id => contactMap.get(id) || null);
+      return ids.map((id) => contactMap.get(id) || null);
     } catch (error) {
       this.logger.error(`Failed to batch fetch contacts: ${error.message}`);
       throw new Error('Failed to batch fetch contacts');
@@ -309,14 +339,17 @@ export class ContactService {
       const contacts = await this.contactModel.findAll({
         where: {
           relationTo: { [Op.in]: studentIds },
-          isActive: true
+          isActive: true,
         },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
 
       // Group contacts by student ID
       const contactsByStudent = new Map<string, Contact[]>();
-      contacts.forEach(contact => {
+      contacts.forEach((contact) => {
         const studentId = contact.relationTo;
         if (studentId) {
           if (!contactsByStudent.has(studentId)) {
@@ -327,9 +360,11 @@ export class ContactService {
       });
 
       // Return contacts array for each student, empty array for missing
-      return studentIds.map(id => contactsByStudent.get(id) || []);
+      return studentIds.map((id) => contactsByStudent.get(id) || []);
     } catch (error) {
-      this.logger.error(`Failed to batch fetch contacts by student IDs: ${error.message}`);
+      this.logger.error(
+        `Failed to batch fetch contacts by student IDs: ${error.message}`,
+      );
       throw new Error('Failed to batch fetch contacts by student IDs');
     }
   }

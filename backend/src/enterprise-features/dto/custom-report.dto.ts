@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsEnum, IsOptional } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateReportDefinitionDto {
@@ -29,7 +29,10 @@ export class CreateReportDefinitionDto {
   @IsString({ each: true })
   sorting: string[];
 
-  @ApiProperty({ enum: ['table', 'chart', 'graph'], description: 'Visualization type' })
+  @ApiProperty({
+    enum: ['table', 'chart', 'graph'],
+    description: 'Visualization type',
+  })
   @IsEnum(['table', 'chart', 'graph'])
   visualization: 'table' | 'chart' | 'graph';
 

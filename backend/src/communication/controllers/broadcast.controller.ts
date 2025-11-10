@@ -1,24 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
-import { BroadcastService } from '../services/broadcast.service';
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { AuthenticatedRequest } from '../types/index';
 import { CreateBroadcastDto } from '../dto/create-broadcast.dto';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BroadcastService } from '../services/broadcast.service';
 
 @ApiTags('Broadcasts')
 @ApiBearerAuth()
@@ -51,7 +35,7 @@ export class BroadcastController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid audience or content' })
-  async createBroadcast(@Body() dto: CreateBroadcastDto, @Req() req: any) {
+  async createBroadcast(@Body() dto: CreateBroadcastDto, @Req() req: AuthenticatedRequest) {
     const senderId = req.user?.id;
     return this.broadcastService.createBroadcast({ ...dto, senderId });
   }
@@ -75,13 +59,16 @@ export class BroadcastController {
     @Query('category') category?: string,
     @Query('priority') priority?: string,
   ) {
-    return this.broadcastService.listBroadcasts(page, limit, { category, priority });
+    return this.broadcastService.listBroadcasts(page, limit, {
+      category,
+      priority,
+    });
   }
 
   @Get('scheduled')
   @ApiOperation({
     summary: 'List scheduled broadcasts',
-    description: 'Get all scheduled broadcasts that haven\'t been sent yet',
+    description: "Get all scheduled broadcasts that haven't been sent yet",
   })
   @ApiResponse({
     status: 200,
@@ -109,7 +96,8 @@ export class BroadcastController {
   @Get(':id/delivery')
   @ApiOperation({
     summary: 'Get broadcast delivery report',
-    description: 'Get comprehensive delivery report with statistics by channel and recipient type',
+    description:
+      'Get comprehensive delivery report with statistics by channel and recipient type',
   })
   @ApiParam({ name: 'id', description: 'Broadcast ID (UUID)' })
   @ApiResponse({
@@ -133,7 +121,12 @@ export class BroadcastController {
           },
           byRecipientType: {
             PARENT: { total: 150, delivered: 145, failed: 5, pending: 0 },
-            EMERGENCY_CONTACT: { total: 100, delivered: 95, failed: 5, pending: 0 },
+            EMERGENCY_CONTACT: {
+              total: 100,
+              delivered: 95,
+              failed: 5,
+              pending: 0,
+            },
           },
         },
       },
@@ -174,8 +167,11 @@ export class BroadcastController {
     description: 'Broadcast cancelled successfully',
   })
   @ApiResponse({ status: 400, description: 'Cannot cancel sent broadcasts' })
-  @ApiResponse({ status: 403, description: 'Not authorized to cancel this broadcast' })
-  async cancelBroadcast(@Param('id') id: string, @Req() req: any) {
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to cancel this broadcast',
+  })
+  async cancelBroadcast(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     const userId = req.user?.id;
     return this.broadcastService.cancelBroadcast(id, userId);
   }
@@ -191,21 +187,46 @@ export class BroadcastController {
       properties: {
         subject: { type: 'string', example: 'Scheduled Announcement' },
         body: { type: 'string', example: 'This is a scheduled message...' },
-        recipientType: { type: 'string', enum: ['ALL_PARENTS', 'SPECIFIC_USERS', 'STUDENT_PARENTS', 'GRADE_LEVEL', 'CUSTOM_GROUP'] },
+        recipientType: {
+          type: 'string',
+          enum: [
+            'ALL_PARENTS',
+            'SPECIFIC_USERS',
+            'STUDENT_PARENTS',
+            'GRADE_LEVEL',
+            'CUSTOM_GROUP',
+          ],
+        },
         recipientIds: { type: 'array', items: { type: 'string' } },
-        channels: { type: 'array', items: { type: 'string', enum: ['EMAIL', 'SMS', 'PUSH', 'PORTAL'] } },
-        scheduledFor: { type: 'string', format: 'date-time', example: '2025-10-29T09:00:00Z' },
+        channels: {
+          type: 'array',
+          items: { type: 'string', enum: ['EMAIL', 'SMS', 'PUSH', 'PORTAL'] },
+        },
+        scheduledFor: {
+          type: 'string',
+          format: 'date-time',
+          example: '2025-10-29T09:00:00Z',
+        },
         priority: { type: 'string', enum: ['LOW', 'NORMAL', 'HIGH'] },
       },
-      required: ['subject', 'body', 'recipientType', 'channels', 'scheduledFor'],
+      required: [
+        'subject',
+        'body',
+        'recipientType',
+        'channels',
+        'scheduledFor',
+      ],
     },
   })
   @ApiResponse({
     status: 201,
     description: 'Broadcast scheduled successfully',
   })
-  async scheduleBroadcast(@Body() scheduleDto: any, @Req() req: any) {
+  async scheduleBroadcast(@Body() scheduleDto: Record<string, unknown>, @Req() req: AuthenticatedRequest) {
     const createdBy = req.user?.id;
-    return this.broadcastService.scheduleBroadcast({ ...scheduleDto, createdBy });
+    return this.broadcastService.scheduleBroadcast({
+      ...scheduleDto,
+      createdBy,
+    });
   }
 }

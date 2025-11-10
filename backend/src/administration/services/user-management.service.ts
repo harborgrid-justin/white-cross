@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 /**
  * UserManagementService
@@ -38,7 +38,9 @@ export class UserManagementService {
     role: string;
     schoolId?: string;
   }): Promise<any> {
-    this.logger.log(`Creating user account: ${userData.email} (${userData.role})`);
+    this.logger.log(
+      `Creating user account: ${userData.email} (${userData.role})`,
+    );
 
     // In production:
     // 1. Validate email uniqueness
@@ -54,9 +56,18 @@ export class UserManagementService {
       throw new BadRequestException('Invalid email format');
     }
 
-    const validRoles = ['doctor', 'nurse', 'counselor', 'administrator', 'parent', 'student'];
+    const validRoles = [
+      'doctor',
+      'nurse',
+      'counselor',
+      'administrator',
+      'parent',
+      'student',
+    ];
     if (!validRoles.includes(userData.role)) {
-      throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+      );
     }
 
     return {
@@ -68,7 +79,7 @@ export class UserManagementService {
       schoolId: userData.schoolId,
       isActive: true,
       createdAt: new Date(),
-      message: 'User creation requires database integration'
+      message: 'User creation requires database integration',
     };
   }
 
@@ -85,7 +96,7 @@ export class UserManagementService {
 
     return {
       id: userId,
-      message: 'User retrieval requires database integration'
+      message: 'User retrieval requires database integration',
     };
   }
 
@@ -99,7 +110,7 @@ export class UserManagementService {
       lastName?: string;
       email?: string;
       phoneNumber?: string;
-    }
+    },
   ): Promise<any> {
     this.logger.log(`Updating user: ${userId}`);
 
@@ -121,7 +132,7 @@ export class UserManagementService {
       id: userId,
       ...updateData,
       updatedAt: new Date(),
-      message: 'User update requires database integration'
+      message: 'User update requires database integration',
     };
   }
 
@@ -131,9 +142,11 @@ export class UserManagementService {
   async changeUserRole(
     userId: string,
     newRole: string,
-    changedBy: string
+    changedBy: string,
   ): Promise<any> {
-    this.logger.log(`Changing role for user ${userId} to ${newRole} by ${changedBy}`);
+    this.logger.log(
+      `Changing role for user ${userId} to ${newRole} by ${changedBy}`,
+    );
 
     // In production:
     // 1. Verify user exists
@@ -144,9 +157,18 @@ export class UserManagementService {
     // 6. Log role change in audit log
     // 7. Notify user of role change
 
-    const validRoles = ['doctor', 'nurse', 'counselor', 'administrator', 'parent', 'student'];
+    const validRoles = [
+      'doctor',
+      'nurse',
+      'counselor',
+      'administrator',
+      'parent',
+      'student',
+    ];
     if (!validRoles.includes(newRole)) {
-      throw new BadRequestException(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
+      throw new BadRequestException(
+        `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+      );
     }
 
     return {
@@ -155,7 +177,7 @@ export class UserManagementService {
       newRole,
       changedBy,
       changedAt: new Date(),
-      message: 'Role change requires database integration'
+      message: 'Role change requires database integration',
     };
   }
 
@@ -176,15 +198,21 @@ export class UserManagementService {
       isActive: true,
       activatedBy,
       activatedAt: new Date(),
-      message: 'User activation requires database integration'
+      message: 'User activation requires database integration',
     };
   }
 
   /**
    * Deactivate user account (soft delete)
    */
-  async deactivateUser(userId: string, deactivatedBy: string, reason?: string): Promise<any> {
-    this.logger.log(`Deactivating user: ${userId} by ${deactivatedBy}, reason: ${reason}`);
+  async deactivateUser(
+    userId: string,
+    deactivatedBy: string,
+    reason?: string,
+  ): Promise<any> {
+    this.logger.log(
+      `Deactivating user: ${userId} by ${deactivatedBy}, reason: ${reason}`,
+    );
 
     // In production:
     // 1. Verify user exists
@@ -199,7 +227,7 @@ export class UserManagementService {
       deactivatedBy,
       deactivatedAt: new Date(),
       reason,
-      message: 'User deactivation requires database integration'
+      message: 'User deactivation requires database integration',
     };
   }
 
@@ -209,7 +237,7 @@ export class UserManagementService {
   async resetPassword(
     userId: string,
     resetBy: string,
-    sendEmail: boolean = true
+    sendEmail: boolean = true,
   ): Promise<any> {
     this.logger.log(`Resetting password for user: ${userId} by ${resetBy}`);
 
@@ -228,7 +256,7 @@ export class UserManagementService {
       temporaryPassword: sendEmail ? '[sent via email]' : temporaryPassword,
       expiresIn: '24 hours',
       mustChangeOnLogin: true,
-      message: 'Password reset requires database integration'
+      message: 'Password reset requires database integration',
     };
   }
 
@@ -266,9 +294,11 @@ export class UserManagementService {
   async grantPermission(
     userId: string,
     permission: string,
-    grantedBy: string
+    grantedBy: string,
   ): Promise<any> {
-    this.logger.log(`Granting permission '${permission}' to user ${userId} by ${grantedBy}`);
+    this.logger.log(
+      `Granting permission '${permission}' to user ${userId} by ${grantedBy}`,
+    );
 
     // In production:
     // 1. Verify user and permission exist
@@ -281,7 +311,7 @@ export class UserManagementService {
       permission,
       grantedBy,
       grantedAt: new Date(),
-      message: 'Permission management requires database integration'
+      message: 'Permission management requires database integration',
     };
   }
 
@@ -291,9 +321,11 @@ export class UserManagementService {
   async revokePermission(
     userId: string,
     permission: string,
-    revokedBy: string
+    revokedBy: string,
   ): Promise<any> {
-    this.logger.log(`Revoking permission '${permission}' from user ${userId} by ${revokedBy}`);
+    this.logger.log(
+      `Revoking permission '${permission}' from user ${userId} by ${revokedBy}`,
+    );
 
     // In production:
     // 1. Verify permission grant exists
@@ -306,7 +338,7 @@ export class UserManagementService {
       permission,
       revokedBy,
       revokedAt: new Date(),
-      message: 'Permission management requires database integration'
+      message: 'Permission management requires database integration',
     };
   }
 
@@ -328,7 +360,9 @@ export class UserManagementService {
    * Revoke all user sessions (force logout)
    */
   async revokeAllSessions(userId: string, revokedBy: string): Promise<any> {
-    this.logger.log(`Revoking all sessions for user: ${userId} by ${revokedBy}`);
+    this.logger.log(
+      `Revoking all sessions for user: ${userId} by ${revokedBy}`,
+    );
 
     // In production:
     // 1. Get all active sessions for user
@@ -340,7 +374,7 @@ export class UserManagementService {
       sessionsRevoked: 0,
       revokedBy,
       revokedAt: new Date(),
-      message: 'Session management requires database integration'
+      message: 'Session management requires database integration',
     };
   }
 
@@ -351,7 +385,8 @@ export class UserManagementService {
    */
   private generateTemporaryPassword(): string {
     const length = 12;
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
     let password = '';
 
     for (let i = 0; i < length; i++) {
@@ -367,9 +402,11 @@ export class UserManagementService {
    */
   async validateUserPermission(
     userId: string,
-    requiredPermission: string
+    requiredPermission: string,
   ): Promise<boolean> {
-    this.logger.log(`Validating permission '${requiredPermission}' for user ${userId}`);
+    this.logger.log(
+      `Validating permission '${requiredPermission}' for user ${userId}`,
+    );
 
     // In production:
     // 1. Query user's role and permissions

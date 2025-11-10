@@ -1,4 +1,4 @@
-import { TrendDirection } from '../enums';
+import { TrendDirection } from '../enums/trend-direction.enum';
 
 /**
  * Health Metric
@@ -145,7 +145,11 @@ export interface CohortComparison {
  * Predictive Insight
  */
 export interface PredictiveInsight {
-  insightType: 'OUTBREAK_RISK' | 'STOCK_SHORTAGE' | 'COMPLIANCE_ISSUE' | 'CAPACITY_WARNING';
+  insightType:
+    | 'OUTBREAK_RISK'
+    | 'STOCK_SHORTAGE'
+    | 'COMPLIANCE_ISSUE'
+    | 'CAPACITY_WARNING';
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
   title: string;
   description: string;

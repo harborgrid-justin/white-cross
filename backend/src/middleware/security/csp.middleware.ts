@@ -20,8 +20,8 @@
  * - HIPAA 164.312(b) - Audit Controls (violation reporting)
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 import * as crypto from 'crypto';
 
 export interface CSPConfig {
@@ -56,7 +56,7 @@ export interface CSPDirectives {
 export interface CSPViolationReport {
   'csp-report': {
     'document-uri': string;
-    'referrer': string;
+    referrer: string;
     'violated-directive': string;
     'original-policy': string;
     'blocked-uri': string;
@@ -87,7 +87,11 @@ export class HealthcareCSPPolicies {
     return {
       'default-src': ["'self'"],
       'script-src': ["'self'", "'unsafe-inline'"], // Healthcare apps often need inline scripts
-      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'style-src': [
+        "'self'",
+        "'unsafe-inline'",
+        'https://fonts.googleapis.com',
+      ],
       'img-src': ["'self'", 'data:', 'https:'], // Medical images from secure sources
       'connect-src': ["'self'"], // Healthcare APIs
       'font-src': ["'self'", 'https://fonts.gstatic.com'],
@@ -285,10 +289,7 @@ export class CSPViolationReporter {
     if (directive.includes('frame-ancestors')) {
       return 'high';
     }
-    if (
-      directive.includes('connect-src') &&
-      !blockedUri.startsWith('https:')
-    ) {
+    if (directive.includes('connect-src') && !blockedUri.startsWith('https:')) {
       return 'high';
     }
     return 'medium';
@@ -303,9 +304,7 @@ export class CSPViolationReporter {
       'connect-src',
     ];
 
-    return criticalDirectives.some((critical) =>
-      directive.includes(critical),
-    );
+    return criticalDirectives.some((critical) => directive.includes(critical));
   }
 }
 
@@ -364,7 +363,7 @@ export class CspMiddleware implements NestMiddleware {
       }
 
       // Build CSP policy
-      const policy = this.buildCSPPolicy(req, nonce);
+      const policy = this.buildCSPPolicy(nonce);
 
       // Set CSP header
       const headerName = this.config.reportOnly
@@ -427,7 +426,7 @@ export class CspMiddleware implements NestMiddleware {
   /**
    * Build CSP policy string
    */
-  private buildCSPPolicy(req: Request, nonce?: string): string {
+  private buildCSPPolicy(nonce?: string): string {
     let directives: Partial<CSPDirectives>;
 
     // Start with healthcare-compliant base
@@ -536,7 +535,8 @@ export class CspMiddleware implements NestMiddleware {
     const auditEntry = {
       timestamp: new Date().toISOString(),
       event: 'csp_policy_applied',
-      requestId: (req as any).correlationId || (req as any).sessionId || 'unknown',
+      requestId:
+        (req as any).correlationId || (req as any).sessionId || 'unknown',
       userAgent: req.headers?.['user-agent'],
       ip: req.ip,
       path: req.path,

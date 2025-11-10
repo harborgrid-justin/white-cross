@@ -1,12 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsNumber,
-  IsString,
-  IsOptional,
-  IsDate,
-  IsObject,
-} from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MetricType } from '../enums/administration.enums';
 
@@ -22,7 +15,9 @@ export class RecordMetricDto {
   @IsNumber()
   value: number;
 
-  @ApiPropertyOptional({ description: 'Unit of measurement (e.g., %, ms, count)' })
+  @ApiPropertyOptional({
+    description: 'Unit of measurement (e.g., %, ms, count)',
+  })
   @IsOptional()
   @IsString()
   unit?: string;
@@ -43,7 +38,10 @@ export class RecordMetricDto {
  * DTO for querying performance metrics
  */
 export class MetricQueryDto {
-  @ApiPropertyOptional({ description: 'Filter by metric type', enum: MetricType })
+  @ApiPropertyOptional({
+    description: 'Filter by metric type',
+    enum: MetricType,
+  })
   @IsOptional()
   @IsEnum(MetricType)
   metricType?: MetricType;

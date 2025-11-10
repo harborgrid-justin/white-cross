@@ -1,19 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { SecurityIncidentEntity, IpRestrictionEntity } from '../entities';
-import {
-  SecurityIncidentType,
-  IncidentSeverity,
-  IncidentStatus,
-  IpRestrictionType,
-} from '../enums';
-import { IncidentResponse } from '../interfaces';
-import {
-  SecurityCreateIncidentDto,
-  UpdateIncidentStatusDto,
-  IncidentFilterDto,
-} from '../dto';
+import { IpRestrictionEntity } from '../entities/ip-restriction.entity';
+import { SecurityIncidentEntity } from '../entities/security-incident.entity';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentStatus } from '../enums/incident-status.enum';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
+import { IncidentResponse } from '../interfaces/incident-response.interface';
+import { IncidentFilterDto } from '../dto/security-incident.dto';
+import { SecurityCreateIncidentDto } from '../dto/security-incident.dto';
+import { UpdateIncidentStatusDto } from '../dto/security-incident.dto';
 
 /**
  * Security Incident Service
@@ -42,9 +38,7 @@ export class SecurityIncidentService {
   /**
    * Report a security incident
    */
-  async reportIncident(
-    dto: SecurityCreateIncidentDto,
-  ): Promise<SecurityIncidentEntity> {
+  async reportIncident(dto: SecurityCreateIncidentDto): Promise<SecurityIncidentEntity> {
     try {
       const incident = await this.incidentModel.create({
         ...dto,
@@ -70,9 +64,7 @@ export class SecurityIncidentService {
   /**
    * Auto-respond to incidents based on severity
    */
-  private async autoRespond(
-    incident: SecurityIncidentEntity,
-  ): Promise<IncidentResponse> {
+  private async autoRespond(incident: SecurityIncidentEntity): Promise<IncidentResponse> {
     const actionsTaken: string[] = [];
     const notificationsSent: string[] = [];
     const systemChanges: string[] = [];
@@ -153,10 +145,7 @@ export class SecurityIncidentService {
   /**
    * Add temporary IP blacklist
    */
-  private async addTemporaryBlacklist(
-    ipAddress: string,
-    incidentId: string,
-  ): Promise<void> {
+  private async addTemporaryBlacklist(ipAddress: string, incidentId: string): Promise<void> {
     try {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24); // 24 hour temporary block
@@ -207,9 +196,7 @@ export class SecurityIncidentService {
   /**
    * Check for incident patterns
    */
-  private async checkIncidentPattern(
-    incident: SecurityIncidentEntity,
-  ): Promise<boolean> {
+  private async checkIncidentPattern(incident: SecurityIncidentEntity): Promise<boolean> {
     try {
       // Check for similar incidents in the last hour
       const oneHourAgo = new Date(Date.now() - 3600000);
@@ -234,9 +221,7 @@ export class SecurityIncidentService {
   /**
    * Get all incidents
    */
-  async getAllIncidents(
-    filters?: IncidentFilterDto,
-  ): Promise<SecurityIncidentEntity[]> {
+  async getAllIncidents(filters?: IncidentFilterDto): Promise<SecurityIncidentEntity[]> {
     try {
       const where: any = {};
 
@@ -293,10 +278,7 @@ export class SecurityIncidentService {
 
       Object.assign(incident, dto);
 
-      if (
-        dto.status === IncidentStatus.RESOLVED &&
-        !incident.resolvedAt
-      ) {
+      if (dto.status === IncidentStatus.RESOLVED && !incident.resolvedAt) {
         incident.resolvedAt = new Date();
       }
 
@@ -350,9 +332,7 @@ export class SecurityIncidentService {
         byStatus[incident.status] = (byStatus[incident.status] || 0) + 1;
       });
 
-      const criticalIncidents = incidents.filter(
-        (i) => i.severity === IncidentSeverity.CRITICAL,
-      );
+      const criticalIncidents = incidents.filter((i) => i.severity === IncidentSeverity.CRITICAL);
 
       this.logger.log('Incident report generated', {
         startDate,
@@ -389,35 +369,30 @@ export class SecurityIncidentService {
       const days7Ago = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const days30Ago = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-      const [
-        last24Hours,
-        last7Days,
-        last30Days,
-        criticalUnresolved,
-        highUnresolved,
-      ] = await Promise.all([
-        this.incidentModel.count({
-          where: { detectedAt: { [Op.between]: [day24Ago, now] } },
-        }),
-        this.incidentModel.count({
-          where: { detectedAt: { [Op.between]: [days7Ago, now] } },
-        }),
-        this.incidentModel.count({
-          where: { detectedAt: { [Op.between]: [days30Ago, now] } },
-        }),
-        this.incidentModel.count({
-          where: {
-            severity: IncidentSeverity.CRITICAL,
-            status: IncidentStatus.DETECTED,
-          },
-        }),
-        this.incidentModel.count({
-          where: {
-            severity: IncidentSeverity.HIGH,
-            status: IncidentStatus.DETECTED,
-          },
-        }),
-      ]);
+      const [last24Hours, last7Days, last30Days, criticalUnresolved, highUnresolved] =
+        await Promise.all([
+          this.incidentModel.count({
+            where: { detectedAt: { [Op.between]: [day24Ago, now] } },
+          }),
+          this.incidentModel.count({
+            where: { detectedAt: { [Op.between]: [days7Ago, now] } },
+          }),
+          this.incidentModel.count({
+            where: { detectedAt: { [Op.between]: [days30Ago, now] } },
+          }),
+          this.incidentModel.count({
+            where: {
+              severity: IncidentSeverity.CRITICAL,
+              status: IncidentStatus.DETECTED,
+            },
+          }),
+          this.incidentModel.count({
+            where: {
+              severity: IncidentSeverity.HIGH,
+              status: IncidentStatus.DETECTED,
+            },
+          }),
+        ]);
 
       return {
         last24Hours,

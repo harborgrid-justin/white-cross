@@ -25,8 +25,8 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
-import { useAuthContext } from '../../../contexts/AuthContext';
-import { buildBreadcrumbs } from '../../../routes/routeUtils';
+import { useAuthContext } from '@/identity-access/contexts/AuthContext';
+import { buildBreadcrumbs } from '@/utils/routeUtils';
 import type { BreadcrumbItem, BreadcrumbConfig } from '../../../types/navigation';
 import type { Breadcrumb } from '../../../routes/routeUtils';
 

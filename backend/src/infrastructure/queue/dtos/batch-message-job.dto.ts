@@ -5,18 +5,18 @@
  */
 
 import {
-  IsString,
-  IsNotEmpty,
-  IsUUID,
-  IsOptional,
-  IsObject,
-  IsDateString,
   IsArray,
-  ValidateNested,
+  IsDateString,
+  IsNotEmpty,
   IsNumber,
-  Min,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
   Max,
   MaxLength,
+  Min,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { BaseQueueJob } from '../interfaces';

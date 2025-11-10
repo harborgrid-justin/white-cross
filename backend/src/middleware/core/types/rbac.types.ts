@@ -35,7 +35,7 @@ export enum UserRole {
   DISTRICT_NURSE = 'district_nurse',
   DISTRICT_ADMINISTRATOR = 'district_administrator',
   SYSTEM_ADMINISTRATOR = 'system_administrator',
-  SUPER_ADMIN = 'super_admin'
+  SUPER_ADMIN = 'super_admin',
 }
 
 /**
@@ -84,7 +84,7 @@ export enum Permission {
 
   // Audit and compliance
   VIEW_AUDIT_LOGS = 'view_audit_logs',
-  MANAGE_COMPLIANCE = 'manage_compliance'
+  MANAGE_COMPLIANCE = 'manage_compliance',
 }
 
 /**
@@ -103,7 +103,7 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
   [UserRole.DISTRICT_NURSE]: 4,
   [UserRole.DISTRICT_ADMINISTRATOR]: 5,
   [UserRole.SYSTEM_ADMINISTRATOR]: 6,
-  [UserRole.SUPER_ADMIN]: 7
+  [UserRole.SUPER_ADMIN]: 7,
 };
 
 /**
@@ -115,15 +115,12 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
  * @description Defines explicit permission assignments for each user role in the system.
  */
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  [UserRole.STUDENT]: [
-    Permission.READ_STUDENT_BASIC,
-    Permission.SEND_MESSAGES
-  ],
+  [UserRole.STUDENT]: [Permission.READ_STUDENT_BASIC, Permission.SEND_MESSAGES],
 
   [UserRole.PARENT_GUARDIAN]: [
     Permission.READ_STUDENT_BASIC,
     Permission.READ_STUDENT_HEALTH,
-    Permission.SEND_MESSAGES
+    Permission.SEND_MESSAGES,
   ],
 
   [UserRole.SCHOOL_NURSE]: [
@@ -136,7 +133,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.READ_MEDICATIONS,
     Permission.ADMINISTER_MEDICATIONS,
     Permission.SEND_MESSAGES,
-    Permission.CREATE_EMERGENCY_ALERT
+    Permission.CREATE_EMERGENCY_ALERT,
   ],
 
   [UserRole.SCHOOL_ADMINISTRATOR]: [
@@ -146,7 +143,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.SEND_MESSAGES,
     Permission.BROADCAST_MESSAGES,
     Permission.VIEW_REPORTS,
-    Permission.MANAGE_EMERGENCY_RESPONSES
+    Permission.MANAGE_EMERGENCY_RESPONSES,
   ],
 
   [UserRole.DISTRICT_NURSE]: [
@@ -162,7 +159,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.SEND_MESSAGES,
     Permission.BROADCAST_MESSAGES,
     Permission.CREATE_EMERGENCY_ALERT,
-    Permission.VIEW_REPORTS
+    Permission.VIEW_REPORTS,
   ],
 
   [UserRole.DISTRICT_ADMINISTRATOR]: [
@@ -177,7 +174,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.MANAGE_SCHOOLS,
     Permission.VIEW_REPORTS,
     Permission.EXPORT_DATA,
-    Permission.VIEW_AUDIT_LOGS
+    Permission.VIEW_AUDIT_LOGS,
   ],
 
   [UserRole.SYSTEM_ADMINISTRATOR]: [
@@ -203,10 +200,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.EXPORT_DATA,
     Permission.VIEW_AUDIT_LOGS,
     Permission.MANAGE_COMPLIANCE,
-    Permission.MANAGE_SYSTEM
+    Permission.MANAGE_SYSTEM,
   ],
 
-  [UserRole.SUPER_ADMIN]: Object.values(Permission)
+  [UserRole.SUPER_ADMIN]: Object.values(Permission),
 };
 
 /**

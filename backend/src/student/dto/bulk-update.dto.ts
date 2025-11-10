@@ -5,8 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsArray, IsUUID, IsOptional, IsString, IsBoolean, Length } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
 /**
  * Bulk Update DTO
@@ -23,7 +22,7 @@ export class StudentBulkUpdateDto {
   @IsNotEmpty({ message: 'Student IDs are required' })
   @IsArray({ message: 'Student IDs must be an array' })
   @IsUUID(4, { each: true, message: 'Each student ID must be a valid UUID' })
-  studentIds: string[];
+  studentIds!: string[];
 
   @ApiProperty({
     description: 'New nurse assignment (optional)',

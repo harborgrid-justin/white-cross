@@ -80,16 +80,20 @@ export class AuditService {
 
       if (filters.startDate || filters.endDate) {
         whereClause.createdAt = {
-          [Op.between]: [filters.startDate || new Date(0), filters.endDate || new Date()]
+          [Op.between]: [
+            filters.startDate || new Date(0),
+            filters.endDate || new Date(),
+          ],
         };
       }
 
-      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: logs, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: whereClause,
+          offset,
+          limit,
+          order: [['createdAt', 'DESC']],
+        });
 
       const pagination: PaginationResult = {
         page,

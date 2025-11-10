@@ -5,7 +5,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ICacheManager, CacheStats, CacheConfig } from '../interfaces/cache/cache-manager.interface';
+import { CacheConfig, CacheStats, ICacheManager } from '../interfaces/cache/cache-manager.interface';
 
 @Injectable()
 export class CacheService implements ICacheManager {
@@ -23,10 +23,19 @@ export class CacheService implements ICacheManager {
       enabled: this.configService.get<boolean>('cache.enabled', true),
       defaultTTL: this.configService.get<number>('cache.defaultTTL', 900),
       encryptPHI: this.configService.get<boolean>('cache.encryptPHI', false),
-      auditCacheAccess: this.configService.get<boolean>('cache.auditCacheAccess', false),
-      allowedEntityTypes: this.configService.get<string[]>('cache.allowedEntityTypes', []),
+      auditCacheAccess: this.configService.get<boolean>(
+        'cache.auditCacheAccess',
+        false,
+      ),
+      allowedEntityTypes: this.configService.get<string[]>(
+        'cache.allowedEntityTypes',
+        [],
+      ),
       maxCacheSize: this.configService.get<number>('cache.maxCacheSize', 100),
-      evictionPolicy: this.configService.get<string>('cache.evictionPolicy', 'LRU')
+      evictionPolicy: this.configService.get<string>(
+        'cache.evictionPolicy',
+        'LRU',
+      ),
     };
 
     this.logger.log('Cache service initialized (In-Memory implementation)');
@@ -84,8 +93,10 @@ export class CacheService implements ICacheManager {
       }
     }
 
-    keysToDelete.forEach(key => this.cache.delete(key));
-    this.logger.debug(`Deleted ${keysToDelete.length} keys matching pattern: ${pattern}`);
+    keysToDelete.forEach((key) => this.cache.delete(key));
+    this.logger.debug(
+      `Deleted ${keysToDelete.length} keys matching pattern: ${pattern}`,
+    );
   }
 
   async exists(key: string): Promise<boolean> {
@@ -133,7 +144,7 @@ export class CacheService implements ICacheManager {
       misses,
       keyCount: this.cache.size,
       memoryUsage: 0, // Estimate if needed
-      hitRate
+      hitRate,
     };
   }
 }

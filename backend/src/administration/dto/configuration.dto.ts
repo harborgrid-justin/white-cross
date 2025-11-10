@@ -1,19 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  IsArray,
-  IsNumber,
-  IsUUID,
-  MaxLength,
-} from 'class-validator';
-import {
-  ConfigCategory,
-  ConfigValueType,
-  ConfigScope,
-} from '../enums/administration.enums';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { ConfigCategory, ConfigScope, ConfigValueType } from '../enums/administration.enums';
 
 /**
  * DTO for creating or updating system configuration
@@ -51,12 +38,18 @@ export class ConfigurationDto {
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Is publicly accessible', default: false })
+  @ApiPropertyOptional({
+    description: 'Is publicly accessible',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
 
-  @ApiPropertyOptional({ description: 'Can be edited by admins', default: true })
+  @ApiPropertyOptional({
+    description: 'Can be edited by admins',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isEditable?: boolean;
@@ -69,12 +62,17 @@ export class ConfigurationDto {
   @IsBoolean()
   requiresRestart?: boolean;
 
-  @ApiPropertyOptional({ description: 'Configuration scope', enum: ConfigScope })
+  @ApiPropertyOptional({
+    description: 'Configuration scope',
+    enum: ConfigScope,
+  })
   @IsOptional()
   @IsEnum(ConfigScope)
   scope?: ConfigScope;
 
-  @ApiPropertyOptional({ description: 'Scope ID (district, school, or user ID)' })
+  @ApiPropertyOptional({
+    description: 'Scope ID (district, school, or user ID)',
+  })
   @IsOptional()
   @IsUUID()
   scopeId?: string;
@@ -116,7 +114,10 @@ export class ConfigurationHistoryQueryDto {
   @IsString()
   configKey: string;
 
-  @ApiPropertyOptional({ description: 'Number of history records', default: 50 })
+  @ApiPropertyOptional({
+    description: 'Number of history records',
+    default: 50,
+  })
   @IsOptional()
   @IsNumber()
   limit?: number = 50;

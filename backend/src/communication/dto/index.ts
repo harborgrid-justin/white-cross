@@ -4,3 +4,16 @@ export * from './recipient.dto';
 export * from './create-message.dto';
 export * from './broadcast-message.dto';
 export * from './emergency-alert.dto';
+
+export * from './conversation-participant.dto';
+export * from './create-broadcast.dto';
+export * from './create-conversation.dto';
+export * from './create-template.dto';
+export * from './edit-message.dto';
+export * from './mark-as-read.dto';
+export * from './message-pagination.dto';
+export * from './search-messages.dto';
+export * from './send-direct-message.dto';
+export * from './send-group-message.dto';
+export * from './send-message.dto';
+export * from './update-conversation.dto';

@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsArray, IsInt, Min } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VisitDisposition } from '../../enums/visit-disposition.enum';
 

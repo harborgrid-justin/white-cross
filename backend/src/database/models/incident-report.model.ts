@@ -1,21 +1,20 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
-  } from 'sequelize-typescript';
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+} from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
-
-
 
 export enum IncidentType {
   INJURY = 'INJURY',
@@ -25,15 +24,15 @@ export enum IncidentType {
   ALLERGIC_REACTION = 'ALLERGIC_REACTION',
   EMERGENCY = 'EMERGENCY',
   SAFETY = 'SAFETY',
-  OTHER = 'OTHER'
-  }
+  OTHER = 'OTHER',
+}
 
 export enum IncidentSeverity {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL'
-  }
+  CRITICAL = 'CRITICAL',
+}
 
 export enum IncidentStatus {
   DRAFT = 'DRAFT',
@@ -41,8 +40,8 @@ export enum IncidentStatus {
   UNDER_INVESTIGATION = 'UNDER_INVESTIGATION',
   REQUIRES_ACTION = 'REQUIRES_ACTION',
   RESOLVED = 'RESOLVED',
-  CLOSED = 'CLOSED'
-  }
+  CLOSED = 'CLOSED',
+}
 
 export enum InsuranceClaimStatus {
   NOT_FILED = 'NOT_FILED',
@@ -50,15 +49,15 @@ export enum InsuranceClaimStatus {
   PENDING = 'PENDING',
   APPROVED = 'APPROVED',
   DENIED = 'DENIED',
-  CLOSED = 'CLOSED'
-  }
+  CLOSED = 'CLOSED',
+}
 
 export enum ComplianceStatus {
   PENDING = 'PENDING',
   COMPLIANT = 'COMPLIANT',
   NON_COMPLIANT = 'NON_COMPLIANT',
-  UNDER_REVIEW = 'UNDER_REVIEW'
-  }
+  UNDER_REVIEW = 'UNDER_REVIEW',
+}
 
 export interface IncidentReportAttributes {
   id: string;
@@ -93,60 +92,66 @@ export interface IncidentReportAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['occurredAt', 'DESC']]
+    order: [['occurredAt', 'DESC']],
   },
   byStudent: (studentId: string) => ({
     where: { studentId },
-    order: [['occurredAt', 'DESC']]
+    order: [['occurredAt', 'DESC']],
   }),
   byType: (type: IncidentType) => ({
     where: { type },
-    order: [['occurredAt', 'DESC']]
+    order: [['occurredAt', 'DESC']],
   }),
   bySeverity: (severity: IncidentSeverity) => ({
     where: { severity },
-    order: [['occurredAt', 'DESC']]
+    order: [['occurredAt', 'DESC']],
   }),
   byStatus: (status: IncidentStatus) => ({
     where: { status },
-    order: [['occurredAt', 'DESC']]
+    order: [['occurredAt', 'DESC']],
   }),
   pendingReview: {
     where: {
       status: {
-        [Op.in]: [IncidentStatus.PENDING_REVIEW, IncidentStatus.UNDER_INVESTIGATION]
-      }
+        [Op.in]: [
+          IncidentStatus.PENDING_REVIEW,
+          IncidentStatus.UNDER_INVESTIGATION,
+        ],
+      },
     },
-    order: [['occurredAt', 'ASC']]
+    order: [['occurredAt', 'ASC']],
   },
   critical: {
     where: {
       severity: {
-        [Op.in]: [IncidentSeverity.HIGH, IncidentSeverity.CRITICAL]
-      }
+        [Op.in]: [IncidentSeverity.HIGH, IncidentSeverity.CRITICAL],
+      },
     },
-    order: [['occurredAt', 'DESC']]
+    order: [['occurredAt', 'DESC']],
   },
   requiresAction: {
     where: {
-      status: IncidentStatus.REQUIRES_ACTION
+      status: IncidentStatus.REQUIRES_ACTION,
     },
-    order: [['severity', 'DESC'], ['occurredAt', 'ASC']]
+    order: [
+      ['severity', 'DESC'],
+      ['occurredAt', 'ASC'],
+    ],
   },
   parentNotRequired: {
     where: {
-      parentNotified: false
+      parentNotified: false,
     },
-    order: [['occurredAt', 'ASC']]
+    order: [['occurredAt', 'ASC']],
   },
   withFollowUp: {
     where: {
-      followUpRequired: true
+      followUpRequired: true,
     },
-    order: [['occurredAt', 'DESC']]
-  }
+    order: [['occurredAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'incident_reports',
@@ -155,32 +160,41 @@ export interface IncidentReportAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
-  },
+      fields: ['studentId'],
+    },
     {
-      fields: ['reportedById']
-  },
+      fields: ['reportedById'],
+    },
     {
-      fields: ['type', 'occurredAt']
-  },
+      fields: ['type', 'occurredAt'],
+    },
     {
-      fields: ['severity']
-  },
+      fields: ['severity'],
+    },
     {
       fields: ['status'],
-      name: 'idx_incident_reports_status'
-  },
+      name: 'idx_incident_reports_status',
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_incident_reports_created_at'
-  },
+      name: 'idx_incident_reports_created_at',
+    },
     {
       fields: ['updatedAt'],
-      name: 'idx_incident_reports_updated_at'
-  }
-  ]
-  })
-export class IncidentReport extends Model<IncidentReportAttributes> implements IncidentReportAttributes {
+      name: 'idx_incident_reports_updated_at',
+    },
+    // GIN index for efficient array searches on evidence photos
+    {
+      fields: ['evidencePhotos'],
+      using: 'GIN',
+      name: 'idx_incident_reports_evidence_photos_gin',
+    },
+  ],
+})
+export class IncidentReport
+  extends Model<IncidentReportAttributes>
+  implements IncidentReportAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -192,10 +206,10 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
     allowNull: false,
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   studentId: string;
 
@@ -205,28 +219,28 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
     allowNull: false,
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   reportedById: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(IncidentType)]
+      isIn: [Object.values(IncidentType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: IncidentType;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(IncidentSeverity)]
+      isIn: [Object.values(IncidentSeverity)],
     },
-    allowNull: false
+    allowNull: false,
   })
   severity: IncidentSeverity;
 
@@ -234,101 +248,102 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(IncidentStatus)]
+      isIn: [Object.values(IncidentStatus)],
     },
     allowNull: false,
-    defaultValue: IncidentStatus.PENDING_REVIEW
+    defaultValue: IncidentStatus.PENDING_REVIEW,
   })
   status: IncidentStatus;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   location: string;
 
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
-    allowNull: false
+    allowNull: false,
   })
   witnesses: string[];
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   actionsTaken: string;
 
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   parentNotified: boolean;
 
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   parentNotificationMethod?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   parentNotifiedAt?: Date;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   parentNotifiedBy?: string;
 
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   followUpRequired: boolean;
 
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   followUpNotes?: string;
 
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
-    allowNull: false
+    allowNull: false,
   })
   attachments: string[];
 
+  @Index({ using: 'GIN', name: 'idx_incident_reports_evidence_photos_gin' })
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
-    allowNull: false
+    allowNull: false,
   })
   evidencePhotos: string[];
 
   @Default([])
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
-    allowNull: false
+    allowNull: false,
   })
   evidenceVideos: string[];
 
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   insuranceClaimNumber?: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(InsuranceClaimStatus)]
-    }
+      isIn: [Object.values(InsuranceClaimStatus)],
+    },
   })
   insuranceClaimStatus?: InsuranceClaimStatus;
 
@@ -336,59 +351,79 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ComplianceStatus)]
+      isIn: [Object.values(ComplianceStatus)],
     },
-    allowNull: false
+    allowNull: false,
   })
   legalComplianceStatus: ComplianceStatus;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   occurredAt: Date;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'reportedById', as: 'reporter' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'reportedById',
+    as: 'reporter',
+  })
   declare reporter?: any;
 
-  @HasMany(() => require('./follow-up-action.model').FollowUpAction, { foreignKey: 'incidentReportId', as: 'followUpActions' })
+  @HasMany(() => require('./follow-up-action.model').FollowUpAction, {
+    foreignKey: 'incidentReportId',
+    as: 'followUpActions',
+  })
   declare followUpActions?: any[];
 
-  @HasMany(() => require('./witness-statement.model').WitnessStatement, { foreignKey: 'incidentReportId', as: 'witnessStatements' })
+  @HasMany(() => require('./witness-statement.model').WitnessStatement, {
+    foreignKey: 'incidentReportId',
+    as: 'witnessStatements',
+  })
   declare witnessStatements?: any[];
 
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: IncidentReport) {
+  static async auditPHIAccess(instance: IncidentReport, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] IncidentReport ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Reporter: ${instance.reportedById}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
+      );
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'IncidentReport',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 
@@ -396,7 +431,9 @@ export class IncidentReport extends Model<IncidentReportAttributes> implements I
   @BeforeUpdate
   static async validateParentNotification(instance: IncidentReport) {
     if (instance.parentNotified && !instance.parentNotificationMethod) {
-      throw new Error('parentNotificationMethod is required when parent is notified');
+      throw new Error(
+        'parentNotificationMethod is required when parent is notified',
+      );
     }
     if (instance.parentNotified && !instance.parentNotifiedAt) {
       instance.parentNotifiedAt = new Date();

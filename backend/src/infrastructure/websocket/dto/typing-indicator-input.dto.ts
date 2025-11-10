@@ -5,14 +5,14 @@
  *
  * @class TypingIndicatorInputDto
  */
-import { IsNotEmpty, IsUUID, IsBoolean } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsUUID } from 'class-validator';
 
 export class TypingIndicatorInputDto {
   @IsUUID('4')
   @IsNotEmpty()
-  conversationId: string;
+  conversationId!: string;
 
   @IsBoolean()
   @IsNotEmpty()
-  isTyping: boolean;
+  isTyping!: boolean;
 }

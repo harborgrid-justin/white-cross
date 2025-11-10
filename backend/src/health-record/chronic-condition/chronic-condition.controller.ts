@@ -1,24 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  Request,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Request } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChronicConditionService } from './chronic-condition.service';
 import { CreateChronicConditionDto } from './dto/create-chronic-condition.dto';
 import { UpdateChronicConditionDto } from './dto/update-chronic-condition.dto';
@@ -27,8 +8,10 @@ import { ChronicCondition } from '../../database/models/chronic-condition.model'
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()
 @Controller('chronic-conditions')
-export class ChronicConditionController {
-  constructor(private readonly chronicConditionService: ChronicConditionService) {}
+export class HealthRecordChronicConditionController {
+  constructor(
+    private readonly chronicConditionService: ChronicConditionService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new chronic condition record' })
@@ -38,19 +21,28 @@ export class ChronicConditionController {
     type: ChronicCondition,
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
-  async create(@Body() createDto: CreateChronicConditionDto, @Request() req: any): Promise<ChronicCondition> {
+  async create(
+    @Body() createDto: CreateChronicConditionDto,
+    @Request() req: any,
+  ): Promise<ChronicCondition> {
     return this.chronicConditionService.create(createDto, req.user);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all chronic conditions with optional filtering' })
+  @ApiOperation({
+    summary: 'Get all chronic conditions with optional filtering',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of chronic conditions',
     type: [ChronicCondition],
   })
   @ApiQuery({ name: 'studentId', required: false, type: String })
-  @ApiQuery({ name: 'status', required: false, enum: ['ACTIVE', 'MANAGED', 'RESOLVED', 'MONITORING'] })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['ACTIVE', 'MANAGED', 'RESOLVED', 'MONITORING'],
+  })
   async findAll(
     @Request() req: any,
     @Query('studentId') studentId?: string,
@@ -71,7 +63,10 @@ export class ChronicConditionController {
     type: ChronicCondition,
   })
   @ApiResponse({ status: 404, description: 'Chronic condition not found' })
-  async findById(@Param('id') id: string, @Request() req: any): Promise<ChronicCondition> {
+  async findById(
+    @Param('id') id: string,
+    @Request() req: any,
+  ): Promise<ChronicCondition> {
     return this.chronicConditionService.findOne(id, req.user);
   }
 
@@ -96,7 +91,10 @@ export class ChronicConditionController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete chronic condition' })
   @ApiParam({ name: 'id', description: 'Chronic condition UUID' })
-  @ApiResponse({ status: 204, description: 'Chronic condition deleted successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Chronic condition deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Chronic condition not found' })
   async remove(@Param('id') id: string, @Request() req: any): Promise<void> {
     return this.chronicConditionService.remove(id, req.user);
@@ -110,7 +108,10 @@ export class ChronicConditionController {
     description: 'List of student chronic conditions',
     type: [ChronicCondition],
   })
-  async findByStudent(@Param('studentId') studentId: string, @Request() req: any): Promise<ChronicCondition[]> {
+  async findByStudent(
+    @Param('studentId') studentId: string,
+    @Request() req: any,
+  ): Promise<ChronicCondition[]> {
     return this.chronicConditionService.findByStudent(studentId, req.user);
   }
 }

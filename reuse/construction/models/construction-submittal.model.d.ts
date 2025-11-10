@@ -1,0 +1,43 @@
+import { Model } from 'sequelize-typescript';
+import { SubmittalStatus, SubmittalType, SubmittalPriority } from '../types/submittal.types';
+import { SubmittalReview } from './submittal-review.model';
+export declare class ConstructionSubmittal extends Model {
+    id: string;
+    projectId: string;
+    submittalNumber: string;
+    specSection: string;
+    title: string;
+    type: SubmittalType;
+    description: string;
+    submittedBy: string;
+    submittedByCompany: string;
+    submittedByEmail: string;
+    dateSubmitted: Date;
+    dateRequired: Date;
+    dateReceived?: Date;
+    priority: SubmittalPriority;
+    status: SubmittalStatus;
+    revisionNumber: number;
+    originalSubmittalId?: string;
+    ballInCourt: string;
+    assignedReviewer?: string;
+    assignedReviewerEmail?: string;
+    reviewStartDate?: Date;
+    reviewCompletedDate?: Date;
+    finalAction?: string;
+    finalActionBy?: string;
+    finalActionDate?: Date;
+    leadTimeDays: number;
+    daysInReview: number;
+    isOverdue: boolean;
+    closedDate?: Date;
+    closedBy?: string;
+    documentUrls: string[];
+    markupUrls: string[];
+    complianceVerified: boolean;
+    complianceScore?: number;
+    tags: string[];
+    metadata: Record<string, any>;
+    reviews: SubmittalReview[];
+}
+//# sourceMappingURL=construction-submittal.model.d.ts.map

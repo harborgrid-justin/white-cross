@@ -1,9 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model } from 'sequelize-typescript';
 import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationLog } from '../../database/models/integration-log.model';
-import { CreateIntegrationDto, UpdateIntegrationDto } from '../dto';
+import { CreateIntegrationDto } from '../dto/create-integration.dto';
+import { UpdateIntegrationDto } from '../dto/update-integration.dto';
 import { IntegrationValidationService } from './integration-validation.service';
 import { IntegrationEncryptionService } from './integration-encryption.service';
 import { IntegrationLogService } from './integration-log.service';
@@ -29,19 +29,21 @@ export class IntegrationConfigService {
    */
   async findAll(type?: string): Promise<IntegrationConfig[]> {
     try {
-      const whereClause: any = {};
+      const whereClause: Record<string, string> = {};
       if (type) {
         whereClause.type = type;
       }
 
       const integrations = await this.configModel.findAll({
         where: whereClause,
-        include: [{
-          model: IntegrationLog,
-          as: 'logs',
-          limit: 5,
-          order: [['createdAt', 'DESC']],
-        }],
+        include: [
+          {
+            model: IntegrationLog,
+            as: 'logs',
+            limit: 5,
+            order: [['createdAt', 'DESC']],
+          },
+        ],
         order: [
           ['type', 'ASC'],
           ['name', 'ASC'],
@@ -49,7 +51,9 @@ export class IntegrationConfigService {
       });
 
       // Mask sensitive data
-      return integrations.map(integration => this.maskSensitiveData(integration));
+      return integrations.map((integration) =>
+        this.maskSensitiveData(integration),
+      );
     } catch (error) {
       this.logger.error('Error fetching integrations', error);
       throw error;
@@ -59,13 +63,18 @@ export class IntegrationConfigService {
   /**
    * Get integration configuration by ID
    */
-  async findById(id: string, includeSensitive: boolean = false): Promise<IntegrationConfig> {
+  async findById(
+    id: string,
+    includeSensitive: boolean = false,
+  ): Promise<IntegrationConfig> {
     try {
       const integration = await this.configModel.findByPk(id, {
-        include: [{
-          model: IntegrationLog,
-          as: 'logs',
-        }],
+        include: [
+          {
+            model: IntegrationLog,
+            as: 'logs',
+          },
+        ],
       });
 
       if (!integration) {
@@ -97,7 +106,9 @@ export class IntegrationConfigService {
       });
 
       if (existingIntegration) {
-        throw new BadRequestException(`Integration with name "${data.name}" already exists`);
+        throw new BadRequestException(
+          `Integration with name "${data.name}" already exists`,
+        );
       }
 
       // Validate endpoint if provided
@@ -110,7 +121,10 @@ export class IntegrationConfigService {
 
       // Validate settings if provided
       if (data.settings) {
-        this.validationService.validateIntegrationSettings(data.settings, data.type);
+        this.validationService.validateIntegrationSettings(
+          data.settings as Record<string, unknown>,
+          data.type,
+        );
       }
 
       // Encrypt sensitive data
@@ -151,7 +165,10 @@ export class IntegrationConfigService {
   /**
    * Update integration configuration
    */
-  async update(id: string, data: UpdateIntegrationDto): Promise<IntegrationConfig> {
+  async update(
+    id: string,
+    data: UpdateIntegrationDto,
+  ): Promise<IntegrationConfig> {
     try {
       const existing = await this.findById(id, true);
 
@@ -162,7 +179,9 @@ export class IntegrationConfigService {
         });
 
         if (duplicate) {
-          throw new BadRequestException(`Integration with name "${data.name}" already exists`);
+          throw new BadRequestException(
+            `Integration with name "${data.name}" already exists`,
+          );
         }
       }
 
@@ -181,7 +200,10 @@ export class IntegrationConfigService {
 
       // Validate settings if being updated
       if (data.settings) {
-        this.validationService.validateIntegrationSettings(data.settings, existing.type);
+        this.validationService.validateIntegrationSettings(
+          data.settings as Record<string, unknown>,
+          existing.type,
+        );
       }
 
       // Validate sync frequency if being updated
@@ -192,10 +214,14 @@ export class IntegrationConfigService {
       // Encrypt sensitive data if being updated
       const updateData: Partial<IntegrationConfig> = { ...data };
       if (data.apiKey) {
-        updateData.apiKey = this.encryptionService.encryptCredential(data.apiKey);
+        updateData.apiKey = this.encryptionService.encryptCredential(
+          data.apiKey,
+        );
       }
       if (data.password) {
-        updateData.password = this.encryptionService.encryptCredential(data.password);
+        updateData.password = this.encryptionService.encryptCredential(
+          data.password,
+        );
       }
 
       // Update integration
@@ -232,7 +258,9 @@ export class IntegrationConfigService {
 
       await this.configModel.destroy({ where: { id } });
 
-      this.logger.log(`Integration deleted: ${integration.name} (${integration.type})`);
+      this.logger.log(
+        `Integration deleted: ${integration.name} (${integration.type})`,
+      );
     } catch (error) {
       this.logger.error(`Error deleting integration ${id}`, error);
       throw error;

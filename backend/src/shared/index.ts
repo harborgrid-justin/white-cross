@@ -91,7 +91,7 @@ export type { Permission } from './permissions';
 // Export validation types from validation service to avoid conflicts
 export type {
   ValidationResult,
-  ValidationError
+  ValidationError,
 } from './security/validation.service';
 
 // Export type guards and utilities
@@ -112,7 +112,7 @@ export type {
   MedicationId,
   UserId,
   ContactId,
-  HealthRecordId
+  HealthRecordId,
 } from './types';
 
 // ==========================================
@@ -164,11 +164,11 @@ export type { BaseServiceConfig } from './base/BaseService';
 export {
   validateUUID as validateId,
   validateRequiredFields as validateRequired,
-  combineValidationResults as combineValidations
+  combineValidationResults as combineValidations,
 } from './validation/commonValidators';
 
 export {
   buildPaginationQuery as buildPagination,
   createPaginatedResponse as paginate,
-  extractPaginationFromQuery as extractPagination
+  extractPaginationFromQuery as extractPagination,
 } from './database/pagination';

@@ -1,13 +1,4 @@
-import {
-  IsEmail,
-  IsString,
-  IsEnum,
-  IsOptional,
-  MinLength,
-  MaxLength,
-  Matches,
-  IsNotEmpty,
-} from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../enums/user-role.enum';
 
@@ -23,10 +14,11 @@ export class CreateUserDto {
   @IsEmail({}, { message: 'Invalid email format' })
   @IsNotEmpty()
   @MaxLength(254, { message: 'Email cannot exceed 254 characters' })
-  email: string;
+  email!: string;
 
   @ApiProperty({
-    description: 'User password (min 8 characters, max 128 characters, must include uppercase, lowercase, number, and special character)',
+    description:
+      'User password (min 8 characters, max 128 characters, must include uppercase, lowercase, number, and special character)',
     example: 'SecurePass123!',
     minLength: 8,
     maxLength: 128,
@@ -38,7 +30,7 @@ export class CreateUserDto {
     message:
       'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
   })
-  password: string;
+  password!: string;
 
   @ApiProperty({
     description: 'User first name',
@@ -47,7 +39,7 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({
     description: 'User last name',
@@ -56,7 +48,7 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({
     description: 'User role',
@@ -64,7 +56,7 @@ export class CreateUserDto {
     example: UserRole.NURSE,
   })
   @IsEnum(UserRole, { message: 'Invalid user role' })
-  role: UserRole;
+  role!: UserRole;
 
   @ApiPropertyOptional({
     description: 'Associated school ID',

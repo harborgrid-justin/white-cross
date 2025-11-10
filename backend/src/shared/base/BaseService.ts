@@ -2,23 +2,12 @@
  * Base service class providing common functionality for all services
  */
 
-import { logger } from '../logging/logger.service';
-import {
-  PaginationParams,
-  PaginatedResponse,
-  PaginationConstraints
-} from '../types/pagination';
-import {
-  buildPaginationQuery,
-  processPaginatedResult,
-  validatePaginationParams
-} from '../database/pagination';
-import {
-  ValidationResult,
-  BulkOperationResult,
-  ServiceResponse
-} from '../types/common';
+import { LoggerService } from '../logging/logger.service';
+import { PaginatedResponse, PaginationConstraints, PaginationParams } from '../types/pagination';
+import { buildPaginationQuery, processPaginatedResult, validatePaginationParams } from '../database/pagination';
+import { BulkOperationResult, ServiceResponse, ValidationResult } from '../types/common';
 import { validateUUID } from '../validation/commonValidators';
+import { Model, ModelStatic, Op, Sequelize, Transaction } from 'sequelize';
 
 // Placeholder types for missing validation types
 interface ErrorMetadata {
@@ -49,10 +38,8 @@ enum ValidationErrorCode {
   DUPLICATE_VALUE = 'DUPLICATE_VALUE',
   INVALID_REFERENCE = 'INVALID_REFERENCE',
   PERMISSION_DENIED = 'PERMISSION_DENIED',
-  BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION'
+  BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION',
 }
-
-import { Model, ModelStatic, Transaction, Op, Sequelize } from 'sequelize';
 
 /**
  * Base service configuration options
@@ -62,6 +49,7 @@ export interface BaseServiceConfig {
   tableName?: string;
   paginationConstraints?: PaginationConstraints;
   enableAuditLogging?: boolean;
+  logger: LoggerService;
 }
 
 /**
@@ -72,19 +60,21 @@ export abstract class BaseService {
   protected readonly tableName?: string;
   protected readonly paginationConstraints: PaginationConstraints;
   protected readonly enableAuditLogging: boolean;
+  protected readonly logger: LoggerService;
 
   constructor(config: BaseServiceConfig) {
     this.serviceName = config.serviceName;
     this.tableName = config.tableName;
     this.paginationConstraints = config.paginationConstraints || {};
     this.enableAuditLogging = config.enableAuditLogging ?? true;
+    this.logger = config.logger;
   }
 
   /**
    * Log service operation
    */
-  protected logInfo(message: string, metadata?: ErrorMetadata): void {
-    logger.log(`[${this.serviceName}] ${message}`, 'BaseService');
+  protected logInfo(message: string): void {
+    this.logger.log(`[${this.serviceName}] ${message}`, 'BaseService');
   }
 
   /**
@@ -92,36 +82,35 @@ export abstract class BaseService {
    */
   protected logError(
     message: string,
-    error?: ApplicationError | Error | unknown,
-    metadata?: ErrorMetadata
+    error?: ApplicationError | Error,
   ): void {
-    logger.error(`[${this.serviceName}] ${message}`, error as Error, 'BaseService');
+    this.logger.error(`[${this.serviceName}] ${message}`, error as Error, 'BaseService');
   }
 
   /**
    * Log service warning
    */
-  protected logWarning(message: string, metadata?: ErrorMetadata): void {
-    logger.warn(`[${this.serviceName}] ${message}`, 'BaseService');
+  protected logWarning(message: string): void {
+    this.logger.warn(`[${this.serviceName}] ${message}`, 'BaseService');
   }
 
   /**
    * Validate and normalize pagination parameters
    */
-  protected validatePagination(params: PaginationParams): ValidationResult & { 
-    normalizedParams?: { page: number; limit: number; offset: number } 
+  protected validatePagination(params: PaginationParams): ValidationResult & {
+    normalizedParams?: { page: number; limit: number; offset: number };
   } {
     const validation = validatePaginationParams(params, this.paginationConstraints);
-    
+
     if (!validation.isValid) {
       return validation;
     }
 
     const normalizedParams = buildPaginationQuery(params, this.paginationConstraints);
-    
+
     return {
       ...validation,
-      normalizedParams
+      normalizedParams,
     };
   }
 
@@ -131,7 +120,7 @@ export abstract class BaseService {
   protected createPaginatedResponse<T>(
     result: { rows: T[]; count: number },
     page: number,
-    limit: number
+    limit: number,
   ): PaginatedResponse<T> {
     return processPaginatedResult(result, page, limit);
   }
@@ -149,11 +138,10 @@ export abstract class BaseService {
   protected handleError<T>(
     operation: string,
     error: ApplicationError | Error | unknown,
-    metadata?: ErrorMetadata
   ): ServiceResponse<T> {
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 
-    this.logError(`Error in ${operation}`, error, metadata);
+    this.logError(`Error in ${operation}`, error as Error);
 
     // Don't expose internal errors to clients
     let clientMessage = errorMessage;
@@ -165,7 +153,7 @@ export abstract class BaseService {
         clientMessage = 'Database connection error. Please try again later.';
       } else if (errorName === 'SequelizeValidationError') {
         const errors = (error as { errors?: SequelizeValidationErrorItem[] }).errors;
-        clientMessage = `Validation failed: ${errors?.map(e => e.message).join(', ') || 'Unknown validation error'}`;
+        clientMessage = `Validation failed: ${errors?.map((e) => e.message).join(', ') || 'Unknown validation error'}`;
       } else if (errorName === 'SequelizeUniqueConstraintError') {
         clientMessage = 'A record with this information already exists.';
       }
@@ -173,7 +161,7 @@ export abstract class BaseService {
 
     return {
       success: false,
-      error: clientMessage
+      error: clientMessage,
     };
   }
 
@@ -184,41 +172,43 @@ export abstract class BaseService {
     operation: string,
     data: T,
     message?: string,
-    metadata?: ErrorMetadata
   ): ServiceResponse<T> {
-    this.logInfo(`${operation} completed successfully`, metadata);
+    this.logInfo(`${operation} completed successfully`);
 
     return {
       success: true,
       data,
-      message
+      message,
     };
   }
 
   /**
    * Normalize text data (trim, case handling)
    */
-  protected normalizeText(text: string, options: {
-    toLowerCase?: boolean;
-    toUpperCase?: boolean;
-    trim?: boolean;
-  } = {}): string {
+  protected normalizeText(
+    text: string,
+    options: {
+      toLowerCase?: boolean;
+      toUpperCase?: boolean;
+      trim?: boolean;
+    } = {},
+  ): string {
     if (!text) return text;
 
     const { toLowerCase = false, toUpperCase = false, trim = true } = options;
-    
+
     let normalized = text;
-    
+
     if (trim) {
       normalized = normalized.trim();
     }
-    
+
     if (toLowerCase) {
       normalized = normalized.toLowerCase();
     } else if (toUpperCase) {
       normalized = normalized.toUpperCase();
     }
-    
+
     return normalized;
   }
 
@@ -226,21 +216,25 @@ export abstract class BaseService {
    * Validate date is in the future
    */
   protected validateFutureDate(date: Date, fieldName: string): ValidationResult {
-    const errors: Array<{ field: string; message: string; code: ValidationErrorCode }> = [];
+    const errors: Array<{
+      field: string;
+      message: string;
+      code: ValidationErrorCode;
+    }> = [];
     const now = new Date();
 
     if (date <= now) {
       errors.push({
         field: fieldName,
         message: `${fieldName} must be in the future`,
-        code: ValidationErrorCode.INVALID_VALUE
+        code: ValidationErrorCode.INVALID_VALUE,
       });
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings: []
+      warnings: [],
     };
   }
 
@@ -248,21 +242,25 @@ export abstract class BaseService {
    * Validate date is in the past
    */
   protected validatePastDate(date: Date, fieldName: string): ValidationResult {
-    const errors: Array<{ field: string; message: string; code: ValidationErrorCode }> = [];
+    const errors: Array<{
+      field: string;
+      message: string;
+      code: ValidationErrorCode;
+    }> = [];
     const now = new Date();
-    
+
     if (date >= now) {
       errors.push({
         field: fieldName,
         message: `${fieldName} must be in the past`,
-        code: ValidationErrorCode.INVALID_VALUE
+        code: ValidationErrorCode.INVALID_VALUE,
       });
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,
-      warnings: []
+      warnings: [],
     };
   }
 
@@ -272,7 +270,7 @@ export abstract class BaseService {
   protected async executeTransaction<T>(
     operation: string,
     transactionCallback: (transaction: Transaction) => Promise<T>,
-    sequelize: Sequelize
+    sequelize: Sequelize,
   ): Promise<ServiceResponse<T>> {
     const transaction = await sequelize.transaction();
 
@@ -293,39 +291,33 @@ export abstract class BaseService {
   protected async executeBulkOperation<TInput, TResult>(
     operation: string,
     items: TInput[],
-    processor: (item: TInput, index: number) => Promise<TResult>
+    processor: (item: TInput, index: number) => Promise<TResult>,
   ): Promise<BulkOperationResult> {
     const results: BulkOperationResult = {
       processed: 0,
       successful: 0,
       failed: 0,
-      errors: []
+      errors: [],
     };
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       results.processed++;
-      
+
       try {
         await processor(item, i);
         results.successful++;
       } catch (error) {
         results.failed++;
-        results.errors.push(`Item ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        results.errors.push(
+          `Item ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
 
-        this.logError(`Bulk operation ${operation} failed for item ${i + 1}`, error, {
-          additionalContext: { item }
-        });
+        this.logError(`Bulk operation ${operation} failed for item ${i + 1}`, error as Error);
       }
     }
 
-    this.logInfo(`Bulk operation ${operation} completed`, {
-      additionalContext: {
-        processed: results.processed,
-        successful: results.successful,
-        failed: results.failed
-      }
-    });
+    this.logInfo(`Bulk operation ${operation} completed`);
 
     return results;
   }
@@ -336,7 +328,7 @@ export abstract class BaseService {
   protected async checkEntityExists<T extends Model>(
     model: ModelStatic<T>,
     id: string,
-    entityName: string = 'Entity'
+    entityName: string = 'Entity',
   ): Promise<{ exists: boolean; entity?: T; error?: string }> {
     try {
       const entity = await model.findByPk(id);
@@ -344,19 +336,19 @@ export abstract class BaseService {
       if (!entity) {
         return {
           exists: false,
-          error: `${entityName} not found`
+          error: `${entityName} not found`,
         };
       }
 
       return {
         exists: true,
-        entity
+        entity,
       };
     } catch (error) {
-      this.logError(`Error checking ${entityName} existence`, error, { additionalContext: { id } });
+      this.logError(`Error checking ${entityName} existence`, error as Error);
       return {
         exists: false,
-        error: `Error checking ${entityName} existence`
+        error: `Error checking ${entityName} existence`,
       };
     }
   }
@@ -364,31 +356,28 @@ export abstract class BaseService {
   /**
    * Build common WHERE clause for text search
    */
-  protected buildSearchClause(
-    searchTerm: string,
-    searchFields: string[]
-  ): Record<string, unknown> {
+  protected buildSearchClause(searchTerm: string, searchFields: string[]): Record<string, unknown> {
     if (!searchTerm || searchFields.length === 0) {
       return {};
     }
 
     return {
-      [Op.or]: searchFields.map(field => ({
-        [field]: { [Op.iLike]: `%${searchTerm}%` }
-      }))
+      [Op.or]: searchFields.map((field) => ({
+        [field]: { [Op.iLike]: `%${searchTerm}%` },
+      })),
     } as Record<string, unknown>;
   }
 
   /**
    * Add audit trail entry (if enabled)
    */
-  protected async addAuditEntry(
+  protected async logAuditEvent(
     action: string,
     entityType: string,
-    entityId: string,
-    userId?: string,
-    changes?: Record<string, unknown>,
-    metadata?: ErrorMetadata
+    _entityId: string,
+    _userId?: string,
+    _changes?: Record<string, unknown>,
+    _metadata?: ErrorMetadata,
   ): Promise<void> {
     if (!this.enableAuditLogging) {
       return;
@@ -397,25 +386,9 @@ export abstract class BaseService {
     try {
       // This would typically use an audit service
       // For now, just log the audit information
-      this.logInfo('Audit entry', {
-        userId,
-        timestamp: new Date(),
-        additionalContext: {
-          action,
-          entityType,
-          entityId,
-          changes,
-          ...metadata
-        }
-      });
+      this.logInfo(`Audit entry: ${action} on ${entityType}`);
     } catch (error) {
-      this.logError('Failed to create audit entry', error, {
-        additionalContext: {
-          action,
-          entityType,
-          entityId
-        }
-      });
+      this.logError('Failed to create audit entry', error as Error);
     }
   }
 
@@ -425,14 +398,14 @@ export abstract class BaseService {
   protected async softDelete<T extends Model>(
     model: ModelStatic<T>,
     id: string,
-    userId?: string
+    userId?: string,
   ): Promise<ServiceResponse<{ success: boolean }>> {
     try {
       const validation = this.validateId(id);
       if (!validation.isValid) {
         return {
           success: false,
-          error: validation.errors[0]?.message || 'Invalid ID'
+          error: validation.errors[0]?.message || 'Invalid ID',
         };
       }
 
@@ -440,13 +413,13 @@ export abstract class BaseService {
       if (!entity) {
         return {
           success: false,
-          error: 'Record not found'
+          error: 'Record not found',
         };
       }
 
       await entity.update({ isActive: false } as unknown as Partial<T>);
 
-      await this.addAuditEntry('soft_delete', model.name, id, userId);
+      await this.logAuditEvent('soft_delete', model.name, id, userId);
 
       return this.handleSuccess('soft delete', { success: true });
     } catch (error) {
@@ -460,14 +433,14 @@ export abstract class BaseService {
   protected async reactivate<T extends Model>(
     model: ModelStatic<T>,
     id: string,
-    userId?: string
+    userId?: string,
   ): Promise<ServiceResponse<{ success: boolean }>> {
     try {
       const validation = this.validateId(id);
       if (!validation.isValid) {
         return {
           success: false,
-          error: validation.errors[0]?.message || 'Invalid ID'
+          error: validation.errors[0]?.message || 'Invalid ID',
         };
       }
 
@@ -475,13 +448,13 @@ export abstract class BaseService {
       if (!entity) {
         return {
           success: false,
-          error: 'Record not found'
+          error: 'Record not found',
         };
       }
 
       await entity.update({ isActive: true } as unknown as Partial<T>);
 
-      await this.addAuditEntry('reactivate', model.name, id, userId);
+      await this.logAuditEvent('reactivate', model.name, id, userId);
 
       return this.handleSuccess('reactivate', { success: true });
     } catch (error) {
@@ -507,7 +480,7 @@ export abstract class BaseService {
     model: ModelStatic<T>,
     id: string,
     entityName: string = 'Entity',
-    transaction?: Transaction
+    transaction?: Transaction,
   ): Promise<T> {
     const entity = await model.findByPk(id, { transaction });
 
@@ -544,16 +517,9 @@ export abstract class BaseService {
       include?: unknown[];
       order?: unknown[];
       attributes?: string[];
-    }
+    },
   ): Promise<PaginatedResponse<T>> {
-    const {
-      page = 1,
-      limit = 20,
-      where = {},
-      include = [],
-      order = [],
-      attributes,
-    } = options;
+    const { page = 1, limit = 20, where = {}, include = [], order = [], attributes } = options;
 
     // Validate pagination
     const validation = this.validatePagination({ page, limit });
@@ -609,7 +575,7 @@ export abstract class BaseService {
       attributes?: string[];
       include?: unknown[];
     }>,
-    transaction?: Transaction
+    transaction?: Transaction,
   ): Promise<T> {
     await entity.reload({
       include: associations as any,
@@ -634,7 +600,7 @@ export abstract class BaseService {
   protected buildDateRangeClause(
     field: string,
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): Record<string, unknown> {
     const dateClause: Record<string, unknown> = {};
 
@@ -672,7 +638,7 @@ export abstract class BaseService {
       removeNull?: boolean;
       removeUndefined?: boolean;
       removeEmptyStrings?: boolean;
-    } = {}
+    } = {},
   ): Partial<T> {
     const { removeNull = true, removeUndefined = true, removeEmptyStrings = false } = options;
 
@@ -717,9 +683,13 @@ export abstract class BaseService {
   protected validateRequiredFields(
     data: Record<string, unknown>,
     requiredFields: string[],
-    fieldLabels?: Record<string, string>
+    fieldLabels?: Record<string, string>,
   ): ValidationResult {
-    const errors: Array<{ field: string; message: string; code: ValidationErrorCode }> = [];
+    const errors: Array<{
+      field: string;
+      message: string;
+      code: ValidationErrorCode;
+    }> = [];
 
     for (const field of requiredFields) {
       const value = data[field];

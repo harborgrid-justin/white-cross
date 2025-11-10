@@ -4,8 +4,7 @@
  * @description DTO for updating existing student records with partial validation
  */
 
-import { PartialType } from '@nestjs/swagger';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsUUID } from 'class-validator';
 import { CreateStudentDto } from './create-student.dto';
 

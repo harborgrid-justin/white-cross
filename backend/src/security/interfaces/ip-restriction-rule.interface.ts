@@ -1,4 +1,4 @@
-import { IpRestrictionType } from '../enums';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
 
 /**
  * IP Restriction Rule Interface

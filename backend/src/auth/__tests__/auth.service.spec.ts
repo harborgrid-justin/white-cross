@@ -15,7 +15,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '../auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException, BadRequestException, ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import { User, UserRole } from '../../database/models/user.model';
 

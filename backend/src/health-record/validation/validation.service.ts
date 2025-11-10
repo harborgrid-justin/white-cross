@@ -5,7 +5,7 @@
  * HIPAA Compliance: All validation operations are audited and PHI data is handled securely
  */
 
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Student } from '../../database/models/student.model';
@@ -21,13 +21,98 @@ export class ValidationService {
 
   // Valid CVX codes (subset for demonstration)
   private readonly VALID_CVX_CODES = [
-    '03', '08', '10', '20', '21', '88', '94', '100', '106', '107', '110', '113', '114', '115',
-    '116', '119', '120', '121', '122', '130', '133', '140', '141', '143', '144', '147', '148',
-    '149', '150', '151', '152', '153', '154', '155', '158', '160', '161', '162', '163', '165',
-    '166', '167', '168', '169', '170', '171', '172', '173', '174', '175', '176', '177', '178',
-    '179', '180', '181', '182', '183', '184', '185', '186', '187', '188', '189', '190', '191',
-    '192', '193', '194', '195', '196', '197', '198', '200', '201', '202', '203', '204', '205',
-    '206', '207', '208', '210', '211', '212', '213', '214', '215', '216', '217', '218', '219',
+    '03',
+    '08',
+    '10',
+    '20',
+    '21',
+    '88',
+    '94',
+    '100',
+    '106',
+    '107',
+    '110',
+    '113',
+    '114',
+    '115',
+    '116',
+    '119',
+    '120',
+    '121',
+    '122',
+    '130',
+    '133',
+    '140',
+    '141',
+    '143',
+    '144',
+    '147',
+    '148',
+    '149',
+    '150',
+    '151',
+    '152',
+    '153',
+    '154',
+    '155',
+    '158',
+    '160',
+    '161',
+    '162',
+    '163',
+    '165',
+    '166',
+    '167',
+    '168',
+    '169',
+    '170',
+    '171',
+    '172',
+    '173',
+    '174',
+    '175',
+    '176',
+    '177',
+    '178',
+    '179',
+    '180',
+    '181',
+    '182',
+    '183',
+    '184',
+    '185',
+    '186',
+    '187',
+    '188',
+    '189',
+    '190',
+    '191',
+    '192',
+    '193',
+    '194',
+    '195',
+    '196',
+    '197',
+    '198',
+    '200',
+    '201',
+    '202',
+    '203',
+    '204',
+    '205',
+    '206',
+    '207',
+    '208',
+    '210',
+    '211',
+    '212',
+    '213',
+    '214',
+    '215',
+    '216',
+    '217',
+    '218',
+    '219',
   ];
 
   // Valid ICD-10 code patterns
@@ -126,8 +211,10 @@ export class ValidationService {
     const normalizedCode = cvxCode.replace(/^0+/, '');
     const paddedCode = cvxCode.padStart(2, '0');
 
-    return this.VALID_CVX_CODES.includes(paddedCode) ||
-           this.VALID_CVX_CODES.includes(normalizedCode);
+    return (
+      this.VALID_CVX_CODES.includes(paddedCode) ||
+      this.VALID_CVX_CODES.includes(normalizedCode)
+    );
   }
 
   async validateVitalSigns(vitals: any): Promise<any> {
@@ -138,27 +225,49 @@ export class ValidationService {
 
     // Blood pressure validation (pediatric ranges)
     if (vitals.bloodPressureSystolic) {
-      if (vitals.bloodPressureSystolic < 70 || vitals.bloodPressureSystolic > 140) {
-        warnings.push(`Systolic BP ${vitals.bloodPressureSystolic} is outside normal range (70-140)`);
+      if (
+        vitals.bloodPressureSystolic < 70 ||
+        vitals.bloodPressureSystolic > 140
+      ) {
+        warnings.push(
+          `Systolic BP ${vitals.bloodPressureSystolic} is outside normal range (70-140)`,
+        );
       }
-      if (vitals.bloodPressureSystolic < 50 || vitals.bloodPressureSystolic > 180) {
-        errors.push(`Systolic BP ${vitals.bloodPressureSystolic} is dangerously abnormal`);
+      if (
+        vitals.bloodPressureSystolic < 50 ||
+        vitals.bloodPressureSystolic > 180
+      ) {
+        errors.push(
+          `Systolic BP ${vitals.bloodPressureSystolic} is dangerously abnormal`,
+        );
       }
     }
 
     if (vitals.bloodPressureDiastolic) {
-      if (vitals.bloodPressureDiastolic < 40 || vitals.bloodPressureDiastolic > 90) {
-        warnings.push(`Diastolic BP ${vitals.bloodPressureDiastolic} is outside normal range (40-90)`);
+      if (
+        vitals.bloodPressureDiastolic < 40 ||
+        vitals.bloodPressureDiastolic > 90
+      ) {
+        warnings.push(
+          `Diastolic BP ${vitals.bloodPressureDiastolic} is outside normal range (40-90)`,
+        );
       }
-      if (vitals.bloodPressureDiastolic < 30 || vitals.bloodPressureDiastolic > 120) {
-        errors.push(`Diastolic BP ${vitals.bloodPressureDiastolic} is dangerously abnormal`);
+      if (
+        vitals.bloodPressureDiastolic < 30 ||
+        vitals.bloodPressureDiastolic > 120
+      ) {
+        errors.push(
+          `Diastolic BP ${vitals.bloodPressureDiastolic} is dangerously abnormal`,
+        );
       }
     }
 
     // Heart rate validation (pediatric ranges vary by age)
     if (vitals.heartRate) {
       if (vitals.heartRate < 60 || vitals.heartRate > 120) {
-        warnings.push(`Heart rate ${vitals.heartRate} may be outside normal range`);
+        warnings.push(
+          `Heart rate ${vitals.heartRate} may be outside normal range`,
+        );
       }
       if (vitals.heartRate < 40 || vitals.heartRate > 200) {
         errors.push(`Heart rate ${vitals.heartRate} is dangerously abnormal`);
@@ -170,17 +279,25 @@ export class ValidationService {
       const unit = vitals.temperatureUnit || 'C';
       if (unit === 'C') {
         if (vitals.temperature < 35 || vitals.temperature > 40) {
-          warnings.push(`Temperature ${vitals.temperature}°C is outside normal range`);
+          warnings.push(
+            `Temperature ${vitals.temperature}°C is outside normal range`,
+          );
         }
         if (vitals.temperature < 32 || vitals.temperature > 42) {
-          errors.push(`Temperature ${vitals.temperature}°C is dangerously abnormal`);
+          errors.push(
+            `Temperature ${vitals.temperature}°C is dangerously abnormal`,
+          );
         }
       } else if (unit === 'F') {
         if (vitals.temperature < 95 || vitals.temperature > 104) {
-          warnings.push(`Temperature ${vitals.temperature}°F is outside normal range`);
+          warnings.push(
+            `Temperature ${vitals.temperature}°F is outside normal range`,
+          );
         }
         if (vitals.temperature < 90 || vitals.temperature > 107) {
-          errors.push(`Temperature ${vitals.temperature}°F is dangerously abnormal`);
+          errors.push(
+            `Temperature ${vitals.temperature}°F is dangerously abnormal`,
+          );
         }
       }
     }
@@ -191,7 +308,9 @@ export class ValidationService {
         warnings.push(`Oxygen saturation ${vitals.oxygenSaturation}% is low`);
       }
       if (vitals.oxygenSaturation < 90) {
-        errors.push(`Oxygen saturation ${vitals.oxygenSaturation}% is critically low`);
+        errors.push(
+          `Oxygen saturation ${vitals.oxygenSaturation}% is critically low`,
+        );
       }
       if (vitals.oxygenSaturation > 100) {
         errors.push('Oxygen saturation cannot exceed 100%');
@@ -211,9 +330,16 @@ export class ValidationService {
     if (vitals.weight) {
       const unit = vitals.weightUnit || 'kg';
       if (unit === 'kg' && (vitals.weight < 10 || vitals.weight > 200)) {
-        warnings.push(`Weight ${vitals.weight}kg seems unusual for school-age children`);
-      } else if (unit === 'lbs' && (vitals.weight < 20 || vitals.weight > 440)) {
-        warnings.push(`Weight ${vitals.weight}lbs seems unusual for school-age children`);
+        warnings.push(
+          `Weight ${vitals.weight}kg seems unusual for school-age children`,
+        );
+      } else if (
+        unit === 'lbs' &&
+        (vitals.weight < 20 || vitals.weight > 440)
+      ) {
+        warnings.push(
+          `Weight ${vitals.weight}lbs seems unusual for school-age children`,
+        );
       }
     }
 
@@ -246,7 +372,9 @@ export class ValidationService {
 
     // Ensure audit fields are present
     if (!data.createdBy && !data.updatedBy) {
-      issues.push('Missing audit trail: createdBy or updatedBy required for PHI');
+      issues.push(
+        'Missing audit trail: createdBy or updatedBy required for PHI',
+      );
     }
 
     // Check for required consent if applicable
@@ -286,7 +414,10 @@ export class ValidationService {
   /**
    * Validate date range
    */
-  validateDateRange(startDate: Date, endDate: Date): { valid: boolean; error?: string } {
+  validateDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): { valid: boolean; error?: string } {
     if (startDate > endDate) {
       return { valid: false, error: 'Start date must be before end date' };
     }
@@ -313,11 +444,13 @@ export class ValidationService {
             where: {
               studentId: data.studentId,
               cvxCode: data.cvxCode,
-              administrationDate: data.administrationDate
-            }
+              administrationDate: data.administrationDate,
+            },
           });
           if (existing) {
-            errors.push('Duplicate vaccination record found for same student, vaccine, and date');
+            errors.push(
+              'Duplicate vaccination record found for same student, vaccine, and date',
+            );
           }
         }
         break;
@@ -329,11 +462,13 @@ export class ValidationService {
             where: {
               studentId: data.studentId,
               allergen: { [Op.iLike]: data.allergen },
-              active: true
-            }
+              active: true,
+            },
           });
           if (existing) {
-            errors.push('Active allergy record already exists for this student and allergen');
+            errors.push(
+              'Active allergy record already exists for this student and allergen',
+            );
           }
         }
         break;
@@ -345,11 +480,13 @@ export class ValidationService {
             where: {
               studentId: data.studentId,
               condition: { [Op.iLike]: data.condition },
-              status: 'ACTIVE'
-            }
+              status: 'ACTIVE',
+            },
           });
           if (existing) {
-            errors.push('Active chronic condition record already exists for this student and condition');
+            errors.push(
+              'Active chronic condition record already exists for this student and condition',
+            );
           }
         }
         break;
@@ -405,7 +542,11 @@ export class ValidationService {
 
     if (!data.severity) {
       errors.push('Severity level is required');
-    } else if (!['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING'].includes(data.severity)) {
+    } else if (
+      !['MILD', 'MODERATE', 'SEVERE', 'LIFE_THREATENING'].includes(
+        data.severity,
+      )
+    ) {
       errors.push('Invalid severity level');
     }
 
@@ -439,7 +580,10 @@ export class ValidationService {
     }
 
     // Check uniqueness
-    const uniquenessErrors = await this.validateUniqueness('chronic_condition', data);
+    const uniquenessErrors = await this.validateUniqueness(
+      'chronic_condition',
+      data,
+    );
     errors.push(...uniquenessErrors);
 
     return errors;
@@ -485,22 +629,35 @@ export class ValidationService {
         if (data.administeredBy) {
           // In a real implementation, you'd check against a User model
           // For now, just validate it's not empty
-          if (typeof data.administeredBy !== 'string' || data.administeredBy.trim().length === 0) {
-            errors.push('Administered by field must be a valid user identifier');
+          if (
+            typeof data.administeredBy !== 'string' ||
+            data.administeredBy.trim().length === 0
+          ) {
+            errors.push(
+              'Administered by field must be a valid user identifier',
+            );
           }
         }
         break;
 
       case 'allergy':
         // Validate diagnosedBy if provided
-        if (data.diagnosedBy && (typeof data.diagnosedBy !== 'string' || data.diagnosedBy.trim().length === 0)) {
+        if (
+          data.diagnosedBy &&
+          (typeof data.diagnosedBy !== 'string' ||
+            data.diagnosedBy.trim().length === 0)
+        ) {
           errors.push('Diagnosed by field must be a valid provider identifier');
         }
         break;
 
       case 'chronic_condition':
         // Validate diagnosedBy if provided
-        if (data.diagnosedBy && (typeof data.diagnosedBy !== 'string' || data.diagnosedBy.trim().length === 0)) {
+        if (
+          data.diagnosedBy &&
+          (typeof data.diagnosedBy !== 'string' ||
+            data.diagnosedBy.trim().length === 0)
+        ) {
           errors.push('Diagnosed by field must be a valid provider identifier');
         }
         break;
@@ -509,7 +666,10 @@ export class ValidationService {
     return errors;
   }
 
-  private getAllTextFields(obj: any, prefix = ''): Array<{ field: string; value: string }> {
+  private getAllTextFields(
+    obj: any,
+    prefix = '',
+  ): Array<{ field: string; value: string }> {
     const fields: Array<{ field: string; value: string }> = [];
 
     Object.entries(obj).forEach(([key, value]) => {

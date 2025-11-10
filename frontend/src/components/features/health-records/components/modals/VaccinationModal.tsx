@@ -12,7 +12,7 @@
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import type { Vaccination, VaccinationFormErrors } from '@/types/healthRecords'
 
 interface VaccinationModalProps {
@@ -31,7 +31,7 @@ interface VaccinationModalProps {
   title?: string
 }
 
-export const VaccinationModal: React.FC<VaccinationModalProps> = ({
+export const VaccinationModal = React.memo<VaccinationModalProps>(({
   isOpen,
   onClose,
   onSave,
@@ -41,11 +41,11 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
 }) => {
   if (!isOpen) return null
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     const form = e.target as HTMLFormElement
     const formData = new FormData(form)
-    
+
     const vaccinationData = {
       vaccineName: formData.get('vaccineName') as string,
       dateAdministered: formData.get('dateAdministered') as string,
@@ -54,9 +54,9 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
       lotNumber: formData.get('lotNumber') as string,
       notes: formData.get('notes') as string,
     }
-    
+
     onSave(vaccinationData)
-  }
+  }, [onSave])
 
   const modalTitle = title || (vaccination ? 'Edit Vaccination Record' : 'Add Vaccination Record')
 
@@ -168,4 +168,8 @@ export const VaccinationModal: React.FC<VaccinationModalProps> = ({
       </div>
     </div>
   )
-}
+})
+
+VaccinationModal.displayName = 'VaccinationModal'
+// Default export for dynamic imports
+export default VaccinationModal

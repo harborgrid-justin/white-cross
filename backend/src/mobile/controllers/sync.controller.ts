@@ -1,9 +1,9 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { OfflineSyncService } from '../services/offline-sync.service';
-import { QueueSyncActionDto, SyncOptionsDto, ResolveConflictDto } from '../dto';
+import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
 
 /**
  * Sync Controller
@@ -21,7 +21,7 @@ export class SyncController {
   @ApiResponse({ status: 201, description: 'Sync action queued successfully' })
   async queueAction(
     @CurrentUser('id') userId: string,
-    @Body() dto: QueueSyncActionDto
+    @Body() dto: QueueSyncActionDto,
   ) {
     return this.offlineSyncService.queueAction(userId, dto);
   }
@@ -32,17 +32,24 @@ export class SyncController {
   async processPending(
     @CurrentUser('id') userId: string,
     @Query('deviceId') deviceId: string,
-    @Body() options?: SyncOptionsDto
+    @Body() options?: SyncOptionsDto,
   ) {
-    return this.offlineSyncService.syncPendingActions(userId, deviceId, options);
+    return this.offlineSyncService.syncPendingActions(
+      userId,
+      deviceId,
+      options,
+    );
   }
 
   @Get('statistics')
   @ApiOperation({ summary: 'Get sync statistics for a device' })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
   async getStatistics(
     @CurrentUser('id') userId: string,
-    @Query('deviceId') deviceId: string
+    @Query('deviceId') deviceId: string,
   ) {
     return this.offlineSyncService.getStatistics(userId, deviceId);
   }
@@ -52,7 +59,7 @@ export class SyncController {
   @ApiResponse({ status: 200, description: 'Conflicts retrieved successfully' })
   async listConflicts(
     @CurrentUser('id') userId: string,
-    @Query('deviceId') deviceId: string
+    @Query('deviceId') deviceId: string,
   ) {
     return this.offlineSyncService.listConflicts(userId, deviceId);
   }
@@ -63,7 +70,7 @@ export class SyncController {
   async resolveConflict(
     @CurrentUser('id') userId: string,
     @Param('id') conflictId: string,
-    @Body() dto: ResolveConflictDto
+    @Body() dto: ResolveConflictDto,
   ) {
     return this.offlineSyncService.resolveConflict(userId, conflictId, dto);
   }

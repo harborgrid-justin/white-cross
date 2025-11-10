@@ -1,17 +1,16 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
-  BeforeCreate,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeUpdate
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum InventoryTransactionType {
@@ -20,7 +19,7 @@ export enum InventoryTransactionType {
   ADJUSTMENT = 'ADJUSTMENT',
   TRANSFER = 'TRANSFER',
   RETURN = 'RETURN',
-  DISPOSAL = 'DISPOSAL'
+  DISPOSAL = 'DISPOSAL',
 }
 
 export interface InventoryTransactionAttributes {
@@ -39,10 +38,10 @@ export interface InventoryTransactionAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'inventory_transactions',
@@ -50,28 +49,31 @@ export interface InventoryTransactionAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['inventoryItemId']
+      fields: ['inventoryItemId'],
     },
     {
-      fields: ['type']
+      fields: ['type'],
     },
     {
-      fields: ['performedById']
-    },
-    {
-      fields: ['createdAt']
+      fields: ['performedById'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_inventory_transaction_created_at'
+    },
+    {
+      fields: ['createdAt'],
+      name: 'idx_inventory_transaction_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_inventory_transaction_updated_at'
-    }
-  ]
+      name: 'idx_inventory_transaction_updated_at',
+    },
+  ],
 })
-export class InventoryTransaction extends Model<InventoryTransactionAttributes> implements InventoryTransactionAttributes {
+export class InventoryTransaction
+  extends Model<InventoryTransactionAttributes>
+  implements InventoryTransactionAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -80,27 +82,27 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   @ForeignKey(() => require('./inventory-item.model').InventoryItem)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   inventoryItemId: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(InventoryTransactionType)]
+      isIn: [Object.values(InventoryTransactionType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: InventoryTransactionType;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   quantity: number;
 
   @Column({
-    type: DataType.DECIMAL(10, 2)
+    type: DataType.DECIMAL(10, 2),
   })
   unitCost?: number;
 
@@ -115,7 +117,7 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   performedById: string;
 
@@ -129,14 +131,15 @@ export class InventoryTransaction extends Model<InventoryTransactionAttributes> 
   @BelongsTo(() => require('./inventory-item.model').InventoryItem)
   declare inventoryItem?: any;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: InventoryTransaction) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] InventoryTransaction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] InventoryTransaction ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

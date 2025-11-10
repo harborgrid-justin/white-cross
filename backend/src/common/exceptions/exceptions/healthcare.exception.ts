@@ -5,7 +5,7 @@
  */
 
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { HealthcareErrorCodes, ErrorCode } from '../constants/error-codes';
+import { ErrorCode, HealthcareErrorCodes } from '../constants/error-codes';
 
 /**
  * Healthcare domain type
@@ -65,9 +65,10 @@ export class HealthcareException extends HttpException {
     };
 
     // Critical errors should return 400, others can be 422
-    const status = safetyLevel === 'critical'
-      ? HttpStatus.BAD_REQUEST
-      : HttpStatus.UNPROCESSABLE_ENTITY;
+    const status =
+      safetyLevel === 'critical'
+        ? HttpStatus.BAD_REQUEST
+        : HttpStatus.UNPROCESSABLE_ENTITY;
 
     super(response, status);
 
@@ -86,7 +87,8 @@ export class HealthcareException extends HttpException {
     severity: 'critical' | 'moderate' | 'minor',
     details?: string,
   ): HealthcareException {
-    const safetyLevel: SafetyLevel = severity === 'critical' ? 'critical' : 'warning';
+    const safetyLevel: SafetyLevel =
+      severity === 'critical' ? 'critical' : 'warning';
 
     return new HealthcareException(
       `Drug interaction detected: ${details || 'Please review medication list'}`,
@@ -117,7 +119,10 @@ export class HealthcareException extends HttpException {
   /**
    * Create exception for consent required
    */
-  static consentRequired(action: string, studentId?: string): HealthcareException {
+  static consentRequired(
+    action: string,
+    studentId?: string,
+  ): HealthcareException {
     return new HealthcareException(
       `Parental consent required for: ${action}`,
       HealthcareErrorCodes.CONSENT_REQUIRED,
@@ -130,7 +135,10 @@ export class HealthcareException extends HttpException {
   /**
    * Create exception for consent expired
    */
-  static consentExpired(consentType: string, expiryDate: Date): HealthcareException {
+  static consentExpired(
+    consentType: string,
+    expiryDate: Date,
+  ): HealthcareException {
     return new HealthcareException(
       `${consentType} consent expired on ${expiryDate.toISOString().split('T')[0]}`,
       HealthcareErrorCodes.CONSENT_EXPIRED,

@@ -6,10 +6,6 @@
  */
 
 // Re-export the Sequelize model and enum
-export {
-  TrainingModule
-} from '../../database/models/training-module.model';
+export { TrainingModule } from '../../database/models/training-module.model';
 
-export {
-  TrainingCategory
-} from '../enums/administration.enums';
+export { TrainingCategory } from '../enums/administration.enums';

@@ -1,4 +1,4 @@
-import { PartialType, OmitType } from '@nestjs/swagger';
+import { OmitType, PartialType } from '@nestjs/swagger';
 import { AddAllergyDto } from './add-allergy.dto';
 
 /**

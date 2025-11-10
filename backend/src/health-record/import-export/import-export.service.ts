@@ -5,7 +5,7 @@
  * HIPAA Compliance: All import/export operations are audited and PHI data is handled securely
  */
 
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Student } from '../../database/models/student.model';
@@ -38,10 +38,14 @@ export class ImportExportService {
   ) {}
 
   async importRecords(data: any, format: string, user: any): Promise<any> {
-    this.logger.log(`Importing health records in ${format} format by user ${user.id}`);
+    this.logger.log(
+      `Importing health records in ${format} format by user ${user.id}`,
+    );
 
     if (!this.SUPPORTED_FORMATS.includes(format.toUpperCase())) {
-      throw new BadRequestException(`Unsupported format: ${format}. Supported: ${this.SUPPORTED_FORMATS.join(', ')}`);
+      throw new BadRequestException(
+        `Unsupported format: ${format}. Supported: ${this.SUPPORTED_FORMATS.join(', ')}`,
+      );
     }
 
     const results = {
@@ -72,24 +76,60 @@ export class ImportExportService {
           throw new BadRequestException(`Format ${format} not yet implemented`);
       }
 
-      // Validate and import each record
-      for (const record of parsedData) {
+      // PERFORMANCE OPTIMIZATION: Bulk validate and import records
+      // Group records by type for batch processing
+      const recordsByType = this.groupRecordsByType(parsedData);
+
+      // Validate all student IDs in batch to avoid N+1 queries
+      const allStudentIds = parsedData.map((r) => r.studentId).filter(Boolean);
+      const validStudentIds = await this.validateStudentIdsBatch(allStudentIds);
+
+      // Process each type in bulk
+      for (const [type, records] of Object.entries(recordsByType)) {
         try {
-          const validated = await this.validateRecord(record);
-          const importedRecord = await this.importSingleRecord(validated, user);
-          results.records.push(importedRecord);
-          results.imported++;
+          const validRecords = records.filter((r) =>
+            validStudentIds.has(r.studentId),
+          );
+          const invalidRecords = records.filter(
+            (r) => !validStudentIds.has(r.studentId),
+          );
+
+          // Record validation errors for invalid student IDs
+          invalidRecords.forEach((record) => {
+            results.failed++;
+            results.errors.push({
+              record,
+              error: `Student with ID ${record.studentId} not found`,
+            });
+          });
+
+          if (validRecords.length > 0) {
+            const importedRecords = await this.importRecordsBulk(
+              type,
+              validRecords,
+              user,
+            );
+            results.records.push(...importedRecords);
+            results.imported += importedRecords.length;
+          }
         } catch (error) {
-          results.failed++;
-          results.errors.push({
-            record,
-            error: error.message,
+          this.logger.error(`Bulk import failed for type ${type}:`, error);
+          records.forEach((record) => {
+            results.failed++;
+            results.errors.push({
+              record,
+              error: error.message,
+            });
           });
         }
       }
 
-      this.logger.log(`Import completed: ${results.imported} success, ${results.failed} failed`);
-      this.logger.log(`PHI Import: ${results.imported} records imported by user ${user.id}`);
+      this.logger.log(
+        `Import completed: ${results.imported} success, ${results.failed} failed`,
+      );
+      this.logger.log(
+        `PHI Import: ${results.imported} records imported by user ${user.id}`,
+      );
     } catch (error) {
       this.logger.error(`Import failed: ${error.message}`);
       throw new BadRequestException(`Import failed: ${error.message}`);
@@ -126,7 +166,9 @@ export class ImportExportService {
         exportedData = this.convertToPDF(records);
         break;
       default:
-        throw new BadRequestException(`Export format ${format} not implemented`);
+        throw new BadRequestException(
+          `Export format ${format} not implemented`,
+        );
     }
 
     return {
@@ -139,7 +181,9 @@ export class ImportExportService {
   }
 
   async exportStudentRecord(studentId: string, format: string): Promise<any> {
-    this.logger.log(`Exporting complete record for student ${studentId} in ${format} format`);
+    this.logger.log(
+      `Exporting complete record for student ${studentId} in ${format} format`,
+    );
 
     // Verify student exists
     const student = await this.studentModel.findByPk(studentId);
@@ -148,33 +192,34 @@ export class ImportExportService {
     }
 
     // Aggregate all health data for student using parallel queries
-    const [vaccinations, allergies, chronicConditions, vitals, visits] = await Promise.all([
-      this.vaccinationModel.findAll({
-        where: { studentId },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['administrationDate', 'DESC']]
-      }),
-      this.allergyModel.findAll({
-        where: { studentId, active: true },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['diagnosedDate', 'DESC']]
-      }),
-      this.chronicConditionModel.findAll({
-        where: { studentId, status: 'ACTIVE' },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['diagnosedDate', 'DESC']]
-      }),
-      this.vitalSignsModel.findAll({
-        where: { studentId },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['measurementDate', 'DESC']]
-      }),
-      this.clinicVisitModel.findAll({
-        where: { studentId },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['checkInTime', 'DESC']]
-      })
-    ]);
+    const [vaccinations, allergies, chronicConditions, vitals, visits] =
+      await Promise.all([
+        this.vaccinationModel.findAll({
+          where: { studentId },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['administrationDate', 'DESC']],
+        }),
+        this.allergyModel.findAll({
+          where: { studentId, active: true },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['diagnosedDate', 'DESC']],
+        }),
+        this.chronicConditionModel.findAll({
+          where: { studentId, status: 'ACTIVE' },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['diagnosedDate', 'DESC']],
+        }),
+        this.vitalSignsModel.findAll({
+          where: { studentId },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['measurementDate', 'DESC']],
+        }),
+        this.clinicVisitModel.findAll({
+          where: { studentId },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['checkInTime', 'DESC']],
+        }),
+      ]);
 
     const studentData = {
       studentId,
@@ -184,7 +229,7 @@ export class ImportExportService {
         dateOfBirth: student.dateOfBirth,
       },
       exportedAt: new Date(),
-      vaccinations: vaccinations.map(v => ({
+      vaccinations: vaccinations.map((v) => ({
         vaccineName: v.vaccineName,
         vaccineType: v.vaccineType,
         administrationDate: v.administrationDate,
@@ -192,7 +237,7 @@ export class ImportExportService {
         lotNumber: v.lotNumber,
         cvxCode: v.cvxCode,
       })),
-      allergies: allergies.map(a => ({
+      allergies: allergies.map((a) => ({
         allergen: a.allergen,
         allergyType: a.allergyType,
         severity: a.severity,
@@ -200,7 +245,7 @@ export class ImportExportService {
         diagnosedDate: a.diagnosedDate,
         active: a.active,
       })),
-      chronicConditions: chronicConditions.map(c => ({
+      chronicConditions: chronicConditions.map((c) => ({
         condition: c.condition,
         icdCode: c.icdCode,
         status: c.status,
@@ -208,7 +253,7 @@ export class ImportExportService {
         diagnosedDate: c.diagnosedDate,
         carePlan: c.carePlan,
       })),
-      vitals: vitals.map(v => ({
+      vitals: vitals.map((v) => ({
         measurementDate: v.measurementDate,
         temperature: v.temperature,
         heartRate: v.heartRate,
@@ -221,7 +266,7 @@ export class ImportExportService {
         bmi: v.bmi,
         isAbnormal: v.isAbnormal,
       })),
-      visits: visits.map(v => ({
+      visits: visits.map((v) => ({
         checkInTime: v.checkInTime,
         checkOutTime: v.checkOutTime,
         reasonForVisit: v.reasonForVisit,
@@ -244,7 +289,9 @@ export class ImportExportService {
         exportedData = this.convertStudentRecordToCSV(studentData);
         break;
       default:
-        throw new BadRequestException(`Format ${format} not supported for student records`);
+        throw new BadRequestException(
+          `Format ${format} not supported for student records`,
+        );
     }
 
     return {
@@ -258,15 +305,21 @@ export class ImportExportService {
   /**
    * Bulk export for state reporting
    */
-  async exportForStateReporting(stateCode: string, schoolIds: string[], dateRange: any): Promise<any> {
-    this.logger.log(`Exporting state report for ${stateCode}, schools: ${schoolIds.join(', ')}`);
+  async exportForStateReporting(
+    stateCode: string,
+    schoolIds: string[],
+    dateRange: any,
+  ): Promise<any> {
+    this.logger.log(
+      `Exporting state report for ${stateCode}, schools: ${schoolIds.join(', ')}`,
+    );
 
     // Get all students for the specified schools
     const students = await this.studentModel.findAll({
       where: { schoolId: { [Op.in]: schoolIds } },
-      attributes: ['id', 'schoolId']
+      attributes: ['id', 'schoolId'],
     });
-    const studentIds = students.map(s => s.id);
+    const studentIds = students.map((s) => s.id);
 
     if (studentIds.length === 0) {
       return {
@@ -281,7 +334,7 @@ export class ImportExportService {
     const vaccinationWhere: any = { studentId: { [Op.in]: studentIds } };
     if (dateRange?.start && dateRange?.end) {
       vaccinationWhere.administrationDate = {
-        [Op.between]: [new Date(dateRange.start), new Date(dateRange.end)]
+        [Op.between]: [new Date(dateRange.start), new Date(dateRange.end)],
       };
     }
 
@@ -290,10 +343,16 @@ export class ImportExportService {
       include: [
         {
           model: Student,
-          attributes: ['id', 'firstName', 'lastName', 'schoolId', 'dateOfBirth']
-        }
+          attributes: [
+            'id',
+            'firstName',
+            'lastName',
+            'schoolId',
+            'dateOfBirth',
+          ],
+        },
       ],
-      order: [['administrationDate', 'DESC']]
+      order: [['administrationDate', 'DESC']],
     });
 
     const reportData = {
@@ -301,7 +360,7 @@ export class ImportExportService {
       schoolIds,
       dateRange,
       generatedAt: new Date(),
-      vaccinationData: vaccinations.map(v => ({
+      vaccinationData: vaccinations.map((v) => ({
         studentId: v.studentId,
         studentName: `${v.student?.firstName} ${v.student?.lastName}`,
         schoolId: v.student?.schoolId,
@@ -407,6 +466,165 @@ export class ImportExportService {
     }
   }
 
+  /**
+   * PERFORMANCE OPTIMIZATION: Bulk import records by type
+   * Uses bulkCreate instead of individual creates to reduce database roundtrips
+   */
+  private async importRecordsBulk(
+    type: string,
+    records: any[],
+    user: any,
+  ): Promise<any[]> {
+    const recordsWithMetadata = records.map((record) => {
+      const { studentId, ...data } = record;
+      return {
+        ...data,
+        studentId,
+        createdBy: user.id,
+      };
+    });
+
+    switch (type.toLowerCase()) {
+      case 'vaccination':
+        return await this.vaccinationModel.bulkCreate(
+          recordsWithMetadata.map((r) => ({
+            ...r,
+            administeredBy: user.id,
+          })),
+          { validate: true, returning: true },
+        );
+
+      case 'allergy':
+        // Check for duplicates before bulk insert
+        const allergyRecords =
+          await this.deduplicateAllergies(recordsWithMetadata);
+        return await this.allergyModel.bulkCreate(
+          allergyRecords.map((r) => ({
+            ...r,
+            active: true,
+            verified: false,
+          })),
+          { validate: true, returning: true },
+        );
+
+      case 'chronic_condition':
+      case 'chroniccondition':
+        return await this.chronicConditionModel.bulkCreate(
+          recordsWithMetadata.map((r) => ({
+            ...r,
+            status: 'ACTIVE',
+            isActive: true,
+          })),
+          { validate: true, returning: true },
+        );
+
+      case 'vital_signs':
+      case 'vitals':
+        return await this.vitalSignsModel.bulkCreate(
+          recordsWithMetadata.map((r) => ({
+            ...r,
+            isAbnormal: false,
+          })),
+          { validate: true, returning: true },
+        );
+
+      case 'clinic_visit':
+      case 'visit':
+        return await this.clinicVisitModel.bulkCreate(
+          recordsWithMetadata.map((r) => ({
+            ...r,
+            attendedBy: user.id,
+          })),
+          { validate: true, returning: true },
+        );
+
+      default:
+        throw new Error(`Unsupported record type: ${type}`);
+    }
+  }
+
+  /**
+   * Group records by type for bulk processing
+   */
+  private groupRecordsByType(records: any[]): Record<string, any[]> {
+    const groups: Record<string, any[]> = {};
+
+    records.forEach((record) => {
+      const type = record.type?.toLowerCase() || 'unknown';
+      if (!groups[type]) {
+        groups[type] = [];
+      }
+      groups[type].push(record);
+    });
+
+    return groups;
+  }
+
+  /**
+   * PERFORMANCE OPTIMIZATION: Validate student IDs in batch
+   * Single query instead of N queries
+   */
+  private async validateStudentIdsBatch(
+    studentIds: string[],
+  ): Promise<Set<string>> {
+    const uniqueIds = [...new Set(studentIds)];
+
+    if (uniqueIds.length === 0) {
+      return new Set();
+    }
+
+    const students = await this.studentModel.findAll({
+      where: { id: { [Op.in]: uniqueIds } },
+      attributes: ['id'],
+    });
+
+    return new Set(students.map((s) => s.id));
+  }
+
+  /**
+   * PERFORMANCE OPTIMIZATION: Deduplicate allergies with eager loading
+   * Single query with joins instead of N queries
+   */
+  private async deduplicateAllergies(allergyRecords: any[]): Promise<any[]> {
+    const studentIds = [...new Set(allergyRecords.map((r) => r.studentId))];
+
+    // Fetch existing allergies for all students in one query with eager loading
+    const existingAllergies = await this.allergyModel.findAll({
+      where: {
+        studentId: { [Op.in]: studentIds },
+        active: true,
+      },
+      attributes: ['studentId', 'allergen'],
+      include: [
+        {
+          model: Student,
+          as: 'student',
+          attributes: ['id'],
+          required: true,
+        },
+      ],
+    });
+
+    // Create a map of existing allergies for fast lookup
+    const allergyMap = new Map<string, Set<string>>();
+    existingAllergies.forEach((allergy) => {
+      const key = allergy.studentId;
+      if (!allergyMap.has(key)) {
+        allergyMap.set(key, new Set());
+      }
+      allergyMap.get(key)?.add(allergy.allergen?.toLowerCase());
+    });
+
+    // Filter out duplicates
+    return allergyRecords.filter((record) => {
+      const existingAllergens = allergyMap.get(record.studentId);
+      if (!existingAllergens) {
+        return true; // No existing allergies for this student
+      }
+      return !existingAllergens.has(record.allergen?.toLowerCase());
+    });
+  }
+
   private async getFilteredRecords(filters: any): Promise<any[]> {
     const whereClause: any = {};
 
@@ -417,9 +635,9 @@ export class ImportExportService {
       // Get students for this school first
       const students = await this.studentModel.findAll({
         where: { schoolId: filters.schoolId },
-        attributes: ['id']
+        attributes: ['id'],
       });
-      whereClause.studentId = { [Op.in]: students.map(s => s.id) };
+      whereClause.studentId = { [Op.in]: students.map((s) => s.id) };
     }
     if (filters.dateRange) {
       // This would need to be handled per record type
@@ -431,55 +649,61 @@ export class ImportExportService {
       this.vaccinationModel.findAll({
         where: whereClause,
         include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        limit: 1000 // Prevent huge exports
+        limit: 1000, // Prevent huge exports
       }),
       this.allergyModel.findAll({
         where: { ...whereClause, active: true },
         include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        limit: 1000
+        limit: 1000,
       }),
       this.chronicConditionModel.findAll({
         where: { ...whereClause, status: 'ACTIVE' },
         include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        limit: 1000
-      })
+        limit: 1000,
+      }),
     ]);
 
     // Combine and format records
     const records: any[] = [];
 
-    vaccinations.forEach(v => records.push({
-      type: 'vaccination',
-      studentId: v.studentId,
-      studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-      ...v.toJSON()
-    }));
+    vaccinations.forEach((v) =>
+      records.push({
+        type: 'vaccination',
+        studentId: v.studentId,
+        studentName: `${v.student?.firstName} ${v.student?.lastName}`,
+        ...v.toJSON(),
+      }),
+    );
 
-    allergies.forEach(a => records.push({
-      type: 'allergy',
-      studentId: a.studentId,
-      studentName: `${a.student?.firstName} ${a.student?.lastName}`,
-      ...a.toJSON()
-    }));
+    allergies.forEach((a) =>
+      records.push({
+        type: 'allergy',
+        studentId: a.studentId,
+        studentName: `${a.student?.firstName} ${a.student?.lastName}`,
+        ...a.toJSON(),
+      }),
+    );
 
-    chronicConditions.forEach(c => records.push({
-      type: 'chronic_condition',
-      studentId: c.studentId,
-      studentName: `${c.student?.firstName} ${c.student?.lastName}`,
-      ...c.toJSON()
-    }));
+    chronicConditions.forEach((c) =>
+      records.push({
+        type: 'chronic_condition',
+        studentId: c.studentId,
+        studentName: `${c.student?.firstName} ${c.student?.lastName}`,
+        ...c.toJSON(),
+      }),
+    );
 
     return records;
   }
 
   private parseCSV(data: string): any[] {
     // Simplified CSV parser - in real implementation would use a library like csv-parser
-    const lines = data.split('\n').filter(line => line.trim());
+    const lines = data.split('\n').filter((line) => line.trim());
     if (lines.length < 2) return [];
 
-    const headers = lines[0].split(',').map(h => h.trim());
+    const headers = lines[0].split(',').map((h) => h.trim());
 
-    return lines.slice(1).map(line => {
+    return lines.slice(1).map((line) => {
       const values = line.split(',');
       const record: any = {};
       headers.forEach((header, index) => {
@@ -492,11 +716,12 @@ export class ImportExportService {
   private parseHL7(data: string): any[] {
     // HL7 parsing - simplified implementation
     this.logger.log('Parsing HL7 message');
-    const segments = data.split('\n').filter(s => s.trim());
+    const segments = data.split('\n').filter((s) => s.trim());
     const records: any[] = [];
 
-    segments.forEach(segment => {
-      if (segment.startsWith('RXA')) { // Vaccination segment
+    segments.forEach((segment) => {
+      if (segment.startsWith('RXA')) {
+        // Vaccination segment
         const fields = segment.split('|');
         records.push({
           type: 'vaccination',
@@ -505,7 +730,8 @@ export class ImportExportService {
           administrationDate: fields[4],
           administeredBy: fields[10] || 'Unknown',
         });
-      } else if (segment.startsWith('AL1')) { // Allergy segment
+      } else if (segment.startsWith('AL1')) {
+        // Allergy segment
         const fields = segment.split('|');
         records.push({
           type: 'allergy',
@@ -534,11 +760,14 @@ export class ImportExportService {
     const headers = Object.keys(records[0]);
     const csvLines = [headers.join(',')];
 
-    records.forEach(record => {
-      const values = headers.map(header => {
+    records.forEach((record) => {
+      const values = headers.map((header) => {
         const value = record[header];
         // Escape commas and quotes in CSV
-        if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+        if (
+          typeof value === 'string' &&
+          (value.includes(',') || value.includes('"'))
+        ) {
           return `"${value.replace(/"/g, '""')}"`;
         }
         return value || '';
@@ -553,7 +782,7 @@ export class ImportExportService {
     // HL7 conversion - simplified
     const hl7Messages: string[] = [];
 
-    records.forEach(record => {
+    records.forEach((record) => {
       if (record.type === 'vaccination') {
         const msg = `RXA|0|1|${record.administrationDate || ''}|${record.administrationDate || ''}|${record.cvxCode || ''}|1|ml||||${record.studentId}`;
         hl7Messages.push(msg);
@@ -567,7 +796,7 @@ export class ImportExportService {
     // XML conversion - simplified
     const xmlLines = ['<?xml version="1.0" encoding="UTF-8"?>', '<records>'];
 
-    records.forEach(record => {
+    records.forEach((record) => {
       xmlLines.push('  <record>');
       Object.entries(record).forEach(([key, value]) => {
         xmlLines.push(`    <${key}>${value}</${key}>`);
@@ -586,7 +815,9 @@ export class ImportExportService {
   }
 
   private convertStudentRecordToPDF(data: any): string {
-    this.logger.log(`Converting student record to PDF (mock) for ${data.studentId}`);
+    this.logger.log(
+      `Converting student record to PDF (mock) for ${data.studentId}`,
+    );
     return `[PDF Student Record: ${data.studentId} - ${data.vaccinations.length} vaccinations, ${data.allergies.length} allergies, ${data.chronicConditions.length} conditions]`;
   }
 

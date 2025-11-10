@@ -1,12 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-} from 'sequelize-typescript';
+import { Column, DataType, Default, Index, Model, PrimaryKey, Table } from 'sequelize-typescript';
 
 /**
  * Session Entity
@@ -32,19 +24,19 @@ export class SessionEntity extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  sessionToken: string;
+  sessionToken!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  userId: string;
+  userId!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  ipAddress: string;
+  ipAddress!: string;
 
   @Column({
     type: DataType.TEXT,
@@ -62,7 +54,7 @@ export class SessionEntity extends Model {
     type: DataType.DATE,
     allowNull: false,
   })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Column({
     type: DataType.DATE,
@@ -75,7 +67,7 @@ export class SessionEntity extends Model {
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: DataType.JSON,

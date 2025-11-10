@@ -1,13 +1,6 @@
-import {
-  IsString,
-  IsEnum,
-  IsUUID,
-  IsOptional,
-  IsDateString,
-  MinLength,
-} from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ActionPriority } from '../enums';
+import { ActionPriority } from '../enums/action-priority.enum';
 
 export class CreateFollowUpActionDto {
   @ApiProperty({

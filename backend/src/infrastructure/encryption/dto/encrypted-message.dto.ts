@@ -4,16 +4,7 @@
  * @description Data transfer objects for encrypted message operations
  */
 
-import {
-  IsString,
-  IsBoolean,
-  IsArray,
-  IsNumber,
-  IsEnum,
-  IsOptional,
-  ValidateNested,
-  IsObject,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EncryptionAlgorithm } from '../interfaces';
@@ -102,7 +93,8 @@ export class CreateEncryptedMessageDto {
   conversationId: string;
 
   @ApiPropertyOptional({
-    description: 'Additional authenticated data (not encrypted but authenticated)',
+    description:
+      'Additional authenticated data (not encrypted but authenticated)',
     example: 'metadata-string',
   })
   @IsOptional()

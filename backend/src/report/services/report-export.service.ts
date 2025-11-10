@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { OutputFormat } from '../constants/report.constants';
 import { ExportResult } from '../interfaces/report-types.interface';
 import { ExportOptionsDto } from '../dto/export-options.dto';
@@ -22,10 +22,7 @@ export class ReportExportService {
   /**
    * Export report data to specified format
    */
-  async exportReport(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<ExportResult> {
+  async exportReport(data: any, options: ExportOptionsDto): Promise<ExportResult> {
     try {
       const { format, reportType } = options;
 
@@ -34,7 +31,7 @@ export class ReportExportService {
 
       switch (format) {
         case OutputFormat.PDF:
-          buffer = await this.exportToPdf(data, options);
+          buffer = await this.exportToPdf(data);
           filePath = await this.saveFile(buffer, reportType, 'pdf');
           break;
 
@@ -61,9 +58,7 @@ export class ReportExportService {
       const downloadUrl = `/api/reports/download/${path.basename(filePath)}`;
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-      this.logger.log(
-        `Report exported: ${reportType} as ${format}, size: ${fileSize} bytes`,
-      );
+      this.logger.log(`Report exported: ${reportType} as ${format}, size: ${fileSize} bytes`);
 
       return {
         format,
@@ -82,10 +77,7 @@ export class ReportExportService {
   /**
    * Export to PDF format
    */
-  private async exportToPdf(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<Buffer> {
+  private async exportToPdf(data: any): Promise<Buffer> {
     // PDF generation using pdfkit would go here
     // For now, returning a placeholder
     this.logger.warn('PDF export not fully implemented - returning JSON as fallback');
@@ -95,10 +87,7 @@ export class ReportExportService {
   /**
    * Export to Excel format
    */
-  private async exportToExcel(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<Buffer> {
+  private async exportToExcel(data: any, options: ExportOptionsDto): Promise<Buffer> {
     // Excel generation using xlsx would go here
     // Basic implementation for demonstration
     try {
@@ -121,10 +110,7 @@ export class ReportExportService {
   /**
    * Export to CSV format
    */
-  private async exportToCsv(
-    data: any,
-    options: ExportOptionsDto,
-  ): Promise<Buffer> {
+  private async exportToCsv(data: any, options: ExportOptionsDto): Promise<Buffer> {
     try {
       const flatData = this.flattenData(data);
 
@@ -139,7 +125,7 @@ export class ReportExportService {
       let csv = headers.join(',') + '\n';
 
       for (const row of flatData) {
-        const values = headers.map(header => {
+        const values = headers.map((header) => {
           const value = row[header];
           // Escape values containing commas or quotes
           if (value === null || value === undefined) return '';
@@ -164,12 +150,13 @@ export class ReportExportService {
    */
   private flattenData(data: any): any[] {
     if (Array.isArray(data)) {
-      return data.map(item => this.flattenObject(item));
+      return data.map((item) => this.flattenObject(item));
     } else if (typeof data === 'object' && data !== null) {
       // If data is an object with array properties, extract the first array
-      const arrayProps = Object.keys(data).filter(key => Array.isArray(data[key]));
+      const arrayProps = Object.keys(data).filter((key) => Array.isArray(data[key]));
       if (arrayProps.length > 0) {
-        return data[arrayProps[0]].map((item: any) => this.flattenObject(item));
+        const arrayData = data[arrayProps[0] as string];
+        return Array.isArray(arrayData) ? arrayData.map((item: any) => this.flattenObject(item)) : [this.flattenObject(data)];
       }
       return [this.flattenObject(data)];
     }
@@ -209,11 +196,7 @@ export class ReportExportService {
   /**
    * Save file to disk
    */
-  private async saveFile(
-    buffer: Buffer,
-    reportType: string,
-    extension: string,
-  ): Promise<string> {
+  private async saveFile(buffer: Buffer, reportType: string, extension: string): Promise<string> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `${reportType}_${timestamp}.${extension}`;
     const filePath = path.join(this.outputDir, filename);

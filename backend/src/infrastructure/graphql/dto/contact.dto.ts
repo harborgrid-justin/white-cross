@@ -4,19 +4,10 @@
  * Defines GraphQL object types, input types, and response types for Contact entity
  * using NestJS GraphQL decorators for code-first schema generation.
  */
-import { ObjectType, Field, ID, InputType, registerEnumType } from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { PaginationDto } from './pagination.dto';
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsBoolean,
-  IsEnum,
-  MinLength,
-  MaxLength,
-  Matches
-} from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 /**
  * Contact Type Enum for GraphQL
@@ -26,13 +17,13 @@ export enum ContactType {
   Staff = 'staff',
   Vendor = 'vendor',
   Provider = 'provider',
-  Other = 'other'
+  Other = 'other',
 }
 
 // Register enum with GraphQL
 registerEnumType(ContactType, {
   name: 'ContactType',
-  description: 'Type of contact (guardian, staff, vendor, provider, other)'
+  description: 'Type of contact (guardian, staff, vendor, provider, other)',
 });
 
 /**
@@ -89,7 +80,7 @@ export class ContactDto {
   relationshipType?: string;
 
   @Field(() => GraphQLJSON, { nullable: true })
-  customFields?: any;
+  customFields?: Record<string, unknown>;
 
   @Field()
   isActive: boolean;
@@ -149,7 +140,8 @@ export class ContactInputDto {
   @IsOptional()
   @IsString()
   @Matches(/^\+?[1-9]\d{1,14}$/, {
-    message: 'Invalid phone number format. Use E.164 format (e.g., +12345678900)'
+    message:
+      'Invalid phone number format. Use E.164 format (e.g., +12345678900)',
   })
   phone?: string;
 
@@ -186,13 +178,17 @@ export class ContactInputDto {
   @IsString()
   @MaxLength(2, { message: 'State must be 2 characters' })
   @MinLength(2, { message: 'State must be 2 characters' })
-  @Matches(/^[A-Z]{2}$/, { message: 'State must be 2 uppercase letters (e.g., CA, NY)' })
+  @Matches(/^[A-Z]{2}$/, {
+    message: 'State must be 2 uppercase letters (e.g., CA, NY)',
+  })
   state?: string;
 
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @Matches(/^\d{5}(-\d{4})?$/, { message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)' })
+  @Matches(/^\d{5}(-\d{4})?$/, {
+    message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)',
+  })
   zip?: string;
 
   @Field(() => ID, { nullable: true })
@@ -208,7 +204,7 @@ export class ContactInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  customFields?: any;
+  customFields?: Record<string, unknown>;
 
   @Field({ nullable: true, defaultValue: true })
   @IsOptional()
@@ -251,7 +247,8 @@ export class ContactUpdateInputDto {
   @IsOptional()
   @IsString()
   @Matches(/^\+?[1-9]\d{1,14}$/, {
-    message: 'Invalid phone number format. Use E.164 format (e.g., +12345678900)'
+    message:
+      'Invalid phone number format. Use E.164 format (e.g., +12345678900)',
   })
   phone?: string;
 
@@ -289,13 +286,17 @@ export class ContactUpdateInputDto {
   @IsString()
   @MaxLength(2, { message: 'State must be 2 characters' })
   @MinLength(2, { message: 'State must be 2 characters' })
-  @Matches(/^[A-Z]{2}$/, { message: 'State must be 2 uppercase letters (e.g., CA, NY)' })
+  @Matches(/^[A-Z]{2}$/, {
+    message: 'State must be 2 uppercase letters (e.g., CA, NY)',
+  })
   state?: string;
 
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @Matches(/^\d{5}(-\d{4})?$/, { message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)' })
+  @Matches(/^\d{5}(-\d{4})?$/, {
+    message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)',
+  })
   zip?: string;
 
   @Field(() => ID, { nullable: true })
@@ -311,7 +312,7 @@ export class ContactUpdateInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  customFields?: any;
+  customFields?: Record<string, unknown>;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -355,7 +356,7 @@ export class ContactStatsDto {
   total: number;
 
   @Field(() => GraphQLJSON)
-  byType: any;
+  byType: Record<string, number>;
 }
 
 /**

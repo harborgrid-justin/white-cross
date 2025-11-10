@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
-import { Sequelize, Op, fn, col, literal, QueryTypes } from 'sequelize';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
+import { col, fn, literal, Op, QueryTypes, Sequelize } from 'sequelize';
 import { HealthRecord } from '../../database/models/health-record.model';
 import { ChronicCondition } from '../../database/models/chronic-condition.model';
 import { Allergy } from '../../database/models/allergy.model';
 import { HealthTrendsReport } from '../interfaces/report-types.interface';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
-import { HealthRecordType, AllergySeverity } from '../../common/enums';
+import { AllergySeverity, HealthRecordType } from '../../common/enums';
 
 /**
  * Health Reports Service
@@ -53,10 +53,7 @@ export class HealthReportsService {
       // Get health records summary grouped by type
       const healthRecordsRaw = await this.healthRecordModel.findAll({
         where: whereClause,
-        attributes: [
-          'type',
-          [fn('COUNT', col('id')), 'count'],
-        ],
+        attributes: ['type', [fn('COUNT', col('id')), 'count']],
         group: ['type'],
         raw: true,
       });
@@ -68,10 +65,7 @@ export class HealthReportsService {
 
       // Get chronic conditions trends (top 10)
       const chronicConditionsRaw = await this.chronicConditionModel.findAll({
-        attributes: [
-          'condition',
-          [fn('COUNT', col('id')), 'count'],
-        ],
+        attributes: ['condition', [fn('COUNT', col('id')), 'count']],
         group: ['condition'],
         order: [[literal('count'), 'DESC']],
         limit: 10,
@@ -85,11 +79,7 @@ export class HealthReportsService {
 
       // Get allergies summary (top 10)
       const allergiesRaw = await this.allergyModel.findAll({
-        attributes: [
-          'allergen',
-          'severity',
-          [fn('COUNT', col('id')), 'count'],
-        ],
+        attributes: ['allergen', 'severity', [fn('COUNT', col('id')), 'count']],
         group: ['allergen', 'severity'],
         order: [[literal('count'), 'DESC']],
         limit: 10,

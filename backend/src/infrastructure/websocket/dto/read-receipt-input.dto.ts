@@ -5,7 +5,7 @@
  *
  * @class ReadReceiptInputDto
  */
-import { IsNotEmpty, IsUUID, IsArray, IsOptional } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class ReadReceiptInputDto {
   @IsUUID('4')

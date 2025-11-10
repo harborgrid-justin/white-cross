@@ -18,3 +18,7 @@ export {
   EmergencyVerifyContactDto,
   VerificationMethod,
 } from './verify-contact.dto';
+
+export * from './notification-result.dto';
+export * from './notification.dto';
+export * from './verify-contact.dto';

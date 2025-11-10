@@ -1,19 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum WitnessType {
@@ -22,8 +21,8 @@ export enum WitnessType {
   PARENT = 'PARENT',
   GUARDIAN = 'GUARDIAN',
   VISITOR = 'VISITOR',
-  OTHER = 'OTHER'
-  }
+  OTHER = 'OTHER',
+}
 
 export interface WitnessStatementAttributes {
   id: string;
@@ -43,10 +42,10 @@ export interface WitnessStatementAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'witness_statements',
@@ -54,19 +53,22 @@ export interface WitnessStatementAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['incidentReportId', 'verified']
-  },
+      fields: ['incidentReportId', 'verified'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_witness_statement_created_at'
+      name: 'idx_witness_statement_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_witness_statement_updated_at'
-    }
-  ]
-  })
-export class WitnessStatement extends Model<WitnessStatementAttributes> implements WitnessStatementAttributes {
+      name: 'idx_witness_statement_updated_at',
+    },
+  ],
+})
+export class WitnessStatement
+  extends Model<WitnessStatementAttributes>
+  implements WitnessStatementAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -75,55 +77,55 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   @ForeignKey(() => require('./incident-report.model').IncidentReport)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   incidentReportId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   witnessName: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(WitnessType)]
+      isIn: [Object.values(WitnessType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   witnessType: WitnessType;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   witnessContact?: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   statement: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   @Index
   verified: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   verifiedBy?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   verifiedAt?: Date;
 
@@ -133,9 +135,11 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-  @BelongsTo(() => require('./incident-report.model').IncidentReport, { foreignKey: 'incidentReportId', as: 'incidentReport' })
+  @BelongsTo(() => require('./incident-report.model').IncidentReport, {
+    foreignKey: 'incidentReportId',
+    as: 'incidentReport',
+  })
   declare incidentReport?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -143,7 +147,9 @@ export class WitnessStatement extends Model<WitnessStatementAttributes> implemen
   static async auditPHIAccess(instance: WitnessStatement) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] WitnessStatement ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] WitnessStatement ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

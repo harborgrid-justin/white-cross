@@ -5,14 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsUUID,
-  IsNumber,
-  IsOptional,
-  IsDateString,
-  Min,
-} from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsUUID, Min } from 'class-validator';
 
 export class RecordMeasurementDto {
   @ApiProperty({

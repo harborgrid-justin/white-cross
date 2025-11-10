@@ -25,7 +25,23 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { AuthenticatedSocket } from '../interfaces';
-import { AuthPayload } from '../interfaces/auth-payload.interface';
+import { AuthPayload } from '@/infrastructure/websocket';
+
+
+/**
+ * JWT payload structure
+ */
+interface JwtPayload {
+  sub?: string;
+  userId?: string;
+  id?: string;
+  organizationId?: string;
+  schoolId?: string;
+  districtId?: string;
+  role?: string;
+  email?: string;
+  [key: string]: unknown;
+}
 
 const logger = new Logger('WsAuthMiddleware');
 
@@ -46,7 +62,9 @@ export function createWsAuthMiddleware(
       const token = extractToken(socket);
 
       if (!token) {
-        logger.warn(`Connection rejected: No token provided (socket: ${socket.id})`);
+        logger.warn(
+          `Connection rejected: No token provided (socket: ${socket.id})`,
+        );
         return next(new Error('Authentication token required'));
       }
 
@@ -110,7 +128,7 @@ function extractToken(socket: Socket): string | null {
  * @param payload - The decoded JWT payload
  * @returns Structured AuthPayload
  */
-function mapToAuthPayload(payload: any): AuthPayload {
+function mapToAuthPayload(payload: JwtPayload): AuthPayload {
   return {
     userId: payload.sub || payload.userId || payload.id,
     organizationId:

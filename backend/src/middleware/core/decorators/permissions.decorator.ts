@@ -29,8 +29,15 @@ export type PermissionsMode = 'all' | 'any';
  * @RequirePermissions([Permission.MANAGE_USERS, Permission.MANAGE_SCHOOLS], 'any')
  * async accessAdminPanel() {}
  */
-export const RequirePermissions = (permissions: Permission[], mode: PermissionsMode = 'all') => {
-  return (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
+export const RequirePermissions = (
+  permissions: Permission[],
+  mode: PermissionsMode = 'all',
+) => {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: PropertyDescriptor,
+  ) => {
     SetMetadata(PERMISSIONS_KEY, permissions)(target, propertyKey, descriptor);
     SetMetadata(PERMISSIONS_MODE_KEY, mode)(target, propertyKey, descriptor);
   };

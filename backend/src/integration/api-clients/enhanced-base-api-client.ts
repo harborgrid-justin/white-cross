@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
 import { CircuitBreakerService } from '../services/circuit-breaker.service';
 import { RateLimiterService } from '../services/rate-limiter.service';
@@ -112,25 +112,22 @@ export class EnhancedBaseApiClient {
   /**
    * Make HTTP request with circuit breaker and rate limiting
    */
-  protected async request<T = any>(
+  protected async request<T = unknown>(
     config: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     // Check rate limit
     await this.rateLimiter.checkLimit(this.serviceName);
 
     // Execute with circuit breaker protection
-    return this.circuitBreaker.execute(
-      this.serviceName,
-      async () => {
-        return this.client.request<T>(config);
-      },
-    );
+    return this.circuitBreaker.execute(this.serviceName, async () => {
+      return this.client.request<T>(config);
+    });
   }
 
   /**
    * GET request
    */
-  protected async get<T = any>(
+  protected async get<T = unknown>(
     url: string,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
@@ -140,9 +137,9 @@ export class EnhancedBaseApiClient {
   /**
    * POST request
    */
-  protected async post<T = any>(
+  protected async post<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     return this.request<T>({ ...config, method: 'POST', url, data });
@@ -151,9 +148,9 @@ export class EnhancedBaseApiClient {
   /**
    * PUT request
    */
-  protected async put<T = any>(
+  protected async put<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     return this.request<T>({ ...config, method: 'PUT', url, data });
@@ -162,7 +159,7 @@ export class EnhancedBaseApiClient {
   /**
    * DELETE request
    */
-  protected async delete<T = any>(
+  protected async delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
@@ -172,9 +169,9 @@ export class EnhancedBaseApiClient {
   /**
    * PATCH request
    */
-  protected async patch<T = any>(
+  protected async patch<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     return this.request<T>({ ...config, method: 'PATCH', url, data });

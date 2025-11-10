@@ -1,14 +1,14 @@
 import {
-  IsUUID,
-  IsEnum,
-  IsOptional,
-  IsNumber,
-  IsString,
-  IsDate,
-  IsNotEmpty,
   IsArray,
-  Min,
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
   Max,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -59,7 +59,8 @@ export class RecurrencePatternDto {
   endDate: Date;
 
   @ApiPropertyOptional({
-    description: 'Days of the week for weekly recurrence (0=Sunday, 1=Monday, etc.)',
+    description:
+      'Days of the week for weekly recurrence (0=Sunday, 1=Monday, etc.)',
     example: [1, 3, 5],
     type: 'array',
     items: { type: 'number', minimum: 0, maximum: 6 },

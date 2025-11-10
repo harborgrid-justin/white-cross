@@ -1,9 +1,13 @@
-import { IsString, IsEnum, IsOptional, IsDateString, MinLength, MaxLength } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ComplianceCategory, ChecklistItemStatus } from '../entities/compliance-checklist-item.entity';
+import { ChecklistItemStatus, ComplianceCategory } from '../entities/compliance-checklist-item.entity';
 
 export class CreateChecklistDto {
-  @ApiProperty({ description: 'Compliance requirement description (5-500 chars)', minLength: 5, maxLength: 500 })
+  @ApiProperty({
+    description: 'Compliance requirement description (5-500 chars)',
+    minLength: 5,
+    maxLength: 500,
+  })
   @IsString()
   @MinLength(5)
   @MaxLength(500)
@@ -30,12 +34,17 @@ export class CreateChecklistDto {
 }
 
 export class UpdateChecklistDto {
-  @ApiPropertyOptional({ enum: ChecklistItemStatus, description: 'Updated status' })
+  @ApiPropertyOptional({
+    enum: ChecklistItemStatus,
+    description: 'Updated status',
+  })
   @IsOptional()
   @IsEnum(ChecklistItemStatus)
   status?: ChecklistItemStatus;
 
-  @ApiPropertyOptional({ description: 'URL or description of compliance evidence' })
+  @ApiPropertyOptional({
+    description: 'URL or description of compliance evidence',
+  })
   @IsOptional()
   @IsString()
   evidence?: string;
@@ -57,12 +66,18 @@ export class QueryChecklistDto {
   @IsString()
   reportId?: string;
 
-  @ApiPropertyOptional({ enum: ComplianceCategory, description: 'Filter by category' })
+  @ApiPropertyOptional({
+    enum: ComplianceCategory,
+    description: 'Filter by category',
+  })
   @IsOptional()
   @IsEnum(ComplianceCategory)
   category?: ComplianceCategory;
 
-  @ApiPropertyOptional({ enum: ChecklistItemStatus, description: 'Filter by status' })
+  @ApiPropertyOptional({
+    enum: ChecklistItemStatus,
+    description: 'Filter by status',
+  })
   @IsOptional()
   @IsEnum(ChecklistItemStatus)
   status?: ChecklistItemStatus;

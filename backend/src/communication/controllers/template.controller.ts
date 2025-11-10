@@ -1,26 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-  Req,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { AuthenticatedRequest } from '../types/index';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TemplateService } from '../services/template.service';
 import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
 
@@ -56,7 +36,7 @@ export class TemplateController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid template data' })
-  async createTemplate(@Body() dto: CreateTemplateDto, @Req() req: any) {
+  async createTemplate(@Body() dto: CreateTemplateDto, @Req() req: AuthenticatedRequest) {
     const createdById = req.user?.id;
     return this.templateService.createTemplate({ ...dto, createdById });
   }
@@ -66,7 +46,11 @@ export class TemplateController {
     summary: 'List message templates',
     description: 'Get filtered list of message templates',
   })
-  @ApiQuery({ name: 'type', required: false, enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'] })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'],
+  })
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'isActive', required: false, type: Boolean, example: true })
   @ApiResponse({

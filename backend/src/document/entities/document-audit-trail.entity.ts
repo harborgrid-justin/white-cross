@@ -13,19 +13,19 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  CreatedAt,
-  ForeignKey,
   BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  ForeignKey,
   Index,
+  Model,
+  PrimaryKey,
+  Table,
 } from 'sequelize-typescript';
-import { Document } from './document.entity';
-import { DocumentAction } from '../enums';
+import type { Document } from './document.entity';
+import { DocumentAction } from '../enums/document.enums';
 
 @Table({
   tableName: 'document_audit_trails',

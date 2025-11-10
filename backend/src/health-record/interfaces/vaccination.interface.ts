@@ -31,7 +31,7 @@ export enum VaccineType {
   ROTAVIRUS = 'ROTAVIRUS',
   MENINGOCOCCAL = 'MENINGOCOCCAL',
   HPV = 'HPV',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 /**
@@ -46,7 +46,7 @@ export enum SiteOfAdministration {
   BUTTOCK_RIGHT = 'BUTTOCK_RIGHT',
   ORAL = 'ORAL',
   NASAL = 'NASAL',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 /**
@@ -59,7 +59,7 @@ export enum RouteOfAdministration {
   ORAL = 'ORAL',
   INTRANASAL = 'INTRANASAL',
   INTRAVENOUS = 'INTRAVENOUS',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 /**
@@ -70,7 +70,7 @@ export enum ComplianceStatus {
   OVERDUE = 'OVERDUE',
   PARTIALLY_COMPLIANT = 'PARTIALLY_COMPLIANT',
   EXEMPT = 'EXEMPT',
-  NON_COMPLIANT = 'NON_COMPLIANT'
+  NON_COMPLIANT = 'NON_COMPLIANT',
 }
 
 export interface Vaccination {

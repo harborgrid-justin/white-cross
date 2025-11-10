@@ -6,6 +6,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  BackupLog
-} from '../../database/models/backup-log.model';
+export { BackupLog } from '../../database/models/backup-log.model';

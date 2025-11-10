@@ -1,4 +1,4 @@
-import { IsString, MinLength, Matches, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -6,7 +6,8 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class AdminResetPasswordDto {
   @ApiProperty({
-    description: 'New password (min 8 characters, must include uppercase, lowercase, number, and special character)',
+    description:
+      'New password (min 8 characters, must include uppercase, lowercase, number, and special character)',
     example: 'TempPassword123!',
     minLength: 8,
   })
@@ -17,5 +18,5 @@ export class AdminResetPasswordDto {
     message:
       'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
   })
-  newPassword: string;
+  newPassword!: string;
 }

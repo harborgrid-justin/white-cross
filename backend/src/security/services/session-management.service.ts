@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { SessionEntity } from '../entities';
+import { SessionEntity } from '../entities/session.entity';
 import { randomBytes } from 'crypto';
 
 /**
@@ -18,11 +18,6 @@ export class SessionManagementService {
     @InjectModel(SessionEntity)
     private readonly sessionModel: typeof SessionEntity,
   ) {}
-
-  // Alias for backward compatibility
-  private get sessionRepo() {
-    return this.sessionModel;
-  }
 
   /**
    * Create a new session
@@ -101,10 +96,7 @@ export class SessionManagementService {
    */
   async invalidateSession(sessionId: string): Promise<boolean> {
     try {
-      await this.sessionModel.update(
-        { isActive: false },
-        { where: { id: sessionId } }
-      );
+      await this.sessionModel.update({ isActive: false }, { where: { id: sessionId } });
       this.logger.log('Session invalidated', { sessionId });
       return true;
     } catch (error) {
@@ -120,7 +112,7 @@ export class SessionManagementService {
     try {
       const [affectedCount] = await this.sessionModel.update(
         { isActive: false },
-        { where: { userId, isActive: true } }
+        { where: { userId, isActive: true } },
       );
 
       this.logger.log('User sessions invalidated', {
@@ -198,11 +190,13 @@ export class SessionManagementService {
             },
             isActive: true,
           },
-        }
+        },
       );
 
       if (affectedCount > 0) {
-        this.logger.log('Expired sessions cleaned up', { count: affectedCount });
+        this.logger.log('Expired sessions cleaned up', {
+          count: affectedCount,
+        });
       }
 
       return affectedCount;

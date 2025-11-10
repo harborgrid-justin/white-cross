@@ -5,17 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsNumber,
-  IsString,
-  IsBoolean,
-  IsArray,
-  IsObject,
-  ValidateNested,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AgeRangeDto {
@@ -33,13 +23,21 @@ export class AgeRangeDto {
 }
 
 export class DemographicsDto {
-  @ApiProperty({ description: 'Age range filter', required: false, type: AgeRangeDto })
+  @ApiProperty({
+    description: 'Age range filter',
+    required: false,
+    type: AgeRangeDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => AgeRangeDto)
   ageRange?: AgeRangeDto;
 
-  @ApiProperty({ description: 'Gender filter', required: false, example: 'female' })
+  @ApiProperty({
+    description: 'Gender filter',
+    required: false,
+    example: 'female',
+  })
   @IsOptional()
   @IsString()
   gender?: string;
@@ -51,25 +49,41 @@ export class DemographicsDto {
 }
 
 export class MedicalCriteriaDto {
-  @ApiProperty({ description: 'Medical conditions', required: false, example: ['asthma', 'diabetes'] })
+  @ApiProperty({
+    description: 'Medical conditions',
+    required: false,
+    example: ['asthma', 'diabetes'],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   conditions?: string[];
 
-  @ApiProperty({ description: 'Medications', required: false, example: ['albuterol', 'insulin'] })
+  @ApiProperty({
+    description: 'Medications',
+    required: false,
+    example: ['albuterol', 'insulin'],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   medications?: string[];
 
-  @ApiProperty({ description: 'Allergies', required: false, example: ['peanuts', 'penicillin'] })
+  @ApiProperty({
+    description: 'Allergies',
+    required: false,
+    example: ['peanuts', 'penicillin'],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   allergies?: string[];
 
-  @ApiProperty({ description: 'Risk factors', required: false, example: ['obesity', 'hypertension'] })
+  @ApiProperty({
+    description: 'Risk factors',
+    required: false,
+    example: ['obesity', 'hypertension'],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -77,17 +91,29 @@ export class MedicalCriteriaDto {
 }
 
 export class BehavioralCriteriaDto {
-  @ApiProperty({ description: 'Filter for frequent visitors', required: false, example: true })
+  @ApiProperty({
+    description: 'Filter for frequent visitors',
+    required: false,
+    example: true,
+  })
   @IsOptional()
   @IsBoolean()
   frequentVisitor?: boolean;
 
-  @ApiProperty({ description: 'Compliance level', required: false, example: 'high' })
+  @ApiProperty({
+    description: 'Compliance level',
+    required: false,
+    example: 'high',
+  })
   @IsOptional()
   @IsString()
   complianceLevel?: string;
 
-  @ApiProperty({ description: 'Appointment history pattern', required: false, example: 'regular' })
+  @ApiProperty({
+    description: 'Appointment history pattern',
+    required: false,
+    example: 'regular',
+  })
   @IsOptional()
   @IsString()
   appointmentHistory?: string;
@@ -106,31 +132,52 @@ export class TimeframeDto {
 }
 
 export class AdvancedSearchCriteriaDto {
-  @ApiProperty({ description: 'Demographic criteria', required: false, type: DemographicsDto })
+  @ApiProperty({
+    description: 'Demographic criteria',
+    required: false,
+    type: DemographicsDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => DemographicsDto)
   demographics?: DemographicsDto;
 
-  @ApiProperty({ description: 'Medical criteria', required: false, type: MedicalCriteriaDto })
+  @ApiProperty({
+    description: 'Medical criteria',
+    required: false,
+    type: MedicalCriteriaDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => MedicalCriteriaDto)
   medical?: MedicalCriteriaDto;
 
-  @ApiProperty({ description: 'Behavioral criteria', required: false, type: BehavioralCriteriaDto })
+  @ApiProperty({
+    description: 'Behavioral criteria',
+    required: false,
+    type: BehavioralCriteriaDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => BehavioralCriteriaDto)
   behavioral?: BehavioralCriteriaDto;
 
-  @ApiProperty({ description: 'Timeframe filter', required: false, type: TimeframeDto })
+  @ApiProperty({
+    description: 'Timeframe filter',
+    required: false,
+    type: TimeframeDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => TimeframeDto)
   timeframe?: TimeframeDto;
 
-  @ApiProperty({ description: 'Result limit', required: false, example: 20, default: 20 })
+  @ApiProperty({
+    description: 'Result limit',
+    required: false,
+    example: 20,
+    default: 20,
+  })
   @IsOptional()
   @IsNumber()
   @Min(1)

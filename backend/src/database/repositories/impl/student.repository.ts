@@ -3,14 +3,19 @@
  * Injectable NestJS repository for student data access
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IStudentRepository, StudentAttributes, CreateStudentDTO, UpdateStudentDTO } from '../interfaces/student.repository.interface';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import {
+  CreateStudentDTO,
+  IStudentRepository,
+  StudentAttributes,
+  UpdateStudentDTO,
+} from '../interfaces/student.repository.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { ExecutionContext, QueryOptions } from '../../types';
 import { Student } from '../../models/student.model';
 
@@ -18,23 +23,25 @@ import { Student } from '../../models/student.model';
 // You'll need to create the actual Sequelize model
 @Injectable()
 export class StudentRepository
-  extends BaseRepository<any, StudentAttributes, CreateStudentDTO>
+  extends BaseRepository<Student, StudentAttributes, CreateStudentDTO>
   implements IStudentRepository
 {
   constructor(
     @InjectModel(Student) model: typeof Student,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Student');
   }
 
-  async findByStudentNumber(studentNumber: string): Promise<StudentAttributes | null> {
+  async findByStudentNumber(
+    studentNumber: string,
+  ): Promise<StudentAttributes | null> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentNumber,
-        'by-number'
+        'by-number',
       );
 
       const cached = await this.cacheManager.get<StudentAttributes>(cacheKey);
@@ -44,7 +51,7 @@ export class StudentRepository
       }
 
       const student = await this.model.findOne({
-        where: { studentNumber }
+        where: { studentNumber },
       });
 
       if (!student) {
@@ -61,15 +68,17 @@ export class StudentRepository
         'Failed to find student by number',
         'FIND_BY_NUMBER_ERROR',
         500,
-        { studentNumber, error: (error as Error).message }
+        { studentNumber, error: (error as Error).message },
       );
     }
   }
 
-  async findByMedicalRecordNumber(medicalRecordNum: string): Promise<StudentAttributes | null> {
+  async findByMedicalRecordNumber(
+    medicalRecordNum: string,
+  ): Promise<StudentAttributes | null> {
     try {
       const student = await this.model.findOne({
-        where: { medicalRecordNum }
+        where: { medicalRecordNum },
       });
 
       return student ? this.mapToEntity(student) : null;
@@ -79,7 +88,7 @@ export class StudentRepository
         'Failed to find student by medical record number',
         'FIND_BY_MRN_ERROR',
         500,
-        { medicalRecordNum, error: (error as Error).message }
+        { medicalRecordNum, error: (error as Error).message },
       );
     }
   }
@@ -89,41 +98,50 @@ export class StudentRepository
       const students = await this.model.findAll({
         where: {
           grade,
-          isActive: true
+          isActive: true,
         },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
 
-      return students.map((s: any) => this.mapToEntity(s));
+      return students.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding students by grade:', error);
       throw new RepositoryError(
         'Failed to find students by grade',
         'FIND_BY_GRADE_ERROR',
         500,
-        { grade, error: (error as Error).message }
+        { grade, error: (error as Error).message },
       );
     }
   }
 
-  async findByNurse(nurseId: string, options?: QueryOptions): Promise<StudentAttributes[]> {
+  async findByNurse(
+    nurseId: string,
+    options?: QueryOptions,
+  ): Promise<StudentAttributes[]> {
     try {
       const students = await this.model.findAll({
         where: {
           nurseId,
-          isActive: true
+          isActive: true,
         },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']]
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
       });
 
-      return students.map((s: any) => this.mapToEntity(s));
+      return students.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding students by nurse:', error);
       throw new RepositoryError(
         'Failed to find students by nurse',
         'FIND_BY_NURSE_ERROR',
         500,
-        { nurseId, error: (error as Error).message }
+        { nurseId, error: (error as Error).message },
       );
     }
   }
@@ -138,22 +156,25 @@ export class StudentRepository
             { firstName: { [Op.iLike]: searchTerm } },
             { lastName: { [Op.iLike]: searchTerm } },
             { studentNumber: { [Op.iLike]: searchTerm } },
-            { medicalRecordNum: { [Op.iLike]: searchTerm } }
+            { medicalRecordNum: { [Op.iLike]: searchTerm } },
           ],
-          isActive: true
+          isActive: true,
         },
-        order: [['lastName', 'ASC'], ['firstName', 'ASC']],
-        limit: 50
+        order: [
+          ['lastName', 'ASC'],
+          ['firstName', 'ASC'],
+        ],
+        limit: 50,
       });
 
-      return students.map((s: any) => this.mapToEntity(s));
+      return students.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error searching students:', error);
       throw new RepositoryError(
         'Failed to search students',
         'SEARCH_ERROR',
         500,
-        { query, error: (error as Error).message }
+        { query, error: (error as Error).message },
       );
     }
   }
@@ -161,7 +182,7 @@ export class StudentRepository
   async getActiveCount(): Promise<number> {
     try {
       return await this.model.count({
-        where: { isActive: true }
+        where: { isActive: true },
       });
     } catch (error) {
       this.logger.error('Error counting active students:', error);
@@ -172,7 +193,7 @@ export class StudentRepository
   async bulkAssignToNurse(
     studentIds: string[],
     nurseId: string,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<void> {
     let transaction: Transaction | undefined;
 
@@ -183,22 +204,24 @@ export class StudentRepository
         { nurseId },
         {
           where: { id: { [Op.in]: studentIds } },
-          transaction
-        }
+          transaction,
+        },
       );
 
       await this.auditLogger.logBulkOperation(
         'BULK_ASSIGN_NURSE',
         this.entityName,
         context,
-        { studentIds, nurseId, count: studentIds.length }
+        { studentIds, nurseId, count: studentIds.length },
       );
 
       if (transaction) {
         await transaction.commit();
       }
 
-      this.logger.log(`Bulk assigned ${studentIds.length} students to nurse ${nurseId}`);
+      this.logger.log(
+        `Bulk assigned ${studentIds.length} students to nurse ${nurseId}`,
+      );
     } catch (error) {
       if (transaction) {
         await transaction.rollback();
@@ -209,14 +232,14 @@ export class StudentRepository
         'Failed to bulk assign students to nurse',
         'BULK_ASSIGN_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
 
   protected async validateCreate(data: CreateStudentDTO): Promise<void> {
     const existing = await this.model.findOne({
-      where: { studentNumber: data.studentNumber }
+      where: { studentNumber: data.studentNumber },
     });
 
     if (existing) {
@@ -224,13 +247,13 @@ export class StudentRepository
         'Student number already exists',
         'DUPLICATE_STUDENT_NUMBER',
         409,
-        { studentNumber: data.studentNumber }
+        { studentNumber: data.studentNumber },
       );
     }
 
     if (data.medicalRecordNum) {
       const existingMRN = await this.model.findOne({
-        where: { medicalRecordNum: data.medicalRecordNum }
+        where: { medicalRecordNum: data.medicalRecordNum },
       });
 
       if (existingMRN) {
@@ -238,19 +261,22 @@ export class StudentRepository
           'Medical record number already exists',
           'DUPLICATE_MRN',
           409,
-          { medicalRecordNum: data.medicalRecordNum }
+          { medicalRecordNum: data.medicalRecordNum },
         );
       }
     }
   }
 
-  protected async validateUpdate(id: string, data: UpdateStudentDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateStudentDTO,
+  ): Promise<void> {
     if (data.studentNumber) {
       const existing = await this.model.findOne({
         where: {
           studentNumber: data.studentNumber,
-          id: { [Op.ne]: id }
-        }
+          id: { [Op.ne]: id },
+        },
       });
 
       if (existing) {
@@ -258,18 +284,18 @@ export class StudentRepository
           'Student number already exists',
           'DUPLICATE_STUDENT_NUMBER',
           409,
-          { studentNumber: data.studentNumber }
+          { studentNumber: data.studentNumber },
         );
       }
     }
   }
 
-  protected async invalidateCaches(student: any): Promise<void> {
+  protected async invalidateCaches(student: Student): Promise<void> {
     try {
       const studentData = student.get();
 
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, studentData.id)
+        this.cacheKeyBuilder.entity(this.entityName, studentData.id),
       );
 
       if (studentData.studentNumber) {
@@ -277,31 +303,29 @@ export class StudentRepository
           this.cacheKeyBuilder.summary(
             this.entityName,
             studentData.studentNumber,
-            'by-number'
-          )
+            'by-number',
+          ),
         );
       }
 
       if (studentData.nurseId) {
         await this.cacheManager.deletePattern(
-          `white-cross:student:nurse:${studentData.nurseId}:*`
+          `white-cross:student:nurse:${studentData.nurseId}:*`,
         );
       }
 
       await this.cacheManager.deletePattern(
-        `white-cross:student:grade:${studentData.grade}:*`
+        `white-cross:student:grade:${studentData.grade}:*`,
       );
     } catch (error) {
       this.logger.warn('Error invalidating student caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<StudentAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
-      ...data
+      ...data,
       // Student data is PHI but should be logged for audit trail
     });
   }
 }
-
-

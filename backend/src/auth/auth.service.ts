@@ -1,30 +1,27 @@
 /**
  * SECURITY UPDATE: Enhanced bcrypt Configuration
- * 
+ *
  * Salt rounds increased from 10 to 12 (configurable via BCRYPT_SALT_ROUNDS)
  * - Meets healthcare security requirements for PHI protection
  * - Configurable via environment variable for flexibility
  * - Includes startup validation to ensure proper configuration
- * 
+ *
  * Environment Configuration:
  * BCRYPT_SALT_ROUNDS=12 (recommended for healthcare applications)
  */
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
-import { User, UserRole } from '../database/models/user.model';
-import { RegisterDto, LoginDto, AuthChangePasswordDto, AuthResponseDto } from './dto';
+import { User, UserCreationAttributes, UserRole } from '@/database';
+import { AuthChangePasswordDto } from './dto/change-password.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { TokenBlacklistService } from './services/token-blacklist.service';
+import { SafeUser } from './types/auth.types';
 
 @Injectable()
 export class AuthService {
@@ -50,7 +47,7 @@ export class AuthService {
     if (this.saltRounds < 10 || this.saltRounds > 14) {
       throw new Error(
         'SECURITY WARNING: bcrypt salt rounds must be between 10 and 14. ' +
-        `Current value: ${this.saltRounds}. Recommended for healthcare: 12.`
+          `Current value: ${this.saltRounds}. Recommended for healthcare: 12.`,
       );
     }
   }
@@ -87,7 +84,7 @@ export class AuthService {
         firstName,
         lastName,
         role: role || UserRole.NURSE,
-      } as any);
+      } as UserCreationAttributes);
 
       this.logger.log(`User registered successfully: ${email}`);
 
@@ -101,7 +98,10 @@ export class AuthService {
         expiresIn: 900, // 15 minutes in seconds
       };
     } catch (error) {
-      this.logger.error(`Failed to register user: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to register user: ${error.message}`,
+        error.stack,
+      );
       throw new BadRequestException('Failed to register user');
     }
   }
@@ -172,7 +172,7 @@ export class AuthService {
   /**
    * Verify JWT access token and return user
    */
-  async verifyToken(token: string): Promise<any> {
+  async verifyToken(token: string): Promise<SafeUser> {
     try {
       const jwtSecret = this.configService.get<string>('JWT_SECRET');
 
@@ -206,8 +206,9 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<AuthResponseDto> {
     try {
       // Use separate refresh secret or fall back to JWT_SECRET
-      const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') ||
-                           this.configService.get<string>('JWT_SECRET');
+      const refreshSecret =
+        this.configService.get<string>('JWT_REFRESH_SECRET') ||
+        this.configService.get<string>('JWT_SECRET');
 
       if (!refreshSecret) {
         throw new Error('JWT secrets not configured');
@@ -243,7 +244,10 @@ export class AuthService {
   /**
    * Change user password
    */
-  async changePassword(userId: string, changePasswordDto: AuthChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(
+    userId: string,
+    changePasswordDto: AuthChangePasswordDto,
+  ): Promise<{ message: string }> {
     const { currentPassword, newPassword } = changePasswordDto;
 
     const user = await this.userModel.findByPk(userId);
@@ -273,17 +277,24 @@ export class AuthService {
     // CRITICAL SECURITY: Invalidate all existing tokens after password change
     await this.tokenBlacklistService.blacklistAllUserTokens(userId);
 
-    this.logger.log(`Password changed successfully for user: ${user.email} - All tokens invalidated`);
+    this.logger.log(
+      `Password changed successfully for user: ${user.email} - All tokens invalidated`,
+    );
 
     return {
-      message: 'Password changed successfully. All existing sessions have been terminated. Please login again.',
+      message:
+        'Password changed successfully. All existing sessions have been terminated. Please login again.',
     };
   }
 
   /**
    * Reset user password (admin function)
    */
-  async resetPassword(userId: string, newPassword: string, adminUserId?: string): Promise<{ message: string }> {
+  async resetPassword(
+    userId: string,
+    newPassword: string,
+    adminUserId?: string,
+  ): Promise<{ message: string }> {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -302,7 +313,9 @@ export class AuthService {
     user.mustChangePassword = true; // Force user to change password on next login
     await user.save();
 
-    this.logger.log(`Password reset for user: ${user.email} by admin: ${adminUserId || 'system'}`);
+    this.logger.log(
+      `Password reset for user: ${user.email} by admin: ${adminUserId || 'system'}`,
+    );
 
     return { message: 'Password reset successfully' };
   }
@@ -322,7 +335,7 @@ export class AuthService {
         firstName: 'Test',
         lastName: role.charAt(0) + role.slice(1).toLowerCase(),
         role,
-      } as any);
+      } as UserCreationAttributes);
 
       this.logger.log(`Test user created: ${testEmail}`);
     }
@@ -357,16 +370,19 @@ export class AuthService {
   /**
    * Generate access and refresh tokens
    */
-  private async generateTokens(user: User): Promise<{ accessToken: string; refreshToken: string }> {
+  private async generateTokens(
+    user: User,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const jwtSecret = this.configService.get<string>('JWT_SECRET');
-    const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || jwtSecret;
+    const refreshSecret =
+      this.configService.get<string>('JWT_REFRESH_SECRET') || jwtSecret;
 
     if (!jwtSecret) {
       throw new Error('JWT_SECRET not configured');
     }
 
     const payload: JwtPayload = {
-      sub: user.id!,
+      sub: user.id,
       email: user.email,
       role: user.role,
       type: 'access',
@@ -380,7 +396,7 @@ export class AuthService {
     });
 
     const refreshPayload: JwtPayload = {
-      sub: user.id!,
+      sub: user.id,
       email: user.email,
       role: user.role,
       type: 'refresh',
@@ -398,9 +414,9 @@ export class AuthService {
 
   /**
    * Hash password with bcrypt
-   * 
+   *
    * Salt rounds: Configurable (default 12 for healthcare)
-   * - 10 rounds: Fast, acceptable for general use  
+   * - 10 rounds: Fast, acceptable for general use
    * - 12 rounds: Balanced, recommended for healthcare (PHI protection)
    * - 14 rounds: Very secure, slower (consider for admin accounts)
    *

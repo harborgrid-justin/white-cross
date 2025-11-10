@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 /**
  * Barcode Scan Type Enumeration
@@ -41,7 +41,7 @@ export class StudentScanBarcodeDto {
   })
   @IsNotEmpty()
   @IsString()
-  barcodeString: string;
+  barcodeString!: string;
 
   @ApiPropertyOptional({
     description: 'Type of barcode scan for context-specific processing',

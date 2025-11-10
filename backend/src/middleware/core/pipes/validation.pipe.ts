@@ -8,20 +8,14 @@
  * @compliance HIPAA - PHI data validation
  */
 
-import {
-  PipeTransform,
-  Injectable,
-  ArgumentMetadata,
-  BadRequestException,
-  Logger
-} from '@nestjs/common';
+import { ArgumentMetadata, BadRequestException, Injectable, Logger, PipeTransform } from '@nestjs/common';
 import { validate, ValidationError as ClassValidatorError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 import {
   HEALTHCARE_PATTERNS,
   VALIDATION_CONFIGS,
   type ValidationConfig,
-  type ValidationErrorDetail
+  type ValidationErrorDetail,
 } from '../types/validation.types';
 
 /**
@@ -56,7 +50,7 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
       maxFieldLength: 1000,
       allowedFileTypes: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
       ...VALIDATION_CONFIGS.healthcare,
-      ...config
+      ...config,
     };
   }
 
@@ -80,7 +74,7 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
     const errors = await validate(object, {
       whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true
+      transform: true,
     });
 
     if (errors.length > 0) {
@@ -88,13 +82,13 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
 
       if (this.config.logValidationErrors) {
         this.logger.warn('Validation failed', {
-          errors: validationErrors
+          errors: validationErrors,
         });
       }
 
       throw new BadRequestException({
         message: 'Validation failed',
-        errors: validationErrors
+        errors: validationErrors,
       });
     }
 
@@ -130,15 +124,19 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
    * @param {ClassValidatorError[]} errors - Validation errors
    * @returns {ValidationErrorDetail[]} Formatted errors
    */
-  private formatValidationErrors(errors: ClassValidatorError[]): ValidationErrorDetail[] {
-    return errors.flatMap(error => {
+  private formatValidationErrors(
+    errors: ClassValidatorError[],
+  ): ValidationErrorDetail[] {
+    return errors.flatMap((error) => {
       if (error.constraints) {
-        return Object.entries(error.constraints).map(([constraint, message]): ValidationErrorDetail => ({
-          field: error.property,
-          message: String(message),
-          value: error.value,
-          constraint
-        }));
+        return Object.entries(error.constraints).map(
+          ([constraint, message]): ValidationErrorDetail => ({
+            field: error.property,
+            message: String(message),
+            value: error.value,
+            constraint,
+          }),
+        );
       }
       return [];
     });
@@ -155,11 +153,14 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
     const errors: ValidationErrorDetail[] = [];
 
     // Check for PHI fields and validate them
-    if (data.medicalRecordNumber && !HEALTHCARE_PATTERNS.MRN.test(data.medicalRecordNumber)) {
+    if (
+      data.medicalRecordNumber &&
+      !HEALTHCARE_PATTERNS.MRN.test(data.medicalRecordNumber)
+    ) {
       errors.push({
         field: 'medicalRecordNumber',
         message: 'Invalid medical record number format',
-        value: data.medicalRecordNumber
+        value: data.medicalRecordNumber,
       });
     }
 
@@ -167,7 +168,7 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
       errors.push({
         field: 'providerId',
         message: 'Invalid NPI format (must be 10 digits)',
-        value: data.providerId
+        value: data.providerId,
       });
     }
 
@@ -175,7 +176,7 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
       errors.push({
         field: 'icdCode',
         message: 'Invalid ICD-10 code format',
-        value: data.icdCode
+        value: data.icdCode,
       });
     }
 
@@ -183,7 +184,7 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
       errors.push({
         field: 'phone',
         message: 'Invalid phone number format',
-        value: data.phone
+        value: data.phone,
       });
     }
 
@@ -191,14 +192,14 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
       errors.push({
         field: 'dosage',
         message: 'Invalid medication dosage format',
-        value: data.dosage
+        value: data.dosage,
       });
     }
 
     if (errors.length > 0) {
       throw new BadRequestException({
         message: 'Healthcare data validation failed',
-        errors
+        errors,
       });
     }
   }
@@ -215,11 +216,14 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
 
     // Check field lengths
     for (const [key, value] of Object.entries(data)) {
-      if (typeof value === 'string' && value.length > this.config.maxFieldLength) {
+      if (
+        typeof value === 'string' &&
+        value.length > this.config.maxFieldLength
+      ) {
         errors.push({
           field: key,
           message: `Field exceeds maximum length of ${this.config.maxFieldLength} characters`,
-          value: value.substring(0, 50) + '...'
+          value: value.substring(0, 50) + '...',
         });
       }
     }
@@ -231,19 +235,20 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
         errors.push({
           field: key,
           message: 'Potential XSS attack detected',
-          constraint: 'security'
+          constraint: 'security',
         });
       }
     }
 
     // Check for SQL injection patterns
-    const sqlPattern = /(\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bDROP\b)/i;
+    const sqlPattern =
+      /(\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bDROP\b)/i;
     for (const [key, value] of Object.entries(data)) {
       if (typeof value === 'string' && sqlPattern.test(value)) {
         errors.push({
           field: key,
           message: 'Potential SQL injection detected',
-          constraint: 'security'
+          constraint: 'security',
         });
       }
     }
@@ -255,7 +260,7 @@ export class HealthcareValidationPipe implements PipeTransform<any> {
 
       throw new BadRequestException({
         message: 'Security validation failed',
-        errors
+        errors,
       });
     }
   }

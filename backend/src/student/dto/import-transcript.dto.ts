@@ -5,17 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsArray,
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsDateString,
-  ValidateNested,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -29,7 +19,7 @@ export class CourseGrade {
   })
   @IsNotEmpty()
   @IsString()
-  courseName: string;
+  courseName!: string;
 
   @ApiProperty({
     description: 'Letter grade or numeric grade',
@@ -37,7 +27,7 @@ export class CourseGrade {
   })
   @IsNotEmpty()
   @IsString()
-  grade: string;
+  grade!: string;
 
   @ApiPropertyOptional({
     description: 'Numeric grade value (0-100)',
@@ -77,7 +67,7 @@ export class ImportTranscriptDto {
   })
   @IsNotEmpty()
   @IsString()
-  academicYear: string;
+  academicYear!: string;
 
   @ApiProperty({
     description: 'Array of course grades',
@@ -86,7 +76,7 @@ export class ImportTranscriptDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CourseGrade)
-  grades: CourseGrade[];
+  grades!: CourseGrade[];
 
   @ApiPropertyOptional({
     description: 'Cumulative GPA (0.0 to 4.0 scale)',

@@ -7,7 +7,7 @@
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, fn, col, literal } from 'sequelize';
+import { Op } from 'sequelize';
 import { Student } from '../../database/models/student.model';
 import { Vaccination } from '../../database/models/vaccination.model';
 import { Allergy } from '../../database/models/allergy.model';
@@ -47,30 +47,38 @@ export class StatisticsService {
     }
 
     // Aggregate data across all health modules using Sequelize queries
-    const [vaccinations, allergies, chronicConditions, vitals, visits] = await Promise.all([
-      this.vaccinationModel.findAll({
-        where: { studentId },
-        attributes: ['id', 'vaccineName', 'administeredAt']
-      }),
-      this.allergyModel.findAll({
-        where: { studentId, active: true },
-        attributes: ['id', 'allergen', 'severity']
-      }),
-      this.chronicConditionModel.findAll({
-        where: { studentId, status: 'ACTIVE' },
-        attributes: ['id', 'conditionName', 'severity']
-      }),
-      this.vitalSignsModel.findAll({
-        where: { studentId },
-        attributes: ['measurementDate', 'height', 'weight', 'bmi', 'bloodPressureSystolic', 'bloodPressureDiastolic'],
-        order: [['measurementDate', 'DESC']],
-        limit: 1
-      }),
-      this.clinicVisitModel.findAll({
-        where: { studentId },
-        attributes: ['id', 'visitDate']
-      })
-    ]);
+    const [vaccinations, allergies, chronicConditions, vitals, visits] =
+      await Promise.all([
+        this.vaccinationModel.findAll({
+          where: { studentId },
+          attributes: ['id', 'vaccineName', 'administeredAt'],
+        }),
+        this.allergyModel.findAll({
+          where: { studentId, active: true },
+          attributes: ['id', 'allergen', 'severity'],
+        }),
+        this.chronicConditionModel.findAll({
+          where: { studentId, status: 'ACTIVE' },
+          attributes: ['id', 'conditionName', 'severity'],
+        }),
+        this.vitalSignsModel.findAll({
+          where: { studentId },
+          attributes: [
+            'measurementDate',
+            'height',
+            'weight',
+            'bmi',
+            'bloodPressureSystolic',
+            'bloodPressureDiastolic',
+          ],
+          order: [['measurementDate', 'DESC']],
+          limit: 1,
+        }),
+        this.clinicVisitModel.findAll({
+          where: { studentId },
+          attributes: ['id', 'visitDate'],
+        }),
+      ]);
 
     const latestVital = vitals[0];
 
@@ -80,15 +88,19 @@ export class StatisticsService {
       totalAllergies: allergies.length,
       activeChronicConditions: chronicConditions.length,
       totalVisits: visits.length,
-      latestVitals: latestVital ? {
-        recordedAt: latestVital.measurementDate,
-        height: latestVital.height,
-        weight: latestVital.weight,
-        bmi: latestVital.bmi,
-        bloodPressure: latestVital.bloodPressureSystolic && latestVital.bloodPressureDiastolic
-          ? `${latestVital.bloodPressureSystolic}/${latestVital.bloodPressureDiastolic}`
-          : null,
-      } : null,
+      latestVitals: latestVital
+        ? {
+            recordedAt: latestVital.measurementDate,
+            height: latestVital.height,
+            weight: latestVital.weight,
+            bmi: latestVital.bmi,
+            bloodPressure:
+              latestVital.bloodPressureSystolic &&
+              latestVital.bloodPressureDiastolic
+                ? `${latestVital.bloodPressureSystolic}/${latestVital.bloodPressureDiastolic}`
+                : null,
+          }
+        : null,
       vaccinationStatus: this.calculateVaccinationStatus(vaccinations),
       healthRiskLevel: this.calculateHealthRiskLevel({
         allergies: allergies.length,
@@ -109,9 +121,9 @@ export class StatisticsService {
     // Get all students for this school
     const students = await this.studentModel.findAll({
       where: { schoolId },
-      attributes: ['id']
+      attributes: ['id'],
     });
-    const studentIds = students.map(s => s.id);
+    const studentIds = students.map((s) => s.id);
 
     if (studentIds.length === 0) {
       return {
@@ -131,21 +143,21 @@ export class StatisticsService {
     const [vaccinations, allergies, chronicConditions] = await Promise.all([
       this.vaccinationModel.findAll({
         where: { studentId: { [Op.in]: studentIds } },
-        attributes: ['studentId', 'vaccineName', 'administeredAt']
+        attributes: ['studentId', 'vaccineName', 'administeredAt'],
       }),
       this.allergyModel.findAll({
         where: { studentId: { [Op.in]: studentIds }, active: true },
-        attributes: ['studentId']
+        attributes: ['studentId'],
       }),
       this.chronicConditionModel.findAll({
         where: { studentId: { [Op.in]: studentIds }, status: 'ACTIVE' },
-        attributes: ['studentId']
-      })
+        attributes: ['studentId'],
+      }),
     ]);
 
     // Calculate vaccination compliance per student
     const studentVaccinationMap = new Map<string, any[]>();
-    vaccinations.forEach(v => {
+    vaccinations.forEach((v) => {
       if (!studentVaccinationMap.has(v.studentId)) {
         studentVaccinationMap.set(v.studentId, []);
       }
@@ -153,18 +165,23 @@ export class StatisticsService {
     });
 
     let fullyVaccinatedCount = 0;
-    studentVaccinationMap.forEach(vaccs => {
+    studentVaccinationMap.forEach((vaccs) => {
       if (this.calculateVaccinationStatus(vaccs) === 'COMPLIANT') {
         fullyVaccinatedCount++;
       }
     });
 
-    const vaccinationRate = studentIds.length > 0
-      ? ((fullyVaccinatedCount / studentIds.length) * 100)
-      : 0;
+    const vaccinationRate =
+      studentIds.length > 0
+        ? (fullyVaccinatedCount / studentIds.length) * 100
+        : 0;
 
-    const uniqueStudentsWithAllergies = Array.from(new Set(allergies.map(a => a.studentId)));
-    const uniqueStudentsWithChronicConditions = Array.from(new Set(chronicConditions.map(c => c.studentId)));
+    const uniqueStudentsWithAllergies = Array.from(
+      new Set(allergies.map((a) => a.studentId)),
+    );
+    const uniqueStudentsWithChronicConditions = Array.from(
+      new Set(chronicConditions.map((c) => c.studentId)),
+    );
 
     return {
       schoolId,
@@ -195,7 +212,7 @@ export class StatisticsService {
         data = await this.vaccinationModel.findAll({
           where: { administrationDate: { [Op.gte]: cutoffDate } },
           attributes: ['administrationDate'],
-          raw: true
+          raw: true,
         });
         break;
       case 'visits':
@@ -203,7 +220,7 @@ export class StatisticsService {
         data = await this.clinicVisitModel.findAll({
           where: { checkInTime: { [Op.gte]: cutoffDate } },
           attributes: ['checkInTime'],
-          raw: true
+          raw: true,
         });
         break;
       case 'allergies':
@@ -212,10 +229,10 @@ export class StatisticsService {
         data = await this.allergyModel.findAll({
           where: {
             active: true,
-            diagnosedDate: { [Op.gte]: cutoffDate }
+            diagnosedDate: { [Op.gte]: cutoffDate },
           },
           attributes: ['diagnosedDate'],
-          raw: true
+          raw: true,
         });
         dateField = 'diagnosedDate';
         break;
@@ -256,7 +273,7 @@ export class StatisticsService {
       totalVisits,
       totalVitalRecords,
       studentsWithAllergies,
-      studentsWithChronicConditions
+      studentsWithChronicConditions,
     ] = await Promise.all([
       this.studentModel.count(),
       this.vaccinationModel.count(),
@@ -267,13 +284,13 @@ export class StatisticsService {
       this.allergyModel.count({
         where: { active: true },
         distinct: true,
-        col: 'studentId'
+        col: 'studentId',
       }),
       this.chronicConditionModel.count({
         where: { status: 'ACTIVE' },
         distinct: true,
-        col: 'studentId'
-      })
+        col: 'studentId',
+      }),
     ]);
 
     return {
@@ -283,9 +300,10 @@ export class StatisticsService {
       totalChronicConditions,
       totalVisits,
       totalVitalRecords,
-      averageVaccinationsPerStudent: totalStudents > 0
-        ? (totalVaccinations / totalStudents).toFixed(2)
-        : '0',
+      averageVaccinationsPerStudent:
+        totalStudents > 0
+          ? (totalVaccinations / totalStudents).toFixed(2)
+          : '0',
       studentsWithAllergies,
       studentsWithChronicConditions,
     };
@@ -295,7 +313,9 @@ export class StatisticsService {
    * Get health alerts summary
    */
   async getHealthAlerts(schoolId?: string): Promise<any> {
-    this.logger.log(`Getting health alerts${schoolId ? ` for school ${schoolId}` : ''}`);
+    this.logger.log(
+      `Getting health alerts${schoolId ? ` for school ${schoolId}` : ''}`,
+    );
 
     let studentIds: string[];
 
@@ -308,14 +328,14 @@ export class StatisticsService {
 
       const students = await this.studentModel.findAll({
         where: { schoolId },
-        attributes: ['id']
+        attributes: ['id'],
       });
-      studentIds = students.map(s => s.id);
+      studentIds = students.map((s) => s.id);
     } else {
       const students = await this.studentModel.findAll({
-        attributes: ['id']
+        attributes: ['id'],
       });
-      studentIds = students.map(s => s.id);
+      studentIds = students.map((s) => s.id);
     }
 
     if (studentIds.length === 0) {
@@ -331,26 +351,26 @@ export class StatisticsService {
       where: {
         studentId: { [Op.in]: studentIds },
         active: true,
-        severity: { [Op.in]: ['SEVERE', 'LIFE_THREATENING'] }
+        severity: { [Op.in]: ['SEVERE', 'LIFE_THREATENING'] },
       },
-      attributes: ['studentId']
+      attributes: ['studentId'],
     });
 
     // Overdue vaccinations (simplified logic - would need CDC schedule integration)
     const allVaccinations = await this.vaccinationModel.findAll({
       where: { studentId: { [Op.in]: studentIds } },
-      attributes: ['studentId', 'vaccineName', 'administeredAt']
+      attributes: ['studentId', 'vaccineName', 'administeredAt'],
     });
 
     const studentVaccinationMap = new Map<string, any[]>();
-    allVaccinations.forEach(v => {
+    allVaccinations.forEach((v) => {
       if (!studentVaccinationMap.has(v.studentId)) {
         studentVaccinationMap.set(v.studentId, []);
       }
       studentVaccinationMap.get(v.studentId)!.push(v);
     });
 
-    const overdueVaccinations = studentIds.filter(studentId => {
+    const overdueVaccinations = studentIds.filter((studentId) => {
       const vaccs = studentVaccinationMap.get(studentId) || [];
       return this.calculateVaccinationStatus(vaccs) === 'OVERDUE';
     });
@@ -359,19 +379,21 @@ export class StatisticsService {
     const allActiveConditions = await this.chronicConditionModel.findAll({
       where: {
         studentId: { [Op.in]: studentIds },
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       },
-      attributes: ['studentId', 'carePlan']
+      attributes: ['studentId', 'carePlan'],
     });
 
-    const unmanagedConditions = allActiveConditions.filter(condition =>
-      !condition.carePlan || condition.carePlan.trim() === ''
+    const unmanagedConditions = allActiveConditions.filter(
+      (condition) => !condition.carePlan || condition.carePlan.trim() === '',
     );
 
     return {
       criticalAllergies: {
         count: criticalAllergies.length,
-        students: Array.from(new Set(criticalAllergies.map(a => a.studentId))),
+        students: Array.from(
+          new Set(criticalAllergies.map((a) => a.studentId)),
+        ),
       },
       overdueVaccinations: {
         count: overdueVaccinations.length,
@@ -379,7 +401,9 @@ export class StatisticsService {
       },
       unmanagedConditions: {
         count: unmanagedConditions.length,
-        students: Array.from(new Set(unmanagedConditions.map(c => c.studentId))),
+        students: Array.from(
+          new Set(unmanagedConditions.map((c) => c.studentId)),
+        ),
       },
     };
   }
@@ -394,8 +418,11 @@ export class StatisticsService {
     return 'COMPLIANT';
   }
 
-  private calculateHealthRiskLevel(factors: { allergies: number; chronicConditions: number }): string {
-    const riskScore = (factors.allergies * 2) + (factors.chronicConditions * 3);
+  private calculateHealthRiskLevel(factors: {
+    allergies: number;
+    chronicConditions: number;
+  }): string {
+    const riskScore = factors.allergies * 2 + factors.chronicConditions * 3;
     if (riskScore === 0) return 'LOW';
     if (riskScore < 5) return 'MEDIUM';
     return 'HIGH';
@@ -406,26 +433,29 @@ export class StatisticsService {
     if (!match) return 30; // Default 30 days
 
     const [, value, unit] = match;
-    const multipliers = { day: 1, week: 7, month: 30, year: 365 };
+    const multipliers: Record<string, number> = { day: 1, week: 7, month: 30, year: 365 };
     return parseInt(value) * (multipliers[unit] || 1);
   }
 
   private groupByDay(data: any[], dateField: string): any[] {
     const grouped = new Map<string, number>();
 
-    data.forEach(item => {
+    data.forEach((item) => {
       const date = new Date(item[dateField]);
       const dateKey = date.toISOString().split('T')[0];
       grouped.set(dateKey, (grouped.get(dateKey) || 0) + 1);
     });
 
-    return Array.from(grouped.entries()).map(([date, count]) => ({ date, count }));
+    return Array.from(grouped.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
   }
 
   private calculateTrend(data: any[]): string {
     if (data.length < 2) return 'insufficient_data';
 
-    const counts = data.map(d => d.count);
+    const counts = data.map((d) => d.count);
     const firstHalf = counts.slice(0, Math.floor(counts.length / 2));
     const secondHalf = counts.slice(Math.floor(counts.length / 2));
 

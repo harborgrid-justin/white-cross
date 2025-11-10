@@ -15,11 +15,15 @@ export class TransactionService {
   /**
    * Create inventory transaction
    */
-  async createTransaction(data: CreateInventoryTransactionDto): Promise<InventoryTransaction> {
+  async createTransaction(
+    data: CreateInventoryTransactionDto,
+  ): Promise<InventoryTransaction> {
     try {
       const transaction = await this.transactionModel.create({
         ...data,
-        expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
+        expirationDate: data.expirationDate
+          ? new Date(data.expirationDate)
+          : undefined,
       } as any);
 
       this.logger.log(
@@ -36,7 +40,9 @@ export class TransactionService {
   /**
    * Get transactions for an item
    */
-  async getTransactionsByItem(inventoryItemId: string): Promise<InventoryTransaction[]> {
+  async getTransactionsByItem(
+    inventoryItemId: string,
+  ): Promise<InventoryTransaction[]> {
     try {
       const transactions = await this.transactionModel.findAll({
         where: { inventoryItemId },

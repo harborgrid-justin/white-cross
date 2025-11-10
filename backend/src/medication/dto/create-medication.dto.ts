@@ -1,13 +1,13 @@
 import {
-  IsString,
-  IsOptional,
   IsBoolean,
+  IsDate,
   IsEnum,
   IsNotEmpty,
-  IsDate,
+  IsOptional,
+  IsString,
   IsUUID,
-  MinLength,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -39,7 +39,7 @@ export class CreateMedicationDto {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(255)
-  medicationName: string;
+  medicationName!: string;
 
   @ApiProperty({
     description: 'Dosage amount with unit',
@@ -47,7 +47,7 @@ export class CreateMedicationDto {
   })
   @IsString()
   @IsNotEmpty()
-  dosage: string;
+  dosage!: string;
 
   @ApiProperty({
     description: 'How often to administer the medication',
@@ -55,7 +55,7 @@ export class CreateMedicationDto {
   })
   @IsString()
   @IsNotEmpty()
-  frequency: string;
+  frequency!: string;
 
   @ApiProperty({
     description: 'Route of administration',
@@ -63,7 +63,7 @@ export class CreateMedicationDto {
   })
   @IsString()
   @IsNotEmpty()
-  route: string;
+  route!: string;
 
   @ApiProperty({
     description: 'Name of prescribing physician',
@@ -71,7 +71,7 @@ export class CreateMedicationDto {
   })
   @IsString()
   @IsNotEmpty()
-  prescribedBy: string;
+  prescribedBy!: string;
 
   @ApiProperty({
     description: 'Start date for medication',
@@ -80,7 +80,7 @@ export class CreateMedicationDto {
   @Type(() => Date)
   @IsDate()
   @IsNotEmpty()
-  startDate: Date;
+  startDate!: Date;
 
   @ApiProperty({
     description: 'UUID of the student this medication is for',
@@ -88,7 +88,7 @@ export class CreateMedicationDto {
   })
   @IsUUID()
   @IsNotEmpty()
-  studentId: string;
+  studentId!: string;
 
   @ApiPropertyOptional({
     description: 'End date for medication (null if ongoing)',

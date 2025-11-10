@@ -2,7 +2,7 @@ import { SetMetadata } from '@nestjs/common';
 
 /**
  * Custom Decorators for Memory Optimization Modules
- * 
+ *
  * These decorators provide metadata for Discovery Service integration
  */
 
@@ -35,8 +35,7 @@ export const CacheEvict = (keys: string[] = []) =>
 /**
  * Mark a method to update cache
  */
-export const CachePut = (key: string) =>
-  SetMetadata('cache-put', { key });
+export const CachePut = (key: string) => SetMetadata('cache-put', { key });
 
 // ========================================
 // Resource Pool Decorators
@@ -79,14 +78,18 @@ export interface MemoryIntensiveOptions {
 /**
  * Mark a class as memory-intensive
  */
-export const MemoryIntensive = (options: MemoryIntensiveOptions = { enabled: true }) =>
-  SetMetadata('memory-intensive', options);
+export const MemoryIntensive = (
+  options: MemoryIntensiveOptions = { enabled: true },
+) => SetMetadata('memory-intensive', options);
 
 /**
  * Mark a class as prone to memory leaks
  */
-export const LeakProne = (options: { monitoring: boolean; alertThreshold?: number } = { monitoring: true }) =>
-  SetMetadata('leak-prone', options);
+export const LeakProne = (
+  options: { monitoring: boolean; alertThreshold?: number } = {
+    monitoring: true,
+  },
+) => SetMetadata('leak-prone', options);
 
 // ========================================
 // Garbage Collection Decorators
@@ -103,8 +106,9 @@ export interface GarbageCollectionOptions {
 /**
  * Mark a class for garbage collection optimization
  */
-export const GarbageCollection = (options: GarbageCollectionOptions = { enabled: true }) =>
-  SetMetadata('gc-optimization', options);
+export const GarbageCollection = (
+  options: GarbageCollectionOptions = { enabled: true },
+) => SetMetadata('gc-optimization', options);
 
 /**
  * Mark a method as a cleanup method
@@ -126,14 +130,16 @@ export interface MemoryMonitoringOptions {
 /**
  * Enable memory monitoring for a class
  */
-export const MemoryMonitoring = (options: MemoryMonitoringOptions = { enabled: true }) =>
-  SetMetadata('memory-monitoring', options);
+export const MemoryMonitoring = (
+  options: MemoryMonitoringOptions = { enabled: true },
+) => SetMetadata('memory-monitoring', options);
 
 /**
  * Mark a method for performance tracking
  */
-export const PerformanceTrack = (metrics: string[] = ['memory', 'cpu', 'time']) =>
-  SetMetadata('performance-track', { metrics });
+export const PerformanceTrack = (
+  metrics: string[] = ['memory', 'cpu', 'time'],
+) => SetMetadata('performance-track', { metrics });
 
 // ========================================
 // Interceptor Configuration Decorators
@@ -213,7 +219,7 @@ export const GCSchedule = (options: GCScheduleOptions) =>
 /**
  * High-performance configuration for critical services
  */
-export const HighPerformance = () => (target: any) => {
+export const HighPerformance = () => (target: object) => {
   SetMetadata('cacheable', {
     enabled: true,
     maxSize: 1000,
@@ -221,7 +227,7 @@ export const HighPerformance = () => (target: any) => {
     strategy: 'lru',
     compression: true,
     priority: 10,
-    autoEvict: true
+    autoEvict: true,
   })(target);
 
   SetMetadata('resource-pool', {
@@ -231,7 +237,7 @@ export const HighPerformance = () => (target: any) => {
     maxSize: 50,
     priority: 10,
     validationEnabled: true,
-    autoScale: true
+    autoScale: true,
   })(target);
 
   SetMetadata('memory-intensive', {
@@ -239,7 +245,7 @@ export const HighPerformance = () => (target: any) => {
     threshold: 100, // 100MB
     priority: 'high',
     cleanupStrategy: 'aggressive',
-    monitoring: true
+    monitoring: true,
   })(target);
 
   SetMetadata('gc-optimization', {
@@ -247,14 +253,14 @@ export const HighPerformance = () => (target: any) => {
     priority: 'high',
     strategy: 'aggressive',
     threshold: 200, // 200MB
-    customCleanup: true
+    customCleanup: true,
   })(target);
 };
 
 /**
  * Memory-efficient configuration for lightweight services
  */
-export const MemoryEfficient = () => (target: any) => {
+export const MemoryEfficient = () => (target: object) => {
   SetMetadata('cacheable', {
     enabled: true,
     maxSize: 100,
@@ -262,7 +268,7 @@ export const MemoryEfficient = () => (target: any) => {
     strategy: 'lfu',
     compression: true,
     priority: 5,
-    autoEvict: true
+    autoEvict: true,
   })(target);
 
   SetMetadata('memory-intensive', {
@@ -270,7 +276,7 @@ export const MemoryEfficient = () => (target: any) => {
     threshold: 20, // 20MB
     priority: 'normal',
     cleanupStrategy: 'standard',
-    monitoring: true
+    monitoring: true,
   })(target);
 
   SetMetadata('gc-optimization', {
@@ -278,14 +284,14 @@ export const MemoryEfficient = () => (target: any) => {
     priority: 'normal',
     strategy: 'standard',
     threshold: 50, // 50MB
-    customCleanup: false
+    customCleanup: false,
   })(target);
 };
 
 /**
  * Database service configuration
  */
-export const DatabaseOptimized = () => (target: any) => {
+export const DatabaseOptimized = () => (target: object) => {
   SetMetadata('resource-pool', {
     enabled: true,
     resourceType: 'connection',
@@ -293,26 +299,26 @@ export const DatabaseOptimized = () => (target: any) => {
     maxSize: 20,
     priority: 8,
     validationEnabled: true,
-    autoScale: true
+    autoScale: true,
   })(target);
 
   SetMetadata('leak-prone', {
     monitoring: true,
-    alertThreshold: 50 // 50MB
+    alertThreshold: 50, // 50MB
   })(target);
 
   SetMetadata('memory-monitoring', {
     enabled: true,
     interval: 30000, // 30 seconds
     threshold: 100, // 100MB
-    alerts: true
+    alerts: true,
   })(target);
 };
 
 /**
  * CPU-intensive service configuration
  */
-export const CPUIntensive = () => (target: any) => {
+export const CPUIntensive = () => (target: object) => {
   SetMetadata('resource-pool', {
     enabled: true,
     resourceType: 'worker',
@@ -320,7 +326,7 @@ export const CPUIntensive = () => (target: any) => {
     maxSize: 10,
     priority: 9,
     validationEnabled: true,
-    autoScale: true
+    autoScale: true,
   })(target);
 
   SetMetadata('memory-intensive', {
@@ -328,11 +334,11 @@ export const CPUIntensive = () => (target: any) => {
     threshold: 500, // 500MB
     priority: 'high',
     cleanupStrategy: 'aggressive',
-    monitoring: true
+    monitoring: true,
   })(target);
 
   SetMetadata('performance-track', {
-    metrics: ['memory', 'cpu', 'time', 'io']
+    metrics: ['memory', 'cpu', 'time', 'io'],
   })(target);
 };
 
@@ -343,8 +349,9 @@ export const CPUIntensive = () => (target: any) => {
 /**
  * Mark a method as memory-sensitive (requires cleanup after execution)
  */
-export const MemorySensitive = (threshold: number = 50) => // 50MB
-  SetMetadata('memory-sensitive', { threshold });
+export const MemorySensitive = (
+  threshold: number = 50, // 50MB
+) => SetMetadata('memory-sensitive', { threshold });
 
 /**
  * Mark a method as requiring immediate cleanup
@@ -355,8 +362,9 @@ export const ImmediateCleanup = () =>
 /**
  * Mark a method as long-running (may need special GC handling)
  */
-export const LongRunning = (maxDuration: number = 300000) => // 5 minutes
-  SetMetadata('long-running', { maxDuration });
+export const LongRunning = (
+  maxDuration: number = 300000, // 5 minutes
+) => SetMetadata('long-running', { maxDuration });
 
 /**
  * Mark a method for priority caching
@@ -371,13 +379,13 @@ export const PriorityCache = (priority: number = 10) =>
 /**
  * Get memory optimization metadata from a class
  */
-export function getMemoryOptimizationMetadata(target: any): {
+export function getMemoryOptimizationMetadata(target: object): {
   cacheable?: CacheableOptions;
   resourcePool?: ResourcePoolOptions;
   memoryIntensive?: MemoryIntensiveOptions;
   garbageCollection?: GarbageCollectionOptions;
   memoryMonitoring?: MemoryMonitoringOptions;
-  leakProne?: any;
+  leakProne?: { monitoring: boolean; alertThreshold?: number };
 } {
   return {
     cacheable: Reflect.getMetadata('cacheable', target),
@@ -385,38 +393,43 @@ export function getMemoryOptimizationMetadata(target: any): {
     memoryIntensive: Reflect.getMetadata('memory-intensive', target),
     garbageCollection: Reflect.getMetadata('gc-optimization', target),
     memoryMonitoring: Reflect.getMetadata('memory-monitoring', target),
-    leakProne: Reflect.getMetadata('leak-prone', target)
+    leakProne: Reflect.getMetadata('leak-prone', target),
   };
 }
 
 /**
  * Check if class has any memory optimization decorators
  */
-export function hasMemoryOptimization(target: any): boolean {
+export function hasMemoryOptimization(target: object): boolean {
   const metadata = getMemoryOptimizationMetadata(target);
-  return Object.values(metadata).some(value => value !== undefined);
+  return Object.values(metadata).some((value) => value !== undefined);
 }
 
 /**
  * Get all cleanup methods from a class
  */
-export function getCleanupMethods(target: any): Array<{ methodName: string; priority: string }> {
+export function getCleanupMethods(
+  target: object,
+): Array<{ methodName: string; priority: string }> {
   const prototype = target.prototype || target;
   const methods: Array<{ methodName: string; priority: string }> = [];
-  
+
   const propertyNames = Object.getOwnPropertyNames(prototype);
   for (const propertyName of propertyNames) {
-    const cleanupMetadata = Reflect.getMetadata('cleanup-method', prototype[propertyName]);
+    const cleanupMetadata = Reflect.getMetadata(
+      'cleanup-method',
+      prototype[propertyName],
+    );
     if (cleanupMetadata) {
       methods.push({
         methodName: propertyName,
-        priority: cleanupMetadata.priority || 'normal'
+        priority: cleanupMetadata.priority || 'normal',
       });
     }
   }
-  
+
   return methods.sort((a, b) => {
-    const priorityOrder = { high: 3, normal: 2, low: 1 };
+    const priorityOrder: Record<string, number> = { high: 3, normal: 2, low: 1 };
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });
 }
@@ -428,9 +441,14 @@ export function getCleanupMethods(target: any): Array<{ methodName: string; prio
 /**
  * Validate decorator configuration
  */
-export function validateMemoryOptimizationConfig(config: any): string[] {
+export function validateMemoryOptimizationConfig(config: {
+  cacheable?: Partial<CacheableOptions>;
+  resourcePool?: Partial<ResourcePoolOptions>;
+  memoryIntensive?: Partial<MemoryIntensiveOptions>;
+  [key: string]: unknown;
+}): string[] {
   const errors: string[] = [];
-  
+
   if (config.cacheable) {
     if (config.cacheable.maxSize && config.cacheable.maxSize < 1) {
       errors.push('Cache maxSize must be greater than 0');
@@ -439,7 +457,7 @@ export function validateMemoryOptimizationConfig(config: any): string[] {
       errors.push('Cache TTL should be at least 1000ms');
     }
   }
-  
+
   if (config.resourcePool) {
     if (config.resourcePool.minSize && config.resourcePool.maxSize) {
       if (config.resourcePool.minSize > config.resourcePool.maxSize) {
@@ -447,13 +465,16 @@ export function validateMemoryOptimizationConfig(config: any): string[] {
       }
     }
   }
-  
+
   if (config.memoryIntensive) {
-    if (config.memoryIntensive.threshold && config.memoryIntensive.threshold < 1) {
+    if (
+      config.memoryIntensive.threshold &&
+      config.memoryIntensive.threshold < 1
+    ) {
       errors.push('Memory threshold must be at least 1MB');
     }
   }
-  
+
   return errors;
 }
 
@@ -466,28 +487,76 @@ export const MemoryOptimizationPresets = {
    * Minimal memory footprint configuration
    */
   MINIMAL: {
-    cacheable: { enabled: true, maxSize: 50, ttl: 30000, strategy: 'lfu' as const },
+    cacheable: {
+      enabled: true,
+      maxSize: 50,
+      ttl: 30000,
+      strategy: 'lfu' as const,
+    },
     memoryIntensive: { enabled: true, threshold: 10, priority: 'low' as const },
-    gc: { enabled: true, priority: 'low' as const, strategy: 'standard' as const }
+    gc: {
+      enabled: true,
+      priority: 'low' as const,
+      strategy: 'standard' as const,
+    },
   },
-  
+
   /**
    * Balanced performance and memory usage
    */
   BALANCED: {
-    cacheable: { enabled: true, maxSize: 500, ttl: 300000, strategy: 'lru' as const },
-    resourcePool: { enabled: true, minSize: 2, maxSize: 10, resourceType: 'generic' as const },
-    memoryIntensive: { enabled: true, threshold: 100, priority: 'normal' as const },
-    gc: { enabled: true, priority: 'normal' as const, strategy: 'standard' as const }
+    cacheable: {
+      enabled: true,
+      maxSize: 500,
+      ttl: 300000,
+      strategy: 'lru' as const,
+    },
+    resourcePool: {
+      enabled: true,
+      minSize: 2,
+      maxSize: 10,
+      resourceType: 'generic' as const,
+    },
+    memoryIntensive: {
+      enabled: true,
+      threshold: 100,
+      priority: 'normal' as const,
+    },
+    gc: {
+      enabled: true,
+      priority: 'normal' as const,
+      strategy: 'standard' as const,
+    },
   },
-  
+
   /**
    * High performance, higher memory usage
    */
   PERFORMANCE: {
-    cacheable: { enabled: true, maxSize: 2000, ttl: 600000, strategy: 'lru' as const, compression: true },
-    resourcePool: { enabled: true, minSize: 5, maxSize: 50, resourceType: 'generic' as const, autoScale: true },
-    memoryIntensive: { enabled: true, threshold: 500, priority: 'high' as const, monitoring: true },
-    gc: { enabled: true, priority: 'high' as const, strategy: 'aggressive' as const }
-  }
+    cacheable: {
+      enabled: true,
+      maxSize: 2000,
+      ttl: 600000,
+      strategy: 'lru' as const,
+      compression: true,
+    },
+    resourcePool: {
+      enabled: true,
+      minSize: 5,
+      maxSize: 50,
+      resourceType: 'generic' as const,
+      autoScale: true,
+    },
+    memoryIntensive: {
+      enabled: true,
+      threshold: 500,
+      priority: 'high' as const,
+      monitoring: true,
+    },
+    gc: {
+      enabled: true,
+      priority: 'high' as const,
+      strategy: 'aggressive' as const,
+    },
+  },
 };

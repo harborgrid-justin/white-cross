@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model, Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
 import { SyncConflict } from '../../database/models/sync-conflict.model';
-import { QueueSyncActionDto, SyncOptionsDto, ResolveConflictDto } from '../dto';
-import { SyncActionType, SyncEntityType, SyncPriority, ConflictResolution, SyncStatus } from '../enums';
+import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
+import { ConflictResolution, SyncActionType, SyncEntityType, SyncPriority, SyncStatus } from '../enums';
 
 /**
  * Sync Statistics Response Interface
@@ -101,7 +101,10 @@ export interface IEntitySyncService {
 @Injectable()
 export class OfflineSyncService {
   private readonly logger = new Logger(OfflineSyncService.name);
-  private readonly entityServiceRegistry: Map<SyncEntityType, IEntitySyncService> = new Map();
+  private readonly entityServiceRegistry: Map<
+    SyncEntityType,
+    IEntitySyncService
+  > = new Map();
   private readonly syncWatermarks: Map<string, SyncWatermark> = new Map();
 
   /**
@@ -130,7 +133,10 @@ export class OfflineSyncService {
    * syncService.registerEntityService(SyncEntityType.STUDENT, studentService);
    * ```
    */
-  registerEntityService(entityType: SyncEntityType, service: IEntitySyncService): void {
+  registerEntityService(
+    entityType: SyncEntityType,
+    service: IEntitySyncService,
+  ): void {
     this.entityServiceRegistry.set(entityType, service);
     this.logger.log(`Registered entity service for ${entityType}`);
   }
@@ -147,7 +153,7 @@ export class OfflineSyncService {
     if (!service) {
       throw new NotFoundException(
         `No entity service registered for ${entityType}. ` +
-        `Please register the service using registerEntityService()`
+          `Please register the service using registerEntityService()`,
       );
     }
     return service;
@@ -156,7 +162,10 @@ export class OfflineSyncService {
   /**
    * Queue a sync action for offline processing
    */
-  async queueAction(userId: string, dto: QueueSyncActionDto): Promise<SyncQueueItem> {
+  async queueAction(
+    userId: string,
+    dto: QueueSyncActionDto,
+  ): Promise<SyncQueueItem> {
     try {
       const queueItem = await this.queueModel.create({
         deviceId: dto.deviceId,
@@ -174,7 +183,9 @@ export class OfflineSyncService {
         requiresOnline: true,
       } as any);
 
-      this.logger.log(`Sync action queued: ${queueItem.id} - ${dto.actionType} ${dto.entityType}`);
+      this.logger.log(
+        `Sync action queued: ${queueItem.id} - ${dto.actionType} ${dto.entityType}`,
+      );
 
       return queueItem;
     } catch (error) {
@@ -189,7 +200,7 @@ export class OfflineSyncService {
   async syncPendingActions(
     userId: string,
     deviceId: string,
-    options?: SyncOptionsDto
+    options?: SyncOptionsDto,
   ): Promise<SyncResult> {
     try {
       const batchSize = options?.batchSize || 50;
@@ -209,7 +220,7 @@ export class OfflineSyncService {
         where: whereCondition,
         order: [
           ['priority', 'ASC'],
-          ['timestamp', 'ASC']
+          ['timestamp', 'ASC'],
         ],
         limit: batchSize,
       });
@@ -218,7 +229,7 @@ export class OfflineSyncService {
         synced: 0,
         failed: 0,
         conflicts: 0,
-        errors: []
+        errors: [],
       };
 
       for (const item of pendingItems) {
@@ -236,16 +247,16 @@ export class OfflineSyncService {
             result.conflicts++;
 
             // Auto-resolve if strategy provided
-            if (options?.conflictStrategy && options.conflictStrategy !== ConflictResolution.MANUAL) {
-              await this.resolveConflict(
-                userId,
-                savedConflict.id,
-                {
-                  resolution: options.conflictStrategy === ConflictResolution.NEWEST_WINS
+            if (
+              options?.conflictStrategy &&
+              options.conflictStrategy !== ConflictResolution.MANUAL
+            ) {
+              await this.resolveConflict(userId, savedConflict.id, {
+                resolution:
+                  options.conflictStrategy === ConflictResolution.NEWEST_WINS
                     ? ConflictResolution.CLIENT_WINS
-                    : options.conflictStrategy
-                }
-              );
+                    : options.conflictStrategy,
+              });
 
               await this.applySyncAction(item);
               item.synced = true;
@@ -271,7 +282,7 @@ export class OfflineSyncService {
       }
 
       this.logger.log(
-        `Sync completed for device ${deviceId}: ${result.synced} synced, ${result.failed} failed, ${result.conflicts} conflicts`
+        `Sync completed for device ${deviceId}: ${result.synced} synced, ${result.failed} failed, ${result.conflicts} conflicts`,
       );
 
       return result;
@@ -284,19 +295,22 @@ export class OfflineSyncService {
   /**
    * Get sync statistics for a device
    */
-  async getStatistics(userId: string, deviceId: string): Promise<SyncStatistics> {
+  async getStatistics(
+    userId: string,
+    deviceId: string,
+  ): Promise<SyncStatistics> {
     const entityIds = await this.getEntityIds(deviceId, userId);
 
     const queuedItems = await this.queueModel.count({
-      where: { deviceId, userId }
+      where: { deviceId, userId },
     });
 
     const pendingItems = await this.queueModel.count({
-      where: { deviceId, userId, synced: false }
+      where: { deviceId, userId, synced: false },
     });
 
     const syncedItems = await this.queueModel.count({
-      where: { deviceId, userId, synced: true }
+      where: { deviceId, userId, synced: true },
     });
 
     const failedItems = await this.queueModel.count({
@@ -304,26 +318,26 @@ export class OfflineSyncService {
         deviceId,
         userId,
         synced: false,
-        attempts: { [Op.gte]: this.MAX_SYNC_ATTEMPTS }
-      }
+        attempts: { [Op.gte]: this.MAX_SYNC_ATTEMPTS },
+      },
     });
 
     const conflictsDetected = await this.conflictModel.count({
-      where: { entityId: { [Op.in]: entityIds } }
+      where: { entityId: { [Op.in]: entityIds } },
     });
 
     const conflictsResolved = await this.conflictModel.count({
       where: {
         entityId: { [Op.in]: entityIds },
-        status: SyncStatus.RESOLVED
-      }
+        status: SyncStatus.RESOLVED,
+      },
     });
 
     const conflictsPending = await this.conflictModel.count({
       where: {
         entityId: { [Op.in]: entityIds },
-        status: SyncStatus.PENDING
-      }
+        status: SyncStatus.PENDING,
+      },
     });
 
     // Get last sync time
@@ -341,20 +355,23 @@ export class OfflineSyncService {
       failedItems,
       conflictsDetected,
       conflictsResolved,
-      conflictsPending
+      conflictsPending,
     };
   }
 
   /**
    * List conflicts for a device
    */
-  async listConflicts(userId: string, deviceId: string): Promise<SyncConflict[]> {
+  async listConflicts(
+    userId: string,
+    deviceId: string,
+  ): Promise<SyncConflict[]> {
     const entityIds = await this.getEntityIds(deviceId, userId);
 
     return this.conflictModel.findAll({
       where: {
         entityId: { [Op.in]: entityIds },
-        status: SyncStatus.PENDING
+        status: SyncStatus.PENDING,
       },
       order: [['createdAt', 'DESC']],
     });
@@ -366,10 +383,10 @@ export class OfflineSyncService {
   async resolveConflict(
     userId: string,
     conflictId: string,
-    dto: ResolveConflictDto
+    dto: ResolveConflictDto,
   ): Promise<SyncConflict> {
     const conflict = await this.conflictModel.findOne({
-      where: { id: conflictId }
+      where: { id: conflictId },
     });
 
     if (!conflict) {
@@ -392,10 +409,12 @@ export class OfflineSyncService {
         break;
 
       case ConflictResolution.MERGE:
-        conflict.mergedData = dto.mergedData || this.mergeData(
-          conflict.clientVersion.data,
-          conflict.serverVersion.data
-        );
+        conflict.mergedData =
+          dto.mergedData ||
+          this.mergeData(
+            conflict.clientVersion.data,
+            conflict.serverVersion.data,
+          );
         break;
 
       case ConflictResolution.MANUAL:
@@ -408,7 +427,7 @@ export class OfflineSyncService {
     // Update the queue item
     await this.queueModel.update(
       { conflictResolution: dto.resolution },
-      { where: { id: conflict.queueItemId } }
+      { where: { id: conflict.queueItemId } },
     );
 
     this.logger.log(`Conflict resolved: ${conflictId} using ${dto.resolution}`);
@@ -430,7 +449,9 @@ export class OfflineSyncService {
    * 4. Calculate data checksums for deep comparison
    * 5. Create conflict record if modifications detected
    */
-  private async detectConflict(item: SyncQueueItem): Promise<SyncConflict | null> {
+  private async detectConflict(
+    item: SyncQueueItem,
+  ): Promise<SyncConflict | null> {
     try {
       // Skip conflict detection for CREATE operations (no existing entity)
       if (item.actionType === SyncActionType.CREATE) {
@@ -477,8 +498,11 @@ export class OfflineSyncService {
       }
 
       // Check version numbers if available
-      const clientVersion = (item.data as any).version;
-      if (clientVersion !== undefined && clientVersion < serverVersion.version) {
+      const clientVersion = item.data.version;
+      if (
+        clientVersion !== undefined &&
+        clientVersion < serverVersion.version
+      ) {
         // Conflict detected: version mismatch
         return this.createConflict(item, serverEntity, serverVersion);
       }
@@ -490,8 +514,11 @@ export class OfflineSyncService {
 
         if (clientChecksum !== serverChecksum) {
           // Data has changed, but timestamps are close - potential conflict
-          const timeDiff = Math.abs(serverVersion.updatedAt.getTime() - item.timestamp.getTime());
-          if (timeDiff < 5000) { // Within 5 seconds, consider it a conflict
+          const timeDiff = Math.abs(
+            serverVersion.updatedAt.getTime() - item.timestamp.getTime(),
+          );
+          if (timeDiff < 5000) {
+            // Within 5 seconds, consider it a conflict
             return this.createConflict(item, serverEntity, serverVersion);
           }
         }
@@ -513,7 +540,10 @@ export class OfflineSyncService {
    * @param serverEntity - The current server entity
    * @returns A conflict object if detected, null otherwise
    */
-  private detectTimestampConflict(item: SyncQueueItem, serverEntity: any): SyncConflict | null {
+  private detectTimestampConflict(
+    item: SyncQueueItem,
+    serverEntity: any,
+  ): SyncConflict | null {
     const serverUpdatedAt = serverEntity.updatedAt || serverEntity.updated_at;
 
     if (!serverUpdatedAt) {
@@ -528,9 +558,9 @@ export class OfflineSyncService {
     if (serverDate > clientDate) {
       return this.createConflict(item, serverEntity, {
         id: item.entityId,
-        version: (serverEntity as any).version || 0,
+        version: serverEntity.version || 0,
         updatedAt: serverDate,
-        updatedBy: (serverEntity as any).updatedBy || 'unknown',
+        updatedBy: serverEntity.updatedBy || 'unknown',
       });
     }
 
@@ -569,7 +599,7 @@ export class OfflineSyncService {
 
     this.logger.warn(
       `Conflict detected for ${item.entityType}:${item.entityId} - ` +
-      `Client: ${item.timestamp.toISOString()}, Server: ${serverVersion.updatedAt.toISOString()}`
+        `Client: ${item.timestamp.toISOString()}, Server: ${serverVersion.updatedAt.toISOString()}`,
     );
 
     return conflictData;
@@ -586,7 +616,7 @@ export class OfflineSyncService {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return hash.toString(36);
@@ -610,7 +640,7 @@ export class OfflineSyncService {
 
     try {
       this.logger.log(
-        `Applying sync action: ${item.actionType} on ${item.entityType} (${item.entityId})`
+        `Applying sync action: ${item.actionType} on ${item.entityType} (${item.entityId})`,
       );
 
       // Validate data before applying
@@ -647,7 +677,7 @@ export class OfflineSyncService {
     } catch (error) {
       this.logger.error(
         `Failed to apply sync action for ${item.entityType}:${item.entityId}`,
-        error
+        error,
       );
       throw error;
     }
@@ -672,7 +702,7 @@ export class OfflineSyncService {
     userId: string,
     deviceId: string,
     items: SyncQueueItem[],
-    options?: SyncOptionsDto
+    options?: SyncOptionsDto,
   ): Promise<SyncResult> {
     const transaction = await this.queueModel.sequelize!.transaction();
 
@@ -680,7 +710,7 @@ export class OfflineSyncService {
       synced: 0,
       failed: 0,
       conflicts: 0,
-      errors: []
+      errors: [],
     };
 
     try {
@@ -693,20 +723,22 @@ export class OfflineSyncService {
             item.conflictDetected = true;
             await item.save({ transaction });
 
-            const savedConflict = await this.conflictModel.create(conflict, { transaction });
+            const savedConflict = await this.conflictModel.create(conflict, {
+              transaction,
+            });
             result.conflicts++;
 
             // Auto-resolve if strategy provided
-            if (options?.conflictStrategy && options.conflictStrategy !== ConflictResolution.MANUAL) {
-              await this.resolveConflict(
-                userId,
-                savedConflict.id,
-                {
-                  resolution: options.conflictStrategy === ConflictResolution.NEWEST_WINS
+            if (
+              options?.conflictStrategy &&
+              options.conflictStrategy !== ConflictResolution.MANUAL
+            ) {
+              await this.resolveConflict(userId, savedConflict.id, {
+                resolution:
+                  options.conflictStrategy === ConflictResolution.NEWEST_WINS
                     ? ConflictResolution.CLIENT_WINS
-                    : options.conflictStrategy
-                }
-              );
+                    : options.conflictStrategy,
+              });
 
               await this.applySyncAction(item);
               item.synced = true;
@@ -737,7 +769,7 @@ export class OfflineSyncService {
       await transaction.commit();
 
       this.logger.log(
-        `Batch sync completed: ${result.synced} synced, ${result.failed} failed, ${result.conflicts} conflicts`
+        `Batch sync completed: ${result.synced} synced, ${result.failed} failed, ${result.conflicts} conflicts`,
       );
 
       return result;
@@ -754,7 +786,10 @@ export class OfflineSyncService {
    * @param entityType - The entity type
    * @returns The sync watermark
    */
-  async getSyncWatermark(deviceId: string, entityType: SyncEntityType): Promise<SyncWatermark> {
+  async getSyncWatermark(
+    deviceId: string,
+    entityType: SyncEntityType,
+  ): Promise<SyncWatermark> {
     const key = `${deviceId}:${entityType}`;
     let watermark = this.syncWatermarks.get(key);
 
@@ -788,7 +823,7 @@ export class OfflineSyncService {
   async updateSyncWatermark(
     deviceId: string,
     entityType: SyncEntityType,
-    timestamp: Date
+    timestamp: Date,
   ): Promise<void> {
     const key = `${deviceId}:${entityType}`;
     const watermark = await this.getSyncWatermark(deviceId, entityType);
@@ -797,7 +832,7 @@ export class OfflineSyncService {
     this.syncWatermarks.set(key, watermark);
 
     this.logger.log(
-      `Updated sync watermark for ${deviceId}:${entityType} to ${timestamp.toISOString()}`
+      `Updated sync watermark for ${deviceId}:${entityType} to ${timestamp.toISOString()}`,
     );
   }
 
@@ -814,7 +849,7 @@ export class OfflineSyncService {
    */
   async getChangedEntities(
     deviceId: string,
-    entityType: SyncEntityType
+    entityType: SyncEntityType,
   ): Promise<string[]> {
     const watermark = await this.getSyncWatermark(deviceId, entityType);
 
@@ -829,8 +864,8 @@ export class OfflineSyncService {
 
     // Filter entities modified after watermark
     const changedEntityIds = items
-      .filter(item => item.syncedAt! > watermark.lastSyncTimestamp)
-      .map(item => item.entityId);
+      .filter((item) => item.syncedAt! > watermark.lastSyncTimestamp)
+      .map((item) => item.entityId);
 
     return [...new Set(changedEntityIds)]; // Unique IDs
   }
@@ -838,13 +873,16 @@ export class OfflineSyncService {
   /**
    * Get entity IDs for a device
    */
-  private async getEntityIds(deviceId: string, userId: string): Promise<string[]> {
+  private async getEntityIds(
+    deviceId: string,
+    userId: string,
+  ): Promise<string[]> {
     const items = await this.queueModel.findAll({
       where: { deviceId, userId },
-      attributes: ['entityId']
+      attributes: ['entityId'],
     });
 
-    return items.map(item => item.entityId);
+    return items.map((item) => item.entityId);
   }
 
   /**

@@ -5,14 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsArray,
-  MaxLength,
-} from 'class-validator';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 
 /**
  * SMS Template types
@@ -48,7 +41,8 @@ export class CreateSmsTemplateDto {
   type: SmsTemplateType;
 
   @ApiProperty({
-    description: 'Template content with variables (use {{variableName}} syntax)',
+    description:
+      'Template content with variables (use {{variableName}} syntax)',
     example: 'Hi {{studentName}}, reminder: {{medicationName}} at {{time}}',
     maxLength: 1600,
   })
@@ -90,7 +84,11 @@ export class SendTemplatedSmsDto {
 
   @ApiProperty({
     description: 'Variables to substitute in template',
-    example: { studentName: 'John Doe', medicationName: 'Aspirin', time: '2:30 PM' },
+    example: {
+      studentName: 'John Doe',
+      medicationName: 'Aspirin',
+      time: '2:30 PM',
+    },
   })
   @IsNotEmpty()
   variables: Record<string, unknown>;

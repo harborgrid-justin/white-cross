@@ -1,26 +1,7 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HealthRiskAssessmentService } from './health-risk-assessment.service';
-import {
-  HealthRiskScoreDto,
-  HighRiskQueryDto,
-  HighRiskStudentDto,
-} from './dto';
+import { HealthRiskScoreDto, HighRiskQueryDto, HighRiskStudentDto } from './dto';
 
 /**
  * Health Risk Assessment Controller

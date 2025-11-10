@@ -1,4 +1,6 @@
-import { MessageType, MessagePriority, DeliveryStatus } from '../enums';
+import { DeliveryStatus } from '../enums/delivery-status.enum';
+import { MessagePriority } from '../enums/message-priority.enum';
+import { MessageType } from '../enums/message-type.enum';
 
 export interface ChannelSendData {
   to: string;

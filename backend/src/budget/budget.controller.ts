@@ -1,35 +1,28 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
-  ParseUUIDPipe,
-  ParseIntPipe,
-  ParseArrayPipe,
-  ValidationPipe,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseArrayPipe,
+  ParseIntPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BudgetService } from './budget.service';
-import { CreateBudgetCategoryDto } from './dto/create-budget-category.dto';
-import { UpdateBudgetCategoryDto } from './dto/update-budget-category.dto';
-import { CreateBudgetTransactionDto } from './dto/create-budget-transaction.dto';
-import { UpdateBudgetTransactionDto } from './dto/update-budget-transaction.dto';
-import { BudgetTransactionFiltersDto } from './dto/budget-transaction-filters.dto';
+import {
+  BudgetTransactionFiltersDto,
+  CreateBudgetCategoryDto,
+  CreateBudgetTransactionDto,
+  UpdateBudgetCategoryDto,
+  UpdateBudgetTransactionDto,
+} from '@/budget/dto';
 
 /**
  * Budget Controller
@@ -58,7 +51,8 @@ export class BudgetController {
   @Get('categories')
   @ApiOperation({
     summary: 'Get budget categories',
-    description: 'Retrieves budget categories for a specific fiscal year with optional filtering',
+    description:
+      'Retrieves budget categories for a specific fiscal year with optional filtering',
   })
   @ApiQuery({
     name: 'fiscalYear',

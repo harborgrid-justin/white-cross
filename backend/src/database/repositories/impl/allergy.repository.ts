@@ -3,14 +3,13 @@
  * Injectable NestJS repository for allergy tracking with severity management
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { Allergy } from '../../models/allergy.model';
 
 export interface AllergyAttributes {
@@ -48,13 +47,15 @@ export interface UpdateAllergyDTO {
 }
 
 @Injectable()
-export class AllergyRepository
-  extends BaseRepository<Allergy, AllergyAttributes, CreateAllergyDTO>
-{
+export class AllergyRepository extends BaseRepository<
+  Allergy,
+  AllergyAttributes,
+  CreateAllergyDTO
+> {
   constructor(
     @InjectModel(Allergy) model: typeof Allergy,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Allergy');
   }
@@ -63,16 +64,19 @@ export class AllergyRepository
     try {
       const allergies = await this.model.findAll({
         where: { studentId, active: true },
-        order: [['severity', 'DESC'], ['allergen', 'ASC']]
+        order: [
+          ['severity', 'DESC'],
+          ['allergen', 'ASC'],
+        ],
       });
-      return allergies.map((a: any) => this.mapToEntity(a));
+      return allergies.map((a: Allergy) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding allergies by student:', error);
       throw new RepositoryError(
         'Failed to find allergies by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -81,16 +85,19 @@ export class AllergyRepository
     try {
       const allergies = await this.model.findAll({
         where: { severity, active: true },
-        order: [['studentId', 'ASC'], ['allergen', 'ASC']]
+        order: [
+          ['studentId', 'ASC'],
+          ['allergen', 'ASC'],
+        ],
       });
-      return allergies.map((a: any) => this.mapToEntity(a));
+      return allergies.map((a: Allergy) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding allergies by severity:', error);
       throw new RepositoryError(
         'Failed to find allergies by severity',
         'FIND_BY_SEVERITY_ERROR',
         500,
-        { severity, error: (error as Error).message }
+        { severity, error: (error as Error).message },
       );
     }
   }
@@ -100,25 +107,29 @@ export class AllergyRepository
       const allergies = await this.model.findAll({
         where: {
           allergen: { [Op.iLike]: `%${allergen}%` },
-          active: true
+          active: true,
         },
-        order: [['severity', 'DESC']]
+        order: [['severity', 'DESC']],
       });
-      return allergies.map((a: any) => this.mapToEntity(a));
+      return allergies.map((a: Allergy) => this.mapToEntity(a));
     } catch (error) {
       this.logger.error('Error finding allergies by allergen:', error);
       throw new RepositoryError(
         'Failed to find allergies by allergen',
         'FIND_BY_ALLERGEN_ERROR',
         500,
-        { allergen, error: (error as Error).message }
+        { allergen, error: (error as Error).message },
       );
     }
   }
 
   protected async validateCreate(data: CreateAllergyDTO): Promise<void> {
     const existing = await this.model.findOne({
-      where: { studentId: data.studentId, allergen: data.allergen, active: true }
+      where: {
+        studentId: data.studentId,
+        allergen: data.allergen,
+        active: true,
+      },
     });
 
     if (existing) {
@@ -126,28 +137,33 @@ export class AllergyRepository
         'Allergy already exists for this student',
         'DUPLICATE_ALLERGY',
         409,
-        { studentId: data.studentId, allergen: data.allergen }
+        { studentId: data.studentId, allergen: data.allergen },
       );
     }
   }
 
-  protected async validateUpdate(id: string, data: UpdateAllergyDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateAllergyDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async invalidateCaches(allergy: any): Promise<void> {
+  protected async invalidateCaches(allergy: Allergy): Promise<void> {
     try {
       const allergyData = allergy.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, allergyData.id));
-      await this.cacheManager.deletePattern(`white-cross:allergy:student:${allergyData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, allergyData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:allergy:student:${allergyData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating allergy caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<AllergyAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

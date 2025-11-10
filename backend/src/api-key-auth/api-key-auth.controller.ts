@@ -1,20 +1,21 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Delete,
-  Param,
-  Body,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiKeyAuthService } from './api-key-auth.service';
-import { CreateApiKeyDto, ApiKeyResponseDto } from './dto';
+import { ApiKeyResponseDto } from './dto/api-key-response.dto';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../database/models/user.model';
+import type { Request as ExpressRequest } from 'express';
+
+interface AuthenticatedRequest extends ExpressRequest {
+  user: {
+    id: string;
+    email: string;
+    role: UserRole;
+  };
+}
 
 /**
  * API Key Authentication Controller
@@ -41,7 +42,7 @@ export class ApiKeyAuthController {
   })
   async generateApiKey(
     @Body() createDto: CreateApiKeyDto,
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
   ): Promise<ApiKeyResponseDto> {
     return this.apiKeyAuthService.generateApiKey(createDto, req.user.id);
   }
@@ -50,7 +51,7 @@ export class ApiKeyAuthController {
   @Roles(UserRole.ADMIN, UserRole.DISTRICT_ADMIN)
   @ApiOperation({ summary: 'List all API keys for current user' })
   @ApiResponse({ status: 200, description: 'API keys retrieved successfully' })
-  async listApiKeys(@Request() req): Promise<any[]> {
+  async listApiKeys(@Request() req: AuthenticatedRequest): Promise<any[]> {
     return this.apiKeyAuthService.listApiKeys(req.user.id);
   }
 
@@ -64,7 +65,7 @@ export class ApiKeyAuthController {
   })
   async rotateApiKey(
     @Param('id') id: string,
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
   ): Promise<ApiKeyResponseDto> {
     return this.apiKeyAuthService.rotateApiKey(id, req.user.id);
   }
@@ -73,7 +74,7 @@ export class ApiKeyAuthController {
   @Roles(UserRole.ADMIN, UserRole.DISTRICT_ADMIN)
   @ApiOperation({ summary: 'Revoke an API key' })
   @ApiResponse({ status: 200, description: 'API key revoked successfully' })
-  async revokeApiKey(@Param('id') id: string, @Request() req): Promise<void> {
+  async revokeApiKey(@Param('id') id: string, @Request() req: AuthenticatedRequest): Promise<void> {
     return this.apiKeyAuthService.revokeApiKey(id, req.user.id);
   }
 }

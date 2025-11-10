@@ -1,10 +1,4 @@
-import {
-  IsOptional,
-  IsUUID,
-  IsString,
-  IsDate,
-  IsEnum,
-} from 'class-validator';
+import { IsDate, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AppointmentStatus } from './update-appointment.dto';
@@ -51,7 +45,8 @@ export class StatisticsFiltersDto {
  */
 export class SearchAppointmentsDto {
   @ApiPropertyOptional({
-    description: 'Search query (searches in reason, notes, student name, nurse name)',
+    description:
+      'Search query (searches in reason, notes, student name, nurse name)',
     example: 'flu shot',
     maxLength: 100,
   })
@@ -143,7 +138,10 @@ export class SearchAppointmentsDto {
 export class BulkCancelDto {
   @ApiPropertyOptional({
     description: 'List of appointment UUIDs to cancel',
-    example: ['123e4567-e89b-12d3-a456-426614174000', '987fcdeb-51a2-43d1-b456-426614174001'],
+    example: [
+      '123e4567-e89b-12d3-a456-426614174000',
+      '987fcdeb-51a2-43d1-b456-426614174001',
+    ],
     type: 'array',
     items: { type: 'string', format: 'uuid' },
   })

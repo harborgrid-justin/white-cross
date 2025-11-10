@@ -1,84 +1,44 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EnterpriseFeaturesService } from './enterprise-features.service';
 import {
-  // Waitlist DTOs
   AddToWaitlistDto,
   AutoFillFromWaitlistDto,
-  WaitlistEntryResponseDto,
-  // Recurring Appointments DTOs
-  CreateRecurringTemplateDto,
-  RecurringTemplateResponseDto,
-  // Reminders DTOs
-  ScheduleRemindersDto,
-  CustomizeReminderPreferencesDto,
-  ReminderScheduleResponseDto,
-  // Evidence Management DTOs
-  UploadEvidenceDto,
-  DeleteEvidenceDto,
-  EvidenceFileResponseDto,
-  // Witness Statement DTOs
+  BulkMessageResponseDto,
   CaptureStatementDto,
-  VerifyStatementDto,
-  TranscribeVoiceStatementDto,
-  WitnessStatementResponseDto,
-  // Insurance Claim DTOs
+  ConsentFormResponseDto,
+  CreateConsentFormDto,
+  CreateMessageTemplateDto,
+  CreateRecurringTemplateDto,
+  CreateReportDefinitionDto,
+  CustomizeReminderPreferencesDto,
+  DashboardMetricResponseDto,
+  DeleteEvidenceDto,
+  DetectLanguageDto,
+  EvidenceFileResponseDto,
   GenerateClaimDto,
-  ExportClaimDto,
-  SubmitClaimDto,
-  InsuranceClaimResponseDto,
-  // HIPAA Compliance DTOs
   GenerateComplianceReportDto,
   HIPAAComplianceCheckResponseDto,
-  // Regulations DTOs
-  TrackRegulationsDto,
-  AssessImpactDto,
-  RegulationUpdateResponseDto,
-  // Consent Form DTOs
-  CreateConsentFormDto,
-  SignFormDto,
-  VerifySignatureDto,
-  RevokeConsentDto,
-  RenewConsentFormDto,
-  ConsentFormResponseDto,
-  // Message Template DTOs
-  CreateMessageTemplateDto,
-  RenderTemplateDto,
+  InsuranceClaimResponseDto,
   MessageTemplateResponseDto,
-  // Bulk Messaging DTOs
-  SendBulkMessageDto,
-  BulkMessageResponseDto,
-  // Translation DTOs
-  TranslateMessageDto,
-  DetectLanguageDto,
-  TranslateBulkMessagesDto,
-  // Custom Report DTOs
-  CreateReportDefinitionDto,
-  ExecuteReportDto,
-  ExportReportDto,
+  RecurringTemplateResponseDto,
+  RegulationUpdateResponseDto,
+  ReminderScheduleResponseDto,
+  RenderTemplateDto,
+  RenewConsentFormDto,
   ReportDefinitionResponseDto,
-  // Analytics DTOs
-  GetHealthTrendsDto,
-  DashboardMetricResponseDto,
+  RevokeConsentDto,
+  ScheduleRemindersDto,
+  SendBulkMessageDto,
+  SignFormDto,
+  TranscribeVoiceStatementDto,
+  TranslateBulkMessagesDto,
+  TranslateMessageDto,
+  UploadEvidenceDto,
+  VerifySignatureDto,
+  VerifyStatementDto,
+  WaitlistEntryResponseDto,
+  WitnessStatementResponseDto,
 } from './dto';
 
 @ApiTags('Enterprise Features')
@@ -94,9 +54,10 @@ export class EnterpriseFeaturesController {
   // ============================================
 
   @Post('waitlist')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Add student to waitlist',
-    description: 'Adds a student to the intelligent waitlist system with priority scoring based on medical urgency and appointment type.'
+    description:
+      'Adds a student to the intelligent waitlist system with priority scoring based on medical urgency and appointment type.',
   })
   @ApiBody({ type: AddToWaitlistDto })
   @ApiResponse({
@@ -413,10 +374,7 @@ export class EnterpriseFeaturesController {
   @Put('consent-forms/:formId/sign')
   @ApiOperation({ summary: 'Sign consent form' })
   @ApiResponse({ status: 200, description: 'Form signed successfully' })
-  async signForm(
-    @Param('formId') formId: string,
-    @Body() dto: SignFormDto,
-  ) {
+  async signForm(@Param('formId') formId: string, @Body() dto: SignFormDto) {
     return this.enterpriseFeaturesService.signForm(
       formId,
       dto.signedBy,

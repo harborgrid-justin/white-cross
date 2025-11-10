@@ -2,14 +2,13 @@
  * Drug Interaction Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 
 export interface DrugInteractionAttributes {
   id: string;
@@ -42,13 +41,15 @@ export interface UpdateDrugInteractionDTO {
 }
 
 @Injectable()
-export class DrugInteractionRepository
-  extends BaseRepository<any, DrugInteractionAttributes, CreateDrugInteractionDTO>
-{
+export class DrugInteractionRepository extends BaseRepository<
+  any,
+  DrugInteractionAttributes,
+  CreateDrugInteractionDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'DrugInteraction');
   }
@@ -59,16 +60,21 @@ export class DrugInteractionRepository
         where: {
           [Op.or]: [
             { drug1: { [Op.iLike]: `%${drugName}%` } },
-            { drug2: { [Op.iLike]: `%${drugName}%` } }
+            { drug2: { [Op.iLike]: `%${drugName}%` } },
           ],
-          isActive: true
+          isActive: true,
         },
-        order: [['severity', 'DESC']]
+        order: [['severity', 'DESC']],
       });
-      return interactions.map((i: any) => this.mapToEntity(i));
+      return interactions.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding drug interactions:', error);
-      throw new RepositoryError('Failed to find drug interactions', 'FIND_BY_DRUG_ERROR', 500, { drugName, error: (error as Error).message });
+      throw new RepositoryError(
+        'Failed to find drug interactions',
+        'FIND_BY_DRUG_ERROR',
+        500,
+        { drugName, error: (error as Error).message },
+      );
     }
   }
 
@@ -76,32 +82,42 @@ export class DrugInteractionRepository
     try {
       const interactions = await this.model.findAll({
         where: { severity, isActive: true },
-        order: [['drug1', 'ASC']]
+        order: [['drug1', 'ASC']],
       });
-      return interactions.map((i: any) => this.mapToEntity(i));
+      return interactions.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding interactions by severity:', error);
-      throw new RepositoryError('Failed to find interactions by severity', 'FIND_BY_SEVERITY_ERROR', 500, { severity, error: (error as Error).message });
+      throw new RepositoryError(
+        'Failed to find interactions by severity',
+        'FIND_BY_SEVERITY_ERROR',
+        500,
+        { severity, error: (error as Error).message },
+      );
     }
   }
 
-  protected async validateCreate(data: CreateDrugInteractionDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateDrugInteractionDTO,
+  ): Promise<void> {}
 
-  protected async validateUpdate(id: string, data: UpdateDrugInteractionDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateDrugInteractionDTO,
+  ): Promise<void> {}
 
-  protected async invalidateCaches(interaction: any): Promise<void> {
+  protected async invalidateCaches(interaction: DrugInteraction): Promise<void> {
     try {
       const interactionData = interaction.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, interactionData.id));
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, interactionData.id),
+      );
       await this.cacheManager.deletePattern(`white-cross:drug-interaction:*`);
     } catch (error) {
       this.logger.warn('Error invalidating drug interaction caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<DrugInteractionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

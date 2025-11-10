@@ -4,6 +4,6 @@ import { EnterpriseFeaturesService } from './enterprise-features.service';
 
 @Module({
   controllers: [EnterpriseFeaturesController],
-  providers: [EnterpriseFeaturesService]
+  providers: [EnterpriseFeaturesService],
 })
 export class EnterpriseFeaturesModule {}

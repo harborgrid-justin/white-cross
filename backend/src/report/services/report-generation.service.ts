@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ReportType } from '../constants/report.constants';
 import { HealthReportsService } from './health-reports.service';
 import { MedicationReportsService } from './medication-reports.service';
@@ -6,7 +6,6 @@ import { IncidentReportsService } from './incident-reports.service';
 import { AttendanceReportsService } from './attendance-reports.service';
 import { ComplianceReportsService } from './compliance-reports.service';
 import { DashboardService } from './dashboard.service';
-import { ReportExportService } from './report-export.service';
 import { ReportResult } from '../interfaces/report-types.interface';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
@@ -30,16 +29,12 @@ export class ReportGenerationService {
     private readonly attendanceReportsService: AttendanceReportsService,
     private readonly complianceReportsService: ComplianceReportsService,
     private readonly dashboardService: DashboardService,
-    private readonly reportExportService: ReportExportService,
   ) {}
 
   /**
    * Generate report by type
    */
-  async generateReport(
-    reportType: ReportType,
-    parameters: any,
-  ): Promise<ReportResult<any>> {
+  async generateReport(reportType: ReportType, parameters: any): Promise<ReportResult<any>> {
     const startTime = Date.now();
 
     try {
@@ -47,9 +42,7 @@ export class ReportGenerationService {
 
       switch (reportType) {
         case ReportType.HEALTH_TRENDS:
-          data = await this.healthReportsService.getHealthTrends(
-            parameters as HealthTrendsDto,
-          );
+          data = await this.healthReportsService.getHealthTrends(parameters as HealthTrendsDto);
           break;
 
         case ReportType.MEDICATION_USAGE:
@@ -115,9 +108,11 @@ export class ReportGenerationService {
       return data.length;
     } else if (typeof data === 'object' && data !== null) {
       // Find the first array property and count its length
-      const arrayProps = Object.keys(data).filter(key => Array.isArray(data[key]));
+      const arrayProps = Object.keys(data).filter((key) => Array.isArray((data as Record<string, unknown>)[key]));
       if (arrayProps.length > 0) {
-        return data[arrayProps[0]].length;
+        const firstArrayKey = arrayProps[0];
+        const arrayData = (data as Record<string, unknown>)[firstArrayKey];
+        return Array.isArray(arrayData) ? arrayData.length : 1;
       }
       return 1;
     }

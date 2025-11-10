@@ -8,28 +8,17 @@
  * @compliance HIPAA - PHI access permissions trigger audit logging
  */
 
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Logger,
-  Optional
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
   Permission,
-  UserRole,
+  type RbacConfig,
   ROLE_HIERARCHY,
   ROLE_PERMISSIONS,
-  type RbacConfig,
-  type UserProfile
+  type UserProfile,
+  UserRole,
 } from '../types/rbac.types';
-import {
-  PERMISSIONS_KEY,
-  PERMISSIONS_MODE_KEY,
-  type PermissionsMode
-} from '../decorators/permissions.decorator';
+import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../decorators/permissions.decorator';
 
 /**
  * Permissions Guard - Fine-grained permission-based authorization
@@ -57,13 +46,13 @@ export class PermissionsGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
-    @Optional() config?: RbacConfig
+    @Optional() config?: RbacConfig,
   ) {
     this.config = {
       enableHierarchy: true,
       enableAuditLogging: true,
       customPermissions: {},
-      ...config
+      ...config,
     };
   }
 
@@ -77,7 +66,7 @@ export class PermissionsGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
       PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()]
+      [context.getHandler(), context.getClass()],
     );
 
     // No permissions required - allow access
@@ -85,10 +74,11 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
-    const permissionsMode = this.reflector.getAllAndOverride<PermissionsMode>(
-      PERMISSIONS_MODE_KEY,
-      [context.getHandler(), context.getClass()]
-    ) || 'all';
+    const permissionsMode =
+      this.reflector.getAllAndOverride<PermissionsMode>(PERMISSIONS_MODE_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) || 'all';
 
     const request = context.switchToHttp().getRequest();
     const user: UserProfile = request.user;
@@ -98,13 +88,14 @@ export class PermissionsGuard implements CanActivate {
     }
 
     // Check permissions based on mode
-    const hasPermission = permissionsMode === 'all'
-      ? this.hasAllPermissions(user, requiredPermissions)
-      : this.hasAnyPermission(user, requiredPermissions);
+    const hasPermission =
+      permissionsMode === 'all'
+        ? this.hasAllPermissions(user, requiredPermissions)
+        : this.hasAnyPermission(user, requiredPermissions);
 
     if (!hasPermission) {
       const missingPermissions = requiredPermissions.filter(
-        permission => !this.hasPermission(user, permission)
+        (permission) => !this.hasPermission(user, permission),
       );
 
       if (this.config.enableAuditLogging) {
@@ -113,12 +104,12 @@ export class PermissionsGuard implements CanActivate {
           userRole: user.role,
           requiredPermissions,
           missingPermissions,
-          mode: permissionsMode
+          mode: permissionsMode,
         });
       }
 
       throw new ForbiddenException(
-        `Insufficient permissions. Required (${permissionsMode}): ${requiredPermissions.join(', ')}`
+        `Insufficient permissions. Required (${permissionsMode}): ${requiredPermissions.join(', ')}`,
       );
     }
 
@@ -127,7 +118,7 @@ export class PermissionsGuard implements CanActivate {
         userId: user.userId,
         userRole: user.role,
         requiredPermissions,
-        mode: permissionsMode
+        mode: permissionsMode,
       });
     }
 
@@ -142,7 +133,10 @@ export class PermissionsGuard implements CanActivate {
    * @param {Permission} requiredPermission - Required permission
    * @returns {boolean} True if user has permission
    */
-  private hasPermission(user: UserProfile, requiredPermission: Permission): boolean {
+  private hasPermission(
+    user: UserProfile,
+    requiredPermission: Permission,
+  ): boolean {
     const userRole = user.role as UserRole;
 
     // Check explicit user permissions first
@@ -181,9 +175,12 @@ export class PermissionsGuard implements CanActivate {
    * @param {Permission[]} requiredPermissions - Required permissions
    * @returns {boolean} True if user has at least one permission
    */
-  private hasAnyPermission(user: UserProfile, requiredPermissions: Permission[]): boolean {
-    return requiredPermissions.some(permission =>
-      this.hasPermission(user, permission)
+  private hasAnyPermission(
+    user: UserProfile,
+    requiredPermissions: Permission[],
+  ): boolean {
+    return requiredPermissions.some((permission) =>
+      this.hasPermission(user, permission),
     );
   }
 
@@ -195,9 +192,12 @@ export class PermissionsGuard implements CanActivate {
    * @param {Permission[]} requiredPermissions - Required permissions
    * @returns {boolean} True if user has all permissions
    */
-  private hasAllPermissions(user: UserProfile, requiredPermissions: Permission[]): boolean {
-    return requiredPermissions.every(permission =>
-      this.hasPermission(user, permission)
+  private hasAllPermissions(
+    user: UserProfile,
+    requiredPermissions: Permission[],
+  ): boolean {
+    return requiredPermissions.every((permission) =>
+      this.hasPermission(user, permission),
     );
   }
 }

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsUUID, IsOptional, IsArray, ArrayMinSize } from 'class-validator';
+import { ArrayMinSize, IsArray, IsOptional, IsUUID } from 'class-validator';
 
 /**
  * DTO for marking messages as read
@@ -15,7 +15,10 @@ export class MarkAsReadDto {
     description: 'Message IDs to mark as read',
     type: [String],
     minItems: 1,
-    example: ['123e4567-e89b-12d3-a456-426614174000', '789e0123-e89b-12d3-a456-426614174000'],
+    example: [
+      '123e4567-e89b-12d3-a456-426614174000',
+      '789e0123-e89b-12d3-a456-426614174000',
+    ],
   })
   @IsArray()
   @ArrayMinSize(1)

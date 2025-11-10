@@ -29,7 +29,7 @@ export class VerifyMedicationDto {
   })
   @IsNotEmpty()
   @IsString()
-  studentBarcode: string;
+  studentBarcode!: string;
 
   @ApiProperty({
     description: 'Medication barcode string (NDC or custom code)',
@@ -37,7 +37,7 @@ export class VerifyMedicationDto {
   })
   @IsNotEmpty()
   @IsString()
-  medicationBarcode: string;
+  medicationBarcode!: string;
 
   @ApiProperty({
     description: 'Nurse ID barcode string for verification',
@@ -45,5 +45,5 @@ export class VerifyMedicationDto {
   })
   @IsNotEmpty()
   @IsString()
-  nurseBarcode: string;
+  nurseBarcode!: string;
 }

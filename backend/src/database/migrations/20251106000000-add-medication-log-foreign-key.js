@@ -34,14 +34,21 @@ module.exports = {
       console.log('[MIGRATION] Starting: Add medication_logs foreign key constraint');
 
       // Step 1: Verify both tables exist
-      const [tables] = await queryInterface.sequelize.query(
+      const [medicationLogsTable] = await queryInterface.sequelize.query(
         `SELECT table_name FROM information_schema.tables
          WHERE table_schema = 'public'
-         AND table_name IN ('medication_logs', 'medications')`,
+         AND table_name = 'medication_logs'`,
         { transaction }
       );
 
-      if (tables.length !== 2) {
+      const [medicationsTable] = await queryInterface.sequelize.query(
+        `SELECT table_name FROM information_schema.tables
+         WHERE table_schema = 'public'
+         AND table_name = 'medications'`,
+        { transaction }
+      );
+
+      if (medicationLogsTable.length === 0 || medicationsTable.length === 0) {
         throw new Error(
           'Required tables (medication_logs, medications) do not exist. ' +
           'Please run base schema migrations first.'

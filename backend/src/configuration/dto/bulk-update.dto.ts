@@ -1,4 +1,4 @@
-import { IsArray, IsString, ValidateNested, IsOptional } from 'class-validator';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -24,7 +24,10 @@ class BulkConfigurationItem {
  * DTO for bulk configuration updates
  */
 export class ConfigurationBulkUpdateDto {
-  @ApiProperty({ description: 'Array of configuration updates', type: [BulkConfigurationItem] })
+  @ApiProperty({
+    description: 'Array of configuration updates',
+    type: [BulkConfigurationItem],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => BulkConfigurationItem)

@@ -10,7 +10,7 @@ export enum TransactionIsolationLevel {
   ReadUncommitted = 'ReadUncommitted',
   ReadCommitted = 'ReadCommitted',
   RepeatableRead = 'RepeatableRead',
-  Serializable = 'Serializable'
+  Serializable = 'Serializable',
 }
 
 /**
@@ -35,7 +35,7 @@ export enum CacheEvictionPolicy {
   /**
    * Time To Live
    */
-  TTL = 'TTL'
+  TTL = 'TTL',
 }
 
 /**
@@ -65,7 +65,7 @@ export enum CacheTTL {
   /**
    * 1 day
    */
-  DAY = 86400
+  DAY = 86400,
 }
 
 /**
@@ -96,7 +96,7 @@ export enum AuditAction {
   HEALTHCARE_ERROR = 'HEALTHCARE_ERROR',
   COMPLIANCE_ERROR = 'COMPLIANCE_ERROR',
   SECURITY_ERROR = 'SECURITY_ERROR',
-  APPLICATION_ERROR = 'APPLICATION_ERROR'
+  APPLICATION_ERROR = 'APPLICATION_ERROR',
 }
 
 /**
@@ -115,7 +115,7 @@ export const PHI_ENTITY_TYPES = [
   'Vaccination',
   'Screening',
   'VitalSigns',
-  'GrowthMeasurement'
+  'GrowthMeasurement',
 ] as const;
 
 export type PHIEntityType = (typeof PHI_ENTITY_TYPES)[number];
@@ -132,7 +132,7 @@ export const SENSITIVE_FIELDS = [
   'bankAccount',
   'apiKey',
   'secret',
-  'token'
+  'token',
 ] as const;
 
 /**
@@ -152,7 +152,7 @@ export const ENTITY_CACHE_TTL: Record<string, number> = {
   District: CacheTTL.DAY,
   School: CacheTTL.DAY,
   Role: CacheTTL.DAY,
-  Permission: CacheTTL.DAY
+  Permission: CacheTTL.DAY,
 };
 
 /**

@@ -4,14 +4,10 @@
  * @description Sanitize inputs to prevent XSS and injection attacks
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { SanitizableObject, SanitizableValue } from '../types/utility-types';
 
 /**
  * Sanitization Interceptor
@@ -29,7 +25,7 @@ export class SanitizationInterceptor implements NestInterceptor {
     path: /\.\.\//g,
   };
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
 
     // Sanitize request body
@@ -41,7 +37,7 @@ export class SanitizationInterceptor implements NestInterceptor {
     // Query parameters are typically handled by validation pipes instead
 
     return next.handle().pipe(
-      map(data => {
+      map((data) => {
         // Optionally sanitize response data
         // (Usually not needed as output encoding is handled by framework)
         return data;
@@ -51,19 +47,23 @@ export class SanitizationInterceptor implements NestInterceptor {
 
   /**
    * Sanitize object recursively
+   * @param obj - Object to sanitize
+   * @returns Sanitized object
    */
-  private sanitizeObject(obj: any): any {
+  private sanitizeObject(obj: SanitizableValue): SanitizableValue {
     if (!obj || typeof obj !== 'object') {
       return this.sanitizeValue(obj);
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.sanitizeObject(item));
+      return obj.map((item) => this.sanitizeObject(item));
     }
 
-    const sanitized: any = {};
+    const sanitized: SanitizableObject = {};
     for (const key in obj) {
-      sanitized[key] = this.sanitizeObject(obj[key]);
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        sanitized[key] = this.sanitizeObject(obj[key]);
+      }
     }
 
     return sanitized;
@@ -71,8 +71,10 @@ export class SanitizationInterceptor implements NestInterceptor {
 
   /**
    * Sanitize individual value
+   * @param value - Value to sanitize
+   * @returns Sanitized value
    */
-  private sanitizeValue(value: any): any {
+  private sanitizeValue(value: SanitizableValue): SanitizableValue {
     if (typeof value !== 'string') return value;
 
     // Remove potential XSS patterns

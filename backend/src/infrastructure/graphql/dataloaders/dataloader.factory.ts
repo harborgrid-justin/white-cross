@@ -14,10 +14,25 @@
  * @module DataLoaderFactory
  */
 import DataLoader from 'dataloader';
-import { Injectable, Scope } from '@nestjs/common';
-import { StudentService } from '../../../student/student.service';
-import { ContactService } from '../../../contact/services/contact.service';
-import { MedicationService } from '../../../medication/services/medication.service';
+import { Injectable, Logger, Scope } from '@nestjs/common';
+import { StudentService } from '@/student';
+import { ContactService } from '@/contact';
+import { MedicationService } from '@/medication';
+import { HealthRecordService } from '@/health-record';
+import { EmergencyContactService } from '@/emergency-contact';
+import { ChronicConditionService } from '@/chronic-condition';
+import { IncidentCoreService } from '@/incident-report';
+import { AllergyService } from '@/health-record/allergy';
+import type {
+  Allergy,
+  ChronicCondition,
+  Contact,
+  EmergencyContact,
+  HealthRecord,
+  IncidentReport,
+  Student,
+  StudentMedication,
+} from '@/database';
 
 /**
  * DataLoader Factory
@@ -28,10 +43,17 @@ import { MedicationService } from '../../../medication/services/medication.servi
  */
 @Injectable({ scope: Scope.REQUEST })
 export class DataLoaderFactory {
+  private readonly logger = new Logger(DataLoaderFactory.name);
+
   constructor(
     private readonly studentService: StudentService,
     private readonly contactService: ContactService,
     private readonly medicationService: MedicationService,
+    private readonly healthRecordService: HealthRecordService,
+    private readonly emergencyContactService: EmergencyContactService,
+    private readonly chronicConditionService: ChronicConditionService,
+    private readonly incidentCoreService: IncidentCoreService,
+    private readonly allergyService: AllergyService,
   ) {}
 
   /**
@@ -41,8 +63,8 @@ export class DataLoaderFactory {
    *
    * @returns DataLoader for students
    */
-  createStudentLoader(): DataLoader<string, any> {
-    return new DataLoader<string, any>(
+  createStudentLoader(): DataLoader<string, Student | null> {
+    return new DataLoader<string, Student | null>(
       async (studentIds: readonly string[]) => {
         try {
           // Convert readonly array to regular array
@@ -53,23 +75,25 @@ export class DataLoaderFactory {
 
           // Create a map for O(1) lookup, filtering out nulls
           const studentMap = new Map(
-            students.filter(student => student !== null).map((student) => [student!.id, student])
+            students
+              .filter((student) => student !== null)
+              .map((student) => [student.id, student]),
           );
 
           // Return students in the same order as requested IDs
           // Return null for IDs that weren't found
           return ids.map((id) => studentMap.get(id) || null);
         } catch (error) {
-          console.error('Error in student DataLoader:', error);
-          // Return array of errors matching the input length
-          return studentIds.map(() => error);
+          this.logger.error('Error in student DataLoader:', error);
+          // Return array of nulls to prevent breaking entire query
+          return studentIds.map(() => null);
         }
       },
       {
         cache: true, // Enable per-request caching
         batchScheduleFn: (callback) => setTimeout(callback, 1), // Batch within 1ms
         maxBatchSize: 100, // Limit batch size to prevent memory issues
-      }
+      },
     );
   }
 
@@ -81,28 +105,27 @@ export class DataLoaderFactory {
    *
    * @returns DataLoader for contacts by student ID
    */
-  createContactsByStudentLoader(): DataLoader<string, any[]> {
-    return new DataLoader<string, any[]>(
+  createContactsByStudentLoader(): DataLoader<string, Contact[]> {
+    return new DataLoader<string, Contact[]>(
       async (studentIds: readonly string[]) => {
         try {
           const ids = [...studentIds];
 
           // Fetch all contacts for these students in a single query
           // findByStudentIds already returns contacts grouped by student ID
-          const contactsByStudent = await this.contactService.findByStudentIds(ids);
-
           // Return contacts arrays in same order as requested IDs
-          return contactsByStudent;
+          return await this.contactService.findByStudentIds(ids);
         } catch (error) {
-          console.error('Error in contacts-by-student DataLoader:', error);
-          return studentIds.map(() => error);
+          this.logger.error('Error in contacts-by-student DataLoader:', error);
+          // Return array of empty arrays to prevent breaking entire query
+          return studentIds.map(() => []);
         }
       },
       {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -113,8 +136,8 @@ export class DataLoaderFactory {
    *
    * @returns DataLoader for contacts
    */
-  createContactLoader(): DataLoader<string, any> {
-    return new DataLoader<string, any>(
+  createContactLoader(): DataLoader<string, Contact | null> {
+    return new DataLoader<string, Contact | null>(
       async (contactIds: readonly string[]) => {
         try {
           const ids = [...contactIds];
@@ -124,21 +147,24 @@ export class DataLoaderFactory {
 
           // Create a map for O(1) lookup, filtering out nulls
           const contactMap = new Map(
-            contacts.filter(contact => contact !== null).map((contact) => [contact!.id, contact])
+            contacts
+              .filter((contact) => contact !== null)
+              .map((contact) => [contact.id, contact]),
           );
 
           // Return contacts in the same order as requested IDs
           return ids.map((id) => contactMap.get(id) || null);
         } catch (error) {
-          console.error('Error in contact DataLoader:', error);
-          return contactIds.map(() => error);
+          this.logger.error('Error in contact DataLoader:', error);
+          // Return array of nulls to prevent breaking entire query
+          return contactIds.map(() => null);
         }
       },
       {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -150,28 +176,27 @@ export class DataLoaderFactory {
    *
    * @returns DataLoader for medications by student ID
    */
-  createMedicationsByStudentLoader(): DataLoader<string, any[]> {
-    return new DataLoader<string, any[]>(
+  createMedicationsByStudentLoader(): DataLoader<string, StudentMedication[]> {
+    return new DataLoader<string, StudentMedication[]>(
       async (studentIds: readonly string[]) => {
         try {
           const ids = [...studentIds];
 
           // Fetch all medications for these students in a single query
           // findByStudentIds already returns medications grouped by student ID
-          const medicationsByStudent = await this.medicationService.findByStudentIds(ids);
-
           // Return medications arrays in same order as requested IDs
-          return medicationsByStudent;
+          return await this.medicationService.findByStudentIds(ids);
         } catch (error) {
-          console.error('Error in medications-by-student DataLoader:', error);
-          return studentIds.map(() => error);
+          this.logger.error('Error in medications-by-student DataLoader:', error);
+          // Return array of empty arrays to prevent breaking entire query
+          return studentIds.map(() => []);
         }
       },
       {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -182,8 +207,8 @@ export class DataLoaderFactory {
    *
    * @returns DataLoader for medications
    */
-  createMedicationLoader(): DataLoader<string, any> {
-    return new DataLoader<string, any>(
+  createMedicationLoader(): DataLoader<string, StudentMedication | null> {
+    return new DataLoader<string, StudentMedication | null>(
       async (medicationIds: readonly string[]) => {
         try {
           const ids = [...medicationIds];
@@ -193,21 +218,24 @@ export class DataLoaderFactory {
 
           // Create a map for O(1) lookup, filtering out nulls
           const medicationMap = new Map(
-            medications.filter(medication => medication !== null).map((medication) => [medication!.id, medication])
+            medications
+              .filter((medication) => medication !== null)
+              .map((medication) => [medication.id, medication]),
           );
 
           // Return medications in the same order as requested IDs
           return ids.map((id) => medicationMap.get(id) || null);
         } catch (error) {
-          console.error('Error in medication DataLoader:', error);
-          return medicationIds.map(() => error);
+          this.logger.error('Error in medication DataLoader:', error);
+          // Return array of nulls to prevent breaking entire query
+          return medicationIds.map(() => null);
         }
       },
       {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
     );
   }
 
@@ -215,31 +243,246 @@ export class DataLoaderFactory {
    * Create DataLoader for loading health records by student IDs
    *
    * Batches multiple health record lookups for students.
-   * Returns the latest health record for each student ID.
+   * Returns array of health records for each student ID.
+   *
+   * FIXED: Now uses actual HealthRecordService batch loading
+   * Performance: Eliminates N+1 queries when fetching health records for multiple students
    *
    * @returns DataLoader for health records by student ID
    */
-  createHealthRecordsByStudentLoader(): DataLoader<string, any> {
-    return new DataLoader<string, any>(
+  createHealthRecordsByStudentLoader(): DataLoader<string, HealthRecord[]> {
+    return new DataLoader<string, HealthRecord[]>(
       async (studentIds: readonly string[]) => {
         try {
           const ids = [...studentIds];
 
-          // This is a placeholder - implement when HealthRecordService is available
-          // For now, return null for all students
-          console.warn('HealthRecord DataLoader not fully implemented - requires HealthRecordService');
-
-          return ids.map(() => null);
+          // Use HealthRecordService batch loading method
+          // Return health records arrays in same order as requested IDs
+          return await this.healthRecordService.findByStudentIds(ids);
         } catch (error) {
-          console.error('Error in health-records-by-student DataLoader:', error);
-          return studentIds.map(() => error);
+          this.logger.error(
+            'Error in health-records-by-student DataLoader:',
+            error,
+          );
+          // Return array of empty arrays to prevent breaking entire query
+          return studentIds.map(() => []);
         }
       },
       {
         cache: true,
         batchScheduleFn: (callback) => setTimeout(callback, 1),
         maxBatchSize: 100,
-      }
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading health records by IDs
+   */
+  createHealthRecordLoader(): DataLoader<string, HealthRecord | null> {
+    return new DataLoader<string, HealthRecord | null>(
+      async (healthRecordIds: readonly string[]) => {
+        try {
+          const ids = [...healthRecordIds];
+          return await this.healthRecordService.findByIds(ids);
+        } catch (error) {
+          this.logger.error('Error in health-record DataLoader:', error);
+          return healthRecordIds.map(() => null);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading emergency contacts by student IDs
+   */
+  createEmergencyContactsByStudentLoader(): DataLoader<string, EmergencyContact[]> {
+    return new DataLoader<string, EmergencyContact[]>(
+      async (studentIds: readonly string[]) => {
+        try {
+          const ids = [...studentIds];
+          return await this.emergencyContactService.findByStudentIds(ids);
+        } catch (error) {
+          this.logger.error(
+            'Error in emergency-contacts-by-student DataLoader:',
+            error,
+          );
+          return studentIds.map(() => []);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading emergency contacts by IDs
+   */
+  createEmergencyContactLoader(): DataLoader<string, EmergencyContact | null> {
+    return new DataLoader<string, EmergencyContact | null>(
+      async (contactIds: readonly string[]) => {
+        try {
+          const ids = [...contactIds];
+          return await this.emergencyContactService.findByIds(ids);
+        } catch (error) {
+          this.logger.error('Error in emergency-contact DataLoader:', error);
+          return contactIds.map(() => null);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading chronic conditions by student IDs
+   */
+  createChronicConditionsByStudentLoader(): DataLoader<string, ChronicCondition[]> {
+    return new DataLoader<string, ChronicCondition[]>(
+      async (studentIds: readonly string[]) => {
+        try {
+          const ids = [...studentIds];
+          return await this.chronicConditionService.findByStudentIds(ids);
+        } catch (error) {
+          this.logger.error(
+            'Error in chronic-conditions-by-student DataLoader:',
+            error,
+          );
+          return studentIds.map(() => []);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading chronic conditions by IDs
+   */
+  createChronicConditionLoader(): DataLoader<string, ChronicCondition | null> {
+    return new DataLoader<string, ChronicCondition | null>(
+      async (conditionIds: readonly string[]) => {
+        try {
+          const ids = [...conditionIds];
+          return await this.chronicConditionService.findByIds(ids);
+        } catch (error) {
+          this.logger.error('Error in chronic-condition DataLoader:', error);
+          return conditionIds.map(() => null);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading incident reports by student IDs
+   */
+  createIncidentsByStudentLoader(): DataLoader<string, IncidentReport[]> {
+    return new DataLoader<string, IncidentReport[]>(
+      async (studentIds: readonly string[]) => {
+        try {
+          const ids = [...studentIds];
+          return await this.incidentCoreService.findByStudentIds(ids);
+        } catch (error) {
+          this.logger.error(
+            'Error in incidents-by-student DataLoader:',
+            error,
+          );
+          return studentIds.map(() => []);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading incident reports by IDs
+   */
+  createIncidentLoader(): DataLoader<string, IncidentReport | null> {
+    return new DataLoader<string, IncidentReport | null>(
+      async (incidentIds: readonly string[]) => {
+        try {
+          const ids = [...incidentIds];
+          return await this.incidentCoreService.findByIds(ids);
+        } catch (error) {
+          this.logger.error('Error in incident DataLoader:', error);
+          return incidentIds.map(() => null);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading allergies by student IDs
+   */
+  createAllergiesByStudentLoader(): DataLoader<string, Allergy[]> {
+    return new DataLoader<string, Allergy[]>(
+      async (studentIds: readonly string[]) => {
+        try {
+          const ids = [...studentIds];
+          return await this.allergyService.findByStudentIds(ids);
+        } catch (error) {
+          this.logger.error(
+            'Error in allergies-by-student DataLoader:',
+            error,
+          );
+          return studentIds.map(() => []);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
+    );
+  }
+
+  /**
+   * Create DataLoader for loading allergies by IDs
+   */
+  createAllergyLoader(): DataLoader<string, Allergy | null> {
+    return new DataLoader<string, Allergy | null>(
+      async (allergyIds: readonly string[]) => {
+        try {
+          const ids = [...allergyIds];
+          return await this.allergyService.findByIds(ids);
+        } catch (error) {
+          this.logger.error('Error in allergy DataLoader:', error);
+          return allergyIds.map(() => null);
+        }
+      },
+      {
+        cache: true,
+        batchScheduleFn: (callback) => setTimeout(callback, 1),
+        maxBatchSize: 100,
+      },
     );
   }
 
@@ -253,12 +496,38 @@ export class DataLoaderFactory {
    */
   createLoaders() {
     return {
+      // Student DataLoaders
       studentLoader: this.createStudentLoader(),
+
+      // Contact DataLoaders
       contactLoader: this.createContactLoader(),
       contactsByStudentLoader: this.createContactsByStudentLoader(),
+
+      // Medication DataLoaders
       medicationLoader: this.createMedicationLoader(),
       medicationsByStudentLoader: this.createMedicationsByStudentLoader(),
+
+      // Health Record DataLoaders
+      healthRecordLoader: this.createHealthRecordLoader(),
       healthRecordsByStudentLoader: this.createHealthRecordsByStudentLoader(),
+
+      // Emergency Contact DataLoaders
+      emergencyContactLoader: this.createEmergencyContactLoader(),
+      emergencyContactsByStudentLoader:
+        this.createEmergencyContactsByStudentLoader(),
+
+      // Chronic Condition DataLoaders
+      chronicConditionLoader: this.createChronicConditionLoader(),
+      chronicConditionsByStudentLoader:
+        this.createChronicConditionsByStudentLoader(),
+
+      // Incident Report DataLoaders
+      incidentLoader: this.createIncidentLoader(),
+      incidentsByStudentLoader: this.createIncidentsByStudentLoader(),
+
+      // Allergy DataLoaders
+      allergyLoader: this.createAllergyLoader(),
+      allergiesByStudentLoader: this.createAllergiesByStudentLoader(),
     };
   }
 }

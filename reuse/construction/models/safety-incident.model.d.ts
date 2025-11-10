@@ -1,0 +1,40 @@
+import { Model } from 'sequelize-typescript';
+import { IncidentType, IncidentSeverity, IncidentStatus } from '../types/safety.types';
+export declare class SafetyIncident extends Model {
+    id: number;
+    incidentNumber: string;
+    projectId: number;
+    safetyPlanId?: number;
+    incidentType: IncidentType;
+    severity: IncidentSeverity;
+    occurredDate: Date;
+    occurredTime: string;
+    location: string;
+    description: string;
+    injuredPersons: string[];
+    witnesses: string[];
+    immediateActions: string;
+    reportedBy: string;
+    reportedDate: Date;
+    contractor?: string;
+    trade?: string;
+    activity: string;
+    oshaRecordable: boolean;
+    workersCompClaim: boolean;
+    lostWorkDays: number;
+    restrictedWorkDays: number;
+    status: IncidentStatus;
+    investigationRequired: boolean;
+    investigationId?: string;
+    rootCause?: string;
+    correctiveActions: string[];
+    closedBy?: string;
+    closedDate?: Date;
+    attachments: string[];
+    metadata: Record<string, any>;
+    createdBy: string;
+    updatedBy: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+//# sourceMappingURL=safety-incident.model.d.ts.map

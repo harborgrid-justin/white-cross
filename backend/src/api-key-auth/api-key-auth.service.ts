@@ -1,8 +1,10 @@
-import { Injectable, Logger, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ApiKeyEntity } from './entities/api-key.entity';
-import { CreateApiKeyDto, ApiKeyResponseDto } from './dto';
+import { ApiKeyResponseDto } from './dto/api-key-response.dto';
+import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import * as crypto from 'crypto';
+import { AppConfigService } from '../config/app-config.service';
 
 /**
  * API Key Authentication Service
@@ -19,6 +21,7 @@ export class ApiKeyAuthService {
   constructor(
     @InjectModel(ApiKeyEntity)
     private readonly apiKeyModel: typeof ApiKeyEntity,
+    private readonly configService: AppConfigService,
   ) {}
 
   /**
@@ -37,7 +40,7 @@ export class ApiKeyAuthService {
     try {
       // Generate secure random API key
       const randomBytes = crypto.randomBytes(32).toString('hex');
-      const environment = process.env.NODE_ENV === 'production' ? 'live' : 'test';
+      const environment = this.configService.isProduction ? 'live' : 'test';
       const apiKey = `wc_${environment}_${randomBytes}`;
 
       // Hash the API key for storage (SHA-256)
@@ -163,7 +166,9 @@ export class ApiKeyAuthService {
 
     await apiKeyRecord.update({ isActive: false });
 
-    this.logger.log(`API key revoked: ${apiKeyRecord.keyPrefix}... by user ${userId}`);
+    this.logger.log(
+      `API key revoked: ${apiKeyRecord.keyPrefix}... by user ${userId}`,
+    );
   }
 
   /**
@@ -229,7 +234,9 @@ export class ApiKeyAuthService {
     // Revoke old key
     await oldKey.update({ isActive: false });
 
-    this.logger.log(`API key rotated: ${oldKey.keyPrefix}... -> ${newKey.keyPrefix}...`);
+    this.logger.log(
+      `API key rotated: ${oldKey.keyPrefix}... -> ${newKey.keyPrefix}...`,
+    );
 
     return newKey;
   }

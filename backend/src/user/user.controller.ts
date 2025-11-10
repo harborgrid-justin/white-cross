@@ -6,41 +6,32 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
+  ClassSerializerInterceptor,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  ValidationPipe,
-  UsePipes,
+  Param,
+  Patch,
+  Post,
+  Query,
   UseInterceptors,
-  ClassSerializerInterceptor,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import {
-  CreateUserDto,
-  UpdateUserDto,
-  UserChangePasswordDto,
-  AdminResetPasswordDto,
-  UserFiltersDto,
-  UserResponseDto,
-  UserListResponseDto,
-  UserStatisticsDto,
-} from './dto';
-import { UserRole } from './enums/user-role.enum';
+import { AdminResetPasswordDto } from './dto/reset-password.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserChangePasswordDto } from './dto/change-password.dto';
+import { UserFiltersDto } from './dto/user-filters.dto';
+import { UserListResponseDto } from './dto/user-response.dto';
+import { UserResponseDto } from './dto/user-response.dto';
+import { UserStatisticsDto } from './dto/user-statistics.dto';
+import { UserRole } from '@/user/enums';
 
 @ApiTags('users')
 @ApiBearerAuth()

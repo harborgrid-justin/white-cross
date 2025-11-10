@@ -53,7 +53,7 @@ export interface InventoryItem {
  * <EditInventoryItemContent itemId="123" />
  * ```
  */
-export default function EditInventoryItemContent({ itemId }: EditInventoryItemContentProps) {
+function EditInventoryItemContent({ itemId }: EditInventoryItemContentProps) {
   const [formData, setFormData] = useState<Partial<InventoryItem>>({});
   const [originalData, setOriginalData] = useState<Partial<InventoryItem>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -567,3 +567,7 @@ export default function EditInventoryItemContent({ itemId }: EditInventoryItemCo
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { EditInventoryItemContent }
+export default EditInventoryItemContent

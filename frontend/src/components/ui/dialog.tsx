@@ -108,6 +108,16 @@ const DialogDescription = React.forwardRef<
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
+// Export Modal as an alias for Dialog for backward compatibility
+export const Modal = Dialog
+export const ModalContent = DialogContent
+export const ModalHeader = DialogHeader
+export const ModalFooter = DialogFooter
+export const ModalTitle = DialogTitle
+export const ModalDescription = DialogDescription
+export const ModalTrigger = DialogTrigger
+export const ModalClose = DialogClose
+
 export {
   Dialog,
   DialogPortal,

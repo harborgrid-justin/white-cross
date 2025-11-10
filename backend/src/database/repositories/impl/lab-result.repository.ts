@@ -3,14 +3,12 @@
  * Injectable NestJS repository for laboratory test result tracking
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 
 export interface LabResultAttributes {
   id: string;
@@ -53,13 +51,15 @@ export interface UpdateLabResultDTO {
 }
 
 @Injectable()
-export class LabResultRepository
-  extends BaseRepository<any, LabResultAttributes, CreateLabResultDTO>
-{
+export class LabResultRepository extends BaseRepository<
+  any,
+  LabResultAttributes,
+  CreateLabResultDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'LabResult');
   }
@@ -68,16 +68,16 @@ export class LabResultRepository
     try {
       const results = await this.model.findAll({
         where: { studentId },
-        order: [['testDate', 'DESC']]
+        order: [['testDate', 'DESC']],
       });
-      return results.map((r: any) => this.mapToEntity(r));
+      return results.map((r: LabResult) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding lab results by student:', error);
       throw new RepositoryError(
         'Failed to find lab results by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -86,34 +86,37 @@ export class LabResultRepository
     try {
       const results = await this.model.findAll({
         where: { studentId, isAbnormal: true },
-        order: [['testDate', 'DESC']]
+        order: [['testDate', 'DESC']],
       });
-      return results.map((r: any) => this.mapToEntity(r));
+      return results.map((r: LabResult) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding abnormal lab results:', error);
       throw new RepositoryError(
         'Failed to find abnormal lab results',
         'FIND_ABNORMAL_RESULTS_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByTestName(studentId: string, testName: string): Promise<LabResultAttributes[]> {
+  async findByTestName(
+    studentId: string,
+    testName: string,
+  ): Promise<LabResultAttributes[]> {
     try {
       const results = await this.model.findAll({
         where: { studentId, testName },
-        order: [['testDate', 'DESC']]
+        order: [['testDate', 'DESC']],
       });
-      return results.map((r: any) => this.mapToEntity(r));
+      return results.map((r: LabResult) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding lab results by test name:', error);
       throw new RepositoryError(
         'Failed to find lab results by test name',
         'FIND_BY_TEST_NAME_ERROR',
         500,
-        { studentId, testName, error: (error as Error).message }
+        { studentId, testName, error: (error as Error).message },
       );
     }
   }
@@ -122,27 +125,32 @@ export class LabResultRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateLabResultDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateLabResultDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async invalidateCaches(labResult: any): Promise<void> {
+  protected async invalidateCaches(labResult: LabResult): Promise<void> {
     try {
       const labResultData = labResult.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, labResultData.id));
-      await this.cacheManager.deletePattern(`white-cross:lab-result:student:${labResultData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, labResultData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:lab-result:student:${labResultData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating lab result caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<LabResultAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       resultValue: '[PHI]',
-      notes: '[PHI]'
+      notes: '[PHI]',
     });
   }
 }
-
-

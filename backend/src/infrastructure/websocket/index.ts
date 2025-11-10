@@ -36,3 +36,5 @@ export * from './services';
 export * from './pipes';
 export * from './interceptors';
 export * from './middleware';
+
+export * from './websocket-enhanced.gateway';

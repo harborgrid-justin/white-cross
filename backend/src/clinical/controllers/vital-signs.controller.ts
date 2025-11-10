@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VitalSignsService } from '../services/vital-signs.service';
 import { RecordVitalsDto } from '../dto/vitals/record-vitals.dto';
 import { UpdateVitalsDto } from '../dto/vitals/update-vitals.dto';
@@ -12,9 +12,10 @@ export class VitalSignsController {
   constructor(private readonly vitalsService: VitalSignsService) {}
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Record vital signs',
-    description: 'Records vital signs for a student during a clinical visit. Supports multiple vital sign types including blood pressure, temperature, heart rate, respiratory rate, oxygen saturation, height, weight, and BMI calculations.'
+    description:
+      'Records vital signs for a student during a clinical visit. Supports multiple vital sign types including blood pressure, temperature, heart rate, respiratory rate, oxygen saturation, height, weight, and BMI calculations.',
   })
   @ApiBody({ type: RecordVitalsDto })
   @ApiResponse({
@@ -29,15 +30,36 @@ export class VitalSignsController {
   }
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Query vital signs',
-    description: 'Retrieves vital signs with optional filtering by student, date range, visit, or vital type. Supports pagination and sorting options.'
+    description:
+      'Retrieves vital signs with optional filtering by student, date range, visit, or vital type. Supports pagination and sorting options.',
   })
-  @ApiQuery({ name: 'studentId', required: false, description: 'Filter by student ID' })
-  @ApiQuery({ name: 'visitId', required: false, description: 'Filter by visit ID' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Start date for filtering' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'End date for filtering' })
-  @ApiQuery({ name: 'vitalType', required: false, description: 'Filter by vital sign type' })
+  @ApiQuery({
+    name: 'studentId',
+    required: false,
+    description: 'Filter by student ID',
+  })
+  @ApiQuery({
+    name: 'visitId',
+    required: false,
+    description: 'Filter by visit ID',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Start date for filtering',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'End date for filtering',
+  })
+  @ApiQuery({
+    name: 'vitalType',
+    required: false,
+    description: 'Filter by vital sign type',
+  })
   @ApiResponse({
     status: 200,
     description: 'Vital signs retrieved successfully',
@@ -47,12 +69,11 @@ export class VitalSignsController {
     return this.vitalsService.findAll(filters);
   }
 
-
-
   @Get('student/:studentId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get vital history for a student',
-    description: 'Retrieves complete vital signs history for a student. Includes growth charts, vital trends, and abnormal readings flagged for clinical attention.'
+    description:
+      'Retrieves complete vital signs history for a student. Includes growth charts, vital trends, and abnormal readings flagged for clinical attention.',
   })
   @ApiParam({ name: 'studentId', description: 'Student UUID', format: 'uuid' })
   @ApiResponse({
@@ -66,13 +87,22 @@ export class VitalSignsController {
   }
 
   @Get('student/:studentId/trends')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get vital trends for a student',
-    description: 'Analyzes vital signs trends over time for a specific student. Provides growth velocity, percentile tracking, and identification of concerning patterns requiring clinical follow-up.'
+    description:
+      'Analyzes vital signs trends over time for a specific student. Provides growth velocity, percentile tracking, and identification of concerning patterns requiring clinical follow-up.',
   })
   @ApiParam({ name: 'studentId', description: 'Student UUID', format: 'uuid' })
-  @ApiQuery({ name: 'startDate', description: 'Start date for trend analysis', example: '2024-01-01' })
-  @ApiQuery({ name: 'endDate', description: 'End date for trend analysis', example: '2024-12-31' })
+  @ApiQuery({
+    name: 'startDate',
+    description: 'Start date for trend analysis',
+    example: '2024-01-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    description: 'End date for trend analysis',
+    example: '2024-12-31',
+  })
   @ApiResponse({
     status: 200,
     description: 'Vital trends retrieved successfully',
@@ -83,17 +113,26 @@ export class VitalSignsController {
   async getTrends(
     @Param('studentId') studentId: string,
     @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string
+    @Query('endDate') endDate: string,
   ) {
-    return this.vitalsService.getTrends(studentId, new Date(startDate), new Date(endDate));
+    return this.vitalsService.getTrends(
+      studentId,
+      new Date(startDate),
+      new Date(endDate),
+    );
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get vital signs by ID',
-    description: 'Retrieves a specific vital signs record by its UUID. Returns detailed information including measurements, percentiles, and clinical flags.'
+    description:
+      'Retrieves a specific vital signs record by its UUID. Returns detailed information including measurements, percentiles, and clinical flags.',
   })
-  @ApiParam({ name: 'id', description: 'Vital signs record UUID', format: 'uuid' })
+  @ApiParam({
+    name: 'id',
+    description: 'Vital signs record UUID',
+    format: 'uuid',
+  })
   @ApiResponse({
     status: 200,
     description: 'Vital signs record retrieved successfully',
@@ -105,11 +144,16 @@ export class VitalSignsController {
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update vital signs',
-    description: 'Updates an existing vital signs record. Maintains audit trail of changes for clinical accuracy and compliance tracking.'
+    description:
+      'Updates an existing vital signs record. Maintains audit trail of changes for clinical accuracy and compliance tracking.',
   })
-  @ApiParam({ name: 'id', description: 'Vital signs record UUID', format: 'uuid' })
+  @ApiParam({
+    name: 'id',
+    description: 'Vital signs record UUID',
+    format: 'uuid',
+  })
   @ApiBody({ type: UpdateVitalsDto })
   @ApiResponse({
     status: 200,
@@ -124,11 +168,16 @@ export class VitalSignsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete vital signs',
-    description: 'Soft deletes a vital signs record. Record is retained for audit purposes but marked as deleted. Permanent deletion may be restricted by retention policies.'
+    description:
+      'Soft deletes a vital signs record. Record is retained for audit purposes but marked as deleted. Permanent deletion may be restricted by retention policies.',
   })
-  @ApiParam({ name: 'id', description: 'Vital signs record UUID', format: 'uuid' })
+  @ApiParam({
+    name: 'id',
+    description: 'Vital signs record UUID',
+    format: 'uuid',
+  })
   @ApiResponse({
     status: 204,
     description: 'Vital signs record deleted successfully',

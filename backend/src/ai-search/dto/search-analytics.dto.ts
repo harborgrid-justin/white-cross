@@ -5,14 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsString,
-  IsNumber,
-  IsEnum,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, Max, Min } from 'class-validator';
 
 export enum AnalyticsPeriod {
   DAY = 'day',

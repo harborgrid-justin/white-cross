@@ -5,20 +5,9 @@
  * Tracks all access to PHI and critical system changes
  */
 
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-  BeforeCreate,
-  Scopes,
-  BeforeUpdate
-} from 'sequelize-typescript';
-import { Op } from 'sequelize';
+import { Column, DataType, Default, Model, PrimaryKey, Scopes, Table } from 'sequelize-typescript';
 import { AuditAction } from '../types/database.enums';
+import { LoggerService } from '../../shared/logging/logger.service';
 
 /**
  * Compliance regulation types for audit tracking
@@ -27,8 +16,8 @@ export enum ComplianceType {
   HIPAA = 'HIPAA',
   FERPA = 'FERPA',
   GDPR = 'GDPR',
-  GENERAL = 'GENERAL'
-  }
+  GENERAL = 'GENERAL',
+}
 
 /**
  * Severity levels for audit events
@@ -37,8 +26,8 @@ export enum AuditSeverity {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL'
-  }
+  CRITICAL = 'CRITICAL',
+}
 
 /**
  * AuditLog attributes interface
@@ -81,10 +70,10 @@ export interface AuditLogAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'audit_logs',
@@ -121,10 +110,32 @@ export interface AuditLogAttributes {
     { fields: ['changes'], using: 'gin' },
     {
       fields: ['createdAt'],
-      name: 'idx_audit_log_created_at'
-    }
-  ]
-  })
+      name: 'idx_audit_log_created_at',
+    },
+  ],
+  hooks: {
+    beforeCreate: (instance: AuditLog) => {
+      // Ensure audit logs have a timestamp
+      if (!instance.createdAt) {
+        instance.createdAt = new Date();
+      }
+    },
+    beforeUpdate: (instance: AuditLog) => {
+      if (instance.changed()) {
+        const changedFields = instance.changed() as string[];
+        // AuditLog modifications should be logged but we avoid infinite recursion
+        // by just logging to console for audit log changes
+        const logger = new LoggerService();
+        logger.setContext('AuditLog');
+        logger.warn(
+          `AuditLog ${instance.id} modified at ${new Date().toISOString()}`,
+        );
+        logger.warn(`Changed fields: ${changedFields.join(', ')}`);
+        // NOTE: We do NOT call audit service here to avoid infinite recursion
+      }
+    },
+  },
+})
 export class AuditLog extends Model<AuditLogAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -134,191 +145,157 @@ export class AuditLog extends Model<AuditLogAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AuditAction)]
+      isIn: [Object.values(AuditAction)],
     },
-    allowNull: false
+    allowNull: false,
   })
-  @Index
-  action: AuditAction;
+  action!: AuditAction;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    comment: 'Type of entity affected (Student, HealthRecord, User, etc.)'
+    comment: 'Type of entity affected (Student, HealthRecord, User, etc.)',
   })
-  @Index
-  entityType: string;
+  entityType!: string;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of the entity affected (null for bulk operations)'
+    comment: 'ID of the entity affected (null for bulk operations)',
   })
-  @Index
-  entityId: string | null;
+  entityId!: string | null;
 
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'ID of user who performed the action (null for system operations)'
+    comment: 'ID of user who performed the action (null for system operations)',
   })
-  @Index
-  userId: string | null;
+  userId!: string | null;
 
   @Column({
     type: DataType.STRING(200),
     allowNull: true,
-    comment: 'Name of user who performed the action (denormalized for reporting)'
+    comment:
+      'Name of user who performed the action (denormalized for reporting)',
   })
-  userName: string | null;
+  userName!: string | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Complete change data (for backward compatibility)'
+    comment: 'Complete change data (for backward compatibility)',
   })
-  changes: any;
+  changes!: any;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Previous values before the change (for UPDATE operations)'
+    comment: 'Previous values before the change (for UPDATE operations)',
   })
-  previousValues: any;
+  previousValues!: any;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'New values after the change (for CREATE/UPDATE operations)'
+    comment: 'New values after the change (for CREATE/UPDATE operations)',
   })
-  newValues: any;
+  newValues!: any;
 
   @Column({
     type: DataType.STRING(45),
     allowNull: true,
-    comment: 'IP address of the client making the request'
+    comment: 'IP address of the client making the request',
   })
-  ipAddress: string | null;
+  ipAddress!: string | null;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'User agent string of the client'
+    comment: 'User agent string of the client',
   })
-  userAgent: string | null;
+  userAgent!: string | null;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'Request correlation ID for tracing related operations'
+    comment: 'Request correlation ID for tracing related operations',
   })
-  @Index
-  requestId: string | null;
+  requestId!: string | null;
 
   @Column({
     type: DataType.STRING(100),
     allowNull: true,
-    comment: 'Session ID for grouping operations by user session'
+    comment: 'Session ID for grouping operations by user session',
   })
-  @Index
-  sessionId: string | null;
+  sessionId!: string | null;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Flag indicating if this audit log involves Protected Health Information'
+    comment:
+      'Flag indicating if this audit log involves Protected Health Information',
   })
-  @Index
-  isPHI: boolean;
+  isPHI!: boolean;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ComplianceType)]
+      isIn: [Object.values(ComplianceType)],
     },
     allowNull: false,
-    defaultValue: ComplianceType.GENERAL
+    defaultValue: ComplianceType.GENERAL,
   })
-  @Index
-  complianceType: ComplianceType;
+  complianceType!: ComplianceType;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AuditSeverity)]
+      isIn: [Object.values(AuditSeverity)],
     },
     allowNull: false,
-    defaultValue: AuditSeverity.LOW
+    defaultValue: AuditSeverity.LOW,
   })
-  @Index
-  severity: AuditSeverity;
+  severity!: AuditSeverity;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-    comment: 'Whether the operation completed successfully'
+    comment: 'Whether the operation completed successfully',
   })
-  @Index
-  success: boolean;
+  success!: boolean;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
-    comment: 'Error message if operation failed'
+    comment: 'Error message if operation failed',
   })
-  errorMessage: string | null;
+  errorMessage!: string | null;
 
   @Column({
     type: DataType.JSONB,
     allowNull: true,
-    comment: 'Additional metadata for context (query params, filter criteria, etc.)'
+    comment:
+      'Additional metadata for context (query params, filter criteria, etc.)',
   })
-  metadata: any;
+  metadata!: any;
 
   @Column({
     type: DataType.ARRAY(DataType.STRING(255)),
     allowNull: false,
     defaultValue: [],
-    comment: 'Tags for categorization and filtering'
+    comment: 'Tags for categorization and filtering',
   })
-  tags: string[];
+  tags!: string[];
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when the action was performed'
+    comment: 'Timestamp when the action was performed',
   })
-  @Index
   declare createdAt?: Date;
-
-  /**
-   * Hook to prevent updates to audit logs (immutability)
-   */
-
-  // Hooks for HIPAA compliance
-  @BeforeCreate
-  @BeforeUpdate
-  static async auditPHIAccess(instance: AuditLog) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      // AuditLog modifications should be logged but we avoid infinite recursion
-      // by just logging to console for audit log changes
-      console.log(`[AUDIT] AuditLog ${instance.id} modified at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // NOTE: We do NOT call audit service here to avoid infinite recursion
-    }
-  }
-
-  @BeforeCreate
-  static preventModification(instance: AuditLog) {
-    // Ensure audit logs have a timestamp
-    if (!instance.createdAt) {
-      instance.createdAt = new Date();
-    }
-  }
 
   /**
    * Get a sanitized version of the audit log for export
@@ -341,8 +318,8 @@ export class AuditLog extends Model<AuditLogAttributes> {
         severity: data.severity,
         success: data.success,
         createdAt: data.createdAt,
-        tags: data.tags
-  };
+        tags: data.tags,
+      };
     }
 
     return data;
@@ -354,9 +331,14 @@ export class AuditLog extends Model<AuditLogAttributes> {
   shouldRetain(retentionDate: Date): boolean {
     // HIPAA requires 6 years minimum, FERPA requires 3+ years
     // We use 7 years for HIPAA to be safe
-    const retentionYears = this.complianceType === ComplianceType.HIPAA ? 7 :
-                          this.complianceType === ComplianceType.FERPA ? 5 :
-                          this.isPHI ? 7 : 3;
+    const retentionYears =
+      this.complianceType === ComplianceType.HIPAA
+        ? 7
+        : this.complianceType === ComplianceType.FERPA
+          ? 5
+          : this.isPHI
+            ? 7
+            : 3;
 
     const expirationDate = new Date(this.createdAt!);
     expirationDate.setFullYear(expirationDate.getFullYear() + retentionYears);
@@ -369,7 +351,9 @@ export class AuditLog extends Model<AuditLogAttributes> {
    */
   getDescription(): string {
     const user = this.userName || this.userId || 'SYSTEM';
-    const entity = this.entityId ? `${this.entityType}:${this.entityId}` : this.entityType;
+    const entity = this.entityId
+      ? `${this.entityType}:${this.entityId}`
+      : this.entityType;
 
     return `${user} performed ${this.action} on ${entity}`;
   }

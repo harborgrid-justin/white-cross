@@ -46,15 +46,13 @@ import * as SMTPTransport from 'nodemailer/lib/smtp-transport';
 import * as validator from 'email-validator';
 import {
   AlertEmailData,
-  GenericEmailData,
   EmailDeliveryResult,
-  SendEmailDto,
-  EmailTemplate,
   EmailPriority,
-  EmailValidationResult,
   EmailStatistics,
-  EmailTrackingData,
-  BulkEmailDto,
+  EmailTemplate,
+  EmailValidationResult,
+  GenericEmailData,
+  SendEmailDto,
 } from './dto/email.dto';
 import { EmailTemplateService } from './email-template.service';
 import { EmailQueueService } from './email-queue.service';
@@ -164,8 +162,12 @@ export class EmailService {
         host: this.configService.get<string>('EMAIL_SMTP_HOST', 'localhost'),
         port: this.configService.get<number>('EMAIL_SMTP_PORT', 587),
         secure: this.configService.get<boolean>('EMAIL_SMTP_SECURE', false),
-        user: this.configService.get<string>('EMAIL_SMTP_USER', '') ? 'configured' : 'not configured',
-        password: this.configService.get<string>('EMAIL_SMTP_PASS', '') ? 'configured' : 'not configured',
+        user: this.configService.get<string>('EMAIL_SMTP_USER', '')
+          ? 'configured'
+          : 'not configured',
+        password: this.configService.get<string>('EMAIL_SMTP_PASS', '')
+          ? 'configured'
+          : 'not configured',
       };
 
       this.logger.error(`Email transporter verification failed: ${error.message}`, {
@@ -268,11 +270,7 @@ export class EmailService {
 
     try {
       // Validate all recipient emails
-      const allRecipients = [
-        ...emailData.to,
-        ...(emailData.cc || []),
-        ...(emailData.bcc || []),
-      ];
+      const allRecipients = [...emailData.to, ...(emailData.cc || []), ...(emailData.bcc || [])];
 
       for (const recipient of allRecipients) {
         const validation = this.validateEmail(recipient);
@@ -417,10 +415,7 @@ export class EmailService {
    * @returns Promise that resolves with queued result
    * @private
    */
-  private async queueEmail(
-    emailData: SendEmailDto,
-    delay?: number,
-  ): Promise<EmailDeliveryResult> {
+  private async queueEmail(emailData: SendEmailDto, delay?: number): Promise<EmailDeliveryResult> {
     try {
       const jobId = await this.queueService.addToQueue(emailData, {
         priority: emailData.priority,
@@ -579,9 +574,7 @@ export class EmailService {
     const total = this.emailStats.sent + this.emailStats.failed;
     const successRate = total > 0 ? (this.emailStats.sent / total) * 100 : 0;
     const avgDeliveryTime =
-      this.emailStats.sent > 0
-        ? this.emailStats.totalDeliveryTime / this.emailStats.sent
-        : 0;
+      this.emailStats.sent > 0 ? this.emailStats.totalDeliveryTime / this.emailStats.sent : 0;
 
     return {
       totalSent: this.emailStats.sent,
@@ -648,9 +641,7 @@ Do not reply to this email.
    * @returns Nodemailer priority
    * @private
    */
-  private getNodemailerPriority(
-    priority?: EmailPriority,
-  ): 'high' | 'normal' | 'low' | undefined {
+  private getNodemailerPriority(priority?: EmailPriority): 'high' | 'normal' | 'low' | undefined {
     if (!priority) return undefined;
 
     const priorityMap: Record<EmailPriority, 'high' | 'normal' | 'low'> = {

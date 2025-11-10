@@ -43,7 +43,8 @@ export class DashboardStatsDto {
   medicationsDueToday: number;
 
   @ApiProperty({
-    description: 'Number of critical health alerts (severe/life-threatening allergies)',
+    description:
+      'Number of critical health alerts (severe/life-threatening allergies)',
     example: 7,
   })
   @IsNumber()

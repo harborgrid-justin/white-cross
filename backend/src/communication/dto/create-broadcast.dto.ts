@@ -1,17 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsEnum,
   IsArray,
+  IsBoolean,
+  IsDateString,
+  IsEnum,
   IsOptional,
-  ValidateNested,
+  IsString,
   MaxLength,
   MinLength,
-  IsDateString,
-  IsBoolean,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { MessagePriority, MessageCategory, MessageType } from './send-message.dto';
+import { MessageCategory, MessagePriority, MessageType } from './send-message.dto';
 
 export class AudienceDto {
   @ApiPropertyOptional({

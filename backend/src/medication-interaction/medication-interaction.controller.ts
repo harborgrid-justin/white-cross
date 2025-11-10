@@ -1,21 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  HttpCode,
-  HttpStatus,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Logger, Param, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MedicationInteractionService } from './medication-interaction.service';
 import { CheckNewMedicationDto, InteractionCheckResultDto } from './dto';
 
@@ -43,7 +27,8 @@ export class MedicationInteractionController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Check student medication interactions',
-    description: 'Analyzes all current medications for a student to detect potential drug-drug interactions',
+    description:
+      'Analyzes all current medications for a student to detect potential drug-drug interactions',
   })
   @ApiParam({
     name: 'studentId',
@@ -67,7 +52,9 @@ export class MedicationInteractionController {
   async checkStudentMedications(
     @Param('studentId') studentId: string,
   ): Promise<InteractionCheckResultDto> {
-    this.logger.log(`Checking medication interactions for student ${studentId}`);
+    this.logger.log(
+      `Checking medication interactions for student ${studentId}`,
+    );
     return this.medicationInteractionService.checkStudentMedications(studentId);
   }
 

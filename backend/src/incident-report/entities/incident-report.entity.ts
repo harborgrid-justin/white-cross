@@ -4,6 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  IncidentReport
-} from '../../database/models/incident-report.model';
+export { IncidentReport } from '../../database/models/incident-report.model';

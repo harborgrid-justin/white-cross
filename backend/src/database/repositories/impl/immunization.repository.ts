@@ -3,14 +3,13 @@
  * Injectable NestJS repository for vaccine records with schedule tracking
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { Immunization } from '../../models/immunization.model';
 
 export interface ImmunizationAttributes {
@@ -52,13 +51,15 @@ export interface UpdateImmunizationDTO {
 }
 
 @Injectable()
-export class ImmunizationRepository
-  extends BaseRepository<any, ImmunizationAttributes, CreateImmunizationDTO>
-{
+export class ImmunizationRepository extends BaseRepository<
+  any,
+  ImmunizationAttributes,
+  CreateImmunizationDTO
+> {
   constructor(
-    @InjectModel(Immunization) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel(Immunization) model: typeof Immunization,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Immunization');
   }
@@ -67,39 +68,44 @@ export class ImmunizationRepository
     try {
       const immunizations = await this.model.findAll({
         where: { studentId },
-        order: [['administeredDate', 'DESC']]
+        order: [['administeredDate', 'DESC']],
       });
-      return immunizations.map((i: any) => this.mapToEntity(i));
+      return immunizations.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding immunizations by student:', error);
       throw new RepositoryError(
         'Failed to find immunizations by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByVaccine(studentId: string, vaccineName: string): Promise<ImmunizationAttributes[]> {
+  async findByVaccine(
+    studentId: string,
+    vaccineName: string,
+  ): Promise<ImmunizationAttributes[]> {
     try {
       const immunizations = await this.model.findAll({
         where: { studentId, vaccineName },
-        order: [['dosageNumber', 'ASC']]
+        order: [['dosageNumber', 'ASC']],
       });
-      return immunizations.map((i: any) => this.mapToEntity(i));
+      return immunizations.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding immunizations by vaccine:', error);
       throw new RepositoryError(
         'Failed to find immunizations by vaccine',
         'FIND_BY_VACCINE_ERROR',
         500,
-        { studentId, vaccineName, error: (error as Error).message }
+        { studentId, vaccineName, error: (error as Error).message },
       );
     }
   }
 
-  async findUpcomingDue(daysAhead: number = 30): Promise<ImmunizationAttributes[]> {
+  async findUpcomingDue(
+    daysAhead: number = 30,
+  ): Promise<ImmunizationAttributes[]> {
     try {
       const futureDate = new Date();
       futureDate.setDate(futureDate.getDate() + daysAhead);
@@ -107,19 +113,19 @@ export class ImmunizationRepository
       const immunizations = await this.model.findAll({
         where: {
           nextDueDate: {
-            [Op.between]: [new Date(), futureDate]
-          }
+            [Op.between]: [new Date(), futureDate],
+          },
         },
-        order: [['nextDueDate', 'ASC']]
+        order: [['nextDueDate', 'ASC']],
       });
-      return immunizations.map((i: any) => this.mapToEntity(i));
+      return immunizations.map((i: Immunization) => this.mapToEntity(i));
     } catch (error) {
       this.logger.error('Error finding upcoming due immunizations:', error);
       throw new RepositoryError(
         'Failed to find upcoming due immunizations',
         'FIND_UPCOMING_DUE_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -128,21 +134,28 @@ export class ImmunizationRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateImmunizationDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateImmunizationDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async invalidateCaches(immunization: any): Promise<void> {
+  protected async invalidateCaches(immunization: Immunization): Promise<void> {
     try {
       const immunizationData = immunization.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, immunizationData.id));
-      await this.cacheManager.deletePattern(`white-cross:immunization:student:${immunizationData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, immunizationData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:immunization:student:${immunizationData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating immunization caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ImmunizationAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

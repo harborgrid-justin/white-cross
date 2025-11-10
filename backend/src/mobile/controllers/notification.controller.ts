@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Get, Query, Param, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { NotificationService } from '../services/notification.service';
@@ -21,7 +21,7 @@ export class NotificationController {
   @ApiResponse({ status: 201, description: 'Notification sent successfully' })
   async sendNotification(
     @CurrentUser('id') userId: string,
-    @Body() dto: SendNotificationDto
+    @Body() dto: SendNotificationDto,
   ) {
     return this.notificationService.sendNotification(userId, dto);
   }
@@ -31,7 +31,7 @@ export class NotificationController {
   @ApiResponse({ status: 200, description: 'Interaction tracked' })
   async trackInteraction(
     @Param('id') notificationId: string,
-    @Body('action') action: 'CLICKED' | 'DISMISSED'
+    @Body('action') action: 'CLICKED' | 'DISMISSED',
   ) {
     return this.notificationService.trackInteraction(notificationId, action);
   }
@@ -41,11 +41,11 @@ export class NotificationController {
   @ApiResponse({ status: 200, description: 'Analytics retrieved successfully' })
   async getAnalytics(
     @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string
+    @Query('endDate') endDate: string,
   ) {
     return this.notificationService.getAnalytics({
       start: new Date(startDate),
-      end: new Date(endDate)
+      end: new Date(endDate),
     });
   }
 }

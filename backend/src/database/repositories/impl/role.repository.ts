@@ -3,14 +3,13 @@
  * Injectable NestJS repository for role management with permission hierarchy
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 
 export interface RoleAttributes {
   id: string;
@@ -37,20 +36,26 @@ export interface UpdateRoleDTO {
 }
 
 @Injectable()
-export class RoleRepository
-  extends BaseRepository<any, RoleAttributes, CreateRoleDTO>
-{
+export class RoleRepository extends BaseRepository<
+  any,
+  RoleAttributes,
+  CreateRoleDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Role');
   }
 
   async findByName(name: string): Promise<RoleAttributes | null> {
     try {
-      const cacheKey = this.cacheKeyBuilder.summary(this.entityName, name, 'by-name');
+      const cacheKey = this.cacheKeyBuilder.summary(
+        this.entityName,
+        name,
+        'by-name',
+      );
       const cached = await this.cacheManager.get<RoleAttributes>(cacheKey);
 
       if (cached) {
@@ -70,7 +75,7 @@ export class RoleRepository
         'Failed to find role by name',
         'FIND_BY_NAME_ERROR',
         500,
-        { name, error: (error as Error).message }
+        { name, error: (error as Error).message },
       );
     }
   }
@@ -79,16 +84,16 @@ export class RoleRepository
     try {
       const roles = await this.model.findAll({
         where: { level, isActive: true },
-        order: [['name', 'ASC']]
+        order: [['name', 'ASC']],
       });
-      return roles.map((r: any) => this.mapToEntity(r));
+      return roles.map((r: Role) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding roles by level:', error);
       throw new RepositoryError(
         'Failed to find roles by level',
         'FIND_BY_LEVEL_ERROR',
         500,
-        { level, error: (error as Error).message }
+        { level, error: (error as Error).message },
       );
     }
   }
@@ -97,16 +102,19 @@ export class RoleRepository
     try {
       const roles = await this.model.findAll({
         where: { isSystemRole: true, isActive: true },
-        order: [['level', 'ASC'], ['name', 'ASC']]
+        order: [
+          ['level', 'ASC'],
+          ['name', 'ASC'],
+        ],
       });
-      return roles.map((r: any) => this.mapToEntity(r));
+      return roles.map((r: Role) => this.mapToEntity(r));
     } catch (error) {
       this.logger.error('Error finding system roles:', error);
       throw new RepositoryError(
         'Failed to find system roles',
         'FIND_SYSTEM_ROLES_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -123,10 +131,13 @@ export class RoleRepository
 
       const roles = await this.model.findAll({
         where: { isActive: true },
-        order: [['level', 'ASC'], ['name', 'ASC']]
+        order: [
+          ['level', 'ASC'],
+          ['name', 'ASC'],
+        ],
       });
 
-      const entities = roles.map((r: any) => this.mapToEntity(r));
+      const entities = roles.map((r: Role) => this.mapToEntity(r));
       await this.cacheManager.set(cacheKey, entities, 3600);
       return entities;
     } catch (error) {
@@ -135,7 +146,7 @@ export class RoleRepository
         'Failed to find active roles',
         'FIND_ACTIVE_ROLES_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -147,22 +158,25 @@ export class RoleRepository
         'Role name already exists',
         'DUPLICATE_ROLE_NAME',
         409,
-        { name: data.name }
+        { name: data.name },
       );
     }
   }
 
-  protected async validateUpdate(id: string, data: UpdateRoleDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateRoleDTO,
+  ): Promise<void> {
     if (data.name) {
       const existing = await this.model.findOne({
-        where: { name: data.name, id: { [Op.ne]: id } }
+        where: { name: data.name, id: { [Op.ne]: id } },
       });
       if (existing) {
         throw new RepositoryError(
           'Role name already exists',
           'DUPLICATE_ROLE_NAME',
           409,
-          { name: data.name }
+          { name: data.name },
         );
       }
     }
@@ -173,19 +187,25 @@ export class RoleRepository
         'Cannot modify system role',
         'SYSTEM_ROLE_IMMUTABLE',
         403,
-        { id }
+        { id },
       );
     }
   }
 
-  protected async invalidateCaches(role: any): Promise<void> {
+  protected async invalidateCaches(role: Role): Promise<void> {
     try {
       const roleData = role.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, roleData.id));
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, roleData.id),
+      );
 
       if (roleData.name) {
         await this.cacheManager.delete(
-          this.cacheKeyBuilder.summary(this.entityName, roleData.name, 'by-name')
+          this.cacheKeyBuilder.summary(
+            this.entityName,
+            roleData.name,
+            'by-name',
+          ),
         );
       }
 
@@ -196,9 +216,7 @@ export class RoleRepository
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<RoleAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

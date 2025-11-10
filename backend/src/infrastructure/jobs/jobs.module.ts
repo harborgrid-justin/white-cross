@@ -14,13 +14,15 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JobType } from './enums/job-type.enum';
-import { QueueManagerService } from './services/queue-manager.service';
-import { MedicationReminderProcessor, InventoryMaintenanceProcessor } from './processors';
+import { QueueManagerService } from '@/infrastructure/jobs/services';
+import { InventoryMaintenanceProcessor, MedicationReminderProcessor } from './processors';
 import { EmailModule } from '../email/email.module';
+import { InventoryModule } from '../../inventory/inventory.module';
 
 @Module({
   imports: [
     EmailModule,
+    InventoryModule,
     // Import BullModule with Redis configuration
     BullModule.forRootAsync({
       imports: [ConfigModule],
@@ -30,25 +32,25 @@ import { EmailModule } from '../email/email.module';
           port: configService.get<number>('REDIS_PORT', 6379),
           username: configService.get<string>('REDIS_USERNAME'),
           password: configService.get<string>('REDIS_PASSWORD'),
-          maxRetriesPerRequest: 20
+          maxRetriesPerRequest: 20,
         },
         defaultJobOptions: {
           attempts: 3,
           backoff: {
             type: 'exponential',
-            delay: 2000
+            delay: 2000,
           },
           removeOnComplete: {
             count: 100,
-            age: 24 * 3600 // 24 hours in seconds
+            age: 24 * 3600, // 24 hours in seconds
           },
           removeOnFail: {
             count: 1000,
-            age: 7 * 24 * 3600 // 7 days in seconds
-          }
-        }
+            age: 7 * 24 * 3600, // 7 days in seconds
+          },
+        },
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     }),
     // Register all queue types
     BullModule.registerQueue(
@@ -59,14 +61,14 @@ import { EmailModule } from '../email/email.module';
       { name: JobType.REPORT_GENERATION },
       { name: JobType.DATA_EXPORT },
       { name: JobType.NOTIFICATION_BATCH },
-      { name: JobType.CLEANUP_TASK }
-    )
+      { name: JobType.CLEANUP_TASK },
+    ),
   ],
   providers: [
     QueueManagerService,
     MedicationReminderProcessor,
-    InventoryMaintenanceProcessor
+    InventoryMaintenanceProcessor,
   ],
-  exports: [QueueManagerService, BullModule]
+  exports: [QueueManagerService, BullModule],
 })
 export class JobsModule {}

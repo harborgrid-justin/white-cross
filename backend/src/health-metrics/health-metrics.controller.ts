@@ -1,14 +1,6 @@
-import { Controller, Get, Post, Patch, Body, Query, Param, ValidationPipe, UsePipes } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { HealthMetricsService, MetricsOverview, HealthAlert } from './health-metrics.service';
+import { Body, Controller, Get, Param, Patch, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { HealthAlert, HealthMetricsService, MetricsOverview } from './health-metrics.service';
 import { CreateVitalsDto } from './dto/create-vitals.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 import { GetMetricsQueryDto } from './dto/get-metrics-query.dto';
@@ -27,7 +19,8 @@ export class HealthMetricsController {
   @Get('overview')
   @ApiOperation({
     summary: 'Get health metrics overview',
-    description: 'Retrieves comprehensive health metrics overview with departmental statistics',
+    description:
+      'Retrieves comprehensive health metrics overview with departmental statistics',
   })
   @ApiResponse({
     status: 200,
@@ -38,24 +31,28 @@ export class HealthMetricsController {
     status: 401,
     description: 'Unauthorized - authentication required',
   })
-  async getMetricsOverview(@Query() query: GetMetricsQueryDto): Promise<MetricsOverview> {
+  async getMetricsOverview(
+    @Query() query: GetMetricsQueryDto,
+  ): Promise<MetricsOverview> {
     return this.healthMetricsService.getMetricsOverview(
       query.timeRange,
       query.department,
-      query.refresh
+      query.refresh,
     );
   }
 
   @Get('vitals/live')
   @ApiOperation({
     summary: 'Get live vital signs monitoring',
-    description: 'Retrieves real-time vital signs data for active monitoring. Used in critical care scenarios where immediate health status visibility is required. Includes filtering for critical patients and department-specific monitoring.',
+    description:
+      'Retrieves real-time vital signs data for active monitoring. Used in critical care scenarios where immediate health status visibility is required. Includes filtering for critical patients and department-specific monitoring.',
   })
   @ApiQuery({
     name: 'patientIds',
     required: false,
     type: String,
-    description: 'Comma-separated patient IDs to monitor. If not provided, returns all patients in department. Format: "123,456,789"',
+    description:
+      'Comma-separated patient IDs to monitor. If not provided, returns all patients in department. Format: "123,456,789"',
     example: '123,456,789',
   })
   @ApiQuery({
@@ -69,7 +66,8 @@ export class HealthMetricsController {
     name: 'critical',
     required: false,
     type: Boolean,
-    description: 'Filter for only critical vital signs requiring immediate attention',
+    description:
+      'Filter for only critical vital signs requiring immediate attention',
     example: true,
   })
   @ApiQuery({
@@ -87,29 +85,57 @@ export class HealthMetricsController {
       items: {
         type: 'object',
         properties: {
-          patientId: { type: 'number', example: 123, description: 'Patient identifier' },
-          timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T09:30:00Z' },
+          patientId: {
+            type: 'number',
+            example: 123,
+            description: 'Patient identifier',
+          },
+          timestamp: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-15T09:30:00Z',
+          },
           vitals: {
             type: 'object',
             properties: {
-              heartRate: { type: 'number', example: 72, description: 'Heart rate in BPM' },
+              heartRate: {
+                type: 'number',
+                example: 72,
+                description: 'Heart rate in BPM',
+              },
               bloodPressure: {
                 type: 'object',
                 properties: {
                   systolic: { type: 'number', example: 120 },
-                  diastolic: { type: 'number', example: 80 }
-                }
+                  diastolic: { type: 'number', example: 80 },
+                },
               },
-              temperature: { type: 'number', example: 98.6, description: 'Temperature in Fahrenheit' },
-              oxygenSaturation: { type: 'number', example: 98, description: 'SpO2 percentage' },
-              respiratoryRate: { type: 'number', example: 16, description: 'Breaths per minute' }
-            }
+              temperature: {
+                type: 'number',
+                example: 98.6,
+                description: 'Temperature in Fahrenheit',
+              },
+              oxygenSaturation: {
+                type: 'number',
+                example: 98,
+                description: 'SpO2 percentage',
+              },
+              respiratoryRate: {
+                type: 'number',
+                example: 16,
+                description: 'Breaths per minute',
+              },
+            },
           },
-          alertLevel: { type: 'string', enum: ['normal', 'warning', 'critical'], example: 'normal' },
-          department: { type: 'string', example: 'ICU' }
-        }
-      }
-    }
+          alertLevel: {
+            type: 'string',
+            enum: ['normal', 'warning', 'critical'],
+            example: 'normal',
+          },
+          department: { type: 'string', example: 'ICU' },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -124,14 +150,15 @@ export class HealthMetricsController {
       query.patientIds,
       query.department,
       query.critical,
-      query.limit
+      query.limit,
     );
   }
 
   @Get('patients/:id/trends')
   @ApiOperation({
     summary: 'Get patient health trends analysis',
-    description: 'Retrieves trending data for a specific patient\'s health metrics over time. Used for medical analysis, treatment effectiveness evaluation, and long-term health monitoring. Supports customizable time ranges and metric granularity.',
+    description:
+      "Retrieves trending data for a specific patient's health metrics over time. Used for medical analysis, treatment effectiveness evaluation, and long-term health monitoring. Supports customizable time ranges and metric granularity.",
   })
   @ApiParam({
     name: 'id',
@@ -143,7 +170,8 @@ export class HealthMetricsController {
     name: 'metrics',
     required: false,
     type: String,
-    description: 'Comma-separated list of metrics to include in trends (heartRate,bloodPressure,temperature,etc.)',
+    description:
+      'Comma-separated list of metrics to include in trends (heartRate,bloodPressure,temperature,etc.)',
     example: 'heartRate,bloodPressure,temperature',
   })
   @ApiQuery({
@@ -168,21 +196,33 @@ export class HealthMetricsController {
       items: {
         type: 'object',
         properties: {
-          timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T09:00:00Z' },
+          timestamp: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-15T09:00:00Z',
+          },
           metrics: {
             type: 'object',
             properties: {
-              heartRate: { type: 'number', example: 72, description: 'Average heart rate for time period' },
+              heartRate: {
+                type: 'number',
+                example: 72,
+                description: 'Average heart rate for time period',
+              },
               bloodPressure: {
                 type: 'object',
                 properties: {
                   systolic: { type: 'number', example: 120 },
-                  diastolic: { type: 'number', example: 80 }
-                }
+                  diastolic: { type: 'number', example: 80 },
+                },
               },
               temperature: { type: 'number', example: 98.6 },
-              trend: { type: 'string', enum: ['improving', 'stable', 'declining'], example: 'stable' }
-            }
+              trend: {
+                type: 'string',
+                enum: ['improving', 'stable', 'declining'],
+                example: 'stable',
+              },
+            },
           },
           annotations: {
             type: 'array',
@@ -190,14 +230,17 @@ export class HealthMetricsController {
               type: 'object',
               properties: {
                 type: { type: 'string', example: 'medication' },
-                note: { type: 'string', example: 'Blood pressure medication administered' },
-                timestamp: { type: 'string', format: 'date-time' }
-              }
-            }
-          }
-        }
-      }
-    }
+                note: {
+                  type: 'string',
+                  example: 'Blood pressure medication administered',
+                },
+                timestamp: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -213,26 +256,28 @@ export class HealthMetricsController {
   })
   async getPatientTrends(
     @Param('id') patientId: string,
-    @Query() query: GetTrendsQueryDto
+    @Query() query: GetTrendsQueryDto,
   ): Promise<any[]> {
     return this.healthMetricsService.getPatientTrends(
       parseInt(patientId, 10),
       query.metrics,
       query.timeRange,
-      query.granularity
+      query.granularity,
     );
   }
 
   @Get('departments/performance')
   @ApiOperation({
     summary: 'Get department performance metrics',
-    description: 'Retrieves comprehensive performance metrics for healthcare departments. Includes patient volume, response times, critical incident rates, and staff efficiency metrics. Used for administrative oversight and quality improvement initiatives.',
+    description:
+      'Retrieves comprehensive performance metrics for healthcare departments. Includes patient volume, response times, critical incident rates, and staff efficiency metrics. Used for administrative oversight and quality improvement initiatives.',
   })
   @ApiQuery({
     name: 'timeRange',
     required: false,
     type: String,
-    description: 'Time range for performance analysis (1h, 4h, 24h, 7d, 30d). Defaults to 24h',
+    description:
+      'Time range for performance analysis (1h, 4h, 24h, 7d, 30d). Defaults to 24h',
     example: '24h',
   })
   @ApiQuery({
@@ -255,36 +300,76 @@ export class HealthMetricsController {
           metrics: {
             type: 'object',
             properties: {
-              patientVolume: { type: 'number', example: 45, description: 'Total patients in timeframe' },
-              averageStayDuration: { type: 'number', example: 2.5, description: 'Average stay in hours' },
-              criticalIncidents: { type: 'number', example: 3, description: 'Number of critical incidents' },
+              patientVolume: {
+                type: 'number',
+                example: 45,
+                description: 'Total patients in timeframe',
+              },
+              averageStayDuration: {
+                type: 'number',
+                example: 2.5,
+                description: 'Average stay in hours',
+              },
+              criticalIncidents: {
+                type: 'number',
+                example: 3,
+                description: 'Number of critical incidents',
+              },
               responseTime: {
                 type: 'object',
                 properties: {
-                  average: { type: 'number', example: 4.2, description: 'Average response time in minutes' },
-                  p95: { type: 'number', example: 8.5, description: '95th percentile response time' }
-                }
+                  average: {
+                    type: 'number',
+                    example: 4.2,
+                    description: 'Average response time in minutes',
+                  },
+                  p95: {
+                    type: 'number',
+                    example: 8.5,
+                    description: '95th percentile response time',
+                  },
+                },
               },
-              staffUtilization: { type: 'number', example: 85.5, description: 'Staff utilization percentage' }
-            }
+              staffUtilization: {
+                type: 'number',
+                example: 85.5,
+                description: 'Staff utilization percentage',
+              },
+            },
           },
           alerts: {
             type: 'object',
             properties: {
-              active: { type: 'number', example: 2, description: 'Active alerts count' },
-              resolved: { type: 'number', example: 8, description: 'Resolved alerts in timeframe' }
-            }
+              active: {
+                type: 'number',
+                example: 2,
+                description: 'Active alerts count',
+              },
+              resolved: {
+                type: 'number',
+                example: 8,
+                description: 'Resolved alerts in timeframe',
+              },
+            },
           },
           comparison: {
             type: 'object',
             properties: {
-              previousPeriod: { type: 'number', example: -5.2, description: 'Percentage change from previous period' },
-              trend: { type: 'string', enum: ['improving', 'stable', 'declining'], example: 'improving' }
-            }
-          }
-        }
-      }
-    }
+              previousPeriod: {
+                type: 'number',
+                example: -5.2,
+                description: 'Percentage change from previous period',
+              },
+              trend: {
+                type: 'string',
+                enum: ['improving', 'stable', 'declining'],
+                example: 'improving',
+              },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -292,19 +377,23 @@ export class HealthMetricsController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - insufficient permissions for department metrics access',
+    description:
+      'Forbidden - insufficient permissions for department metrics access',
   })
-  async getDepartmentPerformance(@Query() query: GetDepartmentQueryDto): Promise<any[]> {
+  async getDepartmentPerformance(
+    @Query() query: GetDepartmentQueryDto,
+  ): Promise<any[]> {
     return this.healthMetricsService.getDepartmentPerformance(
       query.timeRange || '24h',
-      query.includeHistorical
+      query.includeHistorical,
     );
   }
 
   @Post('vitals')
   @ApiOperation({
     summary: 'Record new vital signs',
-    description: 'Records new vital signs measurement for a patient. Includes automatic alert generation for critical values and integration with patient monitoring systems. Supports batch recording for multiple measurements.',
+    description:
+      'Records new vital signs measurement for a patient. Includes automatic alert generation for critical values and integration with patient monitoring systems. Supports batch recording for multiple measurements.',
   })
   @ApiBody({
     type: CreateVitalsDto,
@@ -313,28 +402,60 @@ export class HealthMetricsController {
       type: 'object',
       required: ['patientId', 'vitals', 'recordedBy'],
       properties: {
-        patientId: { type: 'number', example: 123, description: 'Patient identifier' },
+        patientId: {
+          type: 'number',
+          example: 123,
+          description: 'Patient identifier',
+        },
         vitals: {
           type: 'object',
           properties: {
-            heartRate: { type: 'number', example: 72, description: 'Heart rate in BPM' },
+            heartRate: {
+              type: 'number',
+              example: 72,
+              description: 'Heart rate in BPM',
+            },
             bloodPressure: {
               type: 'object',
               properties: {
                 systolic: { type: 'number', example: 120 },
-                diastolic: { type: 'number', example: 80 }
-              }
+                diastolic: { type: 'number', example: 80 },
+              },
             },
-            temperature: { type: 'number', example: 98.6, description: 'Temperature in Fahrenheit' },
-            oxygenSaturation: { type: 'number', example: 98, description: 'SpO2 percentage' },
-            respiratoryRate: { type: 'number', example: 16, description: 'Breaths per minute' }
-          }
+            temperature: {
+              type: 'number',
+              example: 98.6,
+              description: 'Temperature in Fahrenheit',
+            },
+            oxygenSaturation: {
+              type: 'number',
+              example: 98,
+              description: 'SpO2 percentage',
+            },
+            respiratoryRate: {
+              type: 'number',
+              example: 16,
+              description: 'Breaths per minute',
+            },
+          },
         },
-        recordedBy: { type: 'string', example: 'nurse_123', description: 'ID of recording healthcare provider' },
-        notes: { type: 'string', example: 'Patient resting, stable condition', description: 'Optional notes about the measurement' },
-        location: { type: 'string', example: 'ICU-Room-205', description: 'Location where vitals were taken' }
-      }
-    }
+        recordedBy: {
+          type: 'string',
+          example: 'nurse_123',
+          description: 'ID of recording healthcare provider',
+        },
+        notes: {
+          type: 'string',
+          example: 'Patient resting, stable condition',
+          description: 'Optional notes about the measurement',
+        },
+        location: {
+          type: 'string',
+          example: 'ICU-Room-205',
+          description: 'Location where vitals were taken',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 201,
@@ -342,9 +463,17 @@ export class HealthMetricsController {
     schema: {
       type: 'object',
       properties: {
-        id: { type: 'number', example: 456, description: 'Unique ID of the vital signs record' },
+        id: {
+          type: 'number',
+          example: 456,
+          description: 'Unique ID of the vital signs record',
+        },
         patientId: { type: 'number', example: 123 },
-        timestamp: { type: 'string', format: 'date-time', example: '2024-01-15T09:30:00Z' },
+        timestamp: {
+          type: 'string',
+          format: 'date-time',
+          example: '2024-01-15T09:30:00Z',
+        },
         vitals: { type: 'object', description: 'Recorded vital signs data' },
         alerts: {
           type: 'array',
@@ -352,18 +481,26 @@ export class HealthMetricsController {
             type: 'object',
             properties: {
               type: { type: 'string', example: 'high_blood_pressure' },
-              severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], example: 'medium' },
-              message: { type: 'string', example: 'Blood pressure slightly elevated' }
-            }
-          }
+              severity: {
+                type: 'string',
+                enum: ['low', 'medium', 'high', 'critical'],
+                example: 'medium',
+              },
+              message: {
+                type: 'string',
+                example: 'Blood pressure slightly elevated',
+              },
+            },
+          },
         },
-        recordedBy: { type: 'string', example: 'nurse_123' }
-      }
-    }
+        recordedBy: { type: 'string', example: 'nurse_123' },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - invalid vital signs data or missing required fields',
+    description:
+      'Bad Request - invalid vital signs data or missing required fields',
   })
   @ApiResponse({
     status: 401,
@@ -384,7 +521,8 @@ export class HealthMetricsController {
   @Get('alerts')
   @ApiOperation({
     summary: 'Get health alerts',
-    description: 'Retrieves active and historical health alerts based on vital signs monitoring. Includes filtering by severity, department, and status. Critical for early warning systems and patient safety monitoring.',
+    description:
+      'Retrieves active and historical health alerts based on vital signs monitoring. Includes filtering by severity, department, and status. Critical for early warning systems and patient safety monitoring.',
   })
   @ApiQuery({
     name: 'severity',
@@ -426,33 +564,64 @@ export class HealthMetricsController {
       items: {
         type: 'object',
         properties: {
-          id: { type: 'number', example: 789, description: 'Alert unique identifier' },
+          id: {
+            type: 'number',
+            example: 789,
+            description: 'Alert unique identifier',
+          },
           patientId: { type: 'number', example: 123 },
-          type: { type: 'string', example: 'vital_signs_critical', description: 'Type of health alert' },
-          severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'], example: 'high' },
-          message: { type: 'string', example: 'Heart rate critically high: 140 BPM' },
+          type: {
+            type: 'string',
+            example: 'vital_signs_critical',
+            description: 'Type of health alert',
+          },
+          severity: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'critical'],
+            example: 'high',
+          },
+          message: {
+            type: 'string',
+            example: 'Heart rate critically high: 140 BPM',
+          },
           department: { type: 'string', example: 'ICU' },
-          status: { type: 'string', enum: ['active', 'acknowledged', 'resolved'], example: 'active' },
+          status: {
+            type: 'string',
+            enum: ['active', 'acknowledged', 'resolved'],
+            example: 'active',
+          },
           triggeredBy: {
             type: 'object',
             properties: {
               metric: { type: 'string', example: 'heart_rate' },
               value: { type: 'number', example: 140 },
-              threshold: { type: 'number', example: 120 }
-            }
+              threshold: { type: 'number', example: 120 },
+            },
           },
           timestamps: {
             type: 'object',
             properties: {
-              created: { type: 'string', format: 'date-time', example: '2024-01-15T09:30:00Z' },
-              acknowledged: { type: 'string', format: 'date-time', nullable: true },
-              resolved: { type: 'string', format: 'date-time', nullable: true }
-            }
+              created: {
+                type: 'string',
+                format: 'date-time',
+                example: '2024-01-15T09:30:00Z',
+              },
+              acknowledged: {
+                type: 'string',
+                format: 'date-time',
+                nullable: true,
+              },
+              resolved: { type: 'string', format: 'date-time', nullable: true },
+            },
           },
-          assignedTo: { type: 'string', example: 'nurse_456', description: 'Healthcare provider assigned to handle alert' }
-        }
-      }
-    }
+          assignedTo: {
+            type: 'string',
+            example: 'nurse_456',
+            description: 'Healthcare provider assigned to handle alert',
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 401,
@@ -460,21 +629,25 @@ export class HealthMetricsController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - insufficient permissions for health alerts access',
+    description:
+      'Forbidden - insufficient permissions for health alerts access',
   })
-  async getHealthAlerts(@Query() query: GetAlertsQueryDto): Promise<HealthAlert[]> {
+  async getHealthAlerts(
+    @Query() query: GetAlertsQueryDto,
+  ): Promise<HealthAlert[]> {
     return this.healthMetricsService.getHealthAlerts(
       query.severity,
       query.department,
       query.status,
-      query.limit
+      query.limit,
     );
   }
 
   @Patch('alerts/:id')
   @ApiOperation({
     summary: 'Update health alert status',
-    description: 'Updates the status of a health alert (acknowledge, resolve, or reassign). Includes audit trail for compliance and enables proper alert lifecycle management in critical care scenarios.',
+    description:
+      'Updates the status of a health alert (acknowledge, resolve, or reassign). Includes audit trail for compliance and enables proper alert lifecycle management in critical care scenarios.',
   })
   @ApiParam({
     name: 'id',
@@ -492,25 +665,25 @@ export class HealthMetricsController {
           type: 'string',
           enum: ['active', 'acknowledged', 'resolved'],
           example: 'acknowledged',
-          description: 'New status for the alert'
+          description: 'New status for the alert',
         },
         assignedTo: {
           type: 'string',
           example: 'nurse_456',
-          description: 'Healthcare provider to assign alert to'
+          description: 'Healthcare provider to assign alert to',
         },
         notes: {
           type: 'string',
           example: 'Patient responded well to intervention',
-          description: 'Optional notes about the status change'
+          description: 'Optional notes about the status change',
         },
         resolution: {
           type: 'string',
           example: 'Medication adjusted, vitals stabilized',
-          description: 'Resolution details (required when status is resolved)'
-        }
-      }
-    }
+          description: 'Resolution details (required when status is resolved)',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -521,7 +694,11 @@ export class HealthMetricsController {
         id: { type: 'number', example: 789 },
         status: { type: 'string', example: 'acknowledged' },
         updatedBy: { type: 'string', example: 'nurse_456' },
-        updatedAt: { type: 'string', format: 'date-time', example: '2024-01-15T09:35:00Z' },
+        updatedAt: {
+          type: 'string',
+          format: 'date-time',
+          example: '2024-01-15T09:35:00Z',
+        },
         auditTrail: {
           type: 'array',
           items: {
@@ -531,16 +708,17 @@ export class HealthMetricsController {
               from: { type: 'string', example: 'active' },
               to: { type: 'string', example: 'acknowledged' },
               timestamp: { type: 'string', format: 'date-time' },
-              performedBy: { type: 'string', example: 'nurse_456' }
-            }
-          }
-        }
-      }
-    }
+              performedBy: { type: 'string', example: 'nurse_456' },
+            },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad Request - invalid status transition or missing required fields',
+    description:
+      'Bad Request - invalid status transition or missing required fields',
   })
   @ApiResponse({
     status: 401,
@@ -556,11 +734,11 @@ export class HealthMetricsController {
   })
   async updateAlertStatus(
     @Param('id') alertId: string,
-    @Body() updateAlertDto: UpdateAlertDto
+    @Body() updateAlertDto: UpdateAlertDto,
   ): Promise<any> {
     return this.healthMetricsService.updateAlertStatus(
       parseInt(alertId, 10),
-      updateAlertDto
+      updateAlertDto,
     );
   }
 }

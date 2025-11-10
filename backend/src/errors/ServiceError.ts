@@ -1,13 +1,29 @@
 /**
  * Service Error Classes
  * Custom error classes for different types of service errors
+ *
+ * @deprecated This file is DEPRECATED. Use /common/exceptions/ instead.
+ * @see /common/exceptions/exceptions/business.exception.ts
+ * @see /common/exceptions/exceptions/retryable.exception.ts
+ *
+ * MIGRATION PATH:
+ * - ServiceError -> BusinessException or RetryableException
+ * - NotFoundError -> BusinessException.notFound()
+ * - ConflictError -> BusinessException.alreadyExists()
+ * - ValidationError -> ValidationException
+ * - AuthenticationError -> Use NestJS UnauthorizedException
+ * - AuthorizationError -> Use NestJS ForbiddenException
  */
 
 export class ServiceError extends Error {
   public statusCode: number;
   public code: string;
 
-  constructor(message: string, statusCode: number = 500, code: string = 'INTERNAL_ERROR') {
+  constructor(
+    message: string,
+    statusCode: number = 500,
+    code: string = 'INTERNAL_ERROR',
+  ) {
     super(message);
     this.name = this.constructor.name;
     this.statusCode = statusCode;
@@ -25,7 +41,7 @@ export class ServiceError extends Error {
       message: this.message,
       statusCode: this.statusCode,
       code: this.code,
-      stack: this.stack
+      stack: this.stack,
     };
   }
 }

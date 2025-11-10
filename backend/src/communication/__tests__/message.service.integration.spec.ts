@@ -3,8 +3,8 @@ import { getModelToken } from '@nestjs/sequelize';
 import { MessageService } from '../services/message.service';
 import { Message } from '../../database/models/message.model';
 import { MessageDelivery } from '../../database/models/message-delivery.model';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { MessagePriority, MessageCategory, MessageType, RecipientType } from '../dto/send-message.dto';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { MessageCategory, MessagePriority, MessageType, RecipientType } from '../dto/send-message.dto';
 
 describe('MessageService Integration Tests', () => {
   let service: MessageService;

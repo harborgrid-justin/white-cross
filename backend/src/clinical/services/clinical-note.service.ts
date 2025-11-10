@@ -1,6 +1,5 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
 import { ClinicalNote } from '../entities/clinical-note.entity';
 import { CreateNoteDto } from '../dto/note/create-note.dto';
 import { UpdateNoteDto } from '../dto/note/update-note.dto';
@@ -25,7 +24,9 @@ export class ClinicalNoteService {
     return note;
   }
 
-  async findAll(filters: NoteFiltersDto): Promise<{ notes: ClinicalNote[]; total: number }> {
+  async findAll(
+    filters: NoteFiltersDto,
+  ): Promise<{ notes: ClinicalNote[]; total: number }> {
     const whereClause: any = {};
 
     if (filters.studentId) whereClause.studentId = filters.studentId;
@@ -52,7 +53,10 @@ export class ClinicalNoteService {
     });
   }
 
-  async findByStudent(studentId: string, limit: number = 10): Promise<ClinicalNote[]> {
+  async findByStudent(
+    studentId: string,
+    limit: number = 10,
+  ): Promise<ClinicalNote[]> {
     return this.noteModel.findAll({
       where: { studentId },
       order: [['createdAt', 'DESC']],
@@ -62,7 +66,8 @@ export class ClinicalNoteService {
 
   async update(id: string, updateDto: UpdateNoteDto): Promise<ClinicalNote> {
     const note = await this.findOne(id);
-    if (note.isSigned) throw new BadRequestException('Cannot update a signed note');
+    if (note.isSigned)
+      throw new BadRequestException('Cannot update a signed note');
     Object.assign(note, updateDto);
     return note.save();
   }
@@ -76,7 +81,8 @@ export class ClinicalNoteService {
 
   async remove(id: string): Promise<void> {
     const note = await this.findOne(id);
-    if (note.isSigned) throw new BadRequestException('Cannot delete a signed note');
+    if (note.isSigned)
+      throw new BadRequestException('Cannot delete a signed note');
     await note.destroy();
     this.logger.log(`Deleted note ${id}`);
   }

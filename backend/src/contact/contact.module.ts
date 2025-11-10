@@ -11,18 +11,14 @@
  */
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { ContactService } from './services/contact.service';
-import { EmergencyContactService } from './services/emergency-contact.service';
+import { ContactService, EmergencyContactService } from '@/contact/services';
 import { ContactController } from './contact.controller';
-import { Contact } from '../database/models/contact.model';
-import { EmergencyContact } from '../database/models/emergency-contact.model';
+import { Contact, EmergencyContact } from '@/database';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([Contact, EmergencyContact])
-  ],
+  imports: [SequelizeModule.forFeature([Contact, EmergencyContact])],
   providers: [ContactService, EmergencyContactService],
   controllers: [ContactController],
-  exports: [ContactService, EmergencyContactService]
+  exports: [ContactService, EmergencyContactService],
 })
 export class ContactModule {}

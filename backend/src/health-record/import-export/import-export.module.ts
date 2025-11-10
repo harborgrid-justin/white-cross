@@ -3,6 +3,6 @@ import { ImportExportService } from './import-export.service';
 
 @Module({
   providers: [ImportExportService],
-  exports: [ImportExportService]
+  exports: [ImportExportService],
 })
 export class ImportExportModule {}

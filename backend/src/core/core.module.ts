@@ -13,28 +13,27 @@
  * - Ensures single instance of critical services
  */
 
-import { Module, Global, Optional } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE, APP_FILTER } from '@nestjs/core';
+// Pipes
+import { Global, Module, Optional, ValidationPipe } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 
 // Import audit module for exception filter
-import { AuditModule } from '../audit/audit.module';
+import { AuditModule } from '@/audit';
 
 // Guards
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { RolesGuard } from '@/auth';
 
 // Interceptors
-import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
-import { SanitizationInterceptor } from '../common/interceptors/sanitization.interceptor';
-import { TimeoutInterceptor } from '../common/interceptors/timeout.interceptor';
-import { TransformInterceptor } from '../common/interceptors/transform.interceptor';
-import { ErrorMappingInterceptor } from '../common/interceptors/error-mapping.interceptor';
-
-// Pipes
-import { ValidationPipe } from '@nestjs/common';
-
 // Filters
-import { HttpExceptionFilter } from '../common/exceptions/filters/http-exception.filter';
-import { AllExceptionsFilter } from '../common/exceptions/filters/all-exceptions.filter';
+import {
+  AllExceptionsFilter,
+  HttpExceptionFilter,
+  LoggingInterceptor,
+  SanitizationInterceptor,
+  TimeoutInterceptor,
+} from '@/common';
+import { TransformInterceptor } from '@/common/interceptors/transform.interceptor';
+import { ErrorMappingInterceptor } from '@/common/interceptors/error-mapping.interceptor';
 
 /**
  * Core Module
@@ -144,19 +143,20 @@ import { AllExceptionsFilter } from '../common/exceptions/filters/all-exceptions
      */
     {
       provide: APP_PIPE,
-      useFactory: () => new ValidationPipe({
-        transform: true,              // Auto-transform to DTO types
-        whitelist: true,               // Strip properties without decorators
-        forbidNonWhitelisted: true,    // Throw error on unknown properties
-        transformOptions: {
-          enableImplicitConversion: true, // Auto-convert types (string to number, etc.)
-        },
-        disableErrorMessages: process.env.NODE_ENV === 'production', // Hide validation details in prod
-        validationError: {
-          target: false,               // Don't include target object in errors (security)
-          value: false,                // Don't include value in errors (security)
-        },
-      }),
+      useFactory: () =>
+        new ValidationPipe({
+          transform: true, // Auto-transform to DTO types
+          whitelist: true, // Strip properties without decorators
+          forbidNonWhitelisted: true, // Throw error on unknown properties
+          transformOptions: {
+            enableImplicitConversion: true, // Auto-convert types (string to number, etc.)
+          },
+          disableErrorMessages: process.env.NODE_ENV === 'production', // Hide validation details in prod
+          validationError: {
+            target: false, // Don't include target object in errors (security)
+            value: false, // Don't include value in errors (security)
+          },
+        }),
     },
 
     // ==================== Global Exception Filters ====================

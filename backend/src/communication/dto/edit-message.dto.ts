@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsArray, IsUrl, MaxLength, MinLength } from 'class-validator';
+import { IsArray, IsOptional, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
 
 /**
  * DTO for editing existing messages

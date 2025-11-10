@@ -97,7 +97,9 @@ export function isValidDosage(dosage: string): boolean {
 /**
  * Parse dosage into amount and unit
  */
-export function parseDosage(dosage: string): { amount: number; unit: string } | null {
+export function parseDosage(
+  dosage: string,
+): { amount: number; unit: string } | null {
   const match = dosage.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z%]+)$/);
   if (!match) return null;
 
@@ -140,7 +142,10 @@ export function calculateAge(dateOfBirth: Date): number {
   let age = today.getFullYear() - dateOfBirth.getFullYear();
   const monthDiff = today.getMonth() - dateOfBirth.getMonth();
 
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())
+  ) {
     age--;
   }
 
@@ -158,7 +163,10 @@ export function isValidBloodType(bloodType: string): boolean {
 /**
  * Validate temperature value (in Fahrenheit)
  */
-export function isValidTemperature(temp: number, unit: 'F' | 'C' = 'F'): boolean {
+export function isValidTemperature(
+  temp: number,
+  unit: 'F' | 'C' = 'F',
+): boolean {
   if (unit === 'F') {
     return temp >= 95.0 && temp <= 108.0; // Normal range + fever range
   } else {
@@ -172,9 +180,9 @@ export function isValidTemperature(temp: number, unit: 'F' | 'C' = 'F'): boolean
 export function isValidHeartRate(bpm: number, age?: number): boolean {
   // Age-specific ranges
   if (age !== undefined) {
-    if (age < 1) return bpm >= 80 && bpm <= 180;      // Infant
-    if (age < 12) return bpm >= 70 && bpm <= 130;     // Child
-    if (age < 18) return bpm >= 60 && bpm <= 120;     // Adolescent
+    if (age < 1) return bpm >= 80 && bpm <= 180; // Infant
+    if (age < 12) return bpm >= 70 && bpm <= 130; // Child
+    if (age < 18) return bpm >= 60 && bpm <= 120; // Adolescent
   }
 
   // Adult range
@@ -202,7 +210,10 @@ export function isValidBloodPressure(
 
   // Check for hypertensive crisis
   if (systolic >= 180 || diastolic >= 120) {
-    return { valid: true, warning: 'Hypertensive crisis - immediate attention required' };
+    return {
+      valid: true,
+      warning: 'Hypertensive crisis - immediate attention required',
+    };
   }
 
   return { valid: true };
@@ -215,8 +226,8 @@ export function isValidWeight(pounds: number, age?: number): boolean {
   if (pounds <= 0 || pounds > 500) return false;
 
   if (age !== undefined) {
-    if (age < 1 && pounds > 30) return false;        // Infant
-    if (age < 12 && pounds > 200) return false;      // Child
+    if (age < 1 && pounds > 30) return false; // Infant
+    if (age < 12 && pounds > 200) return false; // Child
   }
 
   return true;
@@ -229,8 +240,8 @@ export function isValidHeight(inches: number, age?: number): boolean {
   if (inches <= 0 || inches > 96) return false; // 8 feet max
 
   if (age !== undefined) {
-    if (age < 1 && inches > 36) return false;        // Infant
-    if (age < 12 && inches > 72) return false;       // Child
+    if (age < 1 && inches > 36) return false; // Infant
+    if (age < 12 && inches > 72) return false; // Child
   }
 
   return true;

@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsInt, IsBoolean, IsOptional, IsDateString, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DataRetentionCategory, RetentionStatus } from '../entities/data-retention-policy.entity';
 
@@ -16,11 +16,16 @@ export class CreateDataRetentionDto {
   @Min(1)
   retentionPeriodDays: number;
 
-  @ApiProperty({ description: 'Legal or regulatory basis for retention period' })
+  @ApiProperty({
+    description: 'Legal or regulatory basis for retention period',
+  })
   @IsString()
   legalBasis: string;
 
-  @ApiPropertyOptional({ description: 'Auto-delete after retention period', default: false })
+  @ApiPropertyOptional({
+    description: 'Auto-delete after retention period',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   autoDelete?: boolean;
@@ -45,12 +50,18 @@ export class UpdateDataRetentionDto {
 }
 
 export class QueryDataRetentionDto {
-  @ApiPropertyOptional({ enum: DataRetentionCategory, description: 'Filter by category' })
+  @ApiPropertyOptional({
+    enum: DataRetentionCategory,
+    description: 'Filter by category',
+  })
   @IsOptional()
   @IsEnum(DataRetentionCategory)
   category?: DataRetentionCategory;
 
-  @ApiPropertyOptional({ enum: RetentionStatus, description: 'Filter by status' })
+  @ApiPropertyOptional({
+    enum: RetentionStatus,
+    description: 'Filter by status',
+  })
   @IsOptional()
   @IsEnum(RetentionStatus)
   status?: RetentionStatus;

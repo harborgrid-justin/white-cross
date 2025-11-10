@@ -74,3 +74,5 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     </div>
   )
 }
+// Default export for dynamic imports
+export default ConfirmationModal

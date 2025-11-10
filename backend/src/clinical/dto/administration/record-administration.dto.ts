@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum, IsOptional, IsBoolean, IsNumber, IsObject, ValidateNested } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AdministrationRoute, FiveRightsDataDto } from './five-rights-verification.dto';
 

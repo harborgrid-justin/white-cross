@@ -8,3 +8,5 @@ export * from './workers.module';
 export * from './worker-pool.service';
 export * from './health-calculations.service';
 export * from './worker-pool.interfaces';
+
+export * from './healthCalculations.worker';

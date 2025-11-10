@@ -7,7 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, fn, col, literal } from 'sequelize';
+import { Op } from 'sequelize';
 import { Student } from '../../database/models/student.model';
 import { Vaccination } from '../../database/models/vaccination.model';
 import { Allergy } from '../../database/models/allergy.model';
@@ -35,7 +35,9 @@ export class SearchService {
   ) {}
 
   async searchHealthRecords(query: string, filters?: any): Promise<any[]> {
-    this.logger.log(`Searching health records: ${query}, filters: ${JSON.stringify(filters)}`);
+    this.logger.log(
+      `Searching health records: ${query}, filters: ${JSON.stringify(filters)}`,
+    );
 
     const searchTerm = query.trim();
     if (!searchTerm) {
@@ -53,9 +55,9 @@ export class SearchService {
       // Get students for this school
       const students = await this.studentModel.findAll({
         where: { schoolId: filters.schoolId },
-        attributes: ['id']
+        attributes: ['id'],
       });
-      baseWhere.studentId = { [Op.in]: students.map(s => s.id) };
+      baseWhere.studentId = { [Op.in]: students.map((s) => s.id) };
     }
 
     // Date range filters
@@ -64,28 +66,48 @@ export class SearchService {
     }
 
     // Search vaccinations
-    const vaccinationResults = await this.searchVaccinations(searchTerm, baseWhere, filters);
+    const vaccinationResults = await this.searchVaccinations(
+      searchTerm,
+      baseWhere,
+      filters,
+    );
     results.push(...vaccinationResults);
 
     // Search allergies
-    const allergyResults = await this.searchAllergies(searchTerm, baseWhere, filters);
+    const allergyResults = await this.searchAllergies(
+      searchTerm,
+      baseWhere,
+      filters,
+    );
     results.push(...allergyResults);
 
     // Search chronic conditions
-    const conditionResults = await this.searchChronicConditions(searchTerm, baseWhere, filters);
+    const conditionResults = await this.searchChronicConditions(
+      searchTerm,
+      baseWhere,
+      filters,
+    );
     results.push(...conditionResults);
 
     // Search vital signs (limited fields)
-    const vitalResults = await this.searchVitalSigns(searchTerm, baseWhere, filters);
+    const vitalResults = await this.searchVitalSigns(
+      searchTerm,
+      baseWhere,
+      filters,
+    );
     results.push(...vitalResults);
 
     // Search clinic visits
-    const visitResults = await this.searchClinicVisits(searchTerm, baseWhere, filters);
+    const visitResults = await this.searchClinicVisits(
+      searchTerm,
+      baseWhere,
+      filters,
+    );
     results.push(...visitResults);
 
     // Apply type filter if specified
     if (filters?.type) {
-      results = results.filter(r => r.type === filters.type);
+      results = results.filter((r) => r.type === filters.type);
     }
 
     // Sort by relevance score
@@ -117,13 +139,15 @@ export class SearchService {
     if (schoolId) {
       const students = await this.studentModel.findAll({
         where: { schoolId },
-        attributes: ['id']
+        attributes: ['id'],
       });
-      const schoolStudentIds = students.map(s => s.id);
+      const schoolStudentIds = students.map((s) => s.id);
       if (baseWhere.studentId) {
         // Intersect with existing student IDs
         baseWhere.studentId = {
-          [Op.in]: baseWhere.studentId[Op.in].filter((id: string) => schoolStudentIds.includes(id))
+          [Op.in]: baseWhere.studentId[Op.in].filter((id: string) =>
+            schoolStudentIds.includes(id),
+          ),
         };
       } else {
         baseWhere.studentId = { [Op.in]: schoolStudentIds };
@@ -134,99 +158,133 @@ export class SearchService {
 
     // If query provided, do text search
     if (query) {
-      allResults = await this.searchHealthRecords(query, { studentIds, schoolId });
+      allResults = await this.searchHealthRecords(query, {
+        studentIds,
+        schoolId,
+      });
     } else {
       // Get all records with filters
-      const [vaccinations, allergies, chronicConditions, vitals, visits] = await Promise.all([
-        this.vaccinationModel.findAll({
-          where: baseWhere,
-          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-          limit: 1000
-        }),
-        this.allergyModel.findAll({
-          where: { ...baseWhere, active: true },
-          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-          limit: 1000
-        }),
-        this.chronicConditionModel.findAll({
-          where: { ...baseWhere, status: 'ACTIVE' },
-          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-          limit: 1000
-        }),
-        this.vitalSignsModel.findAll({
-          where: baseWhere,
-          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-          limit: 1000
-        }),
-        this.clinicVisitModel.findAll({
-          where: baseWhere,
-          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-          limit: 1000
-        })
-      ]);
+      const [vaccinations, allergies, chronicConditions, vitals, visits] =
+        await Promise.all([
+          this.vaccinationModel.findAll({
+            where: baseWhere,
+            include: [
+              { model: Student, attributes: ['firstName', 'lastName'] },
+            ],
+            limit: 1000,
+          }),
+          this.allergyModel.findAll({
+            where: { ...baseWhere, active: true },
+            include: [
+              { model: Student, attributes: ['firstName', 'lastName'] },
+            ],
+            limit: 1000,
+          }),
+          this.chronicConditionModel.findAll({
+            where: { ...baseWhere, status: 'ACTIVE' },
+            include: [
+              { model: Student, attributes: ['firstName', 'lastName'] },
+            ],
+            limit: 1000,
+          }),
+          this.vitalSignsModel.findAll({
+            where: baseWhere,
+            include: [
+              { model: Student, attributes: ['firstName', 'lastName'] },
+            ],
+            limit: 1000,
+          }),
+          this.clinicVisitModel.findAll({
+            where: baseWhere,
+            include: [
+              { model: Student, attributes: ['firstName', 'lastName'] },
+            ],
+            limit: 1000,
+          }),
+        ]);
 
       // Format results
-      vaccinations.forEach(v => allResults.push({
-        ...v.toJSON(),
-        type: 'vaccination',
-        studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-        relevance: 1
-      }));
+      vaccinations.forEach((v) =>
+        allResults.push({
+          ...v.toJSON(),
+          type: 'vaccination',
+          studentName: `${v.student?.firstName} ${v.student?.lastName}`,
+          relevance: 1,
+        }),
+      );
 
-      allergies.forEach(a => allResults.push({
-        ...a.toJSON(),
-        type: 'allergy',
-        studentName: `${a.student?.firstName} ${a.student?.lastName}`,
-        relevance: 1
-      }));
+      allergies.forEach((a) =>
+        allResults.push({
+          ...a.toJSON(),
+          type: 'allergy',
+          studentName: `${a.student?.firstName} ${a.student?.lastName}`,
+          relevance: 1,
+        }),
+      );
 
-      chronicConditions.forEach(c => allResults.push({
-        ...c.toJSON(),
-        type: 'chronic_condition',
-        studentName: `${c.student?.firstName} ${c.student?.lastName}`,
-        relevance: 1
-      }));
+      chronicConditions.forEach((c) =>
+        allResults.push({
+          ...c.toJSON(),
+          type: 'chronic_condition',
+          studentName: `${c.student?.firstName} ${c.student?.lastName}`,
+          relevance: 1,
+        }),
+      );
 
-      vitals.forEach(v => allResults.push({
-        ...v.toJSON(),
-        type: 'vital_signs',
-        studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-        relevance: 1
-      }));
+      vitals.forEach((v) =>
+        allResults.push({
+          ...v.toJSON(),
+          type: 'vital_signs',
+          studentName: `${v.student?.firstName} ${v.student?.lastName}`,
+          relevance: 1,
+        }),
+      );
 
-      visits.forEach(v => allResults.push({
-        ...v.toJSON(),
-        type: 'clinic_visit',
-        studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-        relevance: 1
-      }));
+      visits.forEach((v) =>
+        allResults.push({
+          ...v.toJSON(),
+          type: 'clinic_visit',
+          studentName: `${v.student?.firstName} ${v.student?.lastName}`,
+          relevance: 1,
+        }),
+      );
     }
 
     // Apply additional filters
     if (types && types.length > 0) {
-      allResults = allResults.filter(r => types.includes(r.type));
+      allResults = allResults.filter((r) => types.includes(r.type));
     }
 
     if (severity) {
-      allResults = allResults.filter(r => r.severity === severity);
+      allResults = allResults.filter((r) => r.severity === severity);
     }
 
     if (status) {
-      allResults = allResults.filter(r => r.status === status);
+      allResults = allResults.filter((r) => r.status === status);
     }
 
     if (dateRange?.from) {
       const dateFrom = new Date(dateRange.from);
-      allResults = allResults.filter(r => {
-        const recordDate = new Date(r.createdAt || r.administrationDate || r.measurementDate || r.checkInTime);
+      allResults = allResults.filter((r) => {
+        const recordDate = new Date(
+          r.createdAt ||
+            r.administrationDate ||
+            r.measurementDate ||
+            r.checkInTime,
+        );
         return recordDate >= dateFrom;
       });
     }
 
     if (dateRange?.to) {
       const dateTo = new Date(dateRange.to);
-      allResults = allResults.filter(r => {
-        const recordDate = new Date(r.createdAt || r.administrationDate || r.measurementDate || r.checkInTime);
+      allResults = allResults.filter((r) => {
+        const recordDate = new Date(
+          r.createdAt ||
+            r.administrationDate ||
+            r.measurementDate ||
+            r.checkInTime,
+        );
         return recordDate <= dateTo;
       });
     }
@@ -250,16 +308,16 @@ export class SearchService {
       where: {
         [Op.or]: [
           { condition: { [Op.iLike]: `%${diagnosis}%` } },
-          { icdCode: { [Op.iLike]: `%${diagnosis}%` } }
+          { icdCode: { [Op.iLike]: `%${diagnosis}%` } },
         ],
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       },
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return conditions.map(c => ({
+    return conditions.map((c) => ({
       ...c.toJSON(),
-      studentName: `${c.student?.firstName} ${c.student?.lastName}`
+      studentName: `${c.student?.firstName} ${c.student?.lastName}`,
     }));
   }
 
@@ -272,19 +330,16 @@ export class SearchService {
     const conditions = await this.chronicConditionModel.findAll({
       where: {
         icdCode: {
-          [Op.or]: [
-            { [Op.eq]: icdCode },
-            { [Op.like]: `${icdCode}%` }
-          ]
+          [Op.or]: [{ [Op.eq]: icdCode }, { [Op.like]: `${icdCode}%` }],
         },
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       },
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return conditions.map(c => ({
+    return conditions.map((c) => ({
       ...c.toJSON(),
-      studentName: `${c.student?.firstName} ${c.student?.lastName}`
+      studentName: `${c.student?.firstName} ${c.student?.lastName}`,
     }));
   }
 
@@ -296,12 +351,12 @@ export class SearchService {
 
     const vaccinations = await this.vaccinationModel.findAll({
       where: { cvxCode },
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return vaccinations.map(v => ({
+    return vaccinations.map((v) => ({
       ...v.toJSON(),
-      studentName: `${v.student?.firstName} ${v.student?.lastName}`
+      studentName: `${v.student?.firstName} ${v.student?.lastName}`,
     }));
   }
 
@@ -314,12 +369,12 @@ export class SearchService {
     const conditions = await this.chronicConditionModel.findAll({
       where: {
         condition: { [Op.iLike]: `%${conditionName}%` },
-        status: 'ACTIVE'
+        status: 'ACTIVE',
       },
-      attributes: ['studentId']
+      attributes: ['studentId'],
     });
 
-    return Array.from(new Set(conditions.map(c => c.studentId)));
+    return Array.from(new Set(conditions.map((c) => c.studentId)));
   }
 
   /**
@@ -331,103 +386,123 @@ export class SearchService {
     const allergies = await this.allergyModel.findAll({
       where: {
         allergen: { [Op.iLike]: `%${allergen}%` },
-        active: true
+        active: true,
       },
-      attributes: ['studentId']
+      attributes: ['studentId'],
     });
 
-    return Array.from(new Set(allergies.map(a => a.studentId)));
+    return Array.from(new Set(allergies.map((a) => a.studentId)));
   }
 
   /**
    * Get recently updated records
    */
   async getRecentUpdates(days: number = 7, limit: number = 20): Promise<any[]> {
-    this.logger.log(`Getting records updated in last ${days} days, limit ${limit}`);
+    this.logger.log(
+      `Getting records updated in last ${days} days, limit ${limit}`,
+    );
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - days);
 
     // Get recent records from all tables
-    const [vaccinations, allergies, chronicConditions, vitals, visits] = await Promise.all([
-      this.vaccinationModel.findAll({
-        where: { updatedAt: { [Op.gte]: cutoffDate } },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['updatedAt', 'DESC']],
-        limit: Math.ceil(limit / 5) // Distribute limit across tables
-      }),
-      this.allergyModel.findAll({
-        where: { active: true },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['diagnosedDate', 'DESC']],
-        limit: Math.ceil(limit / 5)
-      }),
-      this.chronicConditionModel.findAll({
-        where: { updatedAt: { [Op.gte]: cutoffDate }, status: 'ACTIVE' },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['updatedAt', 'DESC']],
-        limit: Math.ceil(limit / 5)
-      }),
-      this.vitalSignsModel.findAll({
-        where: { updatedAt: { [Op.gte]: cutoffDate } },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['updatedAt', 'DESC']],
-        limit: Math.ceil(limit / 5)
-      }),
-      this.clinicVisitModel.findAll({
-        where: { updatedAt: { [Op.gte]: cutoffDate } },
-        include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
-        order: [['updatedAt', 'DESC']],
-        limit: Math.ceil(limit / 5)
-      })
-    ]);
+    const [vaccinations, allergies, chronicConditions, vitals, visits] =
+      await Promise.all([
+        this.vaccinationModel.findAll({
+          where: { updatedAt: { [Op.gte]: cutoffDate } },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['updatedAt', 'DESC']],
+          limit: Math.ceil(limit / 5), // Distribute limit across tables
+        }),
+        this.allergyModel.findAll({
+          where: { active: true },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['diagnosedDate', 'DESC']],
+          limit: Math.ceil(limit / 5),
+        }),
+        this.chronicConditionModel.findAll({
+          where: { updatedAt: { [Op.gte]: cutoffDate }, status: 'ACTIVE' },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['updatedAt', 'DESC']],
+          limit: Math.ceil(limit / 5),
+        }),
+        this.vitalSignsModel.findAll({
+          where: { updatedAt: { [Op.gte]: cutoffDate } },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['updatedAt', 'DESC']],
+          limit: Math.ceil(limit / 5),
+        }),
+        this.clinicVisitModel.findAll({
+          where: { updatedAt: { [Op.gte]: cutoffDate } },
+          include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
+          order: [['updatedAt', 'DESC']],
+          limit: Math.ceil(limit / 5),
+        }),
+      ]);
 
     // Combine and sort by updated date
     const allRecords: any[] = [];
 
-    vaccinations.forEach(v => allRecords.push({
-      ...v.toJSON(),
-      type: 'vaccination',
-      studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-      updatedAt: v.updatedAt
-    }));
+    vaccinations.forEach((v) =>
+      allRecords.push({
+        ...v.toJSON(),
+        type: 'vaccination',
+        studentName: `${v.student?.firstName} ${v.student?.lastName}`,
+        updatedAt: v.updatedAt,
+      }),
+    );
 
-    allergies.forEach(a => allRecords.push({
-      ...a.toJSON(),
-      type: 'allergy',
-      studentName: `${a.student?.firstName} ${a.student?.lastName}`,
-      updatedAt: a.updatedAt
-    }));
+    allergies.forEach((a) =>
+      allRecords.push({
+        ...a.toJSON(),
+        type: 'allergy',
+        studentName: `${a.student?.firstName} ${a.student?.lastName}`,
+        updatedAt: a.updatedAt,
+      }),
+    );
 
-    chronicConditions.forEach(c => allRecords.push({
-      ...c.toJSON(),
-      type: 'chronic_condition',
-      studentName: `${c.student?.firstName} ${c.student?.lastName}`,
-      updatedAt: c.updatedAt
-    }));
+    chronicConditions.forEach((c) =>
+      allRecords.push({
+        ...c.toJSON(),
+        type: 'chronic_condition',
+        studentName: `${c.student?.firstName} ${c.student?.lastName}`,
+        updatedAt: c.updatedAt,
+      }),
+    );
 
-    vitals.forEach(v => allRecords.push({
-      ...v.toJSON(),
-      type: 'vital_signs',
-      studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-      updatedAt: v.updatedAt
-    }));
+    vitals.forEach((v) =>
+      allRecords.push({
+        ...v.toJSON(),
+        type: 'vital_signs',
+        studentName: `${v.student?.firstName} ${v.student?.lastName}`,
+        updatedAt: v.updatedAt,
+      }),
+    );
 
-    visits.forEach(v => allRecords.push({
-      ...v.toJSON(),
-      type: 'clinic_visit',
-      studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-      updatedAt: v.updatedAt
-    }));
+    visits.forEach((v) =>
+      allRecords.push({
+        ...v.toJSON(),
+        type: 'clinic_visit',
+        studentName: `${v.student?.firstName} ${v.student?.lastName}`,
+        updatedAt: v.updatedAt,
+      }),
+    );
 
     return allRecords
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+      )
       .slice(0, limit);
   }
 
   // Private helper methods
 
-  private async searchVaccinations(searchTerm: string, baseWhere: any, filters?: any): Promise<any[]> {
+  private async searchVaccinations(
+    searchTerm: string,
+    baseWhere: any,
+    filters?: any,
+  ): Promise<any[]> {
     const whereClause: any = { ...baseWhere };
 
     // Add date range if specified
@@ -446,23 +521,32 @@ export class SearchService {
       { vaccineName: { [Op.iLike]: `%${searchTerm}%` } },
       { cvxCode: { [Op.iLike]: `%${searchTerm}%` } },
       { manufacturer: { [Op.iLike]: `%${searchTerm}%` } },
-      { lotNumber: { [Op.iLike]: `%${searchTerm}%` } }
+      { lotNumber: { [Op.iLike]: `%${searchTerm}%` } },
     ];
 
     const vaccinations = await this.vaccinationModel.findAll({
       where: whereClause,
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return vaccinations.map(v => ({
+    return vaccinations.map((v) => ({
       ...v.toJSON(),
       type: 'vaccination',
       studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-      relevance: this.calculateRelevance(v, searchTerm, ['vaccineName', 'cvxCode', 'manufacturer', 'lotNumber'])
+      relevance: this.calculateRelevance(v, searchTerm, [
+        'vaccineName',
+        'cvxCode',
+        'manufacturer',
+        'lotNumber',
+      ]),
     }));
   }
 
-  private async searchAllergies(searchTerm: string, baseWhere: any, filters?: any): Promise<any[]> {
+  private async searchAllergies(
+    searchTerm: string,
+    baseWhere: any,
+    filters?: any,
+  ): Promise<any[]> {
     const whereClause: any = { ...baseWhere, active: true };
 
     // Add date range if specified
@@ -480,23 +564,31 @@ export class SearchService {
     whereClause[Op.or] = [
       { allergen: { [Op.iLike]: `%${searchTerm}%` } },
       { symptoms: { [Op.iLike]: `%${searchTerm}%` } },
-      { reactions: { [Op.iLike]: `%${searchTerm}%` } }
+      { reactions: { [Op.iLike]: `%${searchTerm}%` } },
     ];
 
     const allergies = await this.allergyModel.findAll({
       where: whereClause,
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return allergies.map(a => ({
+    return allergies.map((a) => ({
       ...a.toJSON(),
       type: 'allergy',
       studentName: `${a.student?.firstName} ${a.student?.lastName}`,
-      relevance: this.calculateRelevance(a, searchTerm, ['allergen', 'symptoms', 'reactions'])
+      relevance: this.calculateRelevance(a, searchTerm, [
+        'allergen',
+        'symptoms',
+        'reactions',
+      ]),
     }));
   }
 
-  private async searchChronicConditions(searchTerm: string, baseWhere: any, filters?: any): Promise<any[]> {
+  private async searchChronicConditions(
+    searchTerm: string,
+    baseWhere: any,
+    filters?: any,
+  ): Promise<any[]> {
     const whereClause: any = { ...baseWhere, status: 'ACTIVE' };
 
     // Add date range if specified
@@ -514,23 +606,31 @@ export class SearchService {
     whereClause[Op.or] = [
       { condition: { [Op.iLike]: `%${searchTerm}%` } },
       { icdCode: { [Op.iLike]: `%${searchTerm}%` } },
-      { notes: { [Op.iLike]: `%${searchTerm}%` } }
+      { notes: { [Op.iLike]: `%${searchTerm}%` } },
     ];
 
     const conditions = await this.chronicConditionModel.findAll({
       where: whereClause,
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return conditions.map(c => ({
+    return conditions.map((c) => ({
       ...c.toJSON(),
       type: 'chronic_condition',
       studentName: `${c.student?.firstName} ${c.student?.lastName}`,
-      relevance: this.calculateRelevance(c, searchTerm, ['condition', 'icdCode', 'notes'])
+      relevance: this.calculateRelevance(c, searchTerm, [
+        'condition',
+        'icdCode',
+        'notes',
+      ]),
     }));
   }
 
-  private async searchVitalSigns(searchTerm: string, baseWhere: any, filters?: any): Promise<any[]> {
+  private async searchVitalSigns(
+    searchTerm: string,
+    baseWhere: any,
+    filters?: any,
+  ): Promise<any[]> {
     const whereClause: any = { ...baseWhere };
 
     // Add date range if specified
@@ -549,18 +649,22 @@ export class SearchService {
 
     const vitals = await this.vitalSignsModel.findAll({
       where: whereClause,
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return vitals.map(v => ({
+    return vitals.map((v) => ({
       ...v.toJSON(),
       type: 'vital_signs',
       studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-      relevance: this.calculateRelevance(v, searchTerm, ['notes'])
+      relevance: this.calculateRelevance(v, searchTerm, ['notes']),
     }));
   }
 
-  private async searchClinicVisits(searchTerm: string, baseWhere: any, filters?: any): Promise<any[]> {
+  private async searchClinicVisits(
+    searchTerm: string,
+    baseWhere: any,
+    filters?: any,
+  ): Promise<any[]> {
     const whereClause: any = { ...baseWhere };
 
     // Add date range if specified
@@ -579,27 +683,36 @@ export class SearchService {
       { reasonForVisit: { [Op.iLike]: `%${searchTerm}%` } },
       { symptoms: { [Op.iLike]: `%${searchTerm}%` } },
       { treatment: { [Op.iLike]: `%${searchTerm}%` } },
-      { notes: { [Op.iLike]: `%${searchTerm}%` } }
+      { notes: { [Op.iLike]: `%${searchTerm}%` } },
     ];
 
     const visits = await this.clinicVisitModel.findAll({
       where: whereClause,
-      include: [{ model: Student, attributes: ['firstName', 'lastName'] }]
+      include: [{ model: Student, attributes: ['firstName', 'lastName'] }],
     });
 
-    return visits.map(v => ({
+    return visits.map((v) => ({
       ...v.toJSON(),
       type: 'clinic_visit',
       studentName: `${v.student?.firstName} ${v.student?.lastName}`,
-      relevance: this.calculateRelevance(v, searchTerm, ['reasonForVisit', 'symptoms', 'treatment', 'notes'])
+      relevance: this.calculateRelevance(v, searchTerm, [
+        'reasonForVisit',
+        'symptoms',
+        'treatment',
+        'notes',
+      ]),
     }));
   }
 
-  private calculateRelevance(record: any, query: string, searchableFields: string[]): number {
+  private calculateRelevance(
+    record: any,
+    query: string,
+    searchableFields: string[],
+  ): number {
     const searchLower = query.toLowerCase();
     let score = 0;
 
-    searchableFields.forEach(field => {
+    searchableFields.forEach((field) => {
       const fieldValue = record[field];
       if (typeof fieldValue === 'string') {
         const fieldLower = fieldValue.toLowerCase();

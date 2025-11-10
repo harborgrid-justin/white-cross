@@ -6,5 +6,5 @@ export enum VerificationStatus {
   UNVERIFIED = 'UNVERIFIED',
   PENDING = 'PENDING',
   VERIFIED = 'VERIFIED',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }

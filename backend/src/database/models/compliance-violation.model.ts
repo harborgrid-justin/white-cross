@@ -1,16 +1,15 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ViolationType {
@@ -20,14 +19,14 @@ export enum ViolationType {
   DATA_LEAK = 'DATA_LEAK',
   POLICY_VIOLATION = 'POLICY_VIOLATION',
   PROCEDURE_VIOLATION = 'PROCEDURE_VIOLATION',
-  TRAINING_DEFICIENCY = 'TRAINING_DEFICIENCY'
+  TRAINING_DEFICIENCY = 'TRAINING_DEFICIENCY',
 }
 
 export enum ViolationSeverity {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL'
+  CRITICAL = 'CRITICAL',
 }
 
 export enum ViolationStatus {
@@ -35,7 +34,7 @@ export enum ViolationStatus {
   INVESTIGATING = 'INVESTIGATING',
   REMEDIATION_IN_PROGRESS = 'REMEDIATION_IN_PROGRESS',
   RESOLVED = 'RESOLVED',
-  CLOSED = 'CLOSED'
+  CLOSED = 'CLOSED',
 }
 
 export interface ComplianceViolationAttributes {
@@ -60,10 +59,10 @@ export interface ComplianceViolationAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'compliance_violations',
@@ -71,34 +70,37 @@ export interface ComplianceViolationAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['violationType']
-  },
+      fields: ['violationType'],
+    },
     {
-      fields: ['severity']
-  },
+      fields: ['severity'],
+    },
     {
-      fields: ['status']
-  },
+      fields: ['status'],
+    },
     {
-      fields: ['reportedBy']
-  },
+      fields: ['reportedBy'],
+    },
     {
-      fields: ['assignedTo']
-  },
+      fields: ['assignedTo'],
+    },
     {
-      fields: ['discoveredAt']
-  },
+      fields: ['discoveredAt'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_compliance_violation_created_at'
+      name: 'idx_compliance_violation_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_compliance_violation_updated_at'
-    }
-  ]
-  })
-export class ComplianceViolation extends Model<ComplianceViolationAttributes> implements ComplianceViolationAttributes {
+      name: 'idx_compliance_violation_updated_at',
+    },
+  ],
+})
+export class ComplianceViolation
+  extends Model<ComplianceViolationAttributes>
+  implements ComplianceViolationAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -107,52 +109,52 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ViolationType)]
+      isIn: [Object.values(ViolationType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   violationType: ViolationType;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ViolationSeverity)]
+      isIn: [Object.values(ViolationSeverity)],
     },
-    allowNull: false
+    allowNull: false,
   })
   severity: ViolationSeverity;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ViolationStatus)]
+      isIn: [Object.values(ViolationStatus)],
     },
     allowNull: false,
-    defaultValue: ViolationStatus.REPORTED
+    defaultValue: ViolationStatus.REPORTED,
   })
   status: ViolationStatus;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   reportedBy: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   discoveredAt: Date;
 
@@ -186,14 +188,15 @@ export class ComplianceViolation extends Model<ComplianceViolationAttributes> im
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ComplianceViolation) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ComplianceViolation ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ComplianceViolation ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

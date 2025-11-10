@@ -4,3 +4,6 @@ export * from './incident-notification.service';
 export * from './incident-follow-up.service';
 export * from './incident-witness.service';
 export * from './incident-statistics.service';
+export * from './incident-read.service';
+export * from './incident-write.service';
+export * from './incident-status.service';

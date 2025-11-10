@@ -1,18 +1,13 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { ChronicCondition } from '../database/models/chronic-condition.model';
-import {
-  ChronicConditionCreateDto,
-  ChronicConditionUpdateDto,
-  ChronicConditionFiltersDto,
-  PaginationDto,
-} from './dto';
-import { ConditionStatus, AccommodationType } from '../database/models/chronic-condition.model';
-import {
-  ChronicConditionStatistics,
-  ChronicConditionSearchResult,
-} from './interfaces';
+import { AccommodationType, ChronicCondition, ConditionStatus } from '../database/models/chronic-condition.model';
+import { ChronicConditionCreateDto } from './dto/create-chronic-condition.dto';
+import { ChronicConditionFiltersDto } from './dto/chronic-condition-filters.dto';
+import { ChronicConditionUpdateDto } from './dto/update-chronic-condition.dto';
+import { PaginationDto } from './dto/pagination.dto';
+import { ChronicConditionSearchResult } from './interfaces/chronic-condition-search-result.interface';
+import { ChronicConditionStatistics } from './interfaces/chronic-condition-statistics.interface';
 
 /**
  * ChronicConditionService
@@ -60,7 +55,9 @@ export class ChronicConditionService {
         isActive: true, // Default to active
       };
 
-      const savedCondition = await this.chronicConditionModel.create(conditionData as any);
+      const savedCondition = await this.chronicConditionModel.create(
+        conditionData as any,
+      );
 
       // PHI Audit Log
       this.logger.log({
@@ -312,16 +309,17 @@ export class ChronicConditionService {
     }
 
     // Get total count and results
-    const { count: total, rows: conditions } = await this.chronicConditionModel.findAndCountAll({
-      where,
-      order: [
-        ['status', 'ASC'],
-        ['nextReviewDate', 'ASC'],
-        ['diagnosedDate', 'DESC'],
-      ],
-      offset,
-      limit,
-    });
+    const { count: total, rows: conditions } =
+      await this.chronicConditionModel.findAndCountAll({
+        where,
+        order: [
+          ['status', 'ASC'],
+          ['nextReviewDate', 'ASC'],
+          ['diagnosedDate', 'DESC'],
+        ],
+        offset,
+        limit,
+      });
 
     // PHI Audit Log
     this.logger.log({
@@ -379,10 +377,7 @@ export class ChronicConditionService {
     } else if (type === AccommodationType.PLAN_504) {
       where.requires504 = true;
     } else {
-      where[Op.or] = [
-        { requiresIEP: true },
-        { requires504: true },
-      ];
+      where[Op.or] = [{ requiresIEP: true }, { requires504: true }];
     }
 
     const conditions = await this.chronicConditionModel.findAll({
@@ -472,7 +467,10 @@ export class ChronicConditionService {
   /**
    * Updates the care plan for a chronic condition and refreshes review date.
    */
-  async updateCarePlan(id: string, carePlan: string): Promise<ChronicCondition> {
+  async updateCarePlan(
+    id: string,
+    carePlan: string,
+  ): Promise<ChronicCondition> {
     return this.updateChronicCondition(id, {
       carePlan,
       lastReviewDate: new Date().toISOString(),
@@ -502,7 +500,9 @@ export class ChronicConditionService {
         isActive: true, // Default to active
       }));
 
-      const savedConditions = await this.chronicConditionModel.bulkCreate(conditions as any);
+      const savedConditions = await this.chronicConditionModel.bulkCreate(
+        conditions as any,
+      );
 
       // PHI Audit Log
       this.logger.log({
@@ -521,6 +521,86 @@ export class ChronicConditionService {
     } catch (error) {
       this.logger.error('Error bulk creating chronic conditions:', error);
       throw error;
+    }
+  }
+
+  // ==================== Batch Query Methods (DataLoader Support) ====================
+
+  /**
+   * Batch find chronic conditions by IDs (for DataLoader)
+   * Returns chronic conditions in the same order as requested IDs
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching multiple chronic conditions
+   * Before: 1 + N queries (1 per condition)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   */
+  async findByIds(ids: string[]): Promise<(ChronicCondition | null)[]> {
+    try {
+      const conditions = await this.chronicConditionModel.findAll({
+        where: {
+          id: { [Op.in]: ids },
+        },
+      });
+
+      // Create map for O(1) lookup
+      const conditionMap = new Map(conditions.map((c) => [c.id, c]));
+
+      // Return in same order as input, null for missing
+      return ids.map((id) => conditionMap.get(id) || null);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch chronic conditions: ${error.message}`,
+      );
+      throw new Error('Failed to batch fetch chronic conditions');
+    }
+  }
+
+  /**
+   * Batch find chronic conditions by student IDs (for DataLoader)
+   * Returns array of chronic condition arrays for each student ID
+   *
+   * OPTIMIZATION: Eliminates N+1 queries when fetching conditions for multiple students
+   * Before: 1 + N queries (1 per student)
+   * After: 1 query with IN clause
+   * Performance improvement: ~99% query reduction for batch operations
+   *
+   * Example use case: Fetching chronic conditions for all students in a class or school
+   * Conditions are ordered by status (ACTIVE first) for quick identification
+   */
+  async findByStudentIds(
+    studentIds: string[],
+  ): Promise<ChronicCondition[][]> {
+    try {
+      const conditions = await this.chronicConditionModel.findAll({
+        where: {
+          studentId: { [Op.in]: studentIds },
+          isActive: true,
+        },
+        order: [
+          ['status', 'ASC'],
+          ['diagnosedDate', 'DESC'],
+        ],
+      });
+
+      // Group by studentId
+      const grouped = new Map<string, ChronicCondition[]>();
+      for (const condition of conditions) {
+        if (!grouped.has(condition.studentId)) {
+          grouped.set(condition.studentId, []);
+        }
+        grouped.get(condition.studentId)!.push(condition);
+      }
+
+      // Return in same order as input, empty array for missing
+      return studentIds.map((id) => grouped.get(id) || []);
+    } catch (error) {
+      this.logger.error(
+        `Failed to batch fetch chronic conditions by student IDs: ${error.message}`,
+      );
+      throw new Error(
+        'Failed to batch fetch chronic conditions by student IDs',
+      );
     }
   }
 }

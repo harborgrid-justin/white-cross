@@ -1,14 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsString,
-  IsOptional,
-  IsArray,
-  IsDateString,
-  IsIP,
-  IsNotEmpty,
-} from 'class-validator';
-import { IpRestrictionType } from '../enums';
+import { IsArray, IsDateString, IsEnum, IsIP, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
 
 /**
  * DTO for creating IP restriction rules
@@ -19,7 +11,7 @@ export class SecurityCreateIpRestrictionDto {
     description: 'Type of IP restriction',
   })
   @IsEnum(IpRestrictionType)
-  type: IpRestrictionType;
+  type!: IpRestrictionType;
 
   @ApiPropertyOptional({
     description: 'IP address or CIDR notation (e.g., 192.168.1.0/24)',
@@ -46,12 +38,12 @@ export class SecurityCreateIpRestrictionDto {
   @ApiProperty({ description: 'Reason for the restriction' })
   @IsString()
   @IsNotEmpty()
-  reason: string;
+  reason!: string;
 
   @ApiProperty({ description: 'User ID who created the restriction' })
   @IsString()
   @IsNotEmpty()
-  createdBy: string;
+  createdBy!: string;
 
   @ApiPropertyOptional({ description: 'Expiration date for the restriction' })
   @IsOptional()
@@ -76,9 +68,11 @@ export class UpdateIpRestrictionDto extends PartialType(
 export class IpCheckDto {
   @ApiProperty({ description: 'IP address to check' })
   @IsIP()
-  ipAddress: string;
+  ipAddress!: string;
 
-  @ApiPropertyOptional({ description: 'User ID for user-specific restrictions' })
+  @ApiPropertyOptional({
+    description: 'User ID for user-specific restrictions',
+  })
   @IsOptional()
   @IsString()
   userId?: string;

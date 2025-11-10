@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsArray,
-  IsObject,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -19,19 +12,19 @@ export class CustomReportTableDto {
   @IsArray()
   @IsString({ each: true })
   @IsNotEmpty()
-  headers: string[];
+  headers!: string[];
 
   @ApiProperty({ description: 'Table rows' })
   @IsArray()
   @IsNotEmpty()
-  rows: any[][];
+  rows!: any[][];
 }
 
 export class PdfGenerateCustomReportDto {
   @ApiProperty({ description: 'Report title' })
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @ApiPropertyOptional({ description: 'Report subtitle' })
   @IsString()

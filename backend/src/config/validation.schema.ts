@@ -64,7 +64,9 @@ export const validationSchema = Joi.object({
 
   DB_SYNC: Joi.boolean()
     .default(false)
-    .description('Auto-sync database schema (safe default: false to prevent data loss)'),
+    .description(
+      'Auto-sync database schema (safe default: false to prevent data loss)',
+    ),
 
   DB_LOGGING: Joi.boolean()
     .default(false)
@@ -74,7 +76,9 @@ export const validationSchema = Joi.object({
   DATABASE_URL: Joi.string()
     .uri()
     .optional()
-    .description('Database connection URL (alternative to DB_HOST, DB_PORT, etc.)'),
+    .description(
+      'Database connection URL (alternative to DB_HOST, DB_PORT, etc.)',
+    ),
 
   // Connection Pool Configuration
   DB_POOL_MIN: Joi.number()
@@ -93,19 +97,25 @@ export const validationSchema = Joi.object({
       is: Joi.number().required(),
       then: Joi.number().min(Joi.ref('DB_POOL_MIN')),
     })
-    .description('Maximum database connections in pool (safe default: 10, must be >= DB_POOL_MIN)'),
+    .description(
+      'Maximum database connections in pool (safe default: 10, must be >= DB_POOL_MIN)',
+    ),
 
   DB_ACQUIRE_TIMEOUT: Joi.number()
     .integer()
     .positive()
     .default(60000)
-    .description('Database connection acquire timeout in ms (safe default: 60000)'),
+    .description(
+      'Database connection acquire timeout in ms (safe default: 60000)',
+    ),
 
   DB_IDLE_TIMEOUT: Joi.number()
     .integer()
     .positive()
     .default(10000)
-    .description('Database connection idle timeout in ms (safe default: 10000)'),
+    .description(
+      'Database connection idle timeout in ms (safe default: 10000)',
+    ),
 
   // ===================
   // JWT & AUTHENTICATION
@@ -113,12 +123,16 @@ export const validationSchema = Joi.object({
   JWT_SECRET: Joi.string()
     .required()
     .min(32)
-    .description('JWT signing secret (REQUIRED - minimum 32 characters, NO DEFAULT)'),
+    .description(
+      'JWT signing secret (REQUIRED - minimum 32 characters, NO DEFAULT)',
+    ),
 
   JWT_REFRESH_SECRET: Joi.string()
     .required()
     .min(32)
-    .description('JWT refresh token secret (REQUIRED - minimum 32 characters, NO DEFAULT)'),
+    .description(
+      'JWT refresh token secret (REQUIRED - minimum 32 characters, NO DEFAULT)',
+    ),
 
   JWT_EXPIRES_IN: Joi.string()
     .default('15m')
@@ -130,6 +144,13 @@ export const validationSchema = Joi.object({
     .pattern(/^\d+[smhd]$/)
     .description('JWT refresh token expiration (safe default: 7d)'),
 
+  SESSION_SECRET: Joi.string()
+    .required()
+    .min(32)
+    .description(
+      'Session secret for cookie signing (REQUIRED - minimum 32 characters, must be different from JWT_SECRET)',
+    ),
+
   // ===================
   // SECURITY CONFIG
   // ===================
@@ -139,7 +160,9 @@ export const validationSchema = Joi.object({
       then: Joi.string().required().min(32),
       otherwise: Joi.string().optional(),
     })
-    .description('CSRF token secret (REQUIRED in production, minimum 32 characters)'),
+    .description(
+      'CSRF token secret (REQUIRED in production, minimum 32 characters)',
+    ),
 
   CONFIG_ENCRYPTION_KEY: Joi.string()
     .when('NODE_ENV', {
@@ -321,14 +344,11 @@ export const validationSchema = Joi.object({
     is: 'production',
     then: Joi.string().uri().required(),
     otherwise: Joi.alternatives()
-      .try(
-        Joi.string().uri(),
-        Joi.string().valid('*'),
-        Joi.string().allow(''),
-      )
+      .try(Joi.string().uri(), Joi.string().valid('*'), Joi.string().allow(''))
       .default('http://localhost:3000'),
-  })
-    .description('CORS allowed origin (REQUIRED in production, safe default: http://localhost:3000 for dev)'),
+  }).description(
+    'CORS allowed origin (REQUIRED in production, safe default: http://localhost:3000 for dev)',
+  ),
 
   // ===================
   // WEBSOCKET CONFIG
@@ -425,10 +445,12 @@ export const validationSchema = Joi.object({
   abortEarly: false,
 
   // Don't allow unknown environment variables to prevent typos
-  allowUnknown: true, // Set to false in strict mode
+  // In production: strict validation (prevents typos and misconfigurations)
+  // In development: permissive (allows experimentation and IDE-specific vars)
+  allowUnknown: process.env.NODE_ENV !== 'production',
 
-  // Strip unknown keys
-  stripUnknown: false,
+  // Strip unknown keys in production for security
+  stripUnknown: process.env.NODE_ENV === 'production',
 });
 
 /**
@@ -451,15 +473,15 @@ export function validateEnvironment(config: Record<string, unknown>) {
 
     throw new Error(
       `\n${'='.repeat(80)}\n` +
-      `CONFIGURATION VALIDATION FAILED\n` +
-      `${'='.repeat(80)}\n\n` +
-      `The following environment variables are invalid or missing:\n\n` +
-      `${errorMessages.join('\n')}\n\n` +
-      `${'='.repeat(80)}\n` +
-      `CRITICAL: Application cannot start with invalid configuration.\n` +
-      `Please check your .env file and ensure all required variables are set.\n` +
-      `See .env.example for a complete list of required variables.\n` +
-      `${'='.repeat(80)}\n`,
+        `CONFIGURATION VALIDATION FAILED\n` +
+        `${'='.repeat(80)}\n\n` +
+        `The following environment variables are invalid or missing:\n\n` +
+        `${errorMessages.join('\n')}\n\n` +
+        `${'='.repeat(80)}\n` +
+        `CRITICAL: Application cannot start with invalid configuration.\n` +
+        `Please check your .env file and ensure all required variables are set.\n` +
+        `See .env.example for a complete list of required variables.\n` +
+        `${'='.repeat(80)}\n`,
     );
   }
 

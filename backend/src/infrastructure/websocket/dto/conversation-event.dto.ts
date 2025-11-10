@@ -17,6 +17,9 @@
  *
  * @class ConversationEventDto
  */
+
+import type { JsonValue } from './broadcast-message.dto';
+
 export class ConversationEventDto {
   /**
    * Unique identifier for the conversation
@@ -80,9 +83,9 @@ export class ConversationEventDto {
     participantCount?: number;
 
     /**
-     * Custom metadata
+     * Custom metadata fields (JSON-serializable values only)
      */
-    [key: string]: any;
+    [key: string]: JsonValue;
   };
 
   /**
@@ -174,7 +177,7 @@ export class ConversationEventDto {
    *
    * @returns Sanitized conversation event object for client consumption
    */
-  toPayload(): Record<string, any> {
+  toPayload(): Record<string, JsonValue | undefined> {
     return {
       conversationId: this.conversationId,
       userId: this.userId,

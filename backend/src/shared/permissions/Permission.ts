@@ -2,14 +2,14 @@
  * @fileoverview Permission System - HIPAA-Compliant RBAC Framework
  * @module shared/permissions/Permission
  * @description Berty-inspired declarative permission management system
- * 
+ *
  * Provides:
  * - Role-based access control (RBAC)
  * - Resource-level permissions
  * - Action-based authorization
  * - Permission checking utilities
  * - Audit trail integration
- * 
+ *
  * @security HIPAA-compliant access control
  * @compliance SOC2 - Role-based authorization
  * @author White-Cross Platform Team
@@ -24,21 +24,21 @@ export enum Role {
   // Administrative roles
   SuperAdmin = 'super_admin',
   Admin = 'admin',
-  
+
   // Healthcare provider roles
   Nurse = 'nurse',
   Doctor = 'doctor',
   Pharmacist = 'pharmacist',
-  
+
   // Staff roles
   Staff = 'staff',
   Teacher = 'teacher',
   Counselor = 'counselor',
-  
+
   // Limited access roles
   Guardian = 'guardian',
   Viewer = 'viewer',
-  
+
   // System roles
   System = 'system',
   ApiClient = 'api_client',
@@ -53,35 +53,35 @@ export enum Resource {
   StudentProfile = 'student:profile',
   StudentMedical = 'student:medical',
   StudentConsent = 'student:consent',
-  
+
   // Medication resources
   Medication = 'medication',
   MedicationLog = 'medication:log',
   MedicationSchedule = 'medication:schedule',
   MedicationInventory = 'medication:inventory',
-  
+
   // Health record resources
   HealthRecord = 'health_record',
   HealthRecordMedical = 'health_record:medical',
   HealthRecordAllergy = 'health_record:allergy',
   HealthRecordCondition = 'health_record:condition',
-  
+
   // Contact resources
   Contact = 'contact',
   ContactGuardian = 'contact:guardian',
   ContactEmergency = 'contact:emergency',
   ContactStaff = 'contact:staff',
-  
+
   // Activity resources
   Activity = 'activity',
   ActivityLog = 'activity:log',
   ActivityTimeline = 'activity:timeline',
-  
+
   // User resources
   User = 'user',
   UserProfile = 'user:profile',
   UserSettings = 'user:settings',
-  
+
   // System resources
   Settings = 'settings',
   Audit = 'audit',
@@ -97,24 +97,24 @@ export enum Action {
   Read = 'read',
   List = 'list',
   View = 'view',
-  
+
   // Write operations
   Create = 'create',
   Update = 'update',
   Delete = 'delete',
-  
+
   // Special operations
   Administer = 'administer',
   Approve = 'approve',
   Override = 'override',
   Export = 'export',
   Import = 'import',
-  
+
   // Medication-specific
   AdministerMedication = 'administer_medication',
   ScheduleMedication = 'schedule_medication',
   VerifyMedication = 'verify_medication',
-  
+
   // Audit operations
   ViewAudit = 'view_audit',
   ManageAudit = 'manage_audit',
@@ -171,22 +171,48 @@ export const PERMISSION_MATRIX: Permission[] = [
   {
     role: Role.SuperAdmin,
     resource: Resource.Student,
-    actions: [Action.Read, Action.List, Action.Create, Action.Update, Action.Delete, Action.Export],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.Create,
+      Action.Update,
+      Action.Delete,
+      Action.Export,
+    ],
   },
   {
     role: Role.SuperAdmin,
     resource: Resource.Medication,
-    actions: [Action.Read, Action.List, Action.Create, Action.Update, Action.Delete, Action.AdministerMedication],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.Create,
+      Action.Update,
+      Action.Delete,
+      Action.AdministerMedication,
+    ],
   },
   {
     role: Role.SuperAdmin,
     resource: Resource.HealthRecord,
-    actions: [Action.Read, Action.List, Action.Create, Action.Update, Action.Delete],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.Create,
+      Action.Update,
+      Action.Delete,
+    ],
   },
   {
     role: Role.SuperAdmin,
     resource: Resource.Contact,
-    actions: [Action.Read, Action.List, Action.Create, Action.Update, Action.Delete],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.Create,
+      Action.Update,
+      Action.Delete,
+    ],
   },
   {
     role: Role.SuperAdmin,
@@ -198,7 +224,7 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.Audit,
     actions: [Action.ViewAudit, Action.ManageAudit],
   },
-  
+
   // Admin - Most access
   {
     role: Role.Admin,
@@ -208,7 +234,13 @@ export const PERMISSION_MATRIX: Permission[] = [
   {
     role: Role.Admin,
     resource: Resource.Medication,
-    actions: [Action.Read, Action.List, Action.Create, Action.Update, Action.ScheduleMedication],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.Create,
+      Action.Update,
+      Action.ScheduleMedication,
+    ],
   },
   {
     role: Role.Admin,
@@ -225,7 +257,7 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.Audit,
     actions: [Action.ViewAudit],
   },
-  
+
   // Nurse - Medication administration and student care
   {
     role: Role.Nurse,
@@ -240,7 +272,12 @@ export const PERMISSION_MATRIX: Permission[] = [
   {
     role: Role.Nurse,
     resource: Resource.Medication,
-    actions: [Action.Read, Action.List, Action.AdministerMedication, Action.VerifyMedication],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.AdministerMedication,
+      Action.VerifyMedication,
+    ],
   },
   {
     role: Role.Nurse,
@@ -262,7 +299,7 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.Activity,
     actions: [Action.Read, Action.List, Action.Create],
   },
-  
+
   // Doctor - Medical oversight
   {
     role: Role.Doctor,
@@ -277,7 +314,13 @@ export const PERMISSION_MATRIX: Permission[] = [
   {
     role: Role.Doctor,
     resource: Resource.Medication,
-    actions: [Action.Read, Action.List, Action.Create, Action.Update, Action.ScheduleMedication],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.Create,
+      Action.Update,
+      Action.ScheduleMedication,
+    ],
   },
   {
     role: Role.Doctor,
@@ -289,12 +332,18 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.Contact,
     actions: [Action.Read, Action.List],
   },
-  
+
   // Pharmacist - Medication management
   {
     role: Role.Pharmacist,
     resource: Resource.Medication,
-    actions: [Action.Read, Action.List, Action.Create, Action.Update, Action.VerifyMedication],
+    actions: [
+      Action.Read,
+      Action.List,
+      Action.Create,
+      Action.Update,
+      Action.VerifyMedication,
+    ],
   },
   {
     role: Role.Pharmacist,
@@ -306,7 +355,7 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.MedicationLog,
     actions: [Action.Read, Action.List],
   },
-  
+
   // Staff - Limited student access
   {
     role: Role.Staff,
@@ -323,7 +372,7 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.Activity,
     actions: [Action.Read, Action.List],
   },
-  
+
   // Teacher - Student info and activities
   {
     role: Role.Teacher,
@@ -345,7 +394,7 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.Activity,
     actions: [Action.Read, Action.List, Action.Create],
   },
-  
+
   // Guardian - Own student only
   {
     role: Role.Guardian,
@@ -363,15 +412,19 @@ export const PERMISSION_MATRIX: Permission[] = [
     role: Role.Guardian,
     resource: Resource.MedicationLog,
     actions: [Action.Read, Action.List],
-    conditions: [{ field: 'studentGuardianId', operator: 'eq', value: '{{userId}}' }],
+    conditions: [
+      { field: 'studentGuardianId', operator: 'eq', value: '{{userId}}' },
+    ],
   },
   {
     role: Role.Guardian,
     resource: Resource.Activity,
     actions: [Action.Read, Action.List],
-    conditions: [{ field: 'studentGuardianId', operator: 'eq', value: '{{userId}}' }],
+    conditions: [
+      { field: 'studentGuardianId', operator: 'eq', value: '{{userId}}' },
+    ],
   },
-  
+
   // Viewer - Read-only
   {
     role: Role.Viewer,
@@ -383,7 +436,7 @@ export const PERMISSION_MATRIX: Permission[] = [
     resource: Resource.Activity,
     actions: [Action.Read, Action.List],
   },
-  
+
   // API Client - Programmatic access
   {
     role: Role.ApiClient,
@@ -407,22 +460,22 @@ export const PERMISSION_MATRIX: Permission[] = [
  */
 export class PermissionChecker {
   private permissions: Permission[];
-  
+
   constructor(permissions: Permission[] = PERMISSION_MATRIX) {
     this.permissions = permissions;
   }
-  
+
   /**
    * Check if a user has permission to perform an action
    */
   check(context: PermissionContext): PermissionResult {
     const { userRole, resource, action } = context;
-    
+
     // Find matching permissions
     const matchingPermissions = this.permissions.filter(
-      p => p.role === userRole && p.resource === resource
+      (p) => p.role === userRole && p.resource === resource,
     );
-    
+
     if (matchingPermissions.length === 0) {
       return {
         allowed: false,
@@ -430,10 +483,12 @@ export class PermissionChecker {
         requiredRole: Role.Admin,
       };
     }
-    
+
     // Check if action is allowed
-    const hasAction = matchingPermissions.some(p => p.actions.includes(action));
-    
+    const hasAction = matchingPermissions.some((p) =>
+      p.actions.includes(action),
+    );
+
     if (!hasAction) {
       return {
         allowed: false,
@@ -441,40 +496,47 @@ export class PermissionChecker {
         requiredAction: action,
       };
     }
-    
+
     // Check conditions
     for (const permission of matchingPermissions) {
       if (!permission.conditions || permission.conditions.length === 0) {
         return { allowed: true };
       }
-      
-      const conditionsMet = this.checkConditions(permission.conditions, context);
+
+      const conditionsMet = this.checkConditions(
+        permission.conditions,
+        context,
+      );
       if (conditionsMet) {
         return { allowed: true };
       }
     }
-    
+
     return {
       allowed: false,
       reason: `Conditions not met for ${action} on ${resource}`,
     };
   }
-  
+
   /**
    * Check if conditions are met
    */
-  private checkConditions(conditions: PermissionCondition[], context: PermissionContext): boolean {
-    return conditions.every(condition => {
+  private checkConditions(
+    conditions: PermissionCondition[],
+    context: PermissionContext,
+  ): boolean {
+    return conditions.every((condition) => {
       let value = condition.value;
-      
+
       // Replace placeholders
       if (typeof value === 'string' && value.includes('{{')) {
         value = value.replace('{{userId}}', context.userId);
         value = value.replace('{{resourceId}}', context.resourceId || '');
       }
-      
-      const contextValue = context.metadata?.[condition.field] || context.resourceOwnerId;
-      
+
+      const contextValue =
+        context.metadata?.[condition.field] || context.resourceOwnerId;
+
       switch (condition.operator) {
         case 'eq':
           return contextValue === value;
@@ -495,7 +557,7 @@ export class PermissionChecker {
       }
     });
   }
-  
+
   /**
    * Check if user can perform action on resource
    */
@@ -507,25 +569,25 @@ export class PermissionChecker {
       resource,
     }).allowed;
   }
-  
+
   /**
    * Get all actions a role can perform on a resource
    */
   getAllowedActions(userRole: Role, resource: Resource): Action[] {
     const permissions = this.permissions.filter(
-      p => p.role === userRole && p.resource === resource
+      (p) => p.role === userRole && p.resource === resource,
     );
-    
-    const actions = permissions.flatMap(p => p.actions);
+
+    const actions = permissions.flatMap((p) => p.actions);
     return Array.from(new Set(actions));
   }
-  
+
   /**
    * Get all resources a role can access
    */
   getAllowedResources(userRole: Role): Resource[] {
-    const permissions = this.permissions.filter(p => p.role === userRole);
-    const resources = permissions.map(p => p.resource);
+    const permissions = this.permissions.filter((p) => p.role === userRole);
+    const resources = permissions.map((p) => p.resource);
     return Array.from(new Set(resources));
   }
 }
@@ -542,11 +604,18 @@ export function checkPermission(context: PermissionContext): PermissionResult {
   return permissionChecker.check(context);
 }
 
-export function can(userRole: Role, action: Action, resource: Resource): boolean {
+export function can(
+  userRole: Role,
+  action: Action,
+  resource: Resource,
+): boolean {
   return permissionChecker.can(userRole, action, resource);
 }
 
-export function getAllowedActions(userRole: Role, resource: Resource): Action[] {
+export function getAllowedActions(
+  userRole: Role,
+  resource: Resource,
+): Action[] {
   return permissionChecker.getAllowedActions(userRole, resource);
 }
 
@@ -558,21 +627,28 @@ export function getAllowedResources(userRole: Role): Resource[] {
  * Type guard for roles
  */
 export function isRole(value: unknown): value is Role {
-  return typeof value === 'string' && Object.values(Role).includes(value as Role);
+  return (
+    typeof value === 'string' && Object.values(Role).includes(value as Role)
+  );
 }
 
 /**
  * Type guard for resources
  */
 export function isResource(value: unknown): value is Resource {
-  return typeof value === 'string' && Object.values(Resource).includes(value as Resource);
+  return (
+    typeof value === 'string' &&
+    Object.values(Resource).includes(value as Resource)
+  );
 }
 
 /**
  * Type guard for actions
  */
 export function isAction(value: unknown): value is Action {
-  return typeof value === 'string' && Object.values(Action).includes(value as Action);
+  return (
+    typeof value === 'string' && Object.values(Action).includes(value as Action)
+  );
 }
 
 /**

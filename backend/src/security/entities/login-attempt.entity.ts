@@ -1,12 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-} from 'sequelize-typescript';
+import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
 
 /**
  * Login Attempt Entity
@@ -43,7 +35,7 @@ export class LoginAttemptEntity extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  ipAddress: string;
+  ipAddress!: string;
 
   @Column({
     type: DataType.TEXT,
@@ -56,7 +48,7 @@ export class LoginAttemptEntity extends Model {
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  success: boolean;
+  success!: boolean;
 
   @Column({
     type: DataType.TEXT,

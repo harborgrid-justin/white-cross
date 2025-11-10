@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDate, IsBoolean, IsNumber } from 'class-validator';
+import { IsBoolean, IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -31,7 +31,10 @@ export class GetMedicationUsageQueryDto {
   @IsString()
   category?: string;
 
-  @ApiPropertyOptional({ description: 'Include adherence rate calculation', default: true })
+  @ApiPropertyOptional({
+    description: 'Include adherence rate calculation',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)

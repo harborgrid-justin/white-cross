@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsBoolean } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AllergySeverity, AllergyType } from '../../health-record/interfaces/allergy.interface';
 

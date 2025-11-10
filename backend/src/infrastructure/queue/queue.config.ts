@@ -7,7 +7,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BullModuleOptions, SharedBullConfigurationFactory } from '@nestjs/bull';
-import { QueueName, JobPriority } from './enums';
+import { JobPriority, QueueName } from './enums';
 
 /**
  * Queue-specific configuration
@@ -166,7 +166,7 @@ export class QueueConfigService implements SharedBullConfigurationFactory {
         port: this.configService.get<number>('REDIS_PORT', 6379),
         password: this.configService.get<string>('REDIS_PASSWORD'),
         username: this.configService.get<string>('REDIS_USERNAME'),
-        db: this.configService.get<number>('REDIS_QUEUE_DB', 1), // Separate DB for queues
+        db: this.configService.get<number>('REDIS_QUEUE_DB', 0), // Use database 0 (same as cache)
         maxRetriesPerRequest: 20,
         enableReadyCheck: true,
         retryStrategy: (times: number) => {
@@ -215,7 +215,7 @@ export class QueueConfigService implements SharedBullConfigurationFactory {
   getRedisConnectionString(): string {
     const host = this.configService.get<string>('REDIS_HOST', 'localhost');
     const port = this.configService.get<number>('REDIS_PORT', 6379);
-    const db = this.configService.get<number>('REDIS_QUEUE_DB', 1);
+    const db = this.configService.get<number>('REDIS_QUEUE_DB', 0);
     return `redis://${host}:${port}/${db}`;
   }
 

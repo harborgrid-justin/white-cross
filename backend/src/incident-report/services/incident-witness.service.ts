@@ -1,11 +1,6 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { WitnessStatement } from '../../database/models/witness-statement.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
+import { IncidentReport, WitnessStatement } from '@/database';
 import { CreateWitnessStatementDto } from '../dto/create-witness-statement.dto';
 import { UpdateWitnessStatementDto } from '../dto/update-witness-statement.dto';
 import { IncidentValidationService } from './incident-validation.service';
@@ -45,7 +40,9 @@ export class IncidentWitnessService {
         verified: false,
       } as any);
 
-      this.logger.log(`Witness statement added to incident ${incidentReportId}`);
+      this.logger.log(
+        `Witness statement added to incident ${incidentReportId}`,
+      );
       return savedStatement;
     } catch (error) {
       this.logger.error('Error adding witness statement:', error);
@@ -73,7 +70,9 @@ export class IncidentWitnessService {
 
       const updatedStatement = await statement.save();
 
-      this.logger.log(`Witness statement ${statementId} verified by ${verifiedBy}`);
+      this.logger.log(
+        `Witness statement ${statementId} verified by ${verifiedBy}`,
+      );
       return updatedStatement;
     } catch (error) {
       this.logger.error('Error verifying witness statement:', error);
@@ -84,14 +83,14 @@ export class IncidentWitnessService {
   /**
    * Get witness statements for an incident
    */
-  async getWitnessStatements(incidentReportId: string): Promise<WitnessStatement[]> {
+  async getWitnessStatements(
+    incidentReportId: string,
+  ): Promise<WitnessStatement[]> {
     try {
-      const statements = await this.witnessStatementModel.findAll({
+      return await this.witnessStatementModel.findAll({
         where: { incidentReportId },
         order: [['createdAt', 'ASC']],
       });
-
-      return statements;
     } catch (error) {
       this.logger.error('Error fetching witness statements:', error);
       throw error;
@@ -160,12 +159,10 @@ export class IncidentWitnessService {
    */
   async getUnverifiedStatements(): Promise<WitnessStatement[]> {
     try {
-      const statements = await this.witnessStatementModel.findAll({
+      return await this.witnessStatementModel.findAll({
         where: { verified: false },
         order: [['createdAt', 'ASC']],
       });
-
-      return statements;
     } catch (error) {
       this.logger.error('Error fetching unverified witness statements:', error);
       throw error;

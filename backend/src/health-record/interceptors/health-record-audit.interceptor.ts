@@ -2,31 +2,20 @@
  * @fileoverview Health Record Audit Interceptor
  * @module health-record/interceptors
  * @description HIPAA-compliant audit interceptor for health record operations
- * 
+ *
  * HIPAA CRITICAL - This interceptor creates audit trails for all PHI operations
- * 
+ *
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  * @compliance 45 CFR 164.308(a)(1)(ii)(D) - Information access management
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { PHIAccessLogger } from '../services/phi-access-logger.service';
-import { 
-  HealthRecordRequest, 
-  HealthRecordOperation, 
-  ComplianceLevel, 
-  PHIDataType 
-} from '../interfaces/health-record-types';
+import { HealthRecordRequest } from '../interfaces/health-record-types';
 
 export interface AuditTrailEntry {
   correlationId: string;
@@ -53,7 +42,7 @@ export interface AuditTrailEntry {
 
 /**
  * Health Record Audit Interceptor
- * 
+ *
  * Creates comprehensive audit trails for all health record operations
  * with HIPAA compliance and correlation ID tracking
  */
@@ -67,7 +56,7 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<HealthRecordRequest>();
     const response = context.switchToHttp().getResponse<Response>();
     const startTime = Date.now();
-    
+
     // Generate correlation ID for request tracking
     const correlationId = uuidv4();
     request.headers['x-correlation-id'] = correlationId;
@@ -78,7 +67,7 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
 
     // Log request start
     this.logger.log(
-      `[${correlationId}] PHI Operation Started: ${auditContext.method} ${auditContext.endpoint}`
+      `[${correlationId}] PHI Operation Started: ${auditContext.method} ${auditContext.endpoint}`,
     );
 
     return next.handle().pipe(
@@ -88,7 +77,7 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
           auditContext,
           responseData,
           responseTime,
-          response
+          response,
         );
 
         this.logAuditEntry(auditEntry);
@@ -99,20 +88,23 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
         const auditEntry = this.createErrorAuditEntry(
           auditContext,
           error,
-          responseTime
+          responseTime,
         );
 
         this.logAuditEntry(auditEntry);
         this.logSecurityIncident(auditEntry, error);
         throw error;
-      })
+      }),
     );
   }
 
   /**
    * Extract audit context from request
    */
-  private extractAuditContext(request: HealthRecordRequest, correlationId: string): Partial<AuditTrailEntry> {
+  private extractAuditContext(
+    request: HealthRecordRequest,
+    correlationId: string,
+  ): Partial<AuditTrailEntry> {
     const studentId = this.extractStudentId(request);
     const resourceId = this.extractResourceId(request);
     const operation = this.determineOperation(request);
@@ -133,7 +125,8 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
       sessionId: request.sessionID,
       requestSize: this.calculateRequestSize(request),
       complianceLevel,
-      phiAccessed: complianceLevel === 'PHI' || complianceLevel === 'SENSITIVE_PHI',
+      phiAccessed:
+        complianceLevel === 'PHI' || complianceLevel === 'SENSITIVE_PHI',
       dataTypes: this.identifyDataTypes(request, operation),
     };
   }
@@ -145,7 +138,7 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
     context: Partial<AuditTrailEntry>,
     responseData: any,
     responseTime: number,
-    response: Response
+    response: Response,
   ): AuditTrailEntry {
     return {
       ...context,
@@ -161,7 +154,7 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
   private createErrorAuditEntry(
     context: Partial<AuditTrailEntry>,
     error: any,
-    responseTime: number
+    responseTime: number,
   ): AuditTrailEntry {
     return {
       ...context,
@@ -178,17 +171,17 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
   private logAuditEntry(entry: AuditTrailEntry): void {
     const logLevel = entry.success ? 'log' : 'error';
     const prefix = entry.phiAccessed ? 'PHI_AUDIT' : 'AUDIT';
-    
+
     this.logger[logLevel](
       `[${prefix}][${entry.correlationId}] ` +
-      `${entry.operation} - User: ${entry.userId || 'Anonymous'} ` +
-      `(${entry.userRole || 'Unknown'}) - IP: ${entry.ipAddress} - ` +
-      `Student: ${entry.studentId || 'N/A'} - ` +
-      `Success: ${entry.success} - ` +
-      `Response Time: ${entry.responseTime}ms - ` +
-      `Data Types: [${entry.dataTypes.join(', ')}] - ` +
-      `Compliance: ${entry.complianceLevel}` +
-      (entry.errorMessage ? ` - Error: ${entry.errorMessage}` : '')
+        `${entry.operation} - User: ${entry.userId || 'Anonymous'} ` +
+        `(${entry.userRole || 'Unknown'}) - IP: ${entry.ipAddress} - ` +
+        `Student: ${entry.studentId || 'N/A'} - ` +
+        `Success: ${entry.success} - ` +
+        `Response Time: ${entry.responseTime}ms - ` +
+        `Data Types: [${entry.dataTypes.join(', ')}] - ` +
+        `Compliance: ${entry.complianceLevel}` +
+        (entry.errorMessage ? ` - Error: ${entry.errorMessage}` : ''),
     );
 
     // Store structured audit entry for compliance reporting
@@ -202,7 +195,7 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
     if (!entry.phiAccessed) return;
 
     const phiDetails = this.extractPHIDetails(responseData, entry.operation);
-    
+
     this.phiAccessLogger.logPHIAccess({
       correlationId: entry.correlationId,
       timestamp: entry.timestamp,
@@ -226,10 +219,10 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
 
     this.logger.warn(
       `[SECURITY_INCIDENT][${entry.correlationId}] ` +
-      `Failed PHI access attempt - User: ${entry.userId || 'Anonymous'} ` +
-      `- IP: ${entry.ipAddress} - Operation: ${entry.operation} ` +
-      `- Student: ${entry.studentId || 'N/A'} ` +
-      `- Error: ${error.message}`
+        `Failed PHI access attempt - User: ${entry.userId || 'Anonymous'} ` +
+        `- IP: ${entry.ipAddress} - Operation: ${entry.operation} ` +
+        `- Student: ${entry.studentId || 'N/A'} ` +
+        `- Error: ${error.message}`,
     );
 
     // Could integrate with security monitoring system here
@@ -249,9 +242,11 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
    * Extract student ID from request
    */
   private extractStudentId(request: HealthRecordRequest): string | undefined {
-    return request.params?.studentId || 
-           request.body?.studentId || 
-           request.query?.studentId as string;
+    return (
+      request.params?.studentId ||
+      request.body?.studentId ||
+      (request.query?.studentId as string)
+    );
   }
 
   /**
@@ -278,12 +273,17 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
     if (path.includes('/vitals')) return `${method}_VITAL_SIGNS_DATA`;
 
     switch (method) {
-      case 'GET': return 'READ_HEALTH_RECORD';
-      case 'POST': return 'CREATE_HEALTH_RECORD';
+      case 'GET':
+        return 'READ_HEALTH_RECORD';
+      case 'POST':
+        return 'CREATE_HEALTH_RECORD';
       case 'PATCH':
-      case 'PUT': return 'UPDATE_HEALTH_RECORD';
-      case 'DELETE': return 'DELETE_HEALTH_RECORD';
-      default: return 'UNKNOWN_OPERATION';
+      case 'PUT':
+        return 'UPDATE_HEALTH_RECORD';
+      case 'DELETE':
+        return 'DELETE_HEALTH_RECORD';
+      default:
+        return 'UNKNOWN_OPERATION';
     }
   }
 
@@ -291,21 +291,21 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
    * Determine HIPAA compliance level
    */
   private determineComplianceLevel(
-    request: HealthRecordRequest, 
-    operation: string
+    request: HealthRecordRequest,
+    operation: string,
   ): AuditTrailEntry['complianceLevel'] {
     // Public endpoints (no PHI)
     if (request.originalUrl.includes('/public')) return 'PUBLIC';
-    
+
     // Sensitive PHI operations
     const sensitivePHIOperations = [
       'EXPORT_HEALTH_DATA',
       'GET_HEALTH_SUMMARY',
-      'SEARCH_HEALTH_RECORDS'
+      'SEARCH_HEALTH_RECORDS',
     ];
-    
+
     if (sensitivePHIOperations.includes(operation)) return 'SENSITIVE_PHI';
-    
+
     // Regular PHI operations
     const phiOperations = [
       'READ_HEALTH_RECORD',
@@ -315,18 +315,21 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
       'GET_ALLERGY_DATA',
       'POST_ALLERGY_DATA',
       'GET_VACCINATION_DATA',
-      'POST_VACCINATION_DATA'
+      'POST_VACCINATION_DATA',
     ];
-    
+
     if (phiOperations.includes(operation)) return 'PHI';
-    
+
     return 'INTERNAL';
   }
 
   /**
    * Identify data types being accessed
    */
-  private identifyDataTypes(request: HealthRecordRequest, operation: string): string[] {
+  private identifyDataTypes(
+    request: HealthRecordRequest,
+    operation: string,
+  ): string[] {
     const dataTypes: string[] = [];
     const path = request.originalUrl.toLowerCase();
 
@@ -355,13 +358,22 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
   /**
    * Extract PHI details from response
    */
-  private extractPHIDetails(responseData: any, operation: string): {
+  private extractPHIDetails(
+    responseData: any,
+    operation: string,
+  ): {
     recordCount: number;
     hasAllergies: boolean;
     hasVaccinations: boolean;
     hasConditions: boolean;
   } {
-    if (!responseData) return { recordCount: 0, hasAllergies: false, hasVaccinations: false, hasConditions: false };
+    if (!responseData)
+      return {
+        recordCount: 0,
+        hasAllergies: false,
+        hasVaccinations: false,
+        hasConditions: false,
+      };
 
     let recordCount = 0;
     let hasAllergies = false;
@@ -381,8 +393,10 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
 
     // Check for specific data types
     if (responseData.allergies) hasAllergies = true;
-    if (responseData.vaccinations || responseData.recentVaccinations) hasVaccinations = true;
-    if (responseData.chronicConditions || responseData.conditions) hasConditions = true;
+    if (responseData.vaccinations || responseData.recentVaccinations)
+      hasVaccinations = true;
+    if (responseData.chronicConditions || responseData.conditions)
+      hasConditions = true;
 
     return { recordCount, hasAllergies, hasVaccinations, hasConditions };
   }
@@ -392,8 +406,8 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
    */
   private getClientIP(request: HealthRecordRequest): string {
     return (
-      request.headers['x-forwarded-for'] as string ||
-      request.headers['x-real-ip'] as string ||
+      (request.headers['x-forwarded-for'] as string) ||
+      (request.headers['x-real-ip'] as string) ||
       request.socket.remoteAddress ||
       'Unknown'
     );
@@ -405,12 +419,12 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
   private calculateRequestSize(request: HealthRecordRequest): number {
     const contentLength = request.headers['content-length'];
     if (contentLength) return parseInt(contentLength, 10);
-    
+
     // Estimate size if not provided
     if (request.body) {
       return JSON.stringify(request.body).length;
     }
-    
+
     return 0;
   }
 
@@ -429,9 +443,9 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
     // In a real implementation, this would store to a secure audit database
     // with encryption and tamper protection
     this.logger.debug(
-      `[AUDIT_STORE][${entry.correlationId}] Storing audit entry for compliance reporting`
+      `[AUDIT_STORE][${entry.correlationId}] Storing audit entry for compliance reporting`,
     );
-    
+
     // Could integrate with:
     // - Dedicated audit database
     // - SIEM system

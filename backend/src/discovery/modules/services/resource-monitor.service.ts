@@ -22,7 +22,7 @@ export interface SystemResourceStats {
 
 /**
  * Resource Monitor Service
- * 
+ *
  * Monitors system and application resources using Discovery Service
  */
 @Injectable()
@@ -49,7 +49,9 @@ export class ResourceMonitorService {
     }
 
     this.isMonitoring = true;
-    this.logger.log(`Starting resource monitoring with ${intervalMs}ms interval`);
+    this.logger.log(
+      `Starting resource monitoring with ${intervalMs}ms interval`,
+    );
 
     this.monitoringInterval = setInterval(async () => {
       await this.collectResourceStats();
@@ -64,7 +66,7 @@ export class ResourceMonitorService {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = undefined;
     }
-    
+
     this.isMonitoring = false;
     this.logger.log('Resource monitoring stopped');
   }
@@ -82,7 +84,7 @@ export class ResourceMonitorService {
   } {
     const system = this.getCurrentSystemStats();
     const resources = this.resourceHistory.slice(-10); // Last 10 entries
-    
+
     return {
       system,
       resources,
@@ -163,24 +165,30 @@ export class ResourceMonitorService {
 
     // Generate recommendations
     if (memoryUsedMB > 400) {
-      recommendations.push('Consider scaling down resource pools to reduce memory usage');
+      recommendations.push(
+        'Consider scaling down resource pools to reduce memory usage',
+      );
       recommendations.push('Review and optimize memory-intensive operations');
     }
 
     const highUtilizationPools = this.resourceHistory
       .slice(-5)
-      .filter(r => r.utilization > 0.8);
+      .filter((r) => r.utilization > 0.8);
 
     if (highUtilizationPools.length > 0) {
-      recommendations.push(`Consider scaling up pools: ${highUtilizationPools.map(p => p.poolName).join(', ')}`);
+      recommendations.push(
+        `Consider scaling up pools: ${highUtilizationPools.map((p) => p.poolName).join(', ')}`,
+      );
     }
 
     const lowUtilizationPools = this.resourceHistory
       .slice(-5)
-      .filter(r => r.utilization < 0.2 && r.totalResources > 1);
+      .filter((r) => r.utilization < 0.2 && r.totalResources > 1);
 
     if (lowUtilizationPools.length > 0) {
-      recommendations.push(`Consider scaling down underutilized pools: ${lowUtilizationPools.map(p => p.poolName).join(', ')}`);
+      recommendations.push(
+        `Consider scaling down underutilized pools: ${lowUtilizationPools.map((p) => p.poolName).join(', ')}`,
+      );
     }
 
     const summary = `System Memory: ${memoryUsedMB.toFixed(2)}MB | Active Pools: ${this.resourceHistory.length} | Alerts: ${alerts.length}`;
@@ -200,7 +208,7 @@ export class ResourceMonitorService {
   private async collectResourceStats(): Promise<void> {
     try {
       const systemStats = this.getCurrentSystemStats();
-      
+
       // Add to system history
       this.systemHistory.push(systemStats);
       if (this.systemHistory.length > this.maxHistorySize) {
@@ -230,22 +238,29 @@ export class ResourceMonitorService {
       if (!wrapper.metatype) continue;
 
       // Check for resource-pool metadata
-      const poolMetadata = this.reflector.get('resource-pool', wrapper.metatype);
+      const poolMetadata = this.reflector.get(
+        'resource-pool',
+        wrapper.metatype,
+      );
       if (poolMetadata?.enabled) {
         const resourceStats: ResourceStats = {
           poolName: wrapper.name || 'unknown',
           totalResources: poolMetadata.maxSize || 10,
-          activeResources: Math.floor(Math.random() * (poolMetadata.maxSize || 10)), // Simulated
+          activeResources: Math.floor(
+            Math.random() * (poolMetadata.maxSize || 10),
+          ), // Simulated
           idleResources: 0,
           utilization: 0,
           memoryUsage: this.estimateMemoryUsage(poolMetadata.type),
           lastActivity: currentTime,
         };
 
-        resourceStats.idleResources = resourceStats.totalResources - resourceStats.activeResources;
-        resourceStats.utilization = resourceStats.totalResources > 0 
-          ? resourceStats.activeResources / resourceStats.totalResources 
-          : 0;
+        resourceStats.idleResources =
+          resourceStats.totalResources - resourceStats.activeResources;
+        resourceStats.utilization =
+          resourceStats.totalResources > 0
+            ? resourceStats.activeResources / resourceStats.totalResources
+            : 0;
 
         this.resourceHistory.push(resourceStats);
       }
@@ -256,17 +271,21 @@ export class ResourceMonitorService {
         const dbStats: ResourceStats = {
           poolName: `db_${wrapper.name || 'unknown'}`,
           totalResources: dbMetadata.maxConnections || 20,
-          activeResources: Math.floor(Math.random() * (dbMetadata.maxConnections || 20)), // Simulated
+          activeResources: Math.floor(
+            Math.random() * (dbMetadata.maxConnections || 20),
+          ), // Simulated
           idleResources: 0,
           utilization: 0,
           memoryUsage: this.estimateMemoryUsage('connection'),
           lastActivity: currentTime,
         };
 
-        dbStats.idleResources = dbStats.totalResources - dbStats.activeResources;
-        dbStats.utilization = dbStats.totalResources > 0 
-          ? dbStats.activeResources / dbStats.totalResources 
-          : 0;
+        dbStats.idleResources =
+          dbStats.totalResources - dbStats.activeResources;
+        dbStats.utilization =
+          dbStats.totalResources > 0
+            ? dbStats.activeResources / dbStats.totalResources
+            : 0;
 
         this.resourceHistory.push(dbStats);
       }
@@ -284,12 +303,13 @@ export class ResourceMonitorService {
   private getCurrentSystemStats(): SystemResourceStats {
     const memoryUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
-    
+
     return {
       memoryUsage,
       cpuUsage,
       uptime: process.uptime(),
-      loadAverage: process.platform !== 'win32' ? require('os').loadavg() : [0, 0, 0],
+      loadAverage:
+        process.platform !== 'win32' ? require('os').loadavg() : [0, 0, 0],
       activeHandles: (process as any)._getActiveHandles?.()?.length || 0,
       activeRequests: (process as any)._getActiveRequests?.()?.length || 0,
     };
@@ -307,21 +327,23 @@ export class ResourceMonitorService {
 
     if (this.systemHistory.length >= 5) {
       const recent = this.systemHistory.slice(-5);
-      const memoryValues = recent.map(s => s.memoryUsage.heapUsed);
+      const memoryValues = recent.map((s) => s.memoryUsage.heapUsed);
       const memorySlope = this.calculateSlope(memoryValues);
-      
-      if (memorySlope > 1024 * 1024) { // > 1MB increase per check
+
+      if (memorySlope > 1024 * 1024) {
+        // > 1MB increase per check
         memoryTrend = 'increasing';
-      } else if (memorySlope < -1024 * 1024) { // > 1MB decrease per check
+      } else if (memorySlope < -1024 * 1024) {
+        // > 1MB decrease per check
         memoryTrend = 'decreasing';
       }
     }
 
     if (this.resourceHistory.length >= 5) {
       const recent = this.resourceHistory.slice(-5);
-      const utilizationValues = recent.map(r => r.utilization);
+      const utilizationValues = recent.map((r) => r.utilization);
       const utilizationSlope = this.calculateSlope(utilizationValues);
-      
+
       if (utilizationSlope > 0.1) {
         utilizationTrend = 'increasing';
       } else if (utilizationSlope < -0.1) {
@@ -337,21 +359,21 @@ export class ResourceMonitorService {
    */
   private calculateSlope(values: number[]): number {
     if (values.length < 2) return 0;
-    
+
     const n = values.length;
     const xMean = (n - 1) / 2;
     const yMean = values.reduce((a, b) => a + b, 0) / n;
-    
+
     let numerator = 0;
     let denominator = 0;
-    
+
     for (let i = 0; i < n; i++) {
       const xDiff = i - xMean;
       const yDiff = values[i] - yMean;
       numerator += xDiff * yDiff;
       denominator += xDiff * xDiff;
     }
-    
+
     return denominator === 0 ? 0 : numerator / denominator;
   }
 

@@ -3,32 +3,10 @@
  * @module lib/actions/messages.types
  *
  * TypeScript types and interfaces for the messaging system.
- * Includes message models, filters, analytics, and cache configuration.
+ * Includes message models, filters, and analytics.
+ *
+ * Note: Runtime values (constants) are in messages.constants.ts
  */
-
-// ==========================================
-// CONFIGURATION CONSTANTS
-// ==========================================
-
-/**
- * Custom cache tags for messages
- */
-export const MESSAGE_CACHE_TAGS = {
-  MESSAGES: 'messages',
-  THREADS: 'message-threads',
-  CONVERSATIONS: 'conversations',
-  ATTACHMENTS: 'message-attachments',
-  TEMPLATES: 'message-templates',
-} as const;
-
-/**
- * Cache TTL constants (in seconds)
- */
-export const CACHE_TTL = {
-  SESSION: 300,  // 5 minutes
-  STATIC: 3600,  // 1 hour
-  STATS: 180,    // 3 minutes
-} as const;
 
 // ==========================================
 // CORE TYPE DEFINITIONS

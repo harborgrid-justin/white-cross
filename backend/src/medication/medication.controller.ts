@@ -1,33 +1,25 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Put,
-  Body,
-  Param,
-  Query,
   HttpCode,
   HttpStatus,
   Logger,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+  UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
 import { MedicationService } from './services/medication.service';
-import {
-  CreateMedicationDto,
-  UpdateMedicationDto,
-  DeactivateMedicationDto,
-  ListMedicationsQueryDto,
-  MedicationIdParamDto,
-  StudentIdParamDto,
-} from './dto';
+import { CreateMedicationDto } from './dto/create-medication.dto';
+import { DeactivateMedicationDto } from './dto/deactivate-medication.dto';
+import { ListMedicationsQueryDto } from './dto/list-medications-query.dto';
+import { UpdateMedicationDto } from './dto/update-medication.dto';
 
 /**
  * Medication Controller
@@ -165,7 +157,8 @@ export class MedicationController {
   @Get('stats')
   @ApiOperation({
     summary: 'Get medication statistics',
-    description: 'Retrieve aggregated statistics about medications across the system.',
+    description:
+      'Retrieve aggregated statistics about medications across the system.',
   })
   @ApiResponse({
     status: 200,
@@ -223,7 +216,8 @@ export class MedicationController {
   })
   @ApiResponse({
     status: 404,
-    description: 'Student not found - Cannot create medication for non-existent student',
+    description:
+      'Student not found - Cannot create medication for non-existent student',
   })
   @ApiResponse({
     status: 500,
@@ -267,7 +261,7 @@ export class MedicationController {
     status: 500,
     description: 'Internal server error',
   })
-  async getById(@Param('id') id: string) {
+  async getById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     this.logger.log(`GET /medications/${id}`);
     return this.medicationService.getMedicationById(id);
   }
@@ -314,7 +308,7 @@ export class MedicationController {
     description: 'Internal server error',
   })
   async update(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateDto: UpdateMedicationDto,
   ) {
     this.logger.log(`PUT /medications/${id}`);
@@ -364,7 +358,7 @@ export class MedicationController {
     description: 'Internal server error',
   })
   async deactivate(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() deactivateDto: DeactivateMedicationDto,
   ) {
     this.logger.log(
@@ -408,7 +402,7 @@ export class MedicationController {
     status: 500,
     description: 'Internal server error',
   })
-  async activate(@Param('id') id: string) {
+  async activate(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     this.logger.log(`POST /medications/${id}/activate`);
     return this.medicationService.activateMedication(id);
   }
@@ -453,7 +447,8 @@ export class MedicationController {
   })
   @ApiResponse({
     status: 403,
-    description: 'Forbidden - Cannot view medications for students outside your scope',
+    description:
+      'Forbidden - Cannot view medications for students outside your scope',
   })
   @ApiResponse({
     status: 404,
@@ -463,8 +458,10 @@ export class MedicationController {
     status: 500,
     description: 'Internal server error',
   })
+  @UseInterceptors(HealthRecordAuditInterceptor)
+  @Throttle({ default: { limit: 100, ttl: 60000 } })
   async getByStudent(
-    @Param('studentId') studentId: string,
+    @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
   ) {

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { 
-  FeatureFlag, 
-  ExperimentalFeature, 
-  Analytics, 
-  Domain, 
-  Cacheable, 
-  RateLimit, 
-  Monitored 
+import {
+  Analytics,
+  Cacheable,
+  Domain,
+  ExperimentalFeature,
+  FeatureFlag,
+  Monitored,
 } from '../decorators/metadata.decorator';
+import { RateLimit } from '../decorators/rate-limit.decorator';
 
 // Example service with feature flag
 @Injectable()

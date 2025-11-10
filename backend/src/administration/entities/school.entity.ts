@@ -6,6 +6,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  School
-} from '../../database/models/school.model';
+export { School } from '../../database/models/school.model';

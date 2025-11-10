@@ -6,16 +6,12 @@
 // Re-export the Sequelize model and interfaces
 export {
   Medication,
-  Medication as MedicationEntity
+  Medication as MedicationEntity,
 } from '../../database/models/medication.model';
 
-export {
-  StudentMedication
-} from '../../database/models/student-medication.model';
+export { StudentMedication } from '../../database/models/student-medication.model';
 
-export type {
-  MedicationAttributes
-} from '../../database/models/medication.model';
+export type { MedicationAttributes } from '../../database/models/medication.model';
 
 // Import for local interface definitions
 import type { MedicationAttributes as MedicationAttrs } from '../../database/models/medication.model';

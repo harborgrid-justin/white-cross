@@ -348,3 +348,6 @@ export default function TransactionHistoryContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { TransactionHistoryContent }

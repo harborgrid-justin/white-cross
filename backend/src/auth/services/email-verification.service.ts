@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
@@ -31,7 +31,9 @@ export class EmailVerificationService {
   /**
    * Send verification email to user
    */
-  async sendVerificationEmail(userId: string): Promise<{ success: boolean; message: string }> {
+  async sendVerificationEmail(
+    userId: string,
+  ): Promise<{ success: boolean; message: string }> {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -47,12 +49,14 @@ export class EmailVerificationService {
 
     // Generate verification token
     const token = this.generateVerificationToken();
-    const expiresAt = new Date(Date.now() + this.tokenExpiryHours * 60 * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + this.tokenExpiryHours * 60 * 60 * 1000,
+    );
 
     // Store token
     this.verificationTokens.set(token, {
       token,
-      userId: user.id!,
+      userId: user.id,
       email: user.email,
       expiresAt,
     });
@@ -71,14 +75,17 @@ export class EmailVerificationService {
   /**
    * Resend verification email
    */
-  async resendVerificationEmail(email: string): Promise<{ success: boolean; message: string }> {
+  async resendVerificationEmail(
+    email: string,
+  ): Promise<{ success: boolean; message: string }> {
     const user = await this.userModel.findOne({ where: { email } });
 
     if (!user) {
       // Don't reveal that user doesn't exist
       return {
         success: true,
-        message: 'If an account exists with this email, a verification link has been sent.',
+        message:
+          'If an account exists with this email, a verification link has been sent.',
       };
     }
 
@@ -97,13 +104,15 @@ export class EmailVerificationService {
     }
 
     // Send new verification email
-    return this.sendVerificationEmail(user.id!);
+    return this.sendVerificationEmail(user.id);
   }
 
   /**
    * Verify email with token
    */
-  async verifyEmail(token: string): Promise<{ success: boolean; message: string; email?: string }> {
+  async verifyEmail(
+    token: string,
+  ): Promise<{ success: boolean; message: string; email?: string }> {
     const verificationData = this.verificationTokens.get(token);
 
     if (!verificationData) {
@@ -112,7 +121,9 @@ export class EmailVerificationService {
 
     if (new Date() > verificationData.expiresAt) {
       this.verificationTokens.delete(token);
-      throw new BadRequestException('Verification token has expired. Please request a new one.');
+      throw new BadRequestException(
+        'Verification token has expired. Please request a new one.',
+      );
     }
 
     const user = await this.userModel.findByPk(verificationData.userId);

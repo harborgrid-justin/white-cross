@@ -3,7 +3,7 @@
  *
  * Defines GraphQL object types for real-time vital signs monitoring.
  */
-import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
+import { Field, Float, ID, ObjectType } from '@nestjs/graphql';
 
 /**
  * Vitals GraphQL Object Type

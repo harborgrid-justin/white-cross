@@ -6,7 +6,8 @@ export const CACHE_CONFIG_KEY = 'cache-config';
 /**
  * Cache configuration decorator
  */
-export const CacheConfiguration = (config: CacheConfig) => SetMetadata(CACHE_CONFIG_KEY, config);
+export const CacheConfiguration = (config: CacheConfig) =>
+  SetMetadata(CACHE_CONFIG_KEY, config);
 
 /**
  * Convenience decorators for common cache configurations

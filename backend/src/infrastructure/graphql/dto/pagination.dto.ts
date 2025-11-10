@@ -3,7 +3,7 @@
  *
  * Defines reusable pagination types for GraphQL list queries.
  */
-import { ObjectType, Field } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 /**
  * Pagination Information

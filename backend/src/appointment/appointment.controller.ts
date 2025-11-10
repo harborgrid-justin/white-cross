@@ -4,50 +4,21 @@
  * @description HTTP endpoints for appointment management with comprehensive healthcare workflow support
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Logger, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentFiltersDto } from './dto/appointment-filters.dto';
 import {
   CreateWaitlistEntryDto,
-  WaitlistFiltersDto,
-  UpdateWaitlistPriorityDto,
-  RemoveFromWaitlistDto,
   NotifyWaitlistEntryDto,
+  RemoveFromWaitlistDto,
+  UpdateWaitlistPriorityDto,
+  WaitlistFiltersDto,
 } from './dto/waitlist.dto';
-import {
-  CreateReminderDto,
-  ReminderProcessingResultDto,
-} from './dto/reminder.dto';
-import {
-  StatisticsFiltersDto,
-  SearchAppointmentsDto,
-  BulkCancelDto,
-  DateRangeDto,
-} from './dto/statistics.dto';
+import { CreateReminderDto, ReminderProcessingResultDto } from './dto/reminder.dto';
+import { BulkCancelDto, DateRangeDto, SearchAppointmentsDto, StatisticsFiltersDto } from './dto/statistics.dto';
 import { CreateRecurringAppointmentDto } from './dto/recurring.dto';
 
 /**
@@ -101,7 +72,9 @@ export class AppointmentController {
   @ApiResponse({ status: 200, description: 'Appointment found' })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async getAppointmentById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async getAppointmentById(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     this.logger.log(`GET /appointments/${id}`);
     return this.appointmentService.getAppointmentById(id);
   }
@@ -120,7 +93,10 @@ export class AppointmentController {
     status: 201,
     description: 'Appointment created successfully',
   })
-  @ApiResponse({ status: 400, description: 'Validation failed or conflicts detected' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed or conflicts detected',
+  })
   async createAppointment(@Body() createDto: CreateAppointmentDto) {
     this.logger.log('POST /appointments');
     return this.appointmentService.createAppointment(createDto);
@@ -132,12 +108,16 @@ export class AppointmentController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Update appointment',
-    description: 'Update appointment details with validation and conflict checking',
+    description:
+      'Update appointment details with validation and conflict checking',
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiBody({ type: UpdateAppointmentDto })
   @ApiResponse({ status: 200, description: 'Appointment updated successfully' })
-  @ApiResponse({ status: 400, description: 'Validation failed or invalid transition or invalid UUID' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed or invalid transition or invalid UUID',
+  })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async updateAppointment(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -162,8 +142,14 @@ export class AppointmentController {
     required: false,
     description: 'Reason for cancellation',
   })
-  @ApiResponse({ status: 200, description: 'Appointment cancelled successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot cancel appointment in current state or invalid UUID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Appointment cancelled successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot cancel appointment in current state or invalid UUID',
+  })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async cancelAppointment(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -183,9 +169,14 @@ export class AppointmentController {
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiResponse({ status: 200, description: 'Appointment started successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot start appointment in current state or invalid UUID' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot start appointment in current state or invalid UUID',
+  })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async startAppointment(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async startAppointment(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     this.logger.log(`PATCH /appointments/${id}/start`);
     return this.appointmentService.startAppointment(id);
   }
@@ -218,8 +209,14 @@ export class AppointmentController {
       },
     },
   })
-  @ApiResponse({ status: 200, description: 'Appointment completed successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot complete appointment in current state or invalid UUID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Appointment completed successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot complete appointment in current state or invalid UUID',
+  })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   async completeAppointment(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -239,9 +236,14 @@ export class AppointmentController {
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiResponse({ status: 200, description: 'Appointment marked as no-show' })
-  @ApiResponse({ status: 400, description: 'Cannot mark as no-show in current state or invalid UUID' })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot mark as no-show in current state or invalid UUID',
+  })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async markNoShow(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async markNoShow(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     this.logger.log(`PATCH /appointments/${id}/no-show`);
     return this.appointmentService.markNoShow(id);
   }
@@ -260,18 +262,18 @@ export class AppointmentController {
     description: 'Date to filter appointments (YYYY-MM-DD)',
     example: '2025-10-31',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Successfully retrieved appointments for the specified date',
     schema: {
       type: 'object',
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Appointment' }
-        }
-      }
-    }
+          items: { $ref: '#/components/schemas/Appointment' },
+        },
+      },
+    },
   })
   async getAppointmentsByDate(@Query('date') dateStr: string) {
     this.logger.log(`GET /appointments/by-date?date=${dateStr}`);
@@ -298,18 +300,18 @@ export class AppointmentController {
     description: 'Maximum number of appointments to return',
     example: 50,
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Successfully retrieved upcoming appointments',
     schema: {
       type: 'object',
       properties: {
         data: {
           type: 'array',
-          items: { $ref: '#/components/schemas/Appointment' }
-        }
-      }
-    }
+          items: { $ref: '#/components/schemas/Appointment' },
+        },
+      },
+    },
   })
   async getGeneralUpcomingAppointments(
     @Query('days') days?: number,
@@ -337,7 +339,10 @@ export class AppointmentController {
     description: 'Maximum number of appointments to return',
     example: 10,
   })
-  @ApiResponse({ status: 200, description: 'Successfully retrieved upcoming appointments' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved upcoming appointments',
+  })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async getUpcomingAppointments(
     @Param('nurseId', new ParseUUIDPipe({ version: '4' })) nurseId: string,
@@ -372,14 +377,19 @@ export class AppointmentController {
     example: 30,
   })
   @ApiResponse({ status: 200, description: 'Available slots retrieved' })
-  @ApiResponse({ status: 400, description: 'Invalid UUID format or invalid date' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid UUID format or invalid date',
+  })
   async getAvailableSlots(
     @Param('nurseId', new ParseUUIDPipe({ version: '4' })) nurseId: string,
     @Query('date') dateStr: string,
     @Query('duration') duration?: number,
   ) {
     const date = new Date(dateStr);
-    this.logger.log(`GET /appointments/availability/${nurseId}?date=${dateStr}`);
+    this.logger.log(
+      `GET /appointments/availability/${nurseId}?date=${dateStr}`,
+    );
     return this.appointmentService.getAvailableSlots(
       nurseId,
       date,
@@ -395,7 +405,8 @@ export class AppointmentController {
   @Post('waitlist')
   @ApiOperation({
     summary: 'Add to waitlist',
-    description: 'Add student to appointment waitlist when no slots are available',
+    description:
+      'Add student to appointment waitlist when no slots are available',
   })
   @ApiBody({ type: CreateWaitlistEntryDto })
   @ApiResponse({ status: 201, description: 'Successfully added to waitlist' })
@@ -437,7 +448,10 @@ export class AppointmentController {
     @Body() updateDto: UpdateWaitlistPriorityDto,
   ) {
     this.logger.log(`PATCH /appointments/waitlist/${id}/priority`);
-    return this.appointmentService.updateWaitlistPriority(id, updateDto.priority);
+    return this.appointmentService.updateWaitlistPriority(
+      id,
+      updateDto.priority,
+    );
   }
 
   /**
@@ -452,7 +466,9 @@ export class AppointmentController {
   @ApiResponse({ status: 200, description: 'Position retrieved successfully' })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
-  async getWaitlistPosition(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async getWaitlistPosition(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     this.logger.log(`GET /appointments/waitlist/${id}/position`);
     return this.appointmentService.getWaitlistPosition(id);
   }
@@ -488,7 +504,10 @@ export class AppointmentController {
   })
   @ApiParam({ name: 'id', description: 'Waitlist entry UUID' })
   @ApiBody({ type: RemoveFromWaitlistDto, required: false })
-  @ApiResponse({ status: 200, description: 'Removed from waitlist successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Removed from waitlist successfully',
+  })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Waitlist entry not found' })
   async removeFromWaitlist(
@@ -527,7 +546,9 @@ export class AppointmentController {
   @ApiResponse({ status: 200, description: 'Reminders retrieved successfully' })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
-  async getAppointmentReminders(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async getAppointmentReminders(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
     this.logger.log(`GET /appointments/${id}/reminders`);
     return this.appointmentService.getAppointmentReminders(id);
   }
@@ -561,7 +582,10 @@ export class AppointmentController {
   @ApiResponse({ status: 200, description: 'Reminder cancelled successfully' })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Reminder not found' })
-  async cancelReminder(@Param('reminderId', new ParseUUIDPipe({ version: '4' })) reminderId: string) {
+  async cancelReminder(
+    @Param('reminderId', new ParseUUIDPipe({ version: '4' }))
+    reminderId: string,
+  ) {
     this.logger.log(`DELETE /appointments/reminders/${reminderId}`);
     return this.appointmentService.cancelReminder(reminderId);
   }
@@ -576,7 +600,10 @@ export class AppointmentController {
     summary: 'Get appointment statistics',
     description: 'Retrieve comprehensive appointment statistics and metrics',
   })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
   async getStatistics(@Query() filters: StatisticsFiltersDto) {
     this.logger.log('GET /appointments/statistics');
     return this.appointmentService.getStatistics(filters);
@@ -588,9 +615,13 @@ export class AppointmentController {
   @Get('search')
   @ApiOperation({
     summary: 'Search appointments',
-    description: 'Search appointments by various criteria with full-text search',
+    description:
+      'Search appointments by various criteria with full-text search',
   })
-  @ApiResponse({ status: 200, description: 'Search results retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Search results retrieved successfully',
+  })
   async searchAppointments(@Query() searchDto: SearchAppointmentsDto) {
     this.logger.log('GET /appointments/search');
     return this.appointmentService.searchAppointments(searchDto);
@@ -604,7 +635,10 @@ export class AppointmentController {
     summary: 'Get appointments by date range',
     description: 'Retrieve appointments within a specific date range',
   })
-  @ApiResponse({ status: 200, description: 'Appointments retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Appointments retrieved successfully',
+  })
   async getAppointmentsByDateRange(@Query() dateRange: DateRangeDto) {
     this.logger.log('GET /appointments/range');
     return this.appointmentService.getAppointmentsByDateRange(dateRange);
@@ -644,7 +678,11 @@ export class AppointmentController {
     @Query('groupBy') groupBy?: 'day' | 'week' | 'month',
   ) {
     this.logger.log('GET /appointments/trends');
-    return this.appointmentService.getAppointmentTrends(dateFrom, dateTo, groupBy || 'day');
+    return this.appointmentService.getAppointmentTrends(
+      dateFrom,
+      dateTo,
+      groupBy || 'day',
+    );
   }
 
   /**
@@ -673,7 +711,10 @@ export class AppointmentController {
     description: 'End date for statistics',
     example: '2025-10-31',
   })
-  @ApiResponse({ status: 200, description: 'No-show statistics retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'No-show statistics retrieved successfully',
+  })
   async getNoShowStats(
     @Query('nurseId') nurseId?: string,
     @Query('dateFrom') dateFrom?: string,
@@ -709,14 +750,21 @@ export class AppointmentController {
     description: 'End date for statistics',
     example: '2025-10-31',
   })
-  @ApiResponse({ status: 200, description: 'Utilization statistics retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Utilization statistics retrieved successfully',
+  })
   async getUtilizationStats(
     @Query('nurseId') nurseId: string,
     @Query('dateFrom') dateFrom: string,
     @Query('dateTo') dateTo: string,
   ) {
     this.logger.log('GET /appointments/stats/utilization');
-    return this.appointmentService.getUtilizationStats(nurseId, dateFrom, dateTo);
+    return this.appointmentService.getUtilizationStats(
+      nurseId,
+      dateFrom,
+      dateTo,
+    );
   }
 
   // ==================== RECURRING APPOINTMENTS ====================
@@ -730,9 +778,17 @@ export class AppointmentController {
     description: 'Create a series of recurring appointments based on a pattern',
   })
   @ApiBody({ type: CreateRecurringAppointmentDto })
-  @ApiResponse({ status: 201, description: 'Recurring appointments created successfully' })
-  @ApiResponse({ status: 400, description: 'Validation failed or scheduling conflicts' })
-  async createRecurringAppointments(@Body() createDto: CreateRecurringAppointmentDto) {
+  @ApiResponse({
+    status: 201,
+    description: 'Recurring appointments created successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation failed or scheduling conflicts',
+  })
+  async createRecurringAppointments(
+    @Body() createDto: CreateRecurringAppointmentDto,
+  ) {
     this.logger.log('POST /appointments/recurring');
     return this.appointmentService.createRecurringAppointments(createDto);
   }
@@ -766,16 +822,23 @@ export class AppointmentController {
     name: 'studentIds',
     required: true,
     description: 'Comma-separated list of student UUIDs',
-    example: '123e4567-e89b-12d3-a456-426614174000,987fcdeb-51a2-43d1-b456-426614174001',
+    example:
+      '123e4567-e89b-12d3-a456-426614174000,987fcdeb-51a2-43d1-b456-426614174001',
   })
-  @ApiResponse({ status: 200, description: 'Appointments retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Appointments retrieved successfully',
+  })
   async getAppointmentsForStudents(
     @Query('studentIds') studentIds: string,
     @Query() filters?: Partial<AppointmentFiltersDto>,
   ) {
     this.logger.log('GET /appointments/students');
     const studentIdArray = studentIds.split(',');
-    return this.appointmentService.getAppointmentsForStudents(studentIdArray, filters);
+    return this.appointmentService.getAppointmentsForStudents(
+      studentIdArray,
+      filters,
+    );
   }
 
   // ==================== CONFLICT CHECKING ====================
@@ -856,9 +919,9 @@ export class AppointmentController {
     description: 'Calendar exported successfully',
     content: {
       'text/calendar': {
-        schema: { type: 'string', format: 'binary' }
-      }
-    }
+        schema: { type: 'string', format: 'binary' },
+      },
+    },
   })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async exportCalendar(

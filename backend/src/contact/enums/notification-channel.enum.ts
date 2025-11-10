@@ -6,4 +6,4 @@ export const VALID_NOTIFICATION_CHANNELS = ['sms', 'email', 'voice'] as const;
 /**
  * Type definition for notification channels
  */
-export type NotificationChannel = typeof VALID_NOTIFICATION_CHANNELS[number];
+export type NotificationChannel = (typeof VALID_NOTIFICATION_CHANNELS)[number];

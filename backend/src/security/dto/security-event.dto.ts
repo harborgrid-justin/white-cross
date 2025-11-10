@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsObject, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 /**
  * DTO for generic security events
@@ -8,12 +8,12 @@ export class SecurityEventDto {
   @ApiProperty({ description: 'Event type' })
   @IsString()
   @IsNotEmpty()
-  eventType: string;
+  eventType!: string;
 
   @ApiProperty({ description: 'Event description' })
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @ApiPropertyOptional({ description: 'User ID associated with the event' })
   @IsOptional()
@@ -36,10 +36,10 @@ export class SecurityEventDto {
  */
 export class ThreatDetectionDto {
   @ApiProperty({ description: 'Threat detected flag' })
-  detected: boolean;
+  detected!: boolean;
 
   @ApiProperty({ description: 'Threat type' })
-  threatType: string;
+  threatType!: string;
 
   @ApiPropertyOptional({ description: 'Threat details' })
   @IsOptional()

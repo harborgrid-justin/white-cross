@@ -1,39 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import {
-  InitiateAdministrationDto,
-  VerifyFiveRightsDto,
-  FiveRightsVerificationResultDto,
-  RecordAdministrationDto,
-  RecordRefusalDto,
-  RecordMissedDoseDto,
-  RecordHeldMedicationDto,
-  RequestWitnessSignatureDto,
-  SubmitWitnessSignatureDto,
-  AdministrationHistoryFiltersDto,
-  CheckSafetyDto,
-  CalculateDoseDto,
-} from '../dto/administration';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AdministrationHistoryFiltersDto, CalculateDoseDto, CheckSafetyDto } from '../dto/administration/administration-filters.dto';
+import { FiveRightsVerificationResultDto, VerifyFiveRightsDto } from '../dto/administration/five-rights-verification.dto';
+import { InitiateAdministrationDto, RecordAdministrationDto } from '../dto/administration/record-administration.dto';
+import { RecordHeldMedicationDto, RecordMissedDoseDto, RecordRefusalDto } from '../dto/administration/record-refusal.dto';
+import { RequestWitnessSignatureDto, SubmitWitnessSignatureDto } from '../dto/administration/witness-signature.dto';
 
 /**
  * Medication Administration Controller
@@ -140,7 +111,9 @@ export class MedicationAdministrationController {
     type: FiveRightsVerificationResultDto,
   })
   @ApiResponse({ status: 400, description: 'Validation error' })
-  async verifyFiveRights(@Body() dto: VerifyFiveRightsDto): Promise<FiveRightsVerificationResultDto> {
+  async verifyFiveRights(
+    @Body() dto: VerifyFiveRightsDto,
+  ): Promise<FiveRightsVerificationResultDto> {
     // TODO: Implement Five Rights verification logic
     throw new Error('Not implemented - Awaiting service layer integration');
   }
@@ -177,8 +150,14 @@ export class MedicationAdministrationController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Validation error or Five Rights not verified' })
-  @ApiResponse({ status: 404, description: 'Session, prescription, student, or medication not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error or Five Rights not verified',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Session, prescription, student, or medication not found',
+  })
   async recordAdministration(@Body() dto: RecordAdministrationDto) {
     // TODO: Implement administration recording
     throw new Error('Not implemented - Awaiting service layer integration');
@@ -190,10 +169,14 @@ export class MedicationAdministrationController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get administration record by ID',
-    description: 'Retrieves detailed administration record including Five Rights data, vital signs, and witness information.',
+    description:
+      'Retrieves detailed administration record including Five Rights data, vital signs, and witness information.',
   })
   @ApiParam({ name: 'id', description: 'Administration log ID' })
-  @ApiResponse({ status: 200, description: 'Administration record retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Administration record retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Administration record not found' })
   async getAdministrationRecord(@Param('id') id: string) {
     // TODO: Implement get by ID
@@ -212,10 +195,16 @@ export class MedicationAdministrationController {
       '(notes, follow-up status, student response). Core data like dosage and time cannot be changed.',
   })
   @ApiParam({ name: 'id', description: 'Administration log ID' })
-  @ApiResponse({ status: 200, description: 'Administration record updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Administration record updated successfully',
+  })
   @ApiResponse({ status: 400, description: 'Invalid update attempt' })
   @ApiResponse({ status: 404, description: 'Administration record not found' })
-  async updateAdministrationRecord(@Param('id') id: string, @Body() updateDto: any) {
+  async updateAdministrationRecord(
+    @Param('id') id: string,
+    @Body() updateDto: any,
+  ) {
     // TODO: Implement update with restricted fields
     throw new Error('Not implemented - Awaiting service layer integration');
   }
@@ -233,7 +222,10 @@ export class MedicationAdministrationController {
       'Record is marked as deleted but preserved for compliance and reporting.',
   })
   @ApiParam({ name: 'id', description: 'Administration log ID' })
-  @ApiResponse({ status: 204, description: 'Administration record deleted successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Administration record deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Administration record not found' })
   async deleteAdministrationRecord(@Param('id') id: string) {
     // TODO: Implement soft delete
@@ -246,12 +238,26 @@ export class MedicationAdministrationController {
   @Get('student/:studentId')
   @ApiOperation({
     summary: 'Get medication administration history for a student',
-    description: 'Retrieves complete medication administration history for a specific student with pagination.',
+    description:
+      'Retrieves complete medication administration history for a specific student with pagination.',
   })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 20)' })
-  @ApiResponse({ status: 200, description: 'Administration history retrieved successfully' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Administration history retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Student not found' })
   async getStudentAdministrationHistory(
     @Param('studentId') studentId: string,
@@ -268,10 +274,14 @@ export class MedicationAdministrationController {
   @Get('prescription/:prescriptionId')
   @ApiOperation({
     summary: 'Get administration records for a prescription',
-    description: 'Retrieves all administration records associated with a specific prescription.',
+    description:
+      'Retrieves all administration records associated with a specific prescription.',
   })
   @ApiParam({ name: 'prescriptionId', description: 'Prescription ID' })
-  @ApiResponse({ status: 200, description: 'Administration records retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Administration records retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Prescription not found' })
   async getByPrescription(@Param('prescriptionId') prescriptionId: string) {
     // TODO: Implement by prescription
@@ -289,8 +299,14 @@ export class MedicationAdministrationController {
       'Records multiple medication administrations in a single transaction. ' +
       'Useful for mass medication events. All-or-nothing operation - rolls back if any fail.',
   })
-  @ApiResponse({ status: 201, description: 'Batch administrations recorded successfully' })
-  @ApiResponse({ status: 400, description: 'Validation error in one or more records' })
+  @ApiResponse({
+    status: 201,
+    description: 'Batch administrations recorded successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error in one or more records',
+  })
   async batchRecordAdministrations(@Body() batch: RecordAdministrationDto[]) {
     // TODO: Implement batch recording
     throw new Error('Not implemented - Awaiting service layer integration');
@@ -306,9 +322,22 @@ export class MedicationAdministrationController {
       'Retrieves list of medications currently due for administration based on prescription schedules. ' +
       'Can be filtered by nurse assignment, school, or time window.',
   })
-  @ApiQuery({ name: 'nurseId', required: false, type: String, description: 'Filter by assigned nurse' })
-  @ApiQuery({ name: 'withinHours', required: false, type: Number, description: 'Within next N hours (default: 4)' })
-  @ApiResponse({ status: 200, description: 'Due medications retrieved successfully' })
+  @ApiQuery({
+    name: 'nurseId',
+    required: false,
+    type: String,
+    description: 'Filter by assigned nurse',
+  })
+  @ApiQuery({
+    name: 'withinHours',
+    required: false,
+    type: Number,
+    description: 'Within next N hours (default: 4)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Due medications retrieved successfully',
+  })
   async getDueMedications(
     @Query('nurseId') nurseId?: string,
     @Query('withinHours') withinHours: number = 4,
@@ -327,8 +356,16 @@ export class MedicationAdministrationController {
       'Retrieves medications that are past their scheduled administration time and not yet recorded. ' +
       'Critical for identifying missed doses requiring immediate attention.',
   })
-  @ApiQuery({ name: 'nurseId', required: false, type: String, description: 'Filter by assigned nurse' })
-  @ApiResponse({ status: 200, description: 'Overdue administrations retrieved successfully' })
+  @ApiQuery({
+    name: 'nurseId',
+    required: false,
+    type: String,
+    description: 'Filter by assigned nurse',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Overdue administrations retrieved successfully',
+  })
   async getOverdueAdministrations(@Query('nurseId') nurseId?: string) {
     // TODO: Implement overdue query
     throw new Error('Not implemented - Awaiting service layer integration');
@@ -340,11 +377,25 @@ export class MedicationAdministrationController {
   @Get('upcoming')
   @ApiOperation({
     summary: 'Get upcoming medication administration schedule',
-    description: 'Retrieves scheduled medications for upcoming time period with student and medication details.',
+    description:
+      'Retrieves scheduled medications for upcoming time period with student and medication details.',
   })
-  @ApiQuery({ name: 'nurseId', required: false, type: String, description: 'Filter by assigned nurse' })
-  @ApiQuery({ name: 'withinHours', required: false, type: Number, description: 'Within next N hours (default: 8)' })
-  @ApiResponse({ status: 200, description: 'Upcoming schedule retrieved successfully' })
+  @ApiQuery({
+    name: 'nurseId',
+    required: false,
+    type: String,
+    description: 'Filter by assigned nurse',
+  })
+  @ApiQuery({
+    name: 'withinHours',
+    required: false,
+    type: Number,
+    description: 'Within next N hours (default: 8)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Upcoming schedule retrieved successfully',
+  })
   async getUpcomingSchedule(
     @Query('nurseId') nurseId?: string,
     @Query('withinHours') withinHours: number = 8,
@@ -359,12 +410,31 @@ export class MedicationAdministrationController {
   @Get('missed')
   @ApiOperation({
     summary: 'Get missed medication doses',
-    description: 'Retrieves all missed dose records with reasons and follow-up actions.',
+    description:
+      'Retrieves all missed dose records with reasons and follow-up actions.',
   })
-  @ApiQuery({ name: 'studentId', required: false, type: String, description: 'Filter by student' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Filter from date' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Filter to date' })
-  @ApiResponse({ status: 200, description: 'Missed doses retrieved successfully' })
+  @ApiQuery({
+    name: 'studentId',
+    required: false,
+    type: String,
+    description: 'Filter by student',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Filter from date',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'Filter to date',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Missed doses retrieved successfully',
+  })
   async getMissedDoses(
     @Query('studentId') studentId?: string,
     @Query('startDate') startDate?: string,
@@ -384,11 +454,34 @@ export class MedicationAdministrationController {
       'Retrieves aggregated statistics on medication administrations including completion rates, ' +
       'refusals, missed doses, and administration trends.',
   })
-  @ApiQuery({ name: 'nurseId', required: false, type: String, description: 'Filter by nurse' })
-  @ApiQuery({ name: 'schoolId', required: false, type: String, description: 'Filter by school' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Filter from date' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Filter to date' })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiQuery({
+    name: 'nurseId',
+    required: false,
+    type: String,
+    description: 'Filter by nurse',
+  })
+  @ApiQuery({
+    name: 'schoolId',
+    required: false,
+    type: String,
+    description: 'Filter by school',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Filter from date',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'Filter to date',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
   async getStatistics(
     @Query('nurseId') nurseId?: string,
     @Query('schoolId') schoolId?: string,
@@ -406,7 +499,8 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Record medication refusal',
-    description: 'Records when a student refuses to take prescribed medication with reason.',
+    description:
+      'Records when a student refuses to take prescribed medication with reason.',
   })
   @ApiResponse({ status: 201, description: 'Refusal recorded successfully' })
   @ApiResponse({ status: 404, description: 'Prescription not found' })
@@ -422,9 +516,13 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Record missed medication dose',
-    description: 'Records when a scheduled dose was not administered (e.g., student absent).',
+    description:
+      'Records when a scheduled dose was not administered (e.g., student absent).',
   })
-  @ApiResponse({ status: 201, description: 'Missed dose recorded successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Missed dose recorded successfully',
+  })
   @ApiResponse({ status: 404, description: 'Prescription not found' })
   async recordMissedDose(@Body() dto: RecordMissedDoseDto) {
     // TODO: Implement missed dose recording
@@ -438,9 +536,13 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Record held medication',
-    description: 'Records when medication is held due to clinical decision (e.g., elevated BP).',
+    description:
+      'Records when medication is held due to clinical decision (e.g., elevated BP).',
   })
-  @ApiResponse({ status: 201, description: 'Held medication recorded successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Held medication recorded successfully',
+  })
   @ApiResponse({ status: 404, description: 'Prescription not found' })
   async recordHeldMedication(@Body() dto: RecordHeldMedicationDto) {
     // TODO: Implement held medication recording
@@ -455,12 +557,19 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Request witness signature for controlled substance',
-    description: 'Initiates witness signature request for controlled substance administration.',
+    description:
+      'Initiates witness signature request for controlled substance administration.',
   })
   @ApiParam({ name: 'id', description: 'Administration log ID' })
-  @ApiResponse({ status: 200, description: 'Witness signature requested successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Witness signature requested successfully',
+  })
   @ApiResponse({ status: 404, description: 'Administration record not found' })
-  async requestWitnessSignature(@Param('id') id: string, @Body() dto: RequestWitnessSignatureDto) {
+  async requestWitnessSignature(
+    @Param('id') id: string,
+    @Body() dto: RequestWitnessSignatureDto,
+  ) {
     // TODO: Implement witness signature request
     throw new Error('Not implemented - Awaiting service layer integration');
   }
@@ -472,12 +581,19 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Submit witness signature',
-    description: 'Submits digital signature from witness for controlled substance administration.',
+    description:
+      'Submits digital signature from witness for controlled substance administration.',
   })
   @ApiParam({ name: 'id', description: 'Administration log ID' })
-  @ApiResponse({ status: 200, description: 'Witness signature submitted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Witness signature submitted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Administration record not found' })
-  async submitWitnessSignature(@Param('id') id: string, @Body() dto: SubmitWitnessSignatureDto) {
+  async submitWitnessSignature(
+    @Param('id') id: string,
+    @Body() dto: SubmitWitnessSignatureDto,
+  ) {
     // TODO: Implement witness signature submission
     throw new Error('Not implemented - Awaiting service layer integration');
   }
@@ -489,7 +605,8 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Check student allergies for medication',
-    description: 'Checks if student has any allergies that may interact with the medication.',
+    description:
+      'Checks if student has any allergies that may interact with the medication.',
   })
   @ApiResponse({ status: 200, description: 'Allergy check completed' })
   async checkAllergies(@Body() dto: CheckSafetyDto) {
@@ -504,7 +621,8 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Check drug-drug interactions for student',
-    description: 'Checks for potential drug-drug interactions with student\'s current medications.',
+    description:
+      "Checks for potential drug-drug interactions with student's current medications.",
   })
   @ApiResponse({ status: 200, description: 'Interaction check completed' })
   async checkInteractions(@Body() dto: CheckSafetyDto) {
@@ -519,7 +637,8 @@ export class MedicationAdministrationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Calculate medication dose',
-    description: 'Calculates appropriate dose based on patient weight, age, and prescription parameters.',
+    description:
+      'Calculates appropriate dose based on patient weight, age, and prescription parameters.',
   })
   @ApiResponse({ status: 200, description: 'Dose calculated successfully' })
   async calculateDose(@Body() dto: CalculateDoseDto) {
@@ -532,11 +651,20 @@ export class MedicationAdministrationController {
    */
   @Get('today')
   @ApiOperation({
-    summary: 'Get today\'s administrations',
-    description: 'Retrieves all administrations completed today, optionally filtered by nurse.',
+    summary: "Get today's administrations",
+    description:
+      'Retrieves all administrations completed today, optionally filtered by nurse.',
   })
-  @ApiQuery({ name: 'nurseId', required: false, type: String, description: 'Filter by nurse' })
-  @ApiResponse({ status: 200, description: 'Today\'s administrations retrieved successfully' })
+  @ApiQuery({
+    name: 'nurseId',
+    required: false,
+    type: String,
+    description: 'Filter by nurse',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Today's administrations retrieved successfully",
+  })
   async getTodayAdministrations(@Query('nurseId') nurseId?: string) {
     // TODO: Implement today's administrations
     throw new Error('Not implemented - Awaiting service layer integration');
@@ -548,10 +676,16 @@ export class MedicationAdministrationController {
   @Get('history')
   @ApiOperation({
     summary: 'Get administration history with filters',
-    description: 'Retrieves administration history with comprehensive filtering options.',
+    description:
+      'Retrieves administration history with comprehensive filtering options.',
   })
-  @ApiResponse({ status: 200, description: 'Administration history retrieved successfully' })
-  async getAdministrationHistory(@Query() filters: AdministrationHistoryFiltersDto) {
+  @ApiResponse({
+    status: 200,
+    description: 'Administration history retrieved successfully',
+  })
+  async getAdministrationHistory(
+    @Query() filters: AdministrationHistoryFiltersDto,
+  ) {
     // TODO: Implement filtered history
     throw new Error('Not implemented - Awaiting service layer integration');
   }
@@ -562,11 +696,20 @@ export class MedicationAdministrationController {
   @Get('student/:studentId/schedule')
   @ApiOperation({
     summary: 'Get student medication schedule',
-    description: 'Retrieves scheduled medications for a student for a specific date.',
+    description:
+      'Retrieves scheduled medications for a student for a specific date.',
   })
   @ApiParam({ name: 'studentId', description: 'Student ID' })
-  @ApiQuery({ name: 'date', required: false, type: String, description: 'Date (ISO format, default: today)' })
-  @ApiResponse({ status: 200, description: 'Student schedule retrieved successfully' })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    type: String,
+    description: 'Date (ISO format, default: today)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Student schedule retrieved successfully',
+  })
   async getStudentSchedule(
     @Param('studentId') studentId: string,
     @Query('date') date?: string,

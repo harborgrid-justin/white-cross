@@ -1,18 +1,8 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsString,
-  IsOptional,
-  IsArray,
-  IsNotEmpty,
-  IsObject,
-  IsDateString,
-} from 'class-validator';
-import {
-  SecurityIncidentType,
-  IncidentSeverity,
-  IncidentStatus,
-} from '../enums';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentStatus } from '../enums/incident-status.enum';
+import { SecurityIncidentType } from '../enums/incident-type.enum';
 
 /**
  * DTO for creating security incidents
@@ -23,31 +13,33 @@ export class SecurityCreateIncidentDto {
     description: 'Type of security incident',
   })
   @IsEnum(SecurityIncidentType)
-  type: SecurityIncidentType;
+  type!: SecurityIncidentType;
 
   @ApiProperty({
     enum: IncidentSeverity,
     description: 'Severity level of the incident',
   })
   @IsEnum(IncidentSeverity)
-  severity: IncidentSeverity;
+  severity!: IncidentSeverity;
 
   @ApiProperty({ description: 'Incident title' })
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @ApiProperty({ description: 'Detailed description of the incident' })
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @ApiPropertyOptional({ description: 'User ID associated with the incident' })
   @IsOptional()
   @IsString()
   userId?: string;
 
-  @ApiPropertyOptional({ description: 'IP address associated with the incident' })
+  @ApiPropertyOptional({
+    description: 'IP address associated with the incident',
+  })
   @IsOptional()
   @IsString()
   ipAddress?: string;
@@ -65,22 +57,25 @@ export class SecurityCreateIncidentDto {
   @ApiProperty({ description: 'Method of detection' })
   @IsString()
   @IsNotEmpty()
-  detectionMethod: string;
+  detectionMethod!: string;
 
-  @ApiProperty({ description: 'Indicators that triggered detection', type: [String] })
+  @ApiProperty({
+    description: 'Indicators that triggered detection',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
-  indicators: string[];
+  indicators!: string[];
 
   @ApiPropertyOptional({ description: 'Impact assessment' })
   @IsOptional()
   @IsString()
   impact?: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Additional metadata', 
+  @ApiPropertyOptional({
+    description: 'Additional metadata',
     type: 'object',
-    additionalProperties: true
+    additionalProperties: true,
   })
   @IsOptional()
   @IsObject()
@@ -96,7 +91,7 @@ export class UpdateIncidentStatusDto {
     description: 'New status for the incident',
   })
   @IsEnum(IncidentStatus)
-  status: IncidentStatus;
+  status!: IncidentStatus;
 
   @ApiPropertyOptional({ description: 'User ID to assign the incident to' })
   @IsOptional()

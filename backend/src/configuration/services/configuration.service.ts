@@ -1,15 +1,14 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Sequelize, QueryTypes } from 'sequelize';
-import { SystemConfig } from '../../database/models/system-config.model';
+import { Op, QueryTypes, Sequelize } from 'sequelize';
+import { ConfigCategory, ConfigScope, ConfigValueType, SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
-import { ConfigCategory, ConfigValueType, ConfigScope } from '../../database/models/system-config.model';
 import {
-  CreateConfigurationDto,
-  UpdateConfigurationDto,
-  FilterConfigurationDto,
   ConfigurationBulkUpdateDto,
-  ImportConfigurationsDto
+  CreateConfigurationDto,
+  FilterConfigurationDto,
+  ImportConfigurationsDto,
+  UpdateConfigurationDto,
 } from '../dto';
 
 /**
@@ -47,7 +46,9 @@ export class ConfigurationService {
     // Get Sequelize instance from the model
     const sequelizeInstance = this.configModel.sequelize;
     if (!sequelizeInstance) {
-      throw new Error('Sequelize instance not available from SystemConfig model');
+      throw new Error(
+        'Sequelize instance not available from SystemConfig model',
+      );
     }
     this.sequelize = sequelizeInstance;
   }
@@ -70,8 +71,8 @@ export class ConfigurationService {
         where: whereClause,
         order: [
           ['scope', 'DESC'],
-          ['createdAt', 'DESC']
-        ]
+          ['createdAt', 'DESC'],
+        ],
       });
 
       const config = configs[0];
@@ -93,9 +94,19 @@ export class ConfigurationService {
    * Supports filtering by category, subcategory, scope, tags, visibility, and editability
    * Results are ordered by sortOrder, category, subcategory, and key
    */
-  async getConfigurations(filter: FilterConfigurationDto = {}): Promise<SystemConfig[]> {
+  async getConfigurations(
+    filter: FilterConfigurationDto = {},
+  ): Promise<SystemConfig[]> {
     try {
-      const { category, subCategory, scope, scopeId, tags, isPublic, isEditable } = filter;
+      const {
+        category,
+        subCategory,
+        scope,
+        scopeId,
+        tags,
+        isPublic,
+        isEditable,
+      } = filter;
 
       const where: any = {};
 
@@ -134,8 +145,8 @@ export class ConfigurationService {
           ['sortOrder', 'ASC'],
           ['category', 'ASC'],
           ['subCategory', 'ASC'],
-          ['key', 'ASC']
-        ]
+          ['key', 'ASC'],
+        ],
       });
       return configs;
     } catch (error) {
@@ -147,7 +158,10 @@ export class ConfigurationService {
   /**
    * Get configurations by category with optional scope filtering
    */
-  async getConfigsByCategory(category: ConfigCategory, scopeId?: string): Promise<SystemConfig[]> {
+  async getConfigsByCategory(
+    category: ConfigCategory,
+    scopeId?: string,
+  ): Promise<SystemConfig[]> {
     return this.getConfigurations({ category, scopeId });
   }
 
@@ -167,12 +181,15 @@ export class ConfigurationService {
    * - Range validation for numbers (min/max)
    * - Enumeration validation for restricted value sets
    */
-  validateConfigValue(config: SystemConfig, newValue: string): ConfigurationValidationResult {
+  validateConfigValue(
+    config: SystemConfig,
+    newValue: string,
+  ): ConfigurationValidationResult {
     // Check if config is editable
     if (!config.isEditable) {
       return {
         isValid: false,
-        error: 'This configuration is not editable'
+        error: 'This configuration is not editable',
       };
     }
 
@@ -183,24 +200,44 @@ export class ConfigurationService {
         if (isNaN(numValue)) {
           return { isValid: false, error: 'Value must be a valid number' };
         }
-        if (config.minValue !== null && config.minValue !== undefined && numValue < config.minValue) {
-          return { isValid: false, error: `Value must be at least ${config.minValue}` };
+        if (
+          config.minValue !== null &&
+          config.minValue !== undefined &&
+          numValue < config.minValue
+        ) {
+          return {
+            isValid: false,
+            error: `Value must be at least ${config.minValue}`,
+          };
         }
-        if (config.maxValue !== null && config.maxValue !== undefined && numValue > config.maxValue) {
-          return { isValid: false, error: `Value must be at most ${config.maxValue}` };
+        if (
+          config.maxValue !== null &&
+          config.maxValue !== undefined &&
+          numValue > config.maxValue
+        ) {
+          return {
+            isValid: false,
+            error: `Value must be at most ${config.maxValue}`,
+          };
         }
         break;
 
       case ConfigValueType.BOOLEAN:
         if (!['true', 'false', '1', '0'].includes(newValue.toLowerCase())) {
-          return { isValid: false, error: 'Value must be a boolean (true/false)' };
+          return {
+            isValid: false,
+            error: 'Value must be a boolean (true/false)',
+          };
         }
         break;
 
       case ConfigValueType.EMAIL:
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(newValue)) {
-          return { isValid: false, error: 'Value must be a valid email address' };
+          return {
+            isValid: false,
+            error: 'Value must be a valid email address',
+          };
         }
         break;
 
@@ -215,7 +252,10 @@ export class ConfigurationService {
       case ConfigValueType.COLOR:
         const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
         if (!colorRegex.test(newValue)) {
-          return { isValid: false, error: 'Value must be a valid hex color (e.g., #3b82f6)' };
+          return {
+            isValid: false,
+            error: 'Value must be a valid hex color (e.g., #3b82f6)',
+          };
         }
         break;
 
@@ -232,7 +272,7 @@ export class ConfigurationService {
           if (!config.validValues.includes(newValue)) {
             return {
               isValid: false,
-              error: `Value must be one of: ${config.validValues.join(', ')}`
+              error: `Value must be one of: ${config.validValues.join(', ')}`,
             };
           }
         }
@@ -242,7 +282,10 @@ export class ConfigurationService {
         try {
           const parsed = JSON.parse(newValue);
           if (!Array.isArray(parsed)) {
-            return { isValid: false, error: 'Value must be a valid JSON array' };
+            return {
+              isValid: false,
+              error: 'Value must be a valid JSON array',
+            };
           }
         } catch {
           return { isValid: false, error: 'Value must be a valid JSON array' };
@@ -251,11 +294,15 @@ export class ConfigurationService {
     }
 
     // Check valid values constraint if specified (for non-ENUM types)
-    if (config.validValues && config.validValues.length > 0 && config.valueType !== ConfigValueType.ENUM) {
+    if (
+      config.validValues &&
+      config.validValues.length > 0 &&
+      config.valueType !== ConfigValueType.ENUM
+    ) {
       if (!config.validValues.includes(newValue)) {
         return {
           isValid: false,
-          error: `Value must be one of: ${config.validValues.join(', ')}`
+          error: `Value must be one of: ${config.validValues.join(', ')}`,
         };
       }
     }
@@ -272,7 +319,7 @@ export class ConfigurationService {
   async updateConfiguration(
     key: string,
     updateData: UpdateConfigurationDto,
-    scopeId?: string
+    scopeId?: string,
   ): Promise<SystemConfig> {
     const transaction = await this.sequelize.transaction();
 
@@ -293,9 +340,9 @@ export class ConfigurationService {
       await config.update(
         {
           value: updateData.value,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
-        { transaction }
+        { transaction },
       );
 
       // Create history record within same transaction
@@ -309,22 +356,28 @@ export class ConfigurationService {
           changedByName: updateData.changedByName,
           changeReason: updateData.changeReason,
           ipAddress: updateData.ipAddress,
-          userAgent: updateData.userAgent
+          userAgent: updateData.userAgent,
         } as any,
-        { transaction }
+        { transaction },
       );
 
       // Commit transaction
       await transaction.commit();
 
       // Fetch updated config
-      const updatedConfig = await this.configModel.findOne({ where: { id: config.id } });
+      const updatedConfig = await this.configModel.findOne({
+        where: { id: config.id },
+      });
 
       if (!updatedConfig) {
-        throw new NotFoundException(`Configuration ${key} not found after update`);
+        throw new NotFoundException(
+          `Configuration ${key} not found after update`,
+        );
       }
 
-      this.logger.log(`Configuration updated: ${key} = ${updateData.value} by ${updateData.changedBy}`);
+      this.logger.log(
+        `Configuration updated: ${key} = ${updateData.value} by ${updateData.changedBy}`,
+      );
       return updatedConfig;
     } catch (error) {
       // Rollback transaction on error
@@ -341,7 +394,7 @@ export class ConfigurationService {
    * with its own transaction. Failures are logged but don't stop other updates.
    */
   async bulkUpdateConfigurations(
-    bulkUpdate: ConfigurationBulkUpdateDto
+    bulkUpdate: ConfigurationBulkUpdateDto,
   ): Promise<Array<SystemConfig | { key: string; error: string }>> {
     const results: Array<SystemConfig | { key: string; error: string }> = [];
 
@@ -352,9 +405,9 @@ export class ConfigurationService {
           {
             value: update.value,
             changedBy: bulkUpdate.changedBy,
-            changeReason: bulkUpdate.changeReason
+            changeReason: bulkUpdate.changeReason,
           },
-          update.scopeId
+          update.scopeId,
         );
         results.push(result);
       } catch (error) {
@@ -363,7 +416,9 @@ export class ConfigurationService {
       }
     }
 
-    this.logger.log(`Bulk update completed: ${results.length} configurations processed`);
+    this.logger.log(
+      `Bulk update completed: ${results.length} configurations processed`,
+    );
     return results;
   }
 
@@ -373,15 +428,19 @@ export class ConfigurationService {
    * Creates a new system configuration with all specified attributes.
    * Key must be unique across all configurations.
    */
-  async createConfiguration(data: CreateConfigurationDto): Promise<SystemConfig> {
+  async createConfiguration(
+    data: CreateConfigurationDto,
+  ): Promise<SystemConfig> {
     try {
       // Check if key already exists
       const existing = await this.configModel.findOne({
-        where: { key: data.key }
+        where: { key: data.key },
       });
 
       if (existing) {
-        throw new BadRequestException(`Configuration with key '${data.key}' already exists`);
+        throw new BadRequestException(
+          `Configuration with key '${data.key}' already exists`,
+        );
       }
 
       const config = await this.configModel.create({
@@ -397,14 +456,17 @@ export class ConfigurationService {
         maxValue: data.maxValue,
         isPublic: data.isPublic !== undefined ? data.isPublic : false,
         isEditable: data.isEditable !== undefined ? data.isEditable : true,
-        requiresRestart: data.requiresRestart !== undefined ? data.requiresRestart : false,
+        requiresRestart:
+          data.requiresRestart !== undefined ? data.requiresRestart : false,
         scope: data.scope || ConfigScope.SYSTEM,
         scopeId: data.scopeId,
         tags: data.tags,
-        sortOrder: data.sortOrder !== undefined ? data.sortOrder : 0
+        sortOrder: data.sortOrder !== undefined ? data.sortOrder : 0,
       } as any);
 
-      this.logger.log(`Configuration created: ${data.key} in category ${data.category}`);
+      this.logger.log(
+        `Configuration created: ${data.key} in category ${data.category}`,
+      );
       return config;
     } catch (error) {
       this.logger.error('Error creating configuration:', error);
@@ -435,12 +497,18 @@ export class ConfigurationService {
    * Resets a configuration to its default value with full audit trail.
    * Only works if a default value was specified when creating the config.
    */
-  async resetToDefault(key: string, changedBy: string, scopeId?: string): Promise<SystemConfig> {
+  async resetToDefault(
+    key: string,
+    changedBy: string,
+    scopeId?: string,
+  ): Promise<SystemConfig> {
     try {
       const config = await this.getConfigByKey(key, scopeId);
 
       if (!config.defaultValue) {
-        throw new BadRequestException('No default value specified for this configuration');
+        throw new BadRequestException(
+          'No default value specified for this configuration',
+        );
       }
 
       const result = await this.updateConfiguration(
@@ -448,9 +516,9 @@ export class ConfigurationService {
         {
           value: config.defaultValue,
           changedBy,
-          changeReason: 'Reset to default value'
+          changeReason: 'Reset to default value',
         },
-        scopeId
+        scopeId,
       );
 
       this.logger.log(`Configuration reset to default: ${key}`);
@@ -467,16 +535,21 @@ export class ConfigurationService {
    * Retrieves the change history for a specific configuration key,
    * including the configuration details for context.
    */
-  async getConfigHistory(key: string, limit: number = 50): Promise<ConfigurationHistory[]> {
+  async getConfigHistory(
+    key: string,
+    limit: number = 50,
+  ): Promise<ConfigurationHistory[]> {
     try {
       const history = await this.historyModel.findAll({
         where: { configKey: key },
-        include: [{
-          model: this.configModel,
-          as: 'configuration',
-        }],
+        include: [
+          {
+            model: this.configModel,
+            as: 'configuration',
+          },
+        ],
         order: [['createdAt', 'DESC']],
-        limit
+        limit,
       });
 
       return history;
@@ -492,16 +565,21 @@ export class ConfigurationService {
    * Retrieves all configuration changes made by a specific user,
    * useful for auditing and compliance reporting.
    */
-  async getConfigChangesByUser(userId: string, limit: number = 50): Promise<ConfigurationHistory[]> {
+  async getConfigChangesByUser(
+    userId: string,
+    limit: number = 50,
+  ): Promise<ConfigurationHistory[]> {
     try {
       const history = await this.historyModel.findAll({
         where: { changedBy: userId },
-        include: [{
-          model: this.configModel,
-          as: 'configuration',
-        }],
+        include: [
+          {
+            model: this.configModel,
+            as: 'configuration',
+          },
+        ],
         order: [['createdAt', 'DESC']],
-        limit
+        limit,
       });
 
       return history;
@@ -520,12 +598,14 @@ export class ConfigurationService {
   async getRecentChanges(limit: number = 100): Promise<ConfigurationHistory[]> {
     try {
       const history = await this.historyModel.findAll({
-        include: [{
-          model: this.configModel,
-          as: 'configuration',
-        }],
+        include: [
+          {
+            model: this.configModel,
+            as: 'configuration',
+          },
+        ],
         order: [['createdAt', 'DESC']],
-        limit
+        limit,
       });
 
       return history;
@@ -547,8 +627,8 @@ export class ConfigurationService {
         where: { requiresRestart: true },
         order: [
           ['category', 'ASC'],
-          ['key', 'ASC']
-        ]
+          ['key', 'ASC'],
+        ],
       });
 
       return configs;
@@ -564,7 +644,9 @@ export class ConfigurationService {
    * Exports configurations matching the filter criteria as formatted JSON.
    * Useful for backup, migration, or configuration templates.
    */
-  async exportConfigurations(filter: FilterConfigurationDto = {}): Promise<string> {
+  async exportConfigurations(
+    filter: FilterConfigurationDto = {},
+  ): Promise<string> {
     try {
       const configs = await this.getConfigurations(filter);
 
@@ -583,13 +665,15 @@ export class ConfigurationService {
    * configurations or overwrite existing ones based on the overwrite flag.
    */
   async importConfigurations(
-    importData: ImportConfigurationsDto
+    importData: ImportConfigurationsDto,
   ): Promise<{ created: number; updated: number; errors: string[] }> {
     try {
       const configs = JSON.parse(importData.configsJson);
 
       if (!Array.isArray(configs)) {
-        throw new BadRequestException('Invalid JSON format: expected an array of configurations');
+        throw new BadRequestException(
+          'Invalid JSON format: expected an array of configurations',
+        );
       }
 
       const results = { created: 0, updated: 0, errors: [] as string[] };
@@ -602,33 +686,36 @@ export class ConfigurationService {
           }
 
           const existing = await this.configModel.findOne({
-            where: { key: config.key }
+            where: { key: config.key },
           });
 
           if (existing) {
             if (importData.overwrite) {
-              await this.updateConfiguration(
-                config.key,
-                {
-                  value: config.value,
-                  changedBy: importData.changedBy,
-                  changeReason: 'Imported from JSON'
-                }
-              );
+              await this.updateConfiguration(config.key, {
+                value: config.value,
+                changedBy: importData.changedBy,
+                changeReason: 'Imported from JSON',
+              });
               results.updated++;
             } else {
-              results.errors.push(`Configuration '${config.key}' already exists (use overwrite=true to update)`);
+              results.errors.push(
+                `Configuration '${config.key}' already exists (use overwrite=true to update)`,
+              );
             }
           } else {
             await this.createConfiguration(config);
             results.created++;
           }
         } catch (error) {
-          results.errors.push(`Error processing ${config.key}: ${(error as Error).message}`);
+          results.errors.push(
+            `Error processing ${config.key}: ${(error as Error).message}`,
+          );
         }
       }
 
-      this.logger.log(`Import completed: ${results.created} created, ${results.updated} updated, ${results.errors.length} errors`);
+      this.logger.log(
+        `Import completed: ${results.created} created, ${results.updated} updated, ${results.errors.length} errors`,
+      );
       return results;
     } catch (error) {
       this.logger.error('Error importing configurations:', error);
@@ -653,19 +740,19 @@ export class ConfigurationService {
         categoryBreakdown,
         scopeBreakdown,
         publicCount,
-        editableCount
+        editableCount,
       ] = await Promise.all([
         this.configModel.count(),
         this.sequelize.query(
           'SELECT category, COUNT(*) as count FROM system_configurations GROUP BY category',
-          { type: QueryTypes.SELECT }
+          { type: QueryTypes.SELECT },
         ),
         this.sequelize.query(
           'SELECT scope, COUNT(*) as count FROM system_configurations GROUP BY scope',
-          { type: QueryTypes.SELECT }
+          { type: QueryTypes.SELECT },
         ),
         this.configModel.count({ where: { isPublic: true } }),
-        this.configModel.count({ where: { isEditable: true } })
+        this.configModel.count({ where: { isEditable: true } }),
       ]);
 
       const statistics = {
@@ -674,14 +761,20 @@ export class ConfigurationService {
         privateCount: totalCount - publicCount,
         editableCount,
         lockedCount: totalCount - editableCount,
-        categoryBreakdown: (categoryBreakdown as any[]).reduce((acc: Record<string, number>, curr: any) => {
-          acc[curr.category] = parseInt(curr.count, 10);
-          return acc;
-        }, {} as Record<string, number>),
-        scopeBreakdown: (scopeBreakdown as any[]).reduce((acc: Record<string, number>, curr: any) => {
-          acc[curr.scope] = parseInt(curr.count, 10);
-          return acc;
-        }, {} as Record<string, number>)
+        categoryBreakdown: (categoryBreakdown as any[]).reduce(
+          (acc: Record<string, number>, curr: any) => {
+            acc[curr.category] = parseInt(curr.count, 10);
+            return acc;
+          },
+          {} as Record<string, number>,
+        ),
+        scopeBreakdown: (scopeBreakdown as any[]).reduce(
+          (acc: Record<string, number>, curr: any) => {
+            acc[curr.scope] = parseInt(curr.count, 10);
+            return acc;
+          },
+          {} as Record<string, number>,
+        ),
       };
 
       this.logger.log('Retrieved configuration statistics');

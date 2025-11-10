@@ -23,7 +23,7 @@
 
 /**
  * Configuration management utilities
- * 
+ *
  * Provides utilities for safe configuration retrieval, validation,
  * and encryption of sensitive configuration values.
  */
@@ -44,13 +44,16 @@ export interface ConfigValidationSchema {
 
 export interface ConfigurationError {
   key: string;
-  value: any;
+  value: unknown;
   error: string;
   severity: 'error' | 'warning';
 }
 
 // Configuration cache
-const configCache = new Map<string, { value: any; timestamp: number; ttl: number }>();
+const configCache = new Map<
+  string,
+  { value: unknown; timestamp: number; ttl: number }
+>();
 
 // Encryption key for sensitive configuration
 // SECURITY: No default - must be explicitly set in production
@@ -59,13 +62,13 @@ const ENCRYPTION_KEY = process.env.CONFIG_ENCRYPTION_KEY;
 if (!ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
   throw new Error(
     'SECURITY ERROR: CONFIG_ENCRYPTION_KEY must be set in production. ' +
-    'This key is used to encrypt sensitive configuration values.'
+      'This key is used to encrypt sensitive configuration values.',
   );
 }
 
 /**
  * Get configuration value with fallback
- * 
+ *
  * @param key - Configuration key (supports dot notation)
  * @param defaultValue - Default value if key is not found
  * @param useCache - Whether to use caching (default: true)
@@ -73,11 +76,11 @@ if (!ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
  * @returns Configuration value or default
  */
 export function getConfigWithFallback(
-  key: string, 
-  defaultValue: any = null,
+  key: string,
+  defaultValue: unknown = null,
   useCache: boolean = true,
-  cacheTTL: number = 5 * 60 * 1000
-): any {
+  cacheTTL: number = 5 * 60 * 1000,
+): unknown {
   if (!key || typeof key !== 'string') {
     return defaultValue;
   }
@@ -97,7 +100,7 @@ export function getConfigWithFallback(
     // Check environment variables first
     const envKey = key.toUpperCase().replace(/\./g, '_');
     if (process.env[envKey] !== undefined) {
-      value = parseEnvironmentValue(process.env[envKey]!);
+      value = parseEnvironmentValue(process.env[envKey]);
     } else {
       // Check nested configuration objects (if available)
       value = getNestedValue(process.env, key) || defaultValue;
@@ -108,10 +111,9 @@ export function getConfigWithFallback(
       configCache.set(key, {
         value,
         timestamp: Date.now(),
-        ttl: cacheTTL
+        ttl: cacheTTL,
       });
     }
-
   } catch (error) {
     console.warn(`Error retrieving configuration for key '${key}':`, error);
     value = defaultValue;
@@ -122,67 +124,80 @@ export function getConfigWithFallback(
 
 /**
  * Validate configuration value against schema
- * 
+ *
  * @param key - Configuration key
  * @param value - Value to validate
  * @param schema - Validation schema
  * @returns boolean indicating if value is valid
  */
-export function validateConfigurationValue(key: string, value: any, schema: ConfigValidationSchema): boolean {
+export function validateConfigurationValue(
+  key: string,
+  value: unknown,
+  schema: ConfigValidationSchema,
+): boolean {
   const errors = validateValue(key, value, schema);
-  
+
   if (errors.length > 0) {
     console.warn(`Configuration validation errors for '${key}':`, errors);
     return false;
   }
-  
+
   return true;
 }
 
 /**
  * Encrypt sensitive configuration value
- * 
+ *
  * @param value - Value to encrypt
  * @param algorithm - Encryption algorithm (default: aes-256-gcm)
  * @returns Encrypted string with format: algorithm:iv:authTag:encrypted
  */
-export function encryptSensitiveConfig(value: string, algorithm: string = 'aes-256-gcm'): string {
+export function encryptSensitiveConfig(
+  value: string,
+  algorithm: string = 'aes-256-gcm',
+): string {
   if (!value || typeof value !== 'string') {
     throw new Error('Value must be a non-empty string');
   }
 
   if (!ENCRYPTION_KEY) {
-    throw new Error('CONFIG_ENCRYPTION_KEY must be set to encrypt configuration values');
+    throw new Error(
+      'CONFIG_ENCRYPTION_KEY must be set to encrypt configuration values',
+    );
   }
 
   try {
     const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(algorithm, key, iv);
-    
+
     let encrypted = cipher.update(value, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     // For GCM mode, get the auth tag
-    const authTag = algorithm.includes('gcm') ? (cipher as any).getAuthTag() : null;
-    
+    const authTag = algorithm.includes('gcm')
+      ? (cipher as crypto.CipherGCM).getAuthTag()
+      : null;
+
     // Format: algorithm:iv:authTag:encrypted
     const parts = [
       algorithm,
       iv.toString('hex'),
       authTag ? authTag.toString('hex') : '',
-      encrypted
+      encrypted,
     ].join(':');
-    
+
     return parts;
   } catch (error) {
-    throw new Error(`Failed to encrypt configuration value: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to encrypt configuration value: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
 /**
  * Decrypt sensitive configuration value
- * 
+ *
  * @param encryptedValue - Encrypted string from encryptSensitiveConfig
  * @returns Decrypted string
  */
@@ -192,47 +207,57 @@ export function decryptSensitiveConfig(encryptedValue: string): string {
   }
 
   if (!ENCRYPTION_KEY) {
-    throw new Error('CONFIG_ENCRYPTION_KEY must be set to decrypt configuration values');
+    throw new Error(
+      'CONFIG_ENCRYPTION_KEY must be set to decrypt configuration values',
+    );
   }
 
   try {
     const parts = encryptedValue.split(':');
-    if (parts.length < 3) {
+    if (parts.length !== 4) {
       throw new Error('Invalid encrypted value format');
     }
 
     const [algorithm, ivHex, authTagHex, encrypted] = parts;
+    if (!algorithm || !ivHex || !encrypted) {
+      throw new Error('Invalid encrypted value format');
+    }
+
     const key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32);
     const iv = Buffer.from(ivHex, 'hex');
-    
+
     const decipher = crypto.createDecipheriv(algorithm, key, iv);
-    
+
     // Set auth tag for GCM mode
     if (algorithm.includes('gcm') && authTagHex) {
       const authTag = Buffer.from(authTagHex, 'hex');
-      (decipher as any).setAuthTag(authTag);
+      (decipher as crypto.DecipherGCM).setAuthTag(authTag);
     }
-    
+
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   } catch (error) {
-    throw new Error(`Failed to decrypt configuration value: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to decrypt configuration value: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
 /**
  * Get all configuration with validation
- * 
+ *
  * @param schema - Configuration schema for validation
  * @returns Object with configuration values and validation errors
  */
-export function getAllConfigWithValidation(schema: Record<string, ConfigValidationSchema>): {
-  config: Record<string, any>;
+export function getAllConfigWithValidation(
+  schema: Record<string, ConfigValidationSchema>,
+): {
+  config: Record<string, unknown>;
   errors: ConfigurationError[];
 } {
-  const config: Record<string, any> = {};
+  const config: Record<string, unknown> = {};
   const errors: ConfigurationError[] = [];
 
   for (const [key, keySchema] of Object.entries(schema)) {
@@ -249,7 +274,7 @@ export function getAllConfigWithValidation(schema: Record<string, ConfigValidati
 
 /**
  * Clear configuration cache
- * 
+ *
  * @param key - Specific key to clear (optional, clears all if not provided)
  */
 export function clearConfigCache(key?: string): void {
@@ -262,7 +287,7 @@ export function clearConfigCache(key?: string): void {
 
 /**
  * Get configuration statistics
- * 
+ *
  * @returns Object with cache statistics
  */
 export function getConfigStats(): {
@@ -276,7 +301,7 @@ export function getConfigStats(): {
   return {
     cacheSize: configCache.size,
     cachedKeys,
-    memoryUsage
+    memoryUsage,
   };
 }
 
@@ -285,38 +310,40 @@ export function getConfigStats(): {
 /**
  * Parse environment variable value with type inference
  */
-function parseEnvironmentValue(value: string): any {
+function parseEnvironmentValue(value: string): unknown {
   if (value === 'true') return true;
   if (value === 'false') return false;
   if (value === 'null') return null;
   if (value === 'undefined') return undefined;
-  
+
   // Try to parse as number
   if (/^-?\d+$/.test(value)) {
     return parseInt(value, 10);
   }
-  
+
   if (/^-?\d*\.\d+$/.test(value)) {
     return parseFloat(value);
   }
-  
+
   // Try to parse as JSON
-  if ((value.startsWith('{') && value.endsWith('}')) || 
-      (value.startsWith('[') && value.endsWith(']'))) {
+  if (
+    (value.startsWith('{') && value.endsWith('}')) ||
+    (value.startsWith('[') && value.endsWith(']'))
+  ) {
     try {
       return JSON.parse(value);
     } catch {
       // Fall through to return as string
     }
   }
-  
+
   return value;
 }
 
 /**
  * Get nested value from object using dot notation
  */
-function getNestedValue(obj: any, path: string): any {
+function getNestedValue(obj: any, path: string): unknown {
   return path.split('.').reduce((current, key) => {
     return current && current[key] !== undefined ? current[key] : undefined;
   }, obj);
@@ -325,7 +352,11 @@ function getNestedValue(obj: any, path: string): any {
 /**
  * Validate a value against a schema
  */
-function validateValue(key: string, value: any, schema: ConfigValidationSchema): ConfigurationError[] {
+function validateValue(
+  key: string,
+  value: unknown,
+  schema: ConfigValidationSchema,
+): ConfigurationError[] {
   const errors: ConfigurationError[] = [];
 
   // Check if required
@@ -334,7 +365,7 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
       key,
       value,
       error: 'Required configuration value is missing',
-      severity: 'error'
+      severity: 'error',
     });
     return errors;
   }
@@ -351,7 +382,7 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
       key,
       value,
       error: `Expected type '${schema.type}' but got '${actualType}'`,
-      severity: 'error'
+      severity: 'error',
     });
     return errors;
   }
@@ -363,7 +394,7 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
         key,
         value,
         error: `String length ${value.length} is less than minimum ${schema.minLength}`,
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -372,7 +403,7 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
         key,
         value,
         error: `String length ${value.length} exceeds maximum ${schema.maxLength}`,
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -381,7 +412,7 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
         key,
         value,
         error: `String does not match required pattern`,
-        severity: 'error'
+        severity: 'error',
       });
     }
   }
@@ -393,7 +424,7 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
         key,
         value,
         error: `Number ${value} is less than minimum ${schema.min}`,
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -402,7 +433,7 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
         key,
         value,
         error: `Number ${value} exceeds maximum ${schema.max}`,
-        severity: 'error'
+        severity: 'error',
       });
     }
   }
@@ -413,15 +444,25 @@ function validateValue(key: string, value: any, schema: ConfigValidationSchema):
       key,
       value,
       error: `Value '${value}' is not in allowed enum values: ${schema.enum.join(', ')}`,
-      severity: 'error'
+      severity: 'error',
     });
   }
 
   // Object validation
-  if (schema.type === 'object' && schema.properties && typeof value === 'object') {
+  if (
+    schema.type === 'object' &&
+    schema.properties &&
+    typeof value === 'object' &&
+    value !== null
+  ) {
+    const objValue = value as Record<string, unknown>;
     for (const [propKey, propSchema] of Object.entries(schema.properties)) {
-      const propValue = value[propKey];
-      const propErrors = validateValue(`${key}.${propKey}`, propValue, propSchema);
+      const propValue = objValue[propKey];
+      const propErrors = validateValue(
+        `${key}.${propKey}`,
+        propValue,
+        propSchema,
+      );
       errors.push(...propErrors);
     }
   }

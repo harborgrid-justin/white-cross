@@ -64,7 +64,7 @@ import * as _ from 'lodash';
 /**
  * @function isEmpty
  * @description Checks if a value is empty (null, undefined, empty string, empty array, or empty object)
- * @param {any} value - The value to check
+ * @param {unknown} value - The value to check
  * @returns {boolean} True if value is empty, false otherwise
  *
  * @example
@@ -79,12 +79,12 @@ import * as _ from 'lodash';
  * isEmpty({ key: 'value' }); // false
  * ```
  */
-export const isEmpty = (value: any) => _.isEmpty(value);
+export const isEmpty = (value: unknown): boolean => _.isEmpty(value);
 
 /**
  * @function isNotEmpty
  * @description Checks if a value is not empty
- * @param {any} value - The value to check
+ * @param {unknown} value - The value to check
  * @returns {boolean} True if value is not empty, false otherwise
  *
  * @example
@@ -95,7 +95,7 @@ export const isEmpty = (value: any) => _.isEmpty(value);
  * isNotEmpty(null);     // false
  * ```
  */
-export const isNotEmpty = (value: any) => !_.isEmpty(value);
+export const isNotEmpty = (value: unknown): boolean => !_.isEmpty(value);
 
 /**
  * @function isUnique
@@ -112,7 +112,8 @@ export const isNotEmpty = (value: any) => !_.isEmpty(value);
  * isUnique(['a', 'b', 'a']);    // false
  * ```
  */
-export const isUnique = <T>(array: T[]) => _.uniq(array).length === array.length;
+export const isUnique = <T>(array: T[]) =>
+  _.uniq(array).length === array.length;
 
 /**
  * @function isValidEmail
@@ -174,14 +175,15 @@ export const isValidPhoneNumber = (phone: string) => {
  * ```
  */
 export const isValidUuid = (uuid: string) => {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 };
 
 /**
  * @function isValidDate
  * @description Validates if a value represents a valid date
- * @param {any} date - The date value to validate (Date object or parseable string)
+ * @param {Date | string | number | null | undefined} date - The date value to validate (Date object or parseable string)
  * @returns {boolean} True if valid date, false otherwise
  *
  * @example
@@ -193,9 +195,13 @@ export const isValidUuid = (uuid: string) => {
  * isValidDate(null);                    // false
  * ```
  */
-export const isValidDate = (date: any) => {
+export const isValidDate = (date: Date | string | number | null | undefined): boolean => {
   if (date instanceof Date) {
     return !isNaN(date.getTime());
+  }
+
+  if (date == null) {
+    return false;
   }
 
   const parsedDate = new Date(date);
@@ -228,7 +234,8 @@ export const isValidDate = (date: any) => {
  */
 export const isStrongPassword = (password: string) => {
   // At least 12 characters, uppercase, lowercase, number, special character
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
   return password.length >= 12 && passwordRegex.test(password);
 };
 
@@ -240,5 +247,5 @@ export default {
   isValidPhoneNumber,
   isValidUuid,
   isValidDate,
-  isStrongPassword
+  isStrongPassword,
 };

@@ -29,19 +29,22 @@
  * }
  * ```
  */
-import { Resolver, Subscription, Args, ID } from '@nestjs/graphql';
+import { Args, ID, Resolver, Subscription } from '@nestjs/graphql';
 import { Inject, UseGuards } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../pubsub/pubsub.module';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
-import {
-  HealthRecordDto,
-  StudentDto,
-  AlertDto,
-  VitalsDto,
-} from '../dto';
+import { Roles } from '@/auth';
+import { UserRole } from '@/database';
+import { AlertDto, HealthRecordDto, StudentDto, VitalsDto } from '../dto';
+
+
+/**
+ * Subscription payload type
+ */
+interface SubscriptionPayload {
+  [key: string]: unknown;
+}
 
 /**
  * Subscription event names
@@ -100,7 +103,12 @@ export class SubscriptionResolver {
     },
   })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   healthRecordCreated(
     @Args('studentId', { type: () => ID, nullable: true }) studentId?: string,
   ) {
@@ -136,7 +144,12 @@ export class SubscriptionResolver {
     },
   })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   healthRecordUpdated(
     @Args('studentId', { type: () => ID, nullable: true }) studentId?: string,
   ) {
@@ -209,11 +222,9 @@ export class SubscriptionResolver {
       }
 
       // Broadcast alerts (no specific recipient)
-      if (!alert.recipientId && !alert.recipientRole) {
-        return true;
-      }
+      return !alert.recipientId && !alert.recipientRole;
 
-      return false;
+
     },
   })
   @UseGuards(GqlAuthGuard)
@@ -285,10 +296,10 @@ export class SubscriptionResolver {
   })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(UserRole.ADMIN, UserRole.NURSE)
-  vitalsUpdated(
-    @Args('studentId', { type: () => ID }) studentId: string,
-  ) {
-    return this.pubSub.asyncIterator(`${SubscriptionEvent.VITALS_UPDATED}_${studentId}`);
+  vitalsUpdated(@Args('studentId', { type: () => ID }) studentId: string) {
+    return this.pubSub.asyncIterator(
+      `${SubscriptionEvent.VITALS_UPDATED}_${studentId}`,
+    );
   }
 }
 
@@ -310,7 +321,7 @@ export class SubscriptionResolver {
 export async function publishSubscriptionEvent(
   pubSub: RedisPubSub,
   event: SubscriptionEvent,
-  payload: any,
+  payload: SubscriptionPayload,
 ): Promise<void> {
   try {
     await pubSub.publish(event, payload);

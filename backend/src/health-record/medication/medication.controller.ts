@@ -1,32 +1,14 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MedicationService } from './medication.service';
 import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
-import { UpdateMedicationDto } from './dto/update-medication.dto';
+import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
 import { Medication } from '../../database/models/medication.model';
 
 @ApiTags('medications')
 @ApiBearerAuth()
 @Controller('medications')
-export class MedicationController {
+export class HealthRecordMedicationController {
   constructor(private readonly medicationService: MedicationService) {}
 
   @Post()
@@ -36,8 +18,13 @@ export class MedicationController {
     description: 'Medication created successfully',
     type: Medication,
   })
-  @ApiResponse({ status: 409, description: 'Medication with this NDC already exists' })
-  async create(@Body() createDto: HealthRecordCreateMedicationDto): Promise<Medication> {
+  @ApiResponse({
+    status: 409,
+    description: 'Medication with this NDC already exists',
+  })
+  async create(
+    @Body() createDto: HealthRecordCreateMedicationDto,
+  ): Promise<Medication> {
     return this.medicationService.create(createDto);
   }
 
@@ -85,7 +72,9 @@ export class MedicationController {
   }
 
   @Get('witness-required')
-  @ApiOperation({ summary: 'Get medications requiring witness for administration' })
+  @ApiOperation({
+    summary: 'Get medications requiring witness for administration',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of medications requiring witness',
@@ -117,10 +106,13 @@ export class MedicationController {
     type: Medication,
   })
   @ApiResponse({ status: 404, description: 'Medication not found' })
-  @ApiResponse({ status: 409, description: 'Medication with this NDC already exists' })
+  @ApiResponse({
+    status: 409,
+    description: 'Medication with this NDC already exists',
+  })
   async update(
     @Param('id') id: string,
-    @Body() updateDto: UpdateMedicationDto,
+    @Body() updateDto: UpdateHealthRecordMedicationDto,
   ): Promise<Medication> {
     return this.medicationService.update(id, updateDto);
   }
@@ -129,7 +121,10 @@ export class MedicationController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deactivate medication (soft delete)' })
   @ApiParam({ name: 'id', description: 'Medication UUID' })
-  @ApiResponse({ status: 204, description: 'Medication deactivated successfully' })
+  @ApiResponse({
+    status: 204,
+    description: 'Medication deactivated successfully',
+  })
   @ApiResponse({ status: 404, description: 'Medication not found' })
   async deactivate(@Param('id') id: string): Promise<void> {
     // TODO: Get user ID from authentication context

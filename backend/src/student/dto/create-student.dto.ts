@@ -6,15 +6,15 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsNotEmpty,
-  IsString,
   IsDate,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
+  IsString,
+  IsUrl,
   IsUUID,
   Length,
   Matches,
-  IsUrl,
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -36,11 +36,13 @@ export class CreateStudentDto {
   })
   @IsNotEmpty({ message: 'Student number is required' })
   @IsString()
-  @Length(4, 20, { message: 'Student number must be between 4 and 20 characters' })
+  @Length(4, 20, {
+    message: 'Student number must be between 4 and 20 characters',
+  })
   @Matches(/^[A-Z0-9-]+$/i, {
     message: 'Student number must be alphanumeric with optional hyphens',
   })
-  studentNumber: string;
+  studentNumber!: string;
 
   @ApiProperty({
     description: 'Student first name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
@@ -50,11 +52,13 @@ export class CreateStudentDto {
   })
   @IsNotEmpty({ message: 'First name is required' })
   @IsString()
-  @Length(1, 100, { message: 'First name must be between 1 and 100 characters' })
+  @Length(1, 100, {
+    message: 'First name must be between 1 and 100 characters',
+  })
   @Matches(/^[a-zA-Z\s'-]+$/, {
     message: 'First name can only contain letters, spaces, hyphens, and apostrophes',
   })
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({
     description: 'Student last name (1-100 characters, letters/spaces/hyphens/apostrophes only)',
@@ -68,7 +72,7 @@ export class CreateStudentDto {
   @Matches(/^[a-zA-Z\s'-]+$/, {
     message: 'Last name can only contain letters, spaces, hyphens, and apostrophes',
   })
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({
     description: 'Date of birth (must be in past, age 3-100 years)',
@@ -79,7 +83,7 @@ export class CreateStudentDto {
   @IsNotEmpty({ message: 'Date of birth is required' })
   @IsDate({ message: 'Date of birth must be a valid date' })
   @Type(() => Date)
-  dateOfBirth: Date;
+  dateOfBirth!: Date;
 
   @ApiProperty({
     description: 'Current grade level (1-10 characters)',
@@ -90,7 +94,7 @@ export class CreateStudentDto {
   @IsNotEmpty({ message: 'Grade is required' })
   @IsString()
   @Length(1, 10, { message: 'Grade must be between 1 and 10 characters' })
-  grade: string;
+  grade!: string;
 
   @ApiProperty({
     description: 'Student gender',
@@ -98,8 +102,10 @@ export class CreateStudentDto {
     example: Gender.FEMALE,
   })
   @IsNotEmpty({ message: 'Gender is required' })
-  @IsEnum(Gender, { message: 'Gender must be MALE, FEMALE, OTHER, or PREFER_NOT_TO_SAY' })
-  gender: Gender;
+  @IsEnum(Gender, {
+    message: 'Gender must be MALE, FEMALE, OTHER, or PREFER_NOT_TO_SAY',
+  })
+  gender!: Gender;
 
   @ApiProperty({
     description: 'Photo URL (max 500 characters)',
@@ -122,7 +128,9 @@ export class CreateStudentDto {
   })
   @IsOptional()
   @IsString()
-  @Length(5, 20, { message: 'Medical record number must be between 5 and 20 characters' })
+  @Length(5, 20, {
+    message: 'Medical record number must be between 5 and 20 characters',
+  })
   @Matches(/^[A-Z0-9-]+$/i, {
     message: 'Medical record number must be alphanumeric with optional hyphens',
   })

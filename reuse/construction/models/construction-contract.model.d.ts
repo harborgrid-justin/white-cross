@@ -1,0 +1,44 @@
+import { Model } from 'sequelize-typescript';
+import { ContractStatus, ContractType } from '../types/contract.types';
+import { PaymentApplication } from './payment-application.model';
+import { ContractAmendment } from './contract-amendment.model';
+import { ContractMilestone } from './contract-milestone.model';
+export declare class ConstructionContract extends Model<ConstructionContract> {
+    id: string;
+    contractNumber: string;
+    projectId: string;
+    projectName: string;
+    contractorId: string;
+    contractorName: string;
+    contractType: ContractType;
+    status: ContractStatus;
+    contractAmount: number;
+    originalAmount: number;
+    currentAmount: number;
+    totalPaid: number;
+    retainagePercentage: number;
+    retainageAmount: number;
+    startDate: Date;
+    completionDate: Date;
+    actualStartDate?: Date;
+    actualCompletionDate?: Date;
+    substantialCompletionDate?: Date;
+    noticeToProceedDate?: Date;
+    contractDuration: number;
+    daysExtended: number;
+    description: string;
+    scopeOfWork: string;
+    performanceBondRequired: boolean;
+    paymentBondRequired: boolean;
+    insuranceRequired: boolean;
+    prevailingWageRequired: boolean;
+    liquidatedDamagesRate?: number;
+    warrantyPeriod: number;
+    metadata: Record<string, any>;
+    createdBy: string;
+    updatedBy?: string;
+    paymentApplications: PaymentApplication[];
+    amendments: ContractAmendment[];
+    milestones: ContractMilestone[];
+}
+//# sourceMappingURL=construction-contract.model.d.ts.map

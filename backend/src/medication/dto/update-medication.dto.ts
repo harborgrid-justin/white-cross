@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsDate,
-  MinLength,
-  MaxLength,
-  IsEnum,
-} from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { DEASchedule } from './create-medication.dto';

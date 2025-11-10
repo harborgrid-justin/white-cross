@@ -1,15 +1,6 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsDate,
-  IsBoolean,
-  IsArray,
-  IsNumber,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { TimePeriod } from '../enums';
 
 /**
  * Get Health Metrics Query DTO
@@ -35,7 +26,10 @@ export class GetHealthMetricsQueryDto {
   @Type(() => Date)
   endDate: Date;
 
-  @ApiPropertyOptional({ type: [String], description: 'Specific metric types to retrieve' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Specific metric types to retrieve',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -50,7 +44,10 @@ export class GetHealthMetricsQueryDto {
   @IsString()
   aggregationLevel?: string;
 
-  @ApiPropertyOptional({ description: 'Include comparison with previous period', default: true })
+  @ApiPropertyOptional({
+    description: 'Include comparison with previous period',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
@@ -90,13 +87,19 @@ export class GetHealthTrendsQueryDto {
   @IsString()
   timePeriod?: string;
 
-  @ApiPropertyOptional({ type: [String], description: 'Specific metrics to track' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Specific metrics to track',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   metrics?: string[];
 
-  @ApiPropertyOptional({ description: 'Include predictive forecasting', default: false })
+  @ApiPropertyOptional({
+    description: 'Include predictive forecasting',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
@@ -128,7 +131,10 @@ export class GetStudentHealthMetricsQueryDto {
   @Type(() => Date)
   endDate?: Date;
 
-  @ApiPropertyOptional({ description: 'Include historical data', default: true })
+  @ApiPropertyOptional({
+    description: 'Include historical data',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
@@ -163,7 +169,10 @@ export class GetSchoolMetricsQueryDto {
   @IsString()
   gradeLevel?: string;
 
-  @ApiPropertyOptional({ description: 'Include comparisons with other schools', default: true })
+  @ApiPropertyOptional({
+    description: 'Include comparisons with other schools',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)

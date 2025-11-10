@@ -23,7 +23,7 @@
 
 /**
  * Message template and communication utilities
- * 
+ *
  * Provides utilities for message template processing, variable substitution,
  * and communication cost calculation.
  */
@@ -54,7 +54,7 @@ export interface MessageCostCalculation {
 
 /**
  * Build message content from template with variable substitution
- * 
+ *
  * @param template - Message template string with {{variable}} placeholders
  * @param variables - Record of variable names to values
  * @returns Processed message string with variables substituted
@@ -68,14 +68,15 @@ export function buildMessageTemplate(template: string, variables: Record<string,
 
   // Replace all {{variable}} placeholders
   const variableRegex = /\{\{([^}]+)\}\}/g;
-  
-  processedMessage = processedMessage.replace(variableRegex, (match, variableName) => {
+
+  processedMessage = processedMessage.replace(variableRegex, (_match, variableName) => {
+    if (typeof variableName !== 'string') return '';
     const trimmedName = variableName.trim();
-    
+
     // Check if variable exists
-    if (variables.hasOwnProperty(trimmedName)) {
+    if (Object.prototype.hasOwnProperty.call(variables, trimmedName)) {
       const value = variables[trimmedName];
-      
+
       // Handle different value types
       if (value === null || value === undefined) {
         return '';
@@ -85,49 +86,58 @@ export function buildMessageTemplate(template: string, variables: Record<string,
         return String(value);
       }
     }
-    
+
     // Return placeholder if variable not found (for debugging)
     return `{{${trimmedName}}}`;
   });
 
   // Handle conditional sections [if:variable]content[/if]
   const conditionalRegex = /\[if:([^\]]+)\](.*?)\[\/if\]/g;
-  
-  processedMessage = processedMessage.replace(conditionalRegex, (match, condition, content) => {
-    const trimmedCondition = condition.trim();
-    
-    // Check if condition variable exists and is truthy
-    if (variables.hasOwnProperty(trimmedCondition) && variables[trimmedCondition]) {
-      return content;
-    }
-    
-    return '';
-  });
+
+  processedMessage = processedMessage.replace(
+    conditionalRegex,
+    (_match, condition, content) => {
+      const trimmedCondition = condition.trim();
+
+      // Check if condition variable exists and is truthy
+      if (
+        variables.hasOwnProperty(trimmedCondition) &&
+        variables[trimmedCondition]
+      ) {
+        return content;
+      }
+
+      return '';
+    },
+  );
 
   // Handle date formatting [date:variable:format]
   const dateRegex = /\[date:([^:]+):([^\]]+)\]/g;
-  
-  processedMessage = processedMessage.replace(dateRegex, (match, variableName, format) => {
-    const trimmedName = variableName.trim();
-    
-    if (variables.hasOwnProperty(trimmedName)) {
-      const dateValue = variables[trimmedName];
-      const date = new Date(dateValue);
-      
-      if (!isNaN(date.getTime())) {
-        return formatDate(date, format);
+
+  processedMessage = processedMessage.replace(
+    dateRegex,
+    (match, variableName, format) => {
+      const trimmedName = variableName.trim();
+
+      if (variables.hasOwnProperty(trimmedName)) {
+        const dateValue = variables[trimmedName];
+        const date = new Date(dateValue);
+
+        if (!isNaN(date.getTime())) {
+          return formatDate(date, format);
+        }
       }
-    }
-    
-    return match; // Return original if can't format
-  });
+
+      return match; // Return original if can't format
+    },
+  );
 
   return processedMessage.trim();
 }
 
 /**
  * Extract variables from a template string
- * 
+ *
  * @param template - Template string to analyze
  * @returns Array of variable names found in the template
  */
@@ -138,30 +148,36 @@ export function extractTemplateVariables(template: string): string[] {
 
   const variables: string[] = [];
   const variableRegex = /\{\{([^}]+)\}\}/g;
-  
+
   let match;
   while ((match = variableRegex.exec(template)) !== null) {
-    const variableName = match[1].trim();
-    if (!variables.includes(variableName)) {
-      variables.push(variableName);
+    if (match[1]) {
+      const variableName = match[1].trim();
+      if (!variables.includes(variableName)) {
+        variables.push(variableName);
+      }
     }
   }
 
   // Also extract conditional variables
   const conditionalRegex = /\[if:([^\]]+)\]/g;
   while ((match = conditionalRegex.exec(template)) !== null) {
-    const variableName = match[1].trim();
-    if (!variables.includes(variableName)) {
-      variables.push(variableName);
+    if (match[1]) {
+      const variableName = match[1].trim();
+      if (!variables.includes(variableName)) {
+        variables.push(variableName);
+      }
     }
   }
 
   // Extract date variables
   const dateRegex = /\[date:([^:]+):/g;
   while ((match = dateRegex.exec(template)) !== null) {
-    const variableName = match[1].trim();
-    if (!variables.includes(variableName)) {
-      variables.push(variableName);
+    if (match[1]) {
+      const variableName = match[1].trim();
+      if (!variables.includes(variableName)) {
+        variables.push(variableName);
+      }
     }
   }
 
@@ -170,22 +186,25 @@ export function extractTemplateVariables(template: string): string[] {
 
 /**
  * Calculate estimated cost for sending message
- * 
+ *
  * @param message - Message content
  * @param channel - Communication channel (SMS, EMAIL, PUSH)
  * @returns Cost calculation object
  */
-export function calculateMessageCost(message: string, channel: 'SMS' | 'EMAIL' | 'PUSH'): MessageCostCalculation {
+export function calculateMessageCost(
+  message: string,
+  channel: 'SMS' | 'EMAIL' | 'PUSH',
+): MessageCostCalculation {
   const baseCosts = {
     SMS: 0.0075, // $0.0075 per SMS
     EMAIL: 0.0001, // $0.0001 per email
-    PUSH: 0.0001  // $0.0001 per push notification
+    PUSH: 0.0001, // $0.0001 per push notification
   };
 
   const lengthMultipliers = {
     SMS: (length: number) => Math.ceil(length / 160), // SMS segments
     EMAIL: () => 1, // Fixed cost per email
-    PUSH: () => 1   // Fixed cost per push
+    PUSH: () => 1, // Fixed cost per push
   };
 
   const baseCost = baseCosts[channel] || 0;
@@ -201,43 +220,47 @@ export function calculateMessageCost(message: string, channel: 'SMS' | 'EMAIL' |
     breakdown: {
       baseCost,
       lengthMultiplier,
-      channelMultiplier
-    }
+      channelMultiplier,
+    },
   };
 }
 
 /**
  * Validate template variables are provided
- * 
+ *
  * @param template - Message template
  * @param variables - Provided variables
  * @returns Validation result with missing variables
  */
 export function validateTemplateVariables(
-  template: string, 
-  variables: Record<string, any>
+  template: string,
+  variables: Record<string, any>,
 ): { isValid: boolean; missingVariables: string[] } {
   const requiredVariables = extractTemplateVariables(template);
   const missingVariables = requiredVariables.filter(
-    variable => !variables.hasOwnProperty(variable) || 
-                variables[variable] === null || 
-                variables[variable] === undefined
+    (variable) =>
+      !variables.hasOwnProperty(variable) ||
+      variables[variable] === null ||
+      variables[variable] === undefined,
   );
 
   return {
     isValid: missingVariables.length === 0,
-    missingVariables
+    missingVariables,
   };
 }
 
 /**
  * Sanitize message content for safe transmission
- * 
+ *
  * @param message - Message content to sanitize
  * @param channel - Communication channel
  * @returns Sanitized message content
  */
-export function sanitizeMessageContent(message: string, channel: 'SMS' | 'EMAIL' | 'PUSH'): string {
+export function sanitizeMessageContent(
+  message: string,
+  channel: 'SMS' | 'EMAIL' | 'PUSH',
+): string {
   if (!message || typeof message !== 'string') {
     return '';
   }
@@ -261,13 +284,15 @@ export function sanitizeMessageContent(message: string, channel: 'SMS' | 'EMAIL'
         sanitized = sanitized.substring(0, 1597) + '...';
       }
       break;
-    
+
     case 'EMAIL':
       // Allow basic HTML tags for email
-      const allowedTags = /<\/?(?:b|i|u|strong|em|br|p|a|h[1-6]|ul|ol|li|blockquote)\b[^>]*>/gi;
-      sanitized = sanitized.replace(/<(?!\/?(?:b|i|u|strong|em|br|p|a|h[1-6]|ul|ol|li|blockquote)\b)[^>]*>/gi, '');
+      sanitized = sanitized.replace(
+        /<(?!\/?(?:b|i|u|strong|em|br|p|a|h[1-6]|ul|ol|li|blockquote)\b)[^>]*>/gi,
+        '',
+      );
       break;
-    
+
     case 'PUSH':
       // Remove HTML tags for push notifications
       sanitized = sanitized.replace(/<[^>]*>/g, '');
@@ -283,7 +308,7 @@ export function sanitizeMessageContent(message: string, channel: 'SMS' | 'EMAIL'
 
 /**
  * Helper function to format dates in templates
- * 
+ *
  * @param date - Date to format
  * @param format - Format string (YYYY-MM-DD, MM/DD/YYYY, etc.)
  * @returns Formatted date string

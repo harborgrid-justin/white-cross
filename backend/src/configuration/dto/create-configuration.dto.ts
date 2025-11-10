@@ -1,6 +1,6 @@
-import { IsString, IsEnum, IsOptional, IsBoolean, IsNumber, IsArray, Min, Max } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ConfigValueType, ConfigCategory, ConfigScope } from '../../administration/enums/administration.enums';
+import { ConfigCategory, ConfigScope, ConfigValueType } from '../../administration/enums/administration.enums';
 
 /**
  * DTO for creating a new configuration
@@ -14,7 +14,10 @@ export class CreateConfigurationDto {
   @IsString()
   value: string;
 
-  @ApiProperty({ enum: ConfigValueType, description: 'Value type for validation' })
+  @ApiProperty({
+    enum: ConfigValueType,
+    description: 'Value type for validation',
+  })
   @IsEnum(ConfigValueType)
   valueType: ConfigValueType;
 
@@ -37,7 +40,10 @@ export class CreateConfigurationDto {
   @IsString()
   defaultValue?: string;
 
-  @ApiPropertyOptional({ description: 'Valid values for enum type', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Valid values for enum type',
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -53,22 +59,35 @@ export class CreateConfigurationDto {
   @IsNumber()
   maxValue?: number;
 
-  @ApiPropertyOptional({ description: 'Whether config is visible to frontend', default: false })
+  @ApiPropertyOptional({
+    description: 'Whether config is visible to frontend',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   isPublic?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether config can be edited', default: true })
+  @ApiPropertyOptional({
+    description: 'Whether config can be edited',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isEditable?: boolean;
 
-  @ApiPropertyOptional({ description: 'Whether changing this requires system restart', default: false })
+  @ApiPropertyOptional({
+    description: 'Whether changing this requires system restart',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   requiresRestart?: boolean;
 
-  @ApiPropertyOptional({ enum: ConfigScope, description: 'Configuration scope', default: ConfigScope.SYSTEM })
+  @ApiPropertyOptional({
+    enum: ConfigScope,
+    description: 'Configuration scope',
+    default: ConfigScope.SYSTEM,
+  })
   @IsOptional()
   @IsEnum(ConfigScope)
   scope?: ConfigScope;
@@ -78,7 +97,10 @@ export class CreateConfigurationDto {
   @IsString()
   scopeId?: string;
 
-  @ApiPropertyOptional({ description: 'Tags for categorization', type: [String] })
+  @ApiPropertyOptional({
+    description: 'Tags for categorization',
+    type: [String],
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

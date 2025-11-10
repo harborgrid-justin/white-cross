@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CaptureStatementDto {
@@ -10,7 +10,10 @@ export class CaptureStatementDto {
   @IsString()
   witnessName: string;
 
-  @ApiProperty({ enum: ['student', 'teacher', 'staff', 'other'], description: 'Role of witness' })
+  @ApiProperty({
+    enum: ['student', 'teacher', 'staff', 'other'],
+    description: 'Role of witness',
+  })
   @IsEnum(['student', 'teacher', 'staff', 'other'])
   witnessRole: 'student' | 'teacher' | 'staff' | 'other';
 
@@ -18,7 +21,10 @@ export class CaptureStatementDto {
   @IsString()
   statement: string;
 
-  @ApiProperty({ enum: ['typed', 'voice-to-text', 'handwritten-scan'], description: 'How statement was captured' })
+  @ApiProperty({
+    enum: ['typed', 'voice-to-text', 'handwritten-scan'],
+    description: 'How statement was captured',
+  })
   @IsEnum(['typed', 'voice-to-text', 'handwritten-scan'])
   captureMethod: 'typed' | 'voice-to-text' | 'handwritten-scan';
 

@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID, IsOptional, IsEnum } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 /**
  * Waitlist Priority Levels
@@ -38,7 +38,7 @@ export class AddWaitlistDto {
   })
   @IsNotEmpty()
   @IsUUID('4')
-  studentId: string;
+  studentId!: string;
 
   @ApiProperty({
     description: 'Type of appointment needed',
@@ -46,7 +46,7 @@ export class AddWaitlistDto {
   })
   @IsNotEmpty()
   @IsString()
-  appointmentType: string;
+  appointmentType!: string;
 
   @ApiPropertyOptional({
     description: 'Priority level for waitlist placement',

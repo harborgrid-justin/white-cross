@@ -210,6 +210,28 @@ function CalendarDayButton({
   )
 }
 
-export { Calendar, CalendarDayButton }
+// DatePicker component - wrapper around Calendar for date picking
+interface DatePickerProps extends React.ComponentProps<typeof DayPicker> {
+  value?: Date
+  onChange?: (date: Date | undefined) => void
+}
+
+const DatePicker = React.forwardRef<HTMLDivElement, DatePickerProps>(
+  ({ value, onChange, ...props }, ref) => {
+    return (
+      <div ref={ref}>
+        <Calendar
+          mode="single"
+          selected={value}
+          onSelect={onChange}
+          {...props}
+        />
+      </div>
+    )
+  }
+)
+DatePicker.displayName = "DatePicker"
+
+export { Calendar, CalendarDayButton, DatePicker }
 
 

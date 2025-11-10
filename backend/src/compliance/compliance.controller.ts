@@ -5,32 +5,24 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
   Param,
-  Query,
   ParseIntPipe,
   ParseUUIDPipe,
-  Logger,
+  Post,
+  Put,
+  Query,
   Req,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiParam,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 // Execution Context
-import { createExecutionContext, createSystemExecutionContext } from '../database/types/execution-context.interface';
+import { createExecutionContext } from '../database/types/execution-context.interface';
 import { UserRole } from '../database/models/user.model';
 
 // Services
@@ -46,11 +38,22 @@ import { StatisticsService } from './services/statistics.service';
 // DTOs
 import { CreateAuditLogDto } from './dto/create-audit-log.dto';
 import { SignConsentFormDto } from './dto/sign-consent-form.dto';
-import { CreateComplianceReportDto, UpdateComplianceReportDto, ComplianceGenerateReportDto, QueryComplianceReportDto } from './dto/compliance-report.dto';
-import { CreateChecklistDto, UpdateChecklistDto, QueryChecklistDto } from './dto/checklist.dto';
-import { CreatePolicyDto, UpdatePolicyDto, QueryPolicyDto } from './dto/policy.dto';
-import { CreateDataRetentionDto, UpdateDataRetentionDto, QueryDataRetentionDto } from './dto/data-retention.dto';
-import { CreateViolationDto, UpdateViolationDto, CreateRemediationDto, UpdateRemediationDto, QueryViolationDto } from './dto/violation.dto';
+import {
+  ComplianceGenerateReportDto,
+  CreateComplianceReportDto,
+  QueryComplianceReportDto,
+  UpdateComplianceReportDto,
+} from './dto/compliance-report.dto';
+import { CreateChecklistDto, QueryChecklistDto, UpdateChecklistDto } from './dto/checklist.dto';
+import { CreatePolicyDto, QueryPolicyDto, UpdatePolicyDto } from './dto/policy.dto';
+import { CreateDataRetentionDto, QueryDataRetentionDto, UpdateDataRetentionDto } from './dto/data-retention.dto';
+import {
+  CreateRemediationDto,
+  CreateViolationDto,
+  QueryViolationDto,
+  UpdateRemediationDto,
+  UpdateViolationDto,
+} from './dto/violation.dto';
 import { QueryStatisticsDto } from './dto/statistics.dto';
 
 @ApiTags('compliance')
@@ -75,14 +78,18 @@ export class ComplianceController {
   @Get('audit-logs')
   @ApiOperation({
     summary: 'Get audit logs with filtering',
-    description: 'Retrieve paginated audit logs for HIPAA compliance tracking. Supports filtering by user, entity type, action, and date range.',
+    description:
+      'Retrieve paginated audit logs for HIPAA compliance tracking. Supports filtering by user, entity type, action, and date range.',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 50 })
   @ApiQuery({ name: 'userId', required: false, type: String })
   @ApiQuery({ name: 'entityType', required: false, type: String })
   @ApiQuery({ name: 'action', required: false, type: String })
-  @ApiResponse({ status: 200, description: 'Audit logs retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Audit logs retrieved successfully',
+  })
   async getAuditLogs(
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -108,7 +115,10 @@ export class ComplianceController {
   }
 
   @Post('audit-logs')
-  @ApiOperation({ summary: 'Create audit log entry', description: 'Create HIPAA-compliant audit log entry' })
+  @ApiOperation({
+    summary: 'Create audit log entry',
+    description: 'Create HIPAA-compliant audit log entry',
+  })
   @ApiBody({ type: CreateAuditLogDto })
   @ApiResponse({ status: 201, description: 'Audit log created successfully' })
   async createAuditLog(@Body() createAuditLogDto: CreateAuditLogDto) {
@@ -118,7 +128,10 @@ export class ComplianceController {
   // ==================== COMPLIANCE REPORT ENDPOINTS ====================
 
   @Get('reports')
-  @ApiOperation({ summary: 'List compliance reports', description: 'Retrieve paginated compliance reports with filtering' })
+  @ApiOperation({
+    summary: 'List compliance reports',
+    description: 'Retrieve paginated compliance reports with filtering',
+  })
   @ApiResponse({ status: 200, description: 'Reports retrieved successfully' })
   async listReports(@Query() query: QueryComplianceReportDto) {
     return this.reportService.listReports(query);
@@ -137,20 +150,19 @@ export class ComplianceController {
   @ApiOperation({ summary: 'Create compliance report' })
   @ApiBody({ type: CreateComplianceReportDto })
   @ApiResponse({ status: 201, description: 'Report created successfully' })
-  async createReport(@Body() dto: CreateComplianceReportDto, @Req() req: Request) {
+  async createReport(
+    @Body() dto: CreateComplianceReportDto,
+    @Req() req: Request,
+  ) {
     // Extract user information from JWT token
     const userId = (req as any).user?.id || 'system';
     const userRole = (req as any).user?.role || UserRole.ADMIN;
 
     // Create execution context with request metadata for HIPAA compliance
-    const context = createExecutionContext(
-      userId,
-      userRole,
-      {
-        ip: req.ip,
-        headers: { 'user-agent': req.headers['user-agent'] }
-      }
-    );
+    const context = createExecutionContext(userId, userRole, {
+      ip: req.ip,
+      headers: { 'user-agent': req.headers['user-agent'] },
+    });
 
     return this.reportService.createReport(dto, userId, context);
   }
@@ -160,20 +172,20 @@ export class ComplianceController {
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateComplianceReportDto })
   @ApiResponse({ status: 200, description: 'Report updated successfully' })
-  async updateReport(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateComplianceReportDto, @Req() req: Request) {
+  async updateReport(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateComplianceReportDto,
+    @Req() req: Request,
+  ) {
     // Extract user information from JWT token
     const userId = (req as any).user?.id || 'system';
     const userRole = (req as any).user?.role || UserRole.ADMIN;
 
     // Create execution context with request metadata for HIPAA compliance
-    const context = createExecutionContext(
-      userId,
-      userRole,
-      {
-        ip: req.ip,
-        headers: { 'user-agent': req.headers['user-agent'] }
-      }
-    );
+    const context = createExecutionContext(userId, userRole, {
+      ip: req.ip,
+      headers: { 'user-agent': req.headers['user-agent'] },
+    });
 
     return this.reportService.updateReport(id, dto, context);
   }
@@ -182,20 +194,19 @@ export class ComplianceController {
   @ApiOperation({ summary: 'Delete compliance report' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 204, description: 'Report deleted successfully' })
-  async deleteReport(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+  async deleteReport(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
+  ) {
     // Extract user information from JWT token
     const userId = (req as any).user?.id || 'system';
     const userRole = (req as any).user?.role || UserRole.ADMIN;
 
     // Create execution context with request metadata for HIPAA compliance
-    const context = createExecutionContext(
-      userId,
-      userRole,
-      {
-        ip: req.ip,
-        headers: { 'user-agent': req.headers['user-agent'] }
-      }
-    );
+    const context = createExecutionContext(userId, userRole, {
+      ip: req.ip,
+      headers: { 'user-agent': req.headers['user-agent'] },
+    });
 
     await this.reportService.deleteReport(id, context);
     return { deleted: true };
@@ -205,20 +216,19 @@ export class ComplianceController {
   @ApiOperation({ summary: 'Generate automated compliance report' })
   @ApiBody({ type: ComplianceGenerateReportDto })
   @ApiResponse({ status: 201, description: 'Report generated successfully' })
-  async generateReport(@Body() dto: ComplianceGenerateReportDto, @Req() req: Request) {
+  async generateReport(
+    @Body() dto: ComplianceGenerateReportDto,
+    @Req() req: Request,
+  ) {
     // Extract user information from JWT token
     const userId = (req as any).user?.id || 'system';
     const userRole = (req as any).user?.role || UserRole.ADMIN;
 
     // Create execution context with request metadata for HIPAA compliance
-    const context = createExecutionContext(
-      userId,
-      userRole,
-      {
-        ip: req.ip,
-        headers: { 'user-agent': req.headers['user-agent'] }
-      }
-    );
+    const context = createExecutionContext(userId, userRole, {
+      ip: req.ip,
+      headers: { 'user-agent': req.headers['user-agent'] },
+    });
 
     return this.reportService.generateReport(dto, userId, context);
   }
@@ -227,7 +237,10 @@ export class ComplianceController {
 
   @Get('checklists')
   @ApiOperation({ summary: 'List compliance checklists' })
-  @ApiResponse({ status: 200, description: 'Checklists retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Checklists retrieved successfully',
+  })
   async listChecklists(@Query() query: QueryChecklistDto) {
     return this.checklistService.listChecklists(query);
   }
@@ -253,7 +266,10 @@ export class ComplianceController {
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateChecklistDto })
   @ApiResponse({ status: 200, description: 'Checklist updated successfully' })
-  async updateChecklist(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateChecklistDto) {
+  async updateChecklist(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateChecklistDto,
+  ) {
     return this.checklistService.updateChecklist(id, dto);
   }
 
@@ -296,7 +312,10 @@ export class ComplianceController {
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdatePolicyDto })
   @ApiResponse({ status: 200, description: 'Policy updated successfully' })
-  async updatePolicy(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdatePolicyDto) {
+  async updatePolicy(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdatePolicyDto,
+  ) {
     return this.policyService.updatePolicy(id, dto);
   }
 
@@ -310,10 +329,16 @@ export class ComplianceController {
   }
 
   @Post('policies/:id/acknowledge')
-  @ApiOperation({ summary: 'Acknowledge policy', description: 'COMPLIANCE REQUIRED - Records staff acknowledgment of policy' })
+  @ApiOperation({
+    summary: 'Acknowledge policy',
+    description: 'COMPLIANCE REQUIRED - Records staff acknowledgment of policy',
+  })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 201, description: 'Policy acknowledged successfully' })
-  async acknowledgePolicy(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
+  async acknowledgePolicy(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
+  ) {
     const userId = (req as any).user?.id || 'system';
     const ipAddress = req.ip || 'unknown';
     return this.policyService.acknowledgePolicy(id, userId, ipAddress);
@@ -322,9 +347,16 @@ export class ComplianceController {
   // ==================== CONSENT MANAGEMENT ENDPOINTS ====================
 
   @Get('consents')
-  @ApiOperation({ summary: 'Get consent forms', description: 'Retrieve consent forms with optional filtering by active status' })
+  @ApiOperation({
+    summary: 'Get consent forms',
+    description:
+      'Retrieve consent forms with optional filtering by active status',
+  })
   @ApiQuery({ name: 'isActive', required: false, type: Boolean })
-  @ApiResponse({ status: 200, description: 'Consent forms retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Consent forms retrieved successfully',
+  })
   async getConsentForms(@Query('isActive') isActive?: string) {
     const filters: any = {};
     if (isActive !== undefined) {
@@ -336,13 +368,19 @@ export class ComplianceController {
   @Get('consents/:id')
   @ApiOperation({ summary: 'Get consent form by ID' })
   @ApiParam({ name: 'id', type: String })
-  @ApiResponse({ status: 200, description: 'Consent form retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Consent form retrieved successfully',
+  })
   async getConsentFormById(@Param('id', ParseUUIDPipe) id: string) {
     return this.consentService.getConsentFormById(id);
   }
 
   @Post('consents/sign')
-  @ApiOperation({ summary: 'Sign consent form', description: 'Digitally sign a consent form with legal validity' })
+  @ApiOperation({
+    summary: 'Sign consent form',
+    description: 'Digitally sign a consent form with legal validity',
+  })
   @ApiBody({ type: SignConsentFormDto })
   @ApiResponse({ status: 201, description: 'Consent form signed successfully' })
   async signConsentForm(@Body() signConsentFormDto: SignConsentFormDto) {
@@ -352,8 +390,13 @@ export class ComplianceController {
   @Get('consents/students/:studentId')
   @ApiOperation({ summary: 'Get all consents for a student' })
   @ApiParam({ name: 'studentId', type: String })
-  @ApiResponse({ status: 200, description: 'Student consents retrieved successfully' })
-  async getStudentConsents(@Param('studentId', ParseUUIDPipe) studentId: string) {
+  @ApiResponse({
+    status: 200,
+    description: 'Student consents retrieved successfully',
+  })
+  async getStudentConsents(
+    @Param('studentId', ParseUUIDPipe) studentId: string,
+  ) {
     return this.consentService.getStudentConsents(studentId);
   }
 
@@ -361,7 +404,10 @@ export class ComplianceController {
   @ApiOperation({ summary: 'Withdraw consent' })
   @ApiParam({ name: 'id', type: String })
   @ApiResponse({ status: 200, description: 'Consent withdrawn successfully' })
-  async withdrawConsent(@Param('id', ParseUUIDPipe) id: string, @Body('withdrawnBy') withdrawnBy: string) {
+  async withdrawConsent(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('withdrawnBy') withdrawnBy: string,
+  ) {
     return this.consentService.withdrawConsent(id, withdrawnBy);
   }
 
@@ -369,7 +415,10 @@ export class ComplianceController {
 
   @Get('data-retention')
   @ApiOperation({ summary: 'List data retention policies' })
-  @ApiResponse({ status: 200, description: 'Data retention policies retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Data retention policies retrieved successfully',
+  })
   async listDataRetentionPolicies(@Query() query: QueryDataRetentionDto) {
     return this.dataRetentionService.listPolicies(query);
   }
@@ -395,7 +444,11 @@ export class ComplianceController {
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateDataRetentionDto })
   @ApiResponse({ status: 200, description: 'Policy updated successfully' })
-  async updateDataRetentionPolicy(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDataRetentionDto, @Req() req: Request) {
+  async updateDataRetentionPolicy(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateDataRetentionDto,
+    @Req() req: Request,
+  ) {
     const reviewedBy = (req as any).user?.id || 'system';
     return this.dataRetentionService.updatePolicy(id, dto, reviewedBy);
   }
@@ -404,14 +457,20 @@ export class ComplianceController {
 
   @Get('hipaa-status')
   @ApiOperation({ summary: 'Get HIPAA compliance status' })
-  @ApiResponse({ status: 200, description: 'HIPAA status retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'HIPAA status retrieved successfully',
+  })
   async getHipaaStatus() {
     return this.statisticsService.getHipaaStatus();
   }
 
   @Get('ferpa-status')
   @ApiOperation({ summary: 'Get FERPA compliance status' })
-  @ApiResponse({ status: 200, description: 'FERPA status retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'FERPA status retrieved successfully',
+  })
   async getFerpaStatus() {
     return this.statisticsService.getFerpaStatus();
   }
@@ -420,7 +479,10 @@ export class ComplianceController {
 
   @Get('violations')
   @ApiOperation({ summary: 'List compliance violations' })
-  @ApiResponse({ status: 200, description: 'Violations retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Violations retrieved successfully',
+  })
   async listViolations(@Query() query: QueryViolationDto) {
     return this.violationService.listViolations(query);
   }
@@ -439,14 +501,20 @@ export class ComplianceController {
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateViolationDto })
   @ApiResponse({ status: 200, description: 'Violation updated successfully' })
-  async updateViolation(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateViolationDto) {
+  async updateViolation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateViolationDto,
+  ) {
     return this.violationService.updateViolation(id, dto);
   }
 
   @Post('remediation')
   @ApiOperation({ summary: 'Track remediation action' })
   @ApiBody({ type: CreateRemediationDto })
-  @ApiResponse({ status: 201, description: 'Remediation action created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Remediation action created successfully',
+  })
   async createRemediation(@Body() dto: CreateRemediationDto) {
     return this.violationService.createRemediation(dto);
   }
@@ -456,22 +524,39 @@ export class ComplianceController {
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateRemediationDto })
   @ApiResponse({ status: 200, description: 'Remediation updated successfully' })
-  async updateRemediation(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateRemediationDto) {
+  async updateRemediation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateRemediationDto,
+  ) {
     return this.violationService.updateRemediation(id, dto);
   }
 
   // ==================== STATISTICS ENDPOINTS ====================
 
   @Get('statistics')
-  @ApiOperation({ summary: 'Get compliance statistics', description: 'Comprehensive compliance metrics for dashboards and reporting' })
-  @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
+  @ApiOperation({
+    summary: 'Get compliance statistics',
+    description:
+      'Comprehensive compliance metrics for dashboards and reporting',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+  })
   async getStatistics(@Query() query: QueryStatisticsDto) {
     return this.statisticsService.getComplianceStatistics(query);
   }
 
   @Get('dashboard')
-  @ApiOperation({ summary: 'Get compliance dashboard data', description: 'Aggregate compliance dashboard with reports, checklists, consents, and audit statistics' })
-  @ApiResponse({ status: 200, description: 'Dashboard data retrieved successfully' })
+  @ApiOperation({
+    summary: 'Get compliance dashboard data',
+    description:
+      'Aggregate compliance dashboard with reports, checklists, consents, and audit statistics',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Dashboard data retrieved successfully',
+  })
   async getComplianceDashboard() {
     return this.statisticsService.getComplianceDashboard();
   }

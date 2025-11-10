@@ -7,5 +7,5 @@
 export {
   PolicyDocument,
   PolicyCategory,
-  PolicyStatus
+  PolicyStatus,
 } from '../../database/models/policy-document.model';

@@ -4,35 +4,17 @@
  * @description HTTP endpoints for CDC-compliant vaccination tracking
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VaccinationService } from './vaccination.service';
 import { CreateVaccinationDto } from './dto/create-vaccination.dto';
-import { UpdateVaccinationDto } from './dto/update-vaccination.dto';
 import {
-  CDCScheduleQueryDto,
-  BatchVaccinationDto,
-  CreateExemptionDto,
-  ComplianceReportQueryDto,
-  DueVaccinationsResponseDto,
   BatchImportResponseDto,
+  BatchVaccinationDto,
+  CDCScheduleQueryDto,
+  ComplianceReportQueryDto,
+  CreateExemptionDto,
+  DueVaccinationsResponseDto,
 } from './dto/vaccination-endpoints.dto';
 
 @ApiTags('health-record-vaccination')
@@ -164,7 +146,8 @@ export class VaccinationController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Import vaccinations in batch',
-    description: 'Imports multiple vaccination records at once for bulk data entry.',
+    description:
+      'Imports multiple vaccination records at once for bulk data entry.',
   })
   @ApiResponse({
     status: 201,
@@ -175,7 +158,9 @@ export class VaccinationController {
     status: 400,
     description: 'Invalid input data',
   })
-  async batchImport(@Body() batchDto: BatchVaccinationDto): Promise<BatchImportResponseDto> {
+  async batchImport(
+    @Body() batchDto: BatchVaccinationDto,
+  ): Promise<BatchImportResponseDto> {
     return this.vaccinationService.batchImport(batchDto.vaccinations);
   }
 
@@ -185,7 +170,8 @@ export class VaccinationController {
   @Get('cdc-schedule')
   @ApiOperation({
     summary: 'Get CDC vaccination schedule',
-    description: 'Returns CDC-recommended vaccination schedule by age or grade.',
+    description:
+      'Returns CDC-recommended vaccination schedule by age or grade.',
   })
   @ApiResponse({
     status: 200,
@@ -202,7 +188,8 @@ export class VaccinationController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Add vaccination exemption',
-    description: 'Creates medical, religious, or personal exemption for vaccination requirements.',
+    description:
+      'Creates medical, religious, or personal exemption for vaccination requirements.',
   })
   @ApiParam({
     name: 'studentId',
@@ -230,7 +217,8 @@ export class VaccinationController {
   @Get('compliance-report')
   @ApiOperation({
     summary: 'Get vaccination compliance report',
-    description: 'Generates compliance report across students with filtering options.',
+    description:
+      'Generates compliance report across students with filtering options.',
   })
   @ApiResponse({
     status: 200,

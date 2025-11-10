@@ -3,15 +3,13 @@
  * HIPAA Compliance: 45 CFR 164.508 - Authorization requirements
  */
 
-import { Injectable, Logger, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model, Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { ConsentForm } from '../../database/models/consent-form.model';
+import { ConsentForm, ConsentType } from '../../database/models/consent-form.model';
 import { ConsentSignature } from '../../database/models/consent-signature.model';
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
-import { ComplianceUtils, COMPLIANCE_ERRORS } from '../utils';
-import { ConsentType } from '../../database/models/consent-form.model';
+import { COMPLIANCE_ERRORS, ComplianceUtils } from '../utils/index';
 
 export interface CreateConsentFormData {
   type: ConsentType;
@@ -37,7 +35,9 @@ export class ConsentService {
   /**
    * Get all consent forms with optional filtering
    */
-  async getConsentForms(filters: { isActive?: boolean } = {}): Promise<ConsentForm[]> {
+  async getConsentForms(
+    filters: { isActive?: boolean } = {},
+  ): Promise<ConsentForm[]> {
     try {
       const whereClause: any = {};
 
@@ -94,7 +94,10 @@ export class ConsentService {
       }
 
       // Validate version format
-      if (data.version && !ComplianceUtils.validateVersionFormat(data.version)) {
+      if (
+        data.version &&
+        !ComplianceUtils.validateVersionFormat(data.version)
+      ) {
         throw new BadRequestException(COMPLIANCE_ERRORS.INVALID_VERSION_FORMAT);
       }
 
@@ -132,11 +135,16 @@ export class ConsentService {
 
       // Validate signatory name
       if (!data.signedBy || data.signedBy.trim().length < 2) {
-        throw new BadRequestException(COMPLIANCE_ERRORS.SIGNATORY_NAME_REQUIRED);
+        throw new BadRequestException(
+          COMPLIANCE_ERRORS.SIGNATORY_NAME_REQUIRED,
+        );
       }
 
       // Verify consent form exists and is active
-      const consentForm = await this.consentFormModel.findByPk(data.consentFormId, { transaction });
+      const consentForm = await this.consentFormModel.findByPk(
+        data.consentFormId,
+        { transaction },
+      );
 
       if (!consentForm) {
         throw new NotFoundException('Consent form not found');
@@ -147,7 +155,10 @@ export class ConsentService {
       }
 
       // Check if consent form has expired
-      if (consentForm.expiresAt && new Date(consentForm.expiresAt) < new Date()) {
+      if (
+        consentForm.expiresAt &&
+        new Date(consentForm.expiresAt) < new Date()
+      ) {
         throw new BadRequestException(COMPLIANCE_ERRORS.CONSENT_EXPIRED);
       }
 
@@ -171,22 +182,27 @@ export class ConsentService {
 
       // Validate digital signature data if provided
       if (data.signatureData) {
-        const validation = ComplianceUtils.validateSignatureData(data.signatureData);
+        const validation = ComplianceUtils.validateSignatureData(
+          data.signatureData,
+        );
         if (!validation.valid) {
           throw new BadRequestException(validation.error);
         }
       }
 
       // Create signature
-      const signature = await this.consentSignatureModel.create({
-        consentFormId: data.consentFormId,
-        studentId: data.studentId,
-        signedBy: data.signedBy.trim(),
-        relationship: data.relationship,
-        signatureData: data.signatureData,
-        ipAddress: data.ipAddress,
-        signedAt: new Date(),
-      }, { transaction });
+      const signature = await this.consentSignatureModel.create(
+        {
+          consentFormId: data.consentFormId,
+          studentId: data.studentId,
+          signedBy: data.signedBy.trim(),
+          relationship: data.relationship,
+          signatureData: data.signatureData,
+          ipAddress: data.ipAddress,
+          signedAt: new Date(),
+        },
+        { transaction },
+      );
 
       await transaction.commit();
 
@@ -213,10 +229,15 @@ export class ConsentService {
         order: [['signedAt', 'DESC']],
       });
 
-      this.logger.log(`Retrieved ${consents.length} consents for student ${studentId}`);
+      this.logger.log(
+        `Retrieved ${consents.length} consents for student ${studentId}`,
+      );
       return consents;
     } catch (error) {
-      this.logger.error(`Error getting consents for student ${studentId}:`, error);
+      this.logger.error(
+        `Error getting consents for student ${studentId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -225,10 +246,15 @@ export class ConsentService {
    * Withdraw consent with full audit trail
    * HIPAA Compliance: Honors right to revoke authorization per 45 CFR 164.508(b)(5)
    */
-  async withdrawConsent(signatureId: string, withdrawnBy: string): Promise<ConsentSignature> {
+  async withdrawConsent(
+    signatureId: string,
+    withdrawnBy: string,
+  ): Promise<ConsentSignature> {
     try {
       if (!withdrawnBy || withdrawnBy.trim().length < 2) {
-        throw new BadRequestException('Withdrawn by name is required for audit trail');
+        throw new BadRequestException(
+          'Withdrawn by name is required for audit trail',
+        );
       }
 
       const signature = await this.consentSignatureModel.findByPk(signatureId, {
@@ -240,7 +266,9 @@ export class ConsentService {
       }
 
       if (signature.withdrawnAt) {
-        throw new BadRequestException(COMPLIANCE_ERRORS.CONSENT_ALREADY_WITHDRAWN);
+        throw new BadRequestException(
+          COMPLIANCE_ERRORS.CONSENT_ALREADY_WITHDRAWN,
+        );
       }
 
       await signature.update({

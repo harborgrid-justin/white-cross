@@ -4,11 +4,7 @@
  * @description Transforms string dates to Date objects with validation
  */
 
-import {
-  PipeTransform,
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
 
 /**
  * Parse Date Pipe
@@ -61,7 +57,10 @@ export class ParseDatePipe implements PipeTransform<string | number, Date> {
 
   transform(value: string | number): Date {
     // Handle optional values - return current date as placeholder
-    if (this.options?.optional && (value === null || value === undefined || value === '')) {
+    if (
+      this.options?.optional &&
+      (value === null || value === undefined || value === '')
+    ) {
       return new Date(); // This will be filtered out by validation if needed
     }
 
@@ -109,20 +108,14 @@ export class ParseDatePipe implements PipeTransform<string | number, Date> {
     }
 
     // Handle string dates
-    if (typeof value === 'string') {
-      // ISO 8601 format
-      if (value.includes('T') || value.includes('Z')) {
-        return new Date(value);
-      }
-
-      // Date-only format (YYYY-MM-DD)
-      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        return new Date(value + 'T00:00:00.000Z');
-      }
-
-      // Try parsing as-is
+     // ISO 8601 format
+    if (value.includes('T') || value.includes('Z')) {
       return new Date(value);
     }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return new Date(value + 'T00:00:00.000Z');
+    }
+    return new Date(value);
 
     // Invalid type
     throw new BadRequestException(`Cannot parse date from: ${typeof value}`);
@@ -132,6 +125,6 @@ export class ParseDatePipe implements PipeTransform<string | number, Date> {
    * Check if date is valid
    */
   private isValidDate(date: Date): boolean {
-    return date instanceof Date && !isNaN(date.getTime());
+    return !isNaN(date.getTime());
   }
 }

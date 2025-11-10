@@ -17,16 +17,24 @@
  * - Push notification service (Firebase Cloud Messaging)
  */
 
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
-import { CreateAlertDto } from './dto/create-alert.dto';
-import { Alert, AlertSeverity, AlertCategory, AlertStatus } from '../database/models/alert.model';
-import { AlertPreferences, DeliveryChannel } from '../database/models/alert-preferences.model';
-import { DeliveryLog } from '../database/models/delivery-log.model';
+import { CreateAlertDto } from '@/alerts/dto';
+import {
+  Alert,
+  AlertCategory,
+  AlertPreferences,
+  AlertSeverity,
+  AlertStatus,
+  DeliveryChannel,
+  DeliveryLog,
+} from '@/database';
 import { Op } from 'sequelize';
 
-export { AlertSeverity, AlertCategory, AlertStatus, DeliveryChannel };
+// Note: AlertSeverity, AlertCategory exported from dto/create-alert.dto.ts
+// AlertStatus, DeliveryChannel exported from database models
+export { AlertStatus, DeliveryChannel };
 
 export interface AlertStatistics {
   totalAlerts: number;
@@ -43,14 +51,20 @@ export interface AlertStatistics {
  * Alert Exception Classes
  */
 export class AlertException extends HttpException {
-  constructor(message: string, status: number = HttpStatus.INTERNAL_SERVER_ERROR) {
+  constructor(
+    message: string,
+    status: number = HttpStatus.INTERNAL_SERVER_ERROR,
+  ) {
     super(message, status);
   }
 }
 
 export class AlertDeliveryException extends AlertException {
   constructor(channel: string, message: string) {
-    super(`${channel} delivery failed: ${message}`, HttpStatus.SERVICE_UNAVAILABLE);
+    super(
+      `${channel} delivery failed: ${message}`,
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
   }
 }
 
@@ -71,7 +85,7 @@ export class AlertsService {
     private readonly alertPreferencesModel: typeof AlertPreferences,
     @InjectModel(DeliveryLog)
     private readonly deliveryLogModel: typeof DeliveryLog,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -138,13 +152,24 @@ export class AlertsService {
         rooms.push('alerts:critical');
       }
 
-      this.logger.log(`Broadcasting alert ${alert.id} to rooms: ${rooms.join(', ')}`);
+      this.logger.log(
+        `Broadcasting alert ${alert.id} to rooms: ${rooms.join(', ')}`,
+      );
 
       // Log successful delivery
-      this.logDelivery(alert.id, DeliveryChannel.WEBSOCKET, undefined, true);
+      await this.logDelivery(alert.id, DeliveryChannel.WEBSOCKET, undefined, true);
     } catch (error: any) {
-      this.logger.error(`WebSocket delivery failed for alert ${alert.id}`, error);
-      this.logDelivery(alert.id, DeliveryChannel.WEBSOCKET, undefined, false, error.message);
+      this.logger.error(
+        `WebSocket delivery failed for alert ${alert.id}`,
+        error,
+      );
+      await this.logDelivery(
+        alert.id,
+        DeliveryChannel.WEBSOCKET,
+        undefined,
+        false,
+        error.message,
+      );
     }
   }
 
@@ -169,10 +194,16 @@ export class AlertsService {
       // Simulate email sending
       await this.simulateDelay(100);
 
-      this.logDelivery(alert.id, DeliveryChannel.EMAIL, userId, true);
+      await this.logDelivery(alert.id, DeliveryChannel.EMAIL, userId, true);
     } catch (error: any) {
       this.logger.error(`Email delivery failed for alert ${alert.id}`, error);
-      this.logDelivery(alert.id, DeliveryChannel.EMAIL, userId, false, error.message);
+      await this.logDelivery(
+        alert.id,
+        DeliveryChannel.EMAIL,
+        userId,
+        false,
+        error.message,
+      );
       throw new AlertDeliveryException('Email', error.message);
     }
   }
@@ -192,7 +223,7 @@ export class AlertsService {
       // Format SMS message (max 160 chars for best compatibility)
       const smsMessage = `[${alert.severity}] ${alert.title}: ${alert.message.substring(
         0,
-        100
+        100,
       )}`;
 
       this.logger.log(`Sending SMS alert ${alert.id} to user ${userId}`);
@@ -201,10 +232,16 @@ export class AlertsService {
       // Simulate SMS sending
       await this.simulateDelay(150);
 
-      this.logDelivery(alert.id, DeliveryChannel.SMS, userId, true);
+      await this.logDelivery(alert.id, DeliveryChannel.SMS, userId, true);
     } catch (error: any) {
       this.logger.error(`SMS delivery failed for alert ${alert.id}`, error);
-      this.logDelivery(alert.id, DeliveryChannel.SMS, userId, false, error.message);
+      await this.logDelivery(
+        alert.id,
+        DeliveryChannel.SMS,
+        userId,
+        false,
+        error.message,
+      );
       throw new AlertDeliveryException('SMS', error.message);
     }
   }
@@ -233,16 +270,32 @@ export class AlertsService {
         },
       };
 
-      this.logger.log(`Sending push notification for alert ${alert.id} to user ${userId}`);
+      this.logger.log(
+        `Sending push notification for alert ${alert.id} to user ${userId}`,
+      );
       this.logger.debug(`Push payload: ${JSON.stringify(pushPayload)}`);
 
       // Simulate push notification sending
       await this.simulateDelay(120);
 
-      this.logDelivery(alert.id, DeliveryChannel.PUSH_NOTIFICATION, userId, true);
+      await this.logDelivery(
+        alert.id,
+        DeliveryChannel.PUSH_NOTIFICATION,
+        userId,
+        true,
+      );
     } catch (error: any) {
-      this.logger.error(`Push notification delivery failed for alert ${alert.id}`, error);
-      this.logDelivery(alert.id, DeliveryChannel.PUSH_NOTIFICATION, userId, false, error.message);
+      this.logger.error(
+        `Push notification delivery failed for alert ${alert.id}`,
+        error,
+      );
+      await this.logDelivery(
+        alert.id,
+        DeliveryChannel.PUSH_NOTIFICATION,
+        userId,
+        false,
+        error.message,
+      );
       throw new AlertDeliveryException('Push Notification', error.message);
     }
   }
@@ -274,7 +327,11 @@ export class AlertsService {
   /**
    * Resolve an alert
    */
-  async resolveAlert(alertId: string, userId: string, notes?: string): Promise<Alert> {
+  async resolveAlert(
+    alertId: string,
+    userId: string,
+    notes?: string,
+  ): Promise<Alert> {
     const alert = await this.alertModel.findByPk(alertId);
 
     if (!alert) {
@@ -325,14 +382,17 @@ export class AlertsService {
       }
 
       // Get the alert
-      const alert = log.alert || await this.alertModel.findByPk(log.alertId);
+      const alert = log.alert || (await this.alertModel.findByPk(log.alertId));
       if (!alert) continue;
 
       try {
         await this.retryDelivery(alert, log.channel, log.recipientId);
         retriedCount++;
       } catch (error) {
-        this.logger.error(`Retry failed for alert ${log.alertId} on ${log.channel}`, error);
+        this.logger.error(
+          `Retry failed for alert ${log.alertId} on ${log.channel}`,
+          error,
+        );
       }
     }
 
@@ -366,7 +426,7 @@ export class AlertsService {
    */
   async updateUserAlertPreferences(
     userId: string,
-    preferences: Partial<AlertPreferences>
+    preferences: Partial<AlertPreferences>,
   ): Promise<AlertPreferences> {
     const existing = await this.getUserAlertPreferences(userId);
 
@@ -381,14 +441,14 @@ export class AlertsService {
   /**
    * Get user alerts with filtering
    */
-  async getUserAlerts(userId: string, filterDto: any): Promise<{ data: Alert[]; total: number; page: number; limit: number }> {
+  async getUserAlerts(
+    userId: string,
+    filterDto: any,
+  ): Promise<{ data: Alert[]; total: number; page: number; limit: number }> {
     const { page = 1, limit = 20, unreadOnly = false } = filterDto;
 
     const where: any = {
-      [Op.or]: [
-        { userId },
-        { schoolId: { [Op.ne]: null } },
-      ],
+      [Op.or]: [{ userId }, { schoolId: { [Op.ne]: null } }],
     };
 
     if (unreadOnly) {
@@ -434,11 +494,12 @@ export class AlertsService {
   /**
    * Update user preferences
    */
-  async updatePreferences(userId: string, updateDto: any): Promise<AlertPreferences> {
+  async updatePreferences(
+    userId: string,
+    updateDto: any,
+  ): Promise<AlertPreferences> {
     return this.updateUserAlertPreferences(userId, updateDto);
   }
-
-
 
   /**
    * Get alert statistics
@@ -450,7 +511,8 @@ export class AlertsService {
     if (filters) {
       if (filters.schoolId) where.schoolId = filters.schoolId;
       if (filters.startDate) where.createdAt = { [Op.gte]: filters.startDate };
-      if (filters.endDate) where.createdAt = { ...where.createdAt, [Op.lte]: filters.endDate };
+      if (filters.endDate)
+        where.createdAt = { ...where.createdAt, [Op.lte]: filters.endDate };
     }
 
     const alerts = await this.alertModel.findAll({ where });
@@ -473,10 +535,12 @@ export class AlertsService {
 
     for (const alert of alerts) {
       // Count by severity
-      stats.bySeverity[alert.severity] = (stats.bySeverity[alert.severity] || 0) + 1;
+      stats.bySeverity[alert.severity] =
+        (stats.bySeverity[alert.severity] || 0) + 1;
 
       // Count by category
-      stats.byCategory[alert.category] = (stats.byCategory[alert.category] || 0) + 1;
+      stats.byCategory[alert.category] =
+        (stats.byCategory[alert.category] || 0) + 1;
 
       // Count by status
       stats.byStatus[alert.status] = (stats.byStatus[alert.status] || 0) + 1;
@@ -491,7 +555,8 @@ export class AlertsService {
 
       // Calculate resolution time
       if (alert.resolvedAt && alert.createdAt) {
-        const resTime = (alert.resolvedAt.getTime() - alert.createdAt.getTime()) / 60000; // minutes
+        const resTime =
+          (alert.resolvedAt.getTime() - alert.createdAt.getTime()) / 60000; // minutes
         totalResTime += resTime;
         resCount++;
       }
@@ -499,7 +564,8 @@ export class AlertsService {
       // Count unacknowledged critical
       if (
         !alert.acknowledgedAt &&
-        (alert.severity === AlertSeverity.CRITICAL || alert.severity === AlertSeverity.EMERGENCY)
+        (alert.severity === AlertSeverity.CRITICAL ||
+          alert.severity === AlertSeverity.EMERGENCY)
       ) {
         stats.unacknowledgedCritical++;
       }
@@ -510,7 +576,8 @@ export class AlertsService {
       }
     }
 
-    stats.averageAcknowledgmentTime = ackCount > 0 ? totalAckTime / ackCount : 0;
+    stats.averageAcknowledgmentTime =
+      ackCount > 0 ? totalAckTime / ackCount : 0;
     stats.averageResolutionTime = resCount > 0 ? totalResTime / resCount : 0;
 
     return stats;
@@ -521,7 +588,9 @@ export class AlertsService {
   /**
    * Get subscribers for an alert based on preferences
    */
-  private async getSubscribersForAlert(alert: Alert): Promise<AlertPreferences[]> {
+  private async getSubscribersForAlert(
+    alert: Alert,
+  ): Promise<AlertPreferences[]> {
     // Get all active preferences that match the alert filters
     const allPrefs = await this.alertPreferencesModel.findAll({
       where: {
@@ -536,9 +605,7 @@ export class AlertsService {
     });
 
     // Filter out those in quiet hours
-    const subscribers = allPrefs.filter(prefs => !prefs.isQuietHours());
-
-    return subscribers;
+    return allPrefs.filter((prefs) => !prefs.isQuietHours());
   }
 
   /**
@@ -546,7 +613,7 @@ export class AlertsService {
    */
   private async deliverToSubscribers(
     alert: Alert,
-    subscribers: AlertPreferences[]
+    subscribers: AlertPreferences[],
   ): Promise<void> {
     for (const subscriber of subscribers) {
       for (const channel of subscriber.channels) {
@@ -568,7 +635,7 @@ export class AlertsService {
         } catch (error) {
           this.logger.error(
             `Failed to deliver alert ${alert.id} to ${subscriber.userId} via ${channel}`,
-            error
+            error,
           );
         }
       }
@@ -581,7 +648,7 @@ export class AlertsService {
   private async retryDelivery(
     alert: Alert,
     channel: DeliveryChannel,
-    recipientId?: string
+    recipientId?: string,
   ): Promise<void> {
     this.logger.log(`Retrying delivery for alert ${alert.id} via ${channel}`);
 
@@ -609,7 +676,7 @@ export class AlertsService {
     channel: DeliveryChannel,
     recipientId: string | undefined,
     success: boolean,
-    errorMessage?: string
+    errorMessage?: string,
   ): Promise<void> {
     // Try to find existing log for this alert/channel/recipient combination
     const existingLog = await this.deliveryLogModel.findOne({
@@ -647,24 +714,34 @@ export class AlertsService {
     }
   }
 
-
   /**
    * Schedule auto-escalation
    */
   private scheduleAutoEscalation(alertId: string, delayMinutes: number): void {
-    this.logger.log(`Scheduling auto-escalation for alert ${alertId} in ${delayMinutes} minutes`);
+    this.logger.log(
+      `Scheduling auto-escalation for alert ${alertId} in ${delayMinutes} minutes`,
+    );
 
-    setTimeout(async () => {
-      const alert = await this.alertModel.findByPk(alertId);
-      if (alert && alert.status === AlertStatus.ACTIVE && !alert.acknowledgedAt) {
-        alert.escalationLevel = (alert.escalationLevel || 0) + 1;
-        await alert.save();
-        this.logger.warn(`Alert ${alertId} auto-escalated to level ${alert.escalationLevel}`);
-        // Re-deliver to subscribers
-        const subscribers = await this.getSubscribersForAlert(alert);
-        await this.deliverToSubscribers(alert, subscribers);
-      }
-    }, delayMinutes * 60 * 1000);
+    setTimeout(
+      async () => {
+        const alert = await this.alertModel.findByPk(alertId);
+        if (
+          alert &&
+          alert.status === AlertStatus.ACTIVE &&
+          !alert.acknowledgedAt
+        ) {
+          alert.escalationLevel = (alert.escalationLevel || 0) + 1;
+          await alert.save();
+          this.logger.warn(
+            `Alert ${alertId} auto-escalated to level ${alert.escalationLevel}`,
+          );
+          // Re-deliver to subscribers
+          const subscribers = await this.getSubscribersForAlert(alert);
+          await this.deliverToSubscribers(alert, subscribers);
+        }
+      },
+      delayMinutes * 60 * 1000,
+    );
   }
 
   /**

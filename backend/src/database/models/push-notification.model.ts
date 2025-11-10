@@ -1,24 +1,23 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum NotificationPriority {
-  CRITICAL = 'CRITICAL',   // Immediate delivery, sound, vibration
-  HIGH = 'HIGH',           // High priority, sound
-  NORMAL = 'NORMAL',       // Normal delivery
-  LOW = 'LOW'              // Low priority, no sound
+  CRITICAL = 'CRITICAL', // Immediate delivery, sound, vibration
+  HIGH = 'HIGH', // High priority, sound
+  NORMAL = 'NORMAL', // Normal delivery
+  LOW = 'LOW', // Low priority, no sound
 }
 
 export enum NotificationCategory {
@@ -31,7 +30,7 @@ export enum NotificationCategory {
   EMERGENCY = 'EMERGENCY',
   REMINDER = 'REMINDER',
   ALERT = 'ALERT',
-  SYSTEM = 'SYSTEM'
+  SYSTEM = 'SYSTEM',
 }
 
 export enum NotificationStatus {
@@ -40,7 +39,7 @@ export enum NotificationStatus {
   SENDING = 'SENDING',
   DELIVERED = 'DELIVERED',
   FAILED = 'FAILED',
-  EXPIRED = 'EXPIRED'
+  EXPIRED = 'EXPIRED',
 }
 
 export enum DeliveryStatus {
@@ -48,7 +47,7 @@ export enum DeliveryStatus {
   FAILED = 'FAILED',
   INVALID_TOKEN = 'INVALID_TOKEN',
   RATE_LIMITED = 'RATE_LIMITED',
-  TIMEOUT = 'TIMEOUT'
+  TIMEOUT = 'TIMEOUT',
 }
 
 /**
@@ -149,10 +148,10 @@ export interface PushNotificationCreationAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'push_notifications',
@@ -160,25 +159,28 @@ export interface PushNotificationCreationAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['status']
-  },
+      fields: ['status'],
+    },
     {
-      fields: ['category']
-  },
-    {
-      fields: ['createdAt']
-  },
+      fields: ['category'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_push_notification_created_at'
+    },
+    {
+      fields: ['createdAt'],
+      name: 'idx_push_notification_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_push_notification_updated_at'
-    }
-  ]
-  })
-export class PushNotification extends Model<PushNotificationAttributes, PushNotificationCreationAttributes> implements PushNotificationAttributes {
+      name: 'idx_push_notification_updated_at',
+    },
+  ],
+})
+export class PushNotification
+  extends Model<PushNotificationAttributes, PushNotificationCreationAttributes>
+  implements PushNotificationAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -187,35 +189,35 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   // Recipients
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   userIds: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   deviceTokens?: string[];
 
   // Content
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   body: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(NotificationCategory)]
+      isIn: [Object.values(NotificationCategory)],
     },
-    allowNull: false
+    allowNull: false,
   })
   @Index
   category: NotificationCategory;
@@ -223,10 +225,10 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(NotificationPriority)]
+      isIn: [Object.values(NotificationPriority)],
     },
     allowNull: false,
-    defaultValue: NotificationPriority.NORMAL
+    defaultValue: NotificationPriority.NORMAL,
   })
   priority: NotificationPriority;
 
@@ -243,13 +245,13 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   // Presentation
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   imageUrl?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   iconUrl?: string;
 
@@ -268,34 +270,34 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   collapseKey?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   requireInteraction: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   silent: boolean;
 
   // Scheduling
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   scheduledFor?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   expiresAt?: Date;
 
@@ -303,29 +305,29 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(NotificationStatus)]
+      isIn: [Object.values(NotificationStatus)],
     },
     allowNull: false,
-    defaultValue: NotificationStatus.PENDING
+    defaultValue: NotificationStatus.PENDING,
   })
   @Index
   status: NotificationStatus;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   sentAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   deliveredAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   failedAt?: Date;
 
@@ -333,7 +335,7 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.JSON,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
   })
   deliveryResults: NotificationDeliveryResult[];
 
@@ -341,35 +343,35 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   totalRecipients: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   successfulDeliveries: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   failedDeliveries: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   clickedCount: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   dismissedCount: number;
 
@@ -377,27 +379,27 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   retryCount: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 3
+    defaultValue: 3,
   })
   maxRetries: number;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   nextRetryAt?: Date;
 
   // Metadata
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   createdBy: string;
 
@@ -407,14 +409,15 @@ export class PushNotification extends Model<PushNotificationAttributes, PushNoti
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PushNotification) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] PushNotification ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] PushNotification ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

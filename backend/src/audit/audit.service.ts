@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import {
-  AuditLogService,
-  PHIAccessService,
-  AuditQueryService,
-  ComplianceReportingService,
-  AuditStatisticsService,
-  SecurityAnalysisService,
-  AuditUtilsService,
-} from './services';
-import { IAuditLogEntry, IPHIAccessLog } from './interfaces';
-import { AuditAction } from './enums';
+import { AuditLogService } from './services/audit-log.service';
+import { AuditQueryService } from './services/audit-query.service';
+import { AuditStatisticsService } from './services/audit-statistics.service';
+import { AuditUtilsService } from './services/audit-utils.service';
+import { ComplianceReportingService } from './services/compliance-reporting.service';
+import { PHIAccessService } from './services/phi-access.service';
+import { SecurityAnalysisService } from './services/security-analysis.service';
+import { IAuditLogEntry } from './interfaces/audit-log-entry.interface';
+import { IPHIAccessLog } from './interfaces/phi-access-log.interface';
+import { AuditLogFilters, AuditLogSearchCriteria, AuditRequest, PHIAccessLogFilters, ValidationResult } from './types/audit.types';
 
 /**
  * Unified Audit Service Facade
@@ -68,7 +67,7 @@ export class AuditService {
   /**
    * Get audit logs with filtering and pagination
    */
-  async getAuditLogs(filters: any = {}) {
+  async getAuditLogs(filters: AuditLogFilters = {}) {
     return this.auditQueryService.getAuditLogs(filters);
   }
 
@@ -81,28 +80,47 @@ export class AuditService {
     page: number = 1,
     limit: number = 20,
   ) {
-    return this.auditQueryService.getEntityAuditHistory(entityType, entityId, page, limit);
+    return this.auditQueryService.getEntityAuditHistory(
+      entityType,
+      entityId,
+      page,
+      limit,
+    );
   }
 
   /**
    * Get audit logs for a specific user
    */
-  async getUserAuditHistory(userId: string, page: number = 1, limit: number = 20) {
+  async getUserAuditHistory(
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
     return this.auditQueryService.getUserAuditHistory(userId, page, limit);
   }
 
   /**
    * Search audit logs by keyword
    */
-  async searchAuditLogs(criteria: any) {
+  async searchAuditLogs(criteria: AuditLogSearchCriteria) {
     return this.auditQueryService.searchAuditLogs(criteria);
   }
 
   /**
    * Get audit logs by date range
    */
-  async getAuditLogsByDateRange(startDate: Date, endDate: Date, page: number = 1, limit: number = 50) {
-    return this.auditQueryService.getAuditLogsByDateRange(startDate, endDate, page, limit);
+  async getAuditLogsByDateRange(
+    startDate: Date,
+    endDate: Date,
+    page: number = 1,
+    limit: number = 50,
+  ) {
+    return this.auditQueryService.getAuditLogsByDateRange(
+      startDate,
+      endDate,
+      page,
+      limit,
+    );
   }
 
   // ========== PHI ACCESS LOGS ==========
@@ -110,21 +128,33 @@ export class AuditService {
   /**
    * Get PHI access logs with filtering and pagination
    */
-  async getPHIAccessLogs(filters: any = {}) {
+  async getPHIAccessLogs(filters: PHIAccessLogFilters = {}) {
     return this.phiAccessService.getPHIAccessLogs(filters);
   }
 
   /**
    * Get PHI access logs for a specific student
    */
-  async getStudentPHIAccessLogs(studentId: string, page: number = 1, limit: number = 20) {
-    return this.phiAccessService.getStudentPHIAccessLogs(studentId, page, limit);
+  async getStudentPHIAccessLogs(
+    studentId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    return this.phiAccessService.getStudentPHIAccessLogs(
+      studentId,
+      page,
+      limit,
+    );
   }
 
   /**
    * Get PHI access logs for a specific user
    */
-  async getUserPHIAccessLogs(userId: string, page: number = 1, limit: number = 20) {
+  async getUserPHIAccessLogs(
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
     return this.phiAccessService.getUserPHIAccessLogs(userId, page, limit);
   }
 
@@ -181,28 +211,28 @@ export class AuditService {
   /**
    * Validate audit log entry data
    */
-  validateAuditEntry(entry: any) {
+  validateAuditEntry(entry: Partial<IAuditLogEntry>): ValidationResult {
     return this.utilsService.validateAuditEntry(entry);
   }
 
   /**
    * Validate PHI access log entry
    */
-  validatePHIEntry(entry: any) {
+  validatePHIEntry(entry: Partial<IPHIAccessLog>): ValidationResult {
     return this.utilsService.validatePHIEntry(entry);
   }
 
   /**
    * Extract IP address from request object
    */
-  extractIPAddress(req: any) {
+  extractIPAddress(req: AuditRequest | string): string | undefined {
     return this.utilsService.extractIPAddress(req);
   }
 
   /**
    * Extract user agent from request object
    */
-  extractUserAgent(req: any) {
+  extractUserAgent(req: AuditRequest | string): string | undefined {
     return this.utilsService.extractUserAgent(req);
   }
 }

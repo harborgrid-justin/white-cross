@@ -5,6 +5,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  HealthMetricSnapshot
-} from '../../database/models/health-metric-snapshot.model';
+export { HealthMetricSnapshot } from '../../database/models/health-metric-snapshot.model';

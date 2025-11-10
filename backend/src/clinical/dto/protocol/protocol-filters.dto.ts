@@ -1,4 +1,4 @@
-import { IsOptional, IsEnum, IsInt, Min, Max, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ProtocolStatus } from '../../enums/protocol-status.enum';
@@ -7,7 +7,10 @@ import { ProtocolStatus } from '../../enums/protocol-status.enum';
  * DTO for filtering clinical protocols
  */
 export class ProtocolFiltersDto {
-  @ApiPropertyOptional({ description: 'Filter by status', enum: ProtocolStatus })
+  @ApiPropertyOptional({
+    description: 'Filter by status',
+    enum: ProtocolStatus,
+  })
   @IsEnum(ProtocolStatus)
   @IsOptional()
   status?: ProtocolStatus;
@@ -27,12 +30,20 @@ export class ProtocolFiltersDto {
   @IsOptional()
   tag?: string;
 
-  @ApiPropertyOptional({ description: 'Show only active protocols', default: false })
+  @ApiPropertyOptional({
+    description: 'Show only active protocols',
+    default: false,
+  })
   @Type(() => Boolean)
   @IsOptional()
   activeOnly?: boolean;
 
-  @ApiPropertyOptional({ description: 'Number of results to return', minimum: 1, maximum: 100, default: 20 })
+  @ApiPropertyOptional({
+    description: 'Number of results to return',
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(1)
@@ -40,7 +51,11 @@ export class ProtocolFiltersDto {
   @IsOptional()
   limit?: number = 20;
 
-  @ApiPropertyOptional({ description: 'Number of results to skip', minimum: 0, default: 0 })
+  @ApiPropertyOptional({
+    description: 'Number of results to skip',
+    minimum: 0,
+    default: 0,
+  })
   @Type(() => Number)
   @IsInt()
   @Min(0)

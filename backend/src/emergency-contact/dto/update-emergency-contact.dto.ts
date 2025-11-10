@@ -5,24 +5,19 @@
  * All fields are optional to support partial updates.
  */
 import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  IsArray,
-  MinLength,
-  MaxLength,
-  Matches,
   ArrayMinSize,
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  ContactPriority,
-  PreferredContactMethod,
-  VerificationStatus,
-  NotificationChannel,
-} from '../../contact/enums';
+import { ContactPriority, NotificationChannel, PreferredContactMethod, VerificationStatus } from '@/contact';
 
 export class EmergencyContactUpdateDto {
   @ApiPropertyOptional({
@@ -68,7 +63,8 @@ export class EmergencyContactUpdateDto {
   @IsOptional()
   @IsString()
   @Matches(/^[\d\s\-().+]+$/, {
-    message: 'Phone number must contain only digits, spaces, hyphens, parentheses, or plus sign',
+    message:
+      'Phone number must contain only digits, spaces, hyphens, parentheses, or plus sign',
   })
   phoneNumber?: string;
 

@@ -22,9 +22,10 @@
  *
  * @class WsExceptionFilter
  */
-import { Catch, ArgumentsHost, Logger } from '@nestjs/common';
+import { ArgumentsHost, Catch, Logger } from '@nestjs/common';
 import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
+import type { JsonValue } from '@/infrastructure/websocket';
 
 /**
  * Error types for standardized error responses
@@ -42,6 +43,15 @@ export enum WsErrorType {
 }
 
 /**
+ * Error object structure from WsException
+ */
+interface WsErrorObject {
+  type?: string;
+  message?: string;
+  details?: JsonValue;
+}
+
+/**
  * Standardized error response interface
  */
 export interface WsErrorResponse {
@@ -49,7 +59,7 @@ export interface WsErrorResponse {
   message: string;
   timestamp: string;
   requestId?: string;
-  details?: any;
+  details?: JsonValue;
 }
 
 @Catch()
@@ -64,7 +74,6 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
    */
   catch(exception: unknown, host: ArgumentsHost): void {
     const client = host.switchToWs().getClient<Socket>();
-    const data = host.switchToWs().getData();
     const pattern = host.switchToWs().getPattern();
 
     // Extract user information for logging (if available)
@@ -89,7 +98,7 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
     // Optionally disconnect client for critical errors
     if (this.shouldDisconnect(exception)) {
       this.logger.warn(
-        `Disconnecting client ${client.id} (user: ${userId}) due to critical error`
+        `Disconnecting client ${client.id} (user: ${userId}) due to critical error`,
       );
       client.disconnect();
     }
@@ -117,11 +126,12 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
       }
 
       if (typeof error === 'object' && error !== null) {
+        const errorObj = error as WsErrorObject;
         return {
-          type: (error as any).type || WsErrorType.BAD_REQUEST,
-          message: (error as any).message || 'An error occurred',
+          type: errorObj.type || WsErrorType.BAD_REQUEST,
+          message: errorObj.message || 'An error occurred',
           timestamp,
-          details: (error as any).details,
+          details: errorObj.details,
         };
       }
     }
@@ -231,7 +241,7 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
       organizationId: string;
       pattern: string;
       errorType: string;
-    }
+    },
   ): void {
     const logContext = {
       socketId: context.socketId,
@@ -245,12 +255,12 @@ export class WsExceptionFilter extends BaseWsExceptionFilter {
       this.logger.error(
         `WebSocket Error: ${exception.message}`,
         exception.stack,
-        JSON.stringify(logContext)
+        JSON.stringify(logContext),
       );
     } else {
       this.logger.error(
         `WebSocket Error: ${String(exception)}`,
-        JSON.stringify(logContext)
+        JSON.stringify(logContext),
       );
     }
 

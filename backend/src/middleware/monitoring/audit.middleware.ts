@@ -23,8 +23,8 @@
  * LLM Context: HIPAA compliance, PHI access logging, healthcare audit requirements
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 
 /**
  * Audit event types
@@ -59,7 +59,7 @@ export enum AuditEventType {
   ALLERGY_UPDATED = 'ALLERGY_UPDATED',
   EMERGENCY_CONTACT_ACCESSED = 'EMERGENCY_CONTACT_ACCESSED',
   HEALTH_RECORD_VIEWED = 'HEALTH_RECORD_VIEWED',
-  VACCINATION_RECORDED = 'VACCINATION_RECORDED'
+  VACCINATION_RECORDED = 'VACCINATION_RECORDED',
 }
 
 /**
@@ -69,7 +69,7 @@ export enum AuditSeverity {
   INFO = 'INFO',
   WARNING = 'WARNING',
   ERROR = 'ERROR',
-  CRITICAL = 'CRITICAL'
+  CRITICAL = 'CRITICAL',
 }
 
 /**
@@ -137,10 +137,10 @@ export const AUDIT_CONFIGS = {
       AuditEventType.PHI_MODIFIED,
       AuditEventType.PHI_EXPORTED,
       AuditEventType.EMERGENCY_ACCESS,
-      AuditEventType.LOGIN_FAILED
+      AuditEventType.LOGIN_FAILED,
     ],
     excludedPaths: ['/health', '/metrics', '/favicon.ico'],
-    maxAuditHistory: 100000
+    maxAuditHistory: 100000,
   } as AuditConfig,
 
   // Development settings
@@ -151,7 +151,7 @@ export const AUDIT_CONFIGS = {
     enableRealTimeAlerts: false,
     sensitiveActions: [AuditEventType.LOGIN_FAILED],
     excludedPaths: ['/health', '/metrics', '/favicon.ico', '/api/docs'],
-    maxAuditHistory: 1000
+    maxAuditHistory: 1000,
   } as AuditConfig,
 
   // Production settings
@@ -166,11 +166,11 @@ export const AUDIT_CONFIGS = {
       AuditEventType.PHI_EXPORTED,
       AuditEventType.EMERGENCY_ACCESS,
       AuditEventType.ACCESS_DENIED,
-      AuditEventType.LOGIN_FAILED
+      AuditEventType.LOGIN_FAILED,
     ],
     excludedPaths: ['/health', '/metrics'],
-    maxAuditHistory: 500000
-  } as AuditConfig
+    maxAuditHistory: 500000,
+  } as AuditConfig,
 };
 
 /**
@@ -193,9 +193,12 @@ export class AuditMiddleware implements NestMiddleware {
     this.config = AUDIT_CONFIGS.healthcare;
 
     // Start periodic cleanup
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupOldEvents();
-    }, 24 * 60 * 60 * 1000); // Daily cleanup
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupOldEvents();
+      },
+      24 * 60 * 60 * 1000,
+    ); // Daily cleanup
   }
 
   /**
@@ -203,7 +206,7 @@ export class AuditMiddleware implements NestMiddleware {
    */
   use(req: Request, res: Response, next: NextFunction): void {
     // Skip excluded paths
-    if (this.config.excludedPaths.some(path => req.path.includes(path))) {
+    if (this.config.excludedPaths.some((path) => req.path.includes(path))) {
       return next();
     }
 
@@ -232,10 +235,10 @@ export class AuditMiddleware implements NestMiddleware {
         details: {
           method: req.method,
           query: req.query,
-          timestamp: new Date().toISOString()
-        }
-      }
-    ).catch(err => {
+          timestamp: new Date().toISOString(),
+        },
+      },
+    ).catch((err) => {
       this.logger.error('Failed to log audit event', err);
     });
 
@@ -262,7 +265,7 @@ export class AuditMiddleware implements NestMiddleware {
       studentId?: string;
       reasoning?: string;
       error?: string;
-    }
+    },
   ): Promise<void> {
     const eventId = this.generateEventId();
     const severity = this.determineSeverity(eventType, result);
@@ -274,18 +277,19 @@ export class AuditMiddleware implements NestMiddleware {
       severity,
       action,
       result,
-      ...context
+      ...context,
     };
 
     // Store the event
     this.auditEvents.push(auditEvent);
 
     // Log to NestJS logger
-    const logLevel = severity === AuditSeverity.CRITICAL || severity === AuditSeverity.ERROR
-      ? 'error'
-      : severity === AuditSeverity.WARNING
-        ? 'warn'
-        : 'log';
+    const logLevel =
+      severity === AuditSeverity.CRITICAL || severity === AuditSeverity.ERROR
+        ? 'error'
+        : severity === AuditSeverity.WARNING
+          ? 'warn'
+          : 'log';
 
     this.logger[logLevel]('Audit Event', {
       eventId,
@@ -299,7 +303,7 @@ export class AuditMiddleware implements NestMiddleware {
       resource: context.resource,
       phiAccessed: context.phiAccessed,
       studentId: context.studentId,
-      error: context.error
+      error: context.error,
     });
 
     // Handle PHI tracking
@@ -327,18 +331,25 @@ export class AuditMiddleware implements NestMiddleware {
     userId?: string,
     email?: string,
     userAgent?: string,
-    error?: string
+    error?: string,
   ): Promise<void> {
-    const eventType = success ? AuditEventType.LOGIN : AuditEventType.LOGIN_FAILED;
+    const eventType = success
+      ? AuditEventType.LOGIN
+      : AuditEventType.LOGIN_FAILED;
 
-    await this.logEvent(eventType, 'User Authentication', success ? 'SUCCESS' : 'FAILURE', {
-      userId,
-      userEmail: email,
-      ipAddress,
-      userAgent,
-      error,
-      details: { timestamp: new Date().toISOString() }
-    });
+    await this.logEvent(
+      eventType,
+      'User Authentication',
+      success ? 'SUCCESS' : 'FAILURE',
+      {
+        userId,
+        userEmail: email,
+        ipAddress,
+        userAgent,
+        error,
+        details: { timestamp: new Date().toISOString() },
+      },
+    );
   }
 
   /**
@@ -352,7 +363,7 @@ export class AuditMiddleware implements NestMiddleware {
     userRole: string,
     ipAddress: string,
     resource: string,
-    reasoning?: string
+    reasoning?: string,
   ): Promise<void> {
     let eventType: AuditEventType;
 
@@ -386,8 +397,8 @@ export class AuditMiddleware implements NestMiddleware {
       details: {
         action,
         timestamp: new Date().toISOString(),
-        resource
-      }
+        resource,
+      },
     });
   }
 
@@ -400,22 +411,27 @@ export class AuditMiddleware implements NestMiddleware {
     userRole: string,
     studentId: string,
     ipAddress: string,
-    reasoning: string
+    reasoning: string,
   ): Promise<void> {
-    await this.logEvent(AuditEventType.EMERGENCY_ACCESS, 'Emergency PHI Access', 'SUCCESS', {
-      userId,
-      userEmail,
-      userRole,
-      ipAddress,
-      resource: `student/${studentId}`,
-      phiAccessed: true,
-      studentId,
-      reasoning,
-      details: {
-        emergencyAccess: true,
-        timestamp: new Date().toISOString()
-      }
-    });
+    await this.logEvent(
+      AuditEventType.EMERGENCY_ACCESS,
+      'Emergency PHI Access',
+      'SUCCESS',
+      {
+        userId,
+        userEmail,
+        userRole,
+        ipAddress,
+        resource: `student/${studentId}`,
+        phiAccessed: true,
+        studentId,
+        reasoning,
+        details: {
+          emergencyAccess: true,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    );
   }
 
   /**
@@ -427,20 +443,25 @@ export class AuditMiddleware implements NestMiddleware {
     userRole: string,
     resource: string,
     ipAddress: string,
-    reason: string
+    reason: string,
   ): Promise<void> {
-    await this.logEvent(AuditEventType.ACCESS_DENIED, 'Access Denied', 'FAILURE', {
-      userId,
-      userEmail,
-      userRole,
-      ipAddress,
-      resource,
-      error: reason,
-      details: {
-        deniedReason: reason,
-        timestamp: new Date().toISOString()
-      }
-    });
+    await this.logEvent(
+      AuditEventType.ACCESS_DENIED,
+      'Access Denied',
+      'FAILURE',
+      {
+        userId,
+        userEmail,
+        userRole,
+        ipAddress,
+        resource,
+        error: reason,
+        details: {
+          deniedReason: reason,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    );
   }
 
   /**
@@ -450,27 +471,29 @@ export class AuditMiddleware implements NestMiddleware {
     const now = Date.now();
     const windowStart = timeWindow ? now - timeWindow : 0;
 
-    const relevantEvents = this.auditEvents.filter(e =>
-      e.timestamp >= windowStart
+    const relevantEvents = this.auditEvents.filter(
+      (e) => e.timestamp >= windowStart,
     );
 
-    const phiAccess = relevantEvents.filter(e => e.phiAccessed).length;
-    const failedAttempts = relevantEvents.filter(e => e.result === 'FAILURE').length;
-    const emergencyAccess = relevantEvents.filter(e =>
-      e.eventType === AuditEventType.EMERGENCY_ACCESS
+    const phiAccess = relevantEvents.filter((e) => e.phiAccessed).length;
+    const failedAttempts = relevantEvents.filter(
+      (e) => e.result === 'FAILURE',
     ).length;
-    const criticalEvents = relevantEvents.filter(e =>
-      e.severity === AuditSeverity.CRITICAL
+    const emergencyAccess = relevantEvents.filter(
+      (e) => e.eventType === AuditEventType.EMERGENCY_ACCESS,
+    ).length;
+    const criticalEvents = relevantEvents.filter(
+      (e) => e.severity === AuditSeverity.CRITICAL,
     ).length;
 
     const uniqueUsers = new Set(
-      relevantEvents.map(e => e.userId).filter(Boolean)
+      relevantEvents.map((e) => e.userId).filter(Boolean),
     ).size;
 
-    const timestamps = relevantEvents.map(e => e.timestamp);
+    const timestamps = relevantEvents.map((e) => e.timestamp);
     const timeRange = {
       start: timestamps.length > 0 ? Math.min(...timestamps) : now,
-      end: timestamps.length > 0 ? Math.max(...timestamps) : now
+      end: timestamps.length > 0 ? Math.max(...timestamps) : now,
     };
 
     return {
@@ -480,7 +503,7 @@ export class AuditMiddleware implements NestMiddleware {
       emergencyAccess,
       criticalEvents,
       uniqueUsers,
-      timeRange
+      timeRange,
     };
   }
 
@@ -489,7 +512,7 @@ export class AuditMiddleware implements NestMiddleware {
    */
   getEventsByType(eventType: AuditEventType, limit = 100): AuditEvent[] {
     return this.auditEvents
-      .filter(e => e.eventType === eventType)
+      .filter((e) => e.eventType === eventType)
       .slice(-limit);
   }
 
@@ -497,19 +520,17 @@ export class AuditMiddleware implements NestMiddleware {
    * Get events by user
    */
   getEventsByUser(userId: string, limit = 100): AuditEvent[] {
-    return this.auditEvents
-      .filter(e => e.userId === userId)
-      .slice(-limit);
+    return this.auditEvents.filter((e) => e.userId === userId).slice(-limit);
   }
 
   /**
    * Get PHI access events
    */
   getPHIAccessEvents(studentId?: string, limit = 100): AuditEvent[] {
-    let events = this.auditEvents.filter(e => e.phiAccessed);
+    let events = this.auditEvents.filter((e) => e.phiAccessed);
 
     if (studentId) {
-      events = events.filter(e => e.studentId === studentId);
+      events = events.filter((e) => e.studentId === studentId);
     }
 
     return events.slice(-limit);
@@ -519,34 +540,45 @@ export class AuditMiddleware implements NestMiddleware {
    * Get failed access attempts
    */
   getFailedAttempts(limit = 100): AuditEvent[] {
-    return this.auditEvents
-      .filter(e => e.result === 'FAILURE')
-      .slice(-limit);
+    return this.auditEvents.filter((e) => e.result === 'FAILURE').slice(-limit);
   }
 
   /**
    * Search audit events
    */
-  searchEvents(criteria: {
-    eventType?: AuditEventType;
-    userId?: string;
-    studentId?: string;
-    ipAddress?: string;
-    severity?: AuditSeverity;
-    startTime?: number;
-    endTime?: number;
-    phiAccessed?: boolean;
-  }, limit = 100): AuditEvent[] {
+  searchEvents(
+    criteria: {
+      eventType?: AuditEventType;
+      userId?: string;
+      studentId?: string;
+      ipAddress?: string;
+      severity?: AuditSeverity;
+      startTime?: number;
+      endTime?: number;
+      phiAccessed?: boolean;
+    },
+    limit = 100,
+  ): AuditEvent[] {
     return this.auditEvents
-      .filter(event => {
-        if (criteria.eventType && event.eventType !== criteria.eventType) return false;
+      .filter((event) => {
+        if (criteria.eventType && event.eventType !== criteria.eventType)
+          return false;
         if (criteria.userId && event.userId !== criteria.userId) return false;
-        if (criteria.studentId && event.studentId !== criteria.studentId) return false;
-        if (criteria.ipAddress && event.ipAddress !== criteria.ipAddress) return false;
-        if (criteria.severity && event.severity !== criteria.severity) return false;
-        if (criteria.startTime && event.timestamp < criteria.startTime) return false;
-        if (criteria.endTime && event.timestamp > criteria.endTime) return false;
-        if (criteria.phiAccessed !== undefined && event.phiAccessed !== criteria.phiAccessed) return false;
+        if (criteria.studentId && event.studentId !== criteria.studentId)
+          return false;
+        if (criteria.ipAddress && event.ipAddress !== criteria.ipAddress)
+          return false;
+        if (criteria.severity && event.severity !== criteria.severity)
+          return false;
+        if (criteria.startTime && event.timestamp < criteria.startTime)
+          return false;
+        if (criteria.endTime && event.timestamp > criteria.endTime)
+          return false;
+        if (
+          criteria.phiAccessed !== undefined &&
+          event.phiAccessed !== criteria.phiAccessed
+        )
+          return false;
 
         return true;
       })
@@ -566,7 +598,7 @@ export class AuditMiddleware implements NestMiddleware {
       events: [...this.auditEvents],
       summary: this.getAuditSummary(),
       exportedAt: Date.now(),
-      config: { ...this.config }
+      config: { ...this.config },
     };
   }
 
@@ -586,25 +618,34 @@ export class AuditMiddleware implements NestMiddleware {
     return `audit_${timestamp}_${random}`;
   }
 
-  private determineSeverity(eventType: AuditEventType, result: string): AuditSeverity {
+  private determineSeverity(
+    eventType: AuditEventType,
+    result: string,
+  ): AuditSeverity {
     // Critical events
-    if (eventType === AuditEventType.EMERGENCY_ACCESS ||
-        eventType === AuditEventType.PHI_DELETED ||
-        eventType === AuditEventType.CONFIGURATION_CHANGED) {
+    if (
+      eventType === AuditEventType.EMERGENCY_ACCESS ||
+      eventType === AuditEventType.PHI_DELETED ||
+      eventType === AuditEventType.CONFIGURATION_CHANGED
+    ) {
       return AuditSeverity.CRITICAL;
     }
 
     // Error events
-    if (result === 'FAILURE' ||
-        eventType === AuditEventType.ACCESS_DENIED ||
-        eventType === AuditEventType.LOGIN_FAILED) {
+    if (
+      result === 'FAILURE' ||
+      eventType === AuditEventType.ACCESS_DENIED ||
+      eventType === AuditEventType.LOGIN_FAILED
+    ) {
       return AuditSeverity.ERROR;
     }
 
     // Warning events
-    if (eventType === AuditEventType.PHI_ACCESSED ||
-        eventType === AuditEventType.PHI_MODIFIED ||
-        eventType === AuditEventType.PHI_EXPORTED) {
+    if (
+      eventType === AuditEventType.PHI_ACCESSED ||
+      eventType === AuditEventType.PHI_MODIFIED ||
+      eventType === AuditEventType.PHI_EXPORTED
+    ) {
       return AuditSeverity.WARNING;
     }
 
@@ -622,7 +663,7 @@ export class AuditMiddleware implements NestMiddleware {
       userId: event.userId,
       studentId: event.studentId,
       resource: event.resource,
-      timestamp: new Date(event.timestamp).toISOString()
+      timestamp: new Date(event.timestamp).toISOString(),
     });
   }
 
@@ -634,23 +675,24 @@ export class AuditMiddleware implements NestMiddleware {
       } catch (error) {
         this.logger.error('Alert callback failed', {
           error: error instanceof Error ? error.message : 'Unknown error',
-          eventId: event.eventId
+          eventId: event.eventId,
         });
       }
     }
   }
 
   private cleanupOldEvents(): void {
-    const cutoffTime = Date.now() - (this.config.retentionPeriodDays * 24 * 60 * 60 * 1000);
+    const cutoffTime =
+      Date.now() - this.config.retentionPeriodDays * 24 * 60 * 60 * 1000;
     const initialCount = this.auditEvents.length;
 
-    this.auditEvents = this.auditEvents.filter(e => e.timestamp > cutoffTime);
+    this.auditEvents = this.auditEvents.filter((e) => e.timestamp > cutoffTime);
 
     const cleaned = initialCount - this.auditEvents.length;
     if (cleaned > 0) {
       this.logger.log('Cleaned up old audit events', {
         removed: cleaned,
-        remaining: this.auditEvents.length
+        remaining: this.auditEvents.length,
       });
     }
   }
@@ -663,10 +705,10 @@ export class AuditMiddleware implements NestMiddleware {
       '/api/medications',
       '/api/immunizations',
       '/api/allergies',
-      '/api/diagnoses'
+      '/api/diagnoses',
     ];
 
-    return phiPaths.some(phiPath => path.startsWith(phiPath));
+    return phiPaths.some((phiPath) => path.startsWith(phiPath));
   }
 
   private getClientIP(req: Request): string {

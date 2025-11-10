@@ -1,24 +1,23 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum SyncActionType {
   CREATE = 'CREATE',
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
-  READ = 'READ'
+  READ = 'READ',
 }
 
 export enum SyncEntityType {
@@ -30,13 +29,13 @@ export enum SyncEntityType {
   APPOINTMENT = 'APPOINTMENT',
   SCREENING = 'SCREENING',
   ALLERGY = 'ALLERGY',
-  CHRONIC_CONDITION = 'CHRONIC_CONDITION'
+  CHRONIC_CONDITION = 'CHRONIC_CONDITION',
 }
 
 export enum SyncPriority {
   HIGH = 'HIGH',
   NORMAL = 'NORMAL',
-  LOW = 'LOW'
+  LOW = 'LOW',
 }
 
 export enum ConflictResolution {
@@ -44,7 +43,7 @@ export enum ConflictResolution {
   SERVER_WINS = 'SERVER_WINS',
   NEWEST_WINS = 'NEWEST_WINS',
   MERGE = 'MERGE',
-  MANUAL = 'MANUAL'
+  MANUAL = 'MANUAL',
 }
 
 export interface SyncQueueItemAttributes {
@@ -72,10 +71,10 @@ export interface SyncQueueItemAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'sync_queue_items',
@@ -83,28 +82,31 @@ export interface SyncQueueItemAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['deviceId']
-  },
+      fields: ['deviceId'],
+    },
     {
-      fields: ['userId']
-  },
+      fields: ['userId'],
+    },
     {
-      fields: ['synced']
-  },
+      fields: ['synced'],
+    },
     {
-      fields: ['priority']
-  },
+      fields: ['priority'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_sync_queue_item_created_at'
+      name: 'idx_sync_queue_item_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_sync_queue_item_updated_at'
-    }
-  ]
-  })
-export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements SyncQueueItemAttributes {
+      name: 'idx_sync_queue_item_updated_at',
+    },
+  ],
+})
+export class SyncQueueItem
+  extends Model<SyncQueueItemAttributes>
+  implements SyncQueueItemAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -112,14 +114,14 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   @Index
   deviceId: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   userId: string;
@@ -127,36 +129,36 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(SyncActionType)]
+      isIn: [Object.values(SyncActionType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   actionType: SyncActionType;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(SyncEntityType)]
+      isIn: [Object.values(SyncEntityType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   entityType: SyncEntityType;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   entityId: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   data: any;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   timestamp: Date;
 
@@ -165,14 +167,14 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   syncedAt?: Date;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   @Index
   synced: boolean;
@@ -180,27 +182,27 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   attempts: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 3
+    defaultValue: 3,
   })
   maxAttempts: number;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   lastError?: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   conflictDetected: boolean;
 
@@ -208,18 +210,18 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConflictResolution)]
-    }
+      isIn: [Object.values(ConflictResolution)],
+    },
   })
   conflictResolution?: ConflictResolution;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(SyncPriority)]
+      isIn: [Object.values(SyncPriority)],
     },
     allowNull: false,
-    defaultValue: SyncPriority.NORMAL
+    defaultValue: SyncPriority.NORMAL,
   })
   @Index
   priority: SyncPriority;
@@ -227,13 +229,12 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   requiresOnline: boolean;
 
   @Column(DataType.DATE)
   declare updatedAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -241,7 +242,9 @@ export class SyncQueueItem extends Model<SyncQueueItemAttributes> implements Syn
   static async auditPHIAccess(instance: SyncQueueItem) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] SyncQueueItem ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] SyncQueueItem ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

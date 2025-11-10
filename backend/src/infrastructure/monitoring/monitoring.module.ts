@@ -11,6 +11,11 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { MonitoringService } from './monitoring.service';
 import { HealthController } from './health.controller';
 import { MonitoringController } from './monitoring.controller';
+import { HealthCheckService } from './health-check.service';
+import { MetricsCollectionService } from './metrics-collection.service';
+import { AlertManagementService } from './alert-management.service';
+import { PerformanceTrackingService } from './performance-tracking.service';
+import { LogAggregationService } from './log-aggregation.service';
 
 /**
  * MonitoringModule
@@ -139,8 +144,25 @@ import { MonitoringController } from './monitoring.controller';
     SequelizeModule.forFeature([]),
   ],
   controllers: [HealthController, MonitoringController],
-  providers: [MonitoringService],
-  exports: [MonitoringService],
+  providers: [
+    // Core monitoring service (orchestrates all other services)
+    MonitoringService,
+
+    // Specialized monitoring services
+    HealthCheckService,
+    MetricsCollectionService,
+    AlertManagementService,
+    PerformanceTrackingService,
+    LogAggregationService,
+  ],
+  exports: [
+    MonitoringService,
+    HealthCheckService,
+    MetricsCollectionService,
+    AlertManagementService,
+    PerformanceTrackingService,
+    LogAggregationService,
+  ],
 })
 export class MonitoringModule {}
 

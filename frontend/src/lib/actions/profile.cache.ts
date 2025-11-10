@@ -155,7 +155,7 @@ export const getSecurityLogs = cache(async (userId: string, limit: number = 50):
 export const getActiveSessions = cache(async (userId: string): Promise<ActiveSession[]> => {
   try {
     const response = await serverGet<ApiResponse<ActiveSession[]>>(
-      `/api/users/${userId}/sessions`,
+      `/api/proxy/security/sessions?userId=${userId}`,
       undefined,
       {
         cache: 'force-cache',

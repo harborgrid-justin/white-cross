@@ -1,44 +1,15 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseInterceptors,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Request, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
-import {
-  GetHealthMetricsQueryDto,
-  GetHealthTrendsQueryDto,
-  GetStudentHealthMetricsParamDto,
-  GetStudentHealthMetricsQueryDto,
-  GetSchoolMetricsParamDto,
-  GetSchoolMetricsQueryDto,
-  GetIncidentTrendsQueryDto,
-  GetIncidentsByLocationQueryDto,
-  GetMedicationUsageQueryDto,
-  GetMedicationAdherenceQueryDto,
-  GetAppointmentTrendsQueryDto,
-  GetNoShowRateQueryDto,
-  GetNurseDashboardQueryDto,
-  GetAdminDashboardQueryDto,
-  GetPlatformSummaryQueryDto,
-  AnalyticsGenerateCustomReportDto,
-  GetReportParamDto,
-  GetReportQueryDto,
-} from './dto';
+import { AnalyticsGenerateCustomReportDto } from './dto/custom-reports.dto';
+import { GetAdminDashboardQueryDto, GetNurseDashboardQueryDto, GetPlatformSummaryQueryDto } from './dto/dashboard.dto';
+import { GetAppointmentTrendsQueryDto, GetNoShowRateQueryDto } from './dto/appointment-analytics.dto';
+import { GetHealthMetricsQueryDto, GetSchoolMetricsParamDto, GetSchoolMetricsQueryDto, GetStudentHealthMetricsParamDto, GetStudentHealthMetricsQueryDto } from './dto/health-metrics.dto';
+import { GetHealthTrendsQueryDto } from './dto/analytics-query.dto';
+import { GetIncidentsByLocationQueryDto, GetIncidentTrendsQueryDto } from './dto/incident-analytics.dto';
+import { GetMedicationAdherenceQueryDto, GetMedicationUsageQueryDto } from './dto/medication-analytics.dto';
+import { GetReportParamDto, GetReportQueryDto } from './dto/report-generation.dto';
 
 /**
  * Analytics Controller
@@ -131,7 +102,10 @@ export class AnalyticsController {
     @Param() params: GetStudentHealthMetricsParamDto,
     @Query() query: GetStudentHealthMetricsQueryDto,
   ) {
-    return this.analyticsService.getStudentHealthMetrics(params.studentId, query);
+    return this.analyticsService.getStudentHealthMetrics(
+      params.studentId,
+      query,
+    );
   }
 
   @Get('health-metrics/school/:schoolId')
@@ -350,7 +324,10 @@ export class AnalyticsController {
   @ApiResponse({ status: 400, description: 'Invalid report parameters' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Report generation failed' })
-  async generateCustomReport(@Body() dto: AnalyticsGenerateCustomReportDto, @Request() req: any) {
+  async generateCustomReport(
+    @Body() dto: AnalyticsGenerateCustomReportDto,
+    @Request() req: any,
+  ) {
     const userId = req.user?.id || 'system';
     return this.analyticsService.generateCustomReport(dto, userId);
   }
@@ -370,7 +347,10 @@ export class AnalyticsController {
   @ApiResponse({ status: 400, description: 'Invalid report ID' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Report not found' })
-  async getGeneratedReport(@Param() params: GetReportParamDto, @Query() query: GetReportQueryDto) {
+  async getGeneratedReport(
+    @Param() params: GetReportParamDto,
+    @Query() query: GetReportQueryDto,
+  ) {
     return this.analyticsService.getGeneratedReport(params.id, query);
   }
 }

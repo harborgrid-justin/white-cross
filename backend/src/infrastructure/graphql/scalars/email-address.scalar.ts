@@ -17,7 +17,7 @@
  * }
  * ```
  */
-import { Scalar, CustomScalar } from '@nestjs/graphql';
+import { CustomScalar, Scalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
 
 @Scalar('EmailAddress')
@@ -68,7 +68,7 @@ export class EmailAddressScalar implements CustomScalar<string, string> {
    * @throws Error if email is invalid
    */
   private validateAndNormalizeEmail(value: string): string {
-    if (!value || typeof value !== 'string') {
+    if (!value) {
       throw new Error('EmailAddress must be a non-empty string');
     }
 
@@ -85,7 +85,9 @@ export class EmailAddressScalar implements CustomScalar<string, string> {
 
     // Check local part length (max 64 characters)
     if (localPart.length > 64) {
-      throw new Error('Email local part exceeds maximum length of 64 characters');
+      throw new Error(
+        'Email local part exceeds maximum length of 64 characters',
+      );
     }
 
     // Check domain length (max 255 characters)
@@ -100,7 +102,10 @@ export class EmailAddressScalar implements CustomScalar<string, string> {
 
     // Check domain has valid TLD
     const domainParts = domain.split('.');
-    if (domainParts.length < 2 || domainParts[domainParts.length - 1].length < 2) {
+    if (
+      domainParts.length < 2 ||
+      domainParts[domainParts.length - 1].length < 2
+    ) {
       throw new Error('Email domain must have a valid top-level domain');
     }
 

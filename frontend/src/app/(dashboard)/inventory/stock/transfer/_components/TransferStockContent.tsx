@@ -395,3 +395,6 @@ export default function TransferStockContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { TransferStockContent }

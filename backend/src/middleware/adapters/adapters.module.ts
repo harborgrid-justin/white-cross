@@ -18,19 +18,9 @@
  */
 
 import { Module } from '@nestjs/common';
-import {
-  ExpressMiddlewareAdapter,
-  ExpressMiddlewareUtils
-} from './express/express.adapter';
-import {
-  HapiMiddlewareAdapter,
-  HapiMiddlewareUtils
-} from './hapi/hapi.adapter';
-import {
-  HealthcareMiddlewareUtils,
-  ResponseUtils,
-  RequestValidationUtils
-} from './shared/base.adapter';
+import { ExpressMiddlewareAdapter, ExpressMiddlewareUtils } from './express/express.adapter';
+import { HapiMiddlewareAdapter, HapiMiddlewareUtils } from './hapi/hapi.adapter';
+import { HealthcareMiddlewareUtils, RequestValidationUtils, ResponseUtils } from './shared/base.adapter';
 
 /**
  * Middleware Adapters Module
@@ -80,7 +70,7 @@ import {
     // Shared Utilities
     HealthcareMiddlewareUtils,
     ResponseUtils,
-    RequestValidationUtils
+    RequestValidationUtils,
   ],
   exports: [
     // Export all providers for use in other modules
@@ -90,7 +80,7 @@ import {
     HapiMiddlewareUtils,
     HealthcareMiddlewareUtils,
     ResponseUtils,
-    RequestValidationUtils
-  ]
+    RequestValidationUtils,
+  ],
 })
 export class AdaptersModule {}

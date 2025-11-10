@@ -1,0 +1,56 @@
+export declare enum SafetyPlanStatus {
+    DRAFT = "DRAFT",
+    UNDER_REVIEW = "UNDER_REVIEW",
+    APPROVED = "APPROVED",
+    ACTIVE = "ACTIVE",
+    SUSPENDED = "SUSPENDED",
+    ARCHIVED = "ARCHIVED"
+}
+export declare enum IncidentType {
+    INJURY = "INJURY",
+    NEAR_MISS = "NEAR_MISS",
+    PROPERTY_DAMAGE = "PROPERTY_DAMAGE",
+    ENVIRONMENTAL = "ENVIRONMENTAL",
+    VEHICLE = "VEHICLE",
+    FIRE = "FIRE",
+    CHEMICAL_SPILL = "CHEMICAL_SPILL",
+    ELECTRICAL = "ELECTRICAL"
+}
+export declare enum IncidentSeverity {
+    FATALITY = "FATALITY",
+    LOST_TIME = "LOST_TIME",
+    RESTRICTED_WORK = "RESTRICTED_WORK",
+    MEDICAL_TREATMENT = "MEDICAL_TREATMENT",
+    FIRST_AID = "FIRST_AID",
+    NEAR_MISS = "NEAR_MISS",
+    PROPERTY_DAMAGE_ONLY = "PROPERTY_DAMAGE_ONLY"
+}
+export declare enum IncidentStatus {
+    REPORTED = "REPORTED",
+    INVESTIGATING = "INVESTIGATING",
+    PENDING_REVIEW = "PENDING_REVIEW",
+    CLOSED = "CLOSED",
+    FOLLOW_UP_REQUIRED = "FOLLOW_UP_REQUIRED"
+}
+export declare enum InspectionType {
+    DAILY_TOOLBOX = "DAILY_TOOLBOX",
+    WEEKLY_SITE = "WEEKLY_SITE",
+    MONTHLY_FORMAL = "MONTHLY_FORMAL",
+    COMPETENT_PERSON = "COMPETENT_PERSON",
+    THIRD_PARTY = "THIRD_PARTY",
+    OSHA_VISIT = "OSHA_VISIT",
+    POST_INCIDENT = "POST_INCIDENT"
+}
+export declare enum ComplianceStatus {
+    COMPLIANT = "COMPLIANT",
+    NON_COMPLIANT = "NON_COMPLIANT",
+    PENDING_VERIFICATION = "PENDING_VERIFICATION",
+    EXEMPTED = "EXEMPTED"
+}
+export declare enum HazardSeverity {
+    IMMINENT = "IMMINENT",
+    SERIOUS = "SERIOUS",
+    MODERATE = "MODERATE",
+    LOW = "LOW"
+}
+//# sourceMappingURL=safety.types.d.ts.map

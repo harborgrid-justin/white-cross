@@ -431,3 +431,6 @@ export default function StockLevelsContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { StockLevelsContent }

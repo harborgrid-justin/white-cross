@@ -20,7 +20,23 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket, AuthPayload } from '../interfaces';
-import { TokenBlacklistService } from '../../../auth/services/token-blacklist.service';
+import { TokenBlacklistService } from '@/auth';
+
+
+/**
+ * JWT payload structure
+ */
+interface JwtPayload {
+  sub?: string;
+  userId?: string;
+  id?: string;
+  organizationId?: string;
+  schoolId?: string;
+  districtId?: string;
+  role?: string;
+  email?: string;
+  [key: string]: unknown;
+}
 
 @Injectable()
 export class WsJwtAuthGuard implements CanActivate {
@@ -66,7 +82,8 @@ export class WsJwtAuthGuard implements CanActivate {
       const payload = await this.verifyToken(token);
 
       // Check if token is blacklisted
-      const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(token);
+      const isBlacklisted =
+        await this.tokenBlacklistService.isTokenBlacklisted(token);
 
       if (isBlacklisted) {
         this.logger.warn('Blacklisted token attempted WebSocket connection', {
@@ -81,18 +98,22 @@ export class WsJwtAuthGuard implements CanActivate {
       // Check if user's all tokens are invalidated
       const userId = payload.sub || payload.userId || payload.id;
       if (userId && payload.iat) {
-        const userTokensBlacklisted = await this.tokenBlacklistService.areUserTokensBlacklisted(
-          userId,
-          payload.iat
-        );
+        const userTokensBlacklisted =
+          await this.tokenBlacklistService.areUserTokensBlacklisted(
+            userId,
+            payload.iat,
+          );
 
         if (userTokensBlacklisted) {
-          this.logger.warn('User tokens invalidated - WebSocket connection denied', {
-            socketId: client.id,
-            userId,
-            tokenIssuedAt: new Date(payload.iat * 1000).toISOString(),
-            remoteAddress: client.handshake.address,
-          });
+          this.logger.warn(
+            'User tokens invalidated - WebSocket connection denied',
+            {
+              socketId: client.id,
+              userId,
+              tokenIssuedAt: new Date(payload.iat * 1000).toISOString(),
+              remoteAddress: client.handshake.address,
+            },
+          );
 
           throw new WsException('Session invalidated. Please login again.');
         }
@@ -102,16 +123,13 @@ export class WsJwtAuthGuard implements CanActivate {
       client.user = this.mapToAuthPayload(payload);
 
       // Log successful authentication
-      this.logger.log(
-        `WebSocket authenticated successfully`,
-        {
-          socketId: client.id,
-          userId: client.user.userId,
-          organizationId: client.user.organizationId,
-          role: client.user.role,
-          remoteAddress: client.handshake.address,
-        }
-      );
+      this.logger.log(`WebSocket authenticated successfully`, {
+        socketId: client.id,
+        userId: client.user.userId,
+        organizationId: client.user.organizationId,
+        role: client.user.role,
+        remoteAddress: client.handshake.address,
+      });
 
       return true;
     } catch (error) {
@@ -132,7 +150,7 @@ export class WsJwtAuthGuard implements CanActivate {
       }
 
       throw new WsException(
-        error instanceof Error ? error.message : 'Authentication failed'
+        error instanceof Error ? error.message : 'Authentication failed',
       );
     }
   }
@@ -154,7 +172,7 @@ export class WsJwtAuthGuard implements CanActivate {
     // Try authorization header (Bearer token)
     const authHeader = client.handshake.headers?.authorization;
     if (authHeader) {
-      if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+      if (authHeader.startsWith('Bearer ')) {
         return authHeader.replace('Bearer ', '');
       }
       // Handle array case (should not happen but be defensive)
@@ -170,7 +188,7 @@ export class WsJwtAuthGuard implements CanActivate {
         socketId: client.id,
         remoteAddress: client.handshake.address,
       });
-      return typeof queryToken === 'string' ? queryToken : queryToken[0];
+      return typeof queryToken === 'string' ? queryToken : (Array.isArray(queryToken) && queryToken.length > 0 ? queryToken[0] : null) || null;
     }
 
     return null;
@@ -187,7 +205,9 @@ export class WsJwtAuthGuard implements CanActivate {
     const secret = this.configService.get<string>('JWT_SECRET');
 
     if (!secret) {
-      this.logger.error('JWT_SECRET not configured - cannot verify WebSocket tokens');
+      this.logger.error(
+        'JWT_SECRET not configured - cannot verify WebSocket tokens',
+      );
       throw new Error('JWT_SECRET not configured');
     }
 
@@ -221,10 +241,16 @@ export class WsJwtAuthGuard implements CanActivate {
    * @param payload - The decoded JWT payload
    * @returns Structured AuthPayload for WebSocket use
    */
-  private mapToAuthPayload(payload: any): AuthPayload {
+  private mapToAuthPayload(payload: JwtPayload): AuthPayload {
+    const userId = payload.sub || payload.userId || payload.id;
+    if (!userId) {
+      throw new Error('User ID not found in token payload');
+    }
+
     return {
-      userId: payload.sub || payload.userId || payload.id,
-      organizationId: payload.organizationId || payload.schoolId || payload.districtId || '',
+      userId,
+      organizationId:
+        payload.organizationId || payload.schoolId || payload.districtId || '',
       role: payload.role || 'user',
       email: payload.email || '',
     };

@@ -1,0 +1,38 @@
+{
+  "name": "white-cross-production-improvements",
+  "version": "1.0.0",
+  "description": "Production-grade improvements for white-cross backend",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint *.ts",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.2.10",
+    "@nestjs/terminus": "^10.2.0",
+    "winston": "^3.11.0",
+    "prom-client": "^15.1.0",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/express": "^4.17.21",
+    "typescript": "^5.3.3",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0"
+  },
+  "keywords": [
+    "nestjs",
+    "production",
+    "error-handling",
+    "health-checks",
+    "monitoring"
+  ],
+  "author": "White Cross Team",
+  "license": "MIT"
+}

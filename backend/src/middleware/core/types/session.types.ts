@@ -14,13 +14,13 @@
  * @interface SessionConfig
  */
 export interface SessionConfig {
-  sessionTimeout: number;        // Session timeout in milliseconds
-  warningTime: number;          // Warning time before timeout (ms)
+  sessionTimeout: number; // Session timeout in milliseconds
+  warningTime: number; // Warning time before timeout (ms)
   maxConcurrentSessions: number; // Max sessions per user
-  requireReauth: boolean;       // Require re-authentication for sensitive operations
-  trackActivity: boolean;       // Track user activity
-  auditSessions: boolean;       // Enable session audit logging
-  store?: SessionStore;         // Custom session store
+  requireReauth: boolean; // Require re-authentication for sensitive operations
+  trackActivity: boolean; // Track user activity
+  auditSessions: boolean; // Enable session audit logging
+  store?: SessionStore; // Custom session store
 }
 
 /**
@@ -82,41 +82,41 @@ export interface SessionStore {
 export const SESSION_CONFIGS = {
   // Standard healthcare session - HIPAA compliant
   healthcare: {
-    sessionTimeout: 30 * 60 * 1000,    // 30 minutes
-    warningTime: 5 * 60 * 1000,        // 5 minutes warning
-    maxConcurrentSessions: 3,           // Allow multiple devices
-    requireReauth: true,                // Require re-auth for sensitive ops
-    trackActivity: true,                // Track all activity
-    auditSessions: true                 // Full audit logging
+    sessionTimeout: 30 * 60 * 1000, // 30 minutes
+    warningTime: 5 * 60 * 1000, // 5 minutes warning
+    maxConcurrentSessions: 3, // Allow multiple devices
+    requireReauth: true, // Require re-auth for sensitive ops
+    trackActivity: true, // Track all activity
+    auditSessions: true, // Full audit logging
   } as SessionConfig,
 
   // Administrative session - More restrictive
   admin: {
-    sessionTimeout: 15 * 60 * 1000,    // 15 minutes
-    warningTime: 2 * 60 * 1000,        // 2 minutes warning
-    maxConcurrentSessions: 1,           // Single session only
-    requireReauth: true,                // Always require re-auth
-    trackActivity: true,                // Track all activity
-    auditSessions: true                 // Full audit logging
+    sessionTimeout: 15 * 60 * 1000, // 15 minutes
+    warningTime: 2 * 60 * 1000, // 2 minutes warning
+    maxConcurrentSessions: 1, // Single session only
+    requireReauth: true, // Always require re-auth
+    trackActivity: true, // Track all activity
+    auditSessions: true, // Full audit logging
   } as SessionConfig,
 
   // Emergency session - Extended for critical operations
   emergency: {
-    sessionTimeout: 60 * 60 * 1000,    // 60 minutes
-    warningTime: 10 * 60 * 1000,       // 10 minutes warning
-    maxConcurrentSessions: 1,           // Single session
-    requireReauth: false,               // No re-auth during emergency
-    trackActivity: true,                // Track activity
-    auditSessions: true                 // Audit everything
+    sessionTimeout: 60 * 60 * 1000, // 60 minutes
+    warningTime: 10 * 60 * 1000, // 10 minutes warning
+    maxConcurrentSessions: 1, // Single session
+    requireReauth: false, // No re-auth during emergency
+    trackActivity: true, // Track activity
+    auditSessions: true, // Audit everything
   } as SessionConfig,
 
   // Development session - Relaxed for testing
   development: {
     sessionTimeout: 8 * 60 * 60 * 1000, // 8 hours
-    warningTime: 30 * 60 * 1000,        // 30 minutes warning
-    maxConcurrentSessions: 10,           // Multiple sessions
-    requireReauth: false,                // No re-auth required
-    trackActivity: false,                // Minimal tracking
-    auditSessions: false                 // No audit logging
-  } as SessionConfig
+    warningTime: 30 * 60 * 1000, // 30 minutes warning
+    maxConcurrentSessions: 10, // Multiple sessions
+    requireReauth: false, // No re-auth required
+    trackActivity: false, // Minimal tracking
+    auditSessions: false, // No audit logging
+  } as SessionConfig,
 };

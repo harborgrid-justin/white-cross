@@ -16,8 +16,8 @@ import {
   Menu, X, Search, Bell, User, Settings, LogOut, Moon, Sun,
   ChevronDown, Shield, HelpCircle, UserCircle
 } from 'lucide-react';
-import { useNavigation } from '../../contexts/NavigationContext';
-import { useAuthContext } from '../../contexts/AuthContext';
+import { useNavigation } from '@/contexts/NavigationContext';
+import { useAuthContext } from '@/identity-access/contexts/AuthContext';
 
 // ============================================================================
 // HEADER COMPONENT

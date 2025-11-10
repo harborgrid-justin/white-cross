@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { NotificationPlatform } from '../enums';
 
@@ -9,19 +9,19 @@ export class RegisterDeviceDto {
   @ApiProperty({ description: 'Unique device identifier' })
   @IsString()
   @IsNotEmpty()
-  deviceId: string;
+  deviceId!: string;
 
   @ApiProperty({
     description: 'Notification platform',
-    enum: NotificationPlatform
+    enum: NotificationPlatform,
   })
   @IsEnum(NotificationPlatform)
-  platform: NotificationPlatform;
+  platform!: NotificationPlatform;
 
   @ApiProperty({ description: 'Device push notification token' })
   @IsString()
   @IsNotEmpty()
-  token: string;
+  token!: string;
 
   @ApiProperty({ description: 'Device name', required: false })
   @IsString()

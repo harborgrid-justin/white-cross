@@ -31,15 +31,14 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { Request, ResponseToolkit, ServerRoute, Plugin } from '@hapi/hapi';
+import { Plugin, Request, ResponseToolkit, ServerRoute } from '@hapi/hapi';
 import {
+  HealthcareRequest,
   IMiddleware,
+  INextFunction,
   IRequest,
   IResponse,
-  INextFunction,
   MiddlewareContext,
-  HealthcareRequest,
-  HealthcareResponse
 } from '../../utils/types/middleware.types';
 
 /**
@@ -137,9 +136,7 @@ export class HapiResponseWrapper implements IResponse {
 
   send(data: any): void {
     this._headersSent = true;
-    this._responseData = this.hapiToolkit
-      .response(data)
-      .code(this.statusCode);
+    this._responseData = this.hapiToolkit.response(data).code(this.statusCode);
 
     // Apply headers
     Object.entries(this.headers).forEach(([name, value]) => {
@@ -152,9 +149,7 @@ export class HapiResponseWrapper implements IResponse {
       this.send(data);
     } else {
       this._headersSent = true;
-      this._responseData = this.hapiToolkit
-        .response()
-        .code(this.statusCode);
+      this._responseData = this.hapiToolkit.response().code(this.statusCode);
 
       // Apply headers
       Object.entries(this.headers).forEach(([name, value]) => {
@@ -271,7 +266,17 @@ export class HapiMiddlewareAdapter {
    * );
    * server.ext(transformExtension);
    */
-  adaptAsExtension(middleware: IMiddleware, point: 'onRequest' | 'onPreAuth' | 'onCredentials' | 'onPostAuth' | 'onPreHandler' | 'onPostHandler' | 'onPreResponse' = 'onPreHandler') {
+  adaptAsExtension(
+    middleware: IMiddleware,
+    point:
+      | 'onRequest'
+      | 'onPreAuth'
+      | 'onCredentials'
+      | 'onPostAuth'
+      | 'onPreHandler'
+      | 'onPostHandler'
+      | 'onPreResponse' = 'onPreHandler',
+  ) {
     return {
       type: point,
       method: async (request: Request, h: ResponseToolkit) => {
@@ -286,15 +291,22 @@ export class HapiMiddlewareAdapter {
         // Create middleware context
         const context: MiddlewareContext = {
           startTime: Date.now(),
-          correlationId: wrappedRequest.correlationId || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          correlationId:
+            wrappedRequest.correlationId ||
+            `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           framework: 'hapi',
           environment: process.env.NODE_ENV || 'development',
-          metadata: {}
+          metadata: {},
         };
 
         try {
           // Execute the framework-agnostic middleware
-          await middleware.execute(wrappedRequest, wrappedResponse, wrappedNext, context);
+          await middleware.execute(
+            wrappedRequest,
+            wrappedResponse,
+            wrappedNext,
+            context,
+          );
 
           // If response was set, return it
           if (wrappedResponse.headersSent) {
@@ -306,19 +318,33 @@ export class HapiMiddlewareAdapter {
         } catch (error) {
           throw error;
         }
-      }
+      },
     };
   }
 
   /**
    * Adapts middleware as a Hapi plugin
    */
-  adaptAsPlugin(middleware: IMiddleware, options: {
-    name: string;
-    version?: string;
-    extensionPoint?: 'onRequest' | 'onPreAuth' | 'onCredentials' | 'onPostAuth' | 'onPreHandler' | 'onPostHandler' | 'onPreResponse';
-  }): Plugin<any> {
-    const { name, version = '1.0.0', extensionPoint = 'onPreHandler' } = options;
+  adaptAsPlugin(
+    middleware: IMiddleware,
+    options: {
+      name: string;
+      version?: string;
+      extensionPoint?:
+        | 'onRequest'
+        | 'onPreAuth'
+        | 'onCredentials'
+        | 'onPostAuth'
+        | 'onPreHandler'
+        | 'onPostHandler'
+        | 'onPreResponse';
+    },
+  ): Plugin<any> {
+    const {
+      name,
+      version = '1.0.0',
+      extensionPoint = 'onPreHandler',
+    } = options;
 
     return {
       name,
@@ -326,7 +352,7 @@ export class HapiMiddlewareAdapter {
       register: async (server) => {
         const extension = this.adaptAsExtension(middleware, extensionPoint);
         server.ext(extension);
-      }
+      },
     };
   }
 
@@ -346,40 +372,53 @@ export class HapiMiddlewareAdapter {
 
             // Initialize healthcare context
             healthcareReq.healthcareContext = {
-              patientId: request.params.patientId || (request.payload as any)?.patientId,
+              patientId:
+                request.params.patientId || (request.payload as any)?.patientId,
               facilityId: request.headers['x-facility-id'] as string,
-              providerId: (request.auth?.credentials as any)?.userId || (request.auth?.credentials as any)?.id,
-              accessType: request.headers['x-access-type'] as 'routine' | 'emergency' | 'break_glass',
+              providerId:
+                (request.auth?.credentials as any)?.userId ||
+                (request.auth?.credentials as any)?.id,
+              accessType: request.headers['x-access-type'] as
+                | 'routine'
+                | 'emergency'
+                | 'break_glass',
               auditRequired: true,
               phiAccess: false,
-              complianceFlags: []
+              complianceFlags: [],
             };
 
             return h.continue;
-          }
+          },
         });
 
         // Add healthcare response methods via server decoration
-        server.decorate('toolkit', 'sendHipaaCompliant', function(data: any, options: {
-          logAccess?: boolean;
-          patientId?: string;
-          dataType?: string
-        } = {}) {
-          const h = this as ResponseToolkit;
+        server.decorate(
+          'toolkit',
+          'sendHipaaCompliant',
+          function (
+            data: any,
+            options: {
+              logAccess?: boolean;
+              patientId?: string;
+              dataType?: string;
+            } = {},
+          ) {
+            const h = this;
 
-          if (options.logAccess && options.patientId) {
-            // Log PHI access for HIPAA compliance
-            // This would be handled by audit middleware
-          }
+            if (options.logAccess && options.patientId) {
+              // Log PHI access for HIPAA compliance
+              // This would be handled by audit middleware
+            }
 
-          // Remove sensitive fields in non-development environments
-          if (process.env.NODE_ENV !== 'development') {
-            data = HapiMiddlewareAdapter.sanitizeResponse(data);
-          }
+            // Remove sensitive fields in non-development environments
+            if (process.env.NODE_ENV !== 'development') {
+              data = HapiMiddlewareAdapter.sanitizeResponse(data);
+            }
 
-          return h.response(data).type('application/json');
-        });
-      }
+            return h.response(data).type('application/json');
+          },
+        );
+      },
     };
   }
 
@@ -390,11 +429,16 @@ export class HapiMiddlewareAdapter {
     if (!data) return data;
 
     // Remove common sensitive fields
-    const sensitiveFields = ['ssn', 'socialSecurityNumber', 'password', 'token'];
+    const sensitiveFields = [
+      'ssn',
+      'socialSecurityNumber',
+      'password',
+      'token',
+    ];
 
     if (typeof data === 'object') {
       const sanitized = { ...data };
-      sensitiveFields.forEach(field => {
+      sensitiveFields.forEach((field) => {
         if (sanitized[field]) {
           delete sanitized[field];
         }
@@ -411,7 +455,7 @@ export class HapiMiddlewareAdapter {
   createRouteWithMiddleware(
     routeConfig: Omit<ServerRoute, 'handler'>,
     middlewares: IMiddleware[],
-    handler: (request: Request, h: ResponseToolkit) => any
+    handler: (request: Request, h: ResponseToolkit) => any,
   ): ServerRoute {
     return {
       ...routeConfig,
@@ -428,14 +472,21 @@ export class HapiMiddlewareAdapter {
 
           const context: MiddlewareContext = {
             startTime: Date.now(),
-            correlationId: wrappedRequest.correlationId || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            correlationId:
+              wrappedRequest.correlationId ||
+              `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             framework: 'hapi',
             environment: process.env.NODE_ENV || 'development',
-            metadata: {}
+            metadata: {},
           };
 
           try {
-            await middleware.execute(wrappedRequest, wrappedResponse, wrappedNext, context);
+            await middleware.execute(
+              wrappedRequest,
+              wrappedResponse,
+              wrappedNext,
+              context,
+            );
 
             // If middleware sent a response, return it
             if (wrappedResponse.headersSent) {
@@ -448,7 +499,7 @@ export class HapiMiddlewareAdapter {
 
         // Execute the actual handler
         return handler(request, h);
-      }
+      },
     };
   }
 }
@@ -463,9 +514,11 @@ export class HapiMiddlewareUtils {
    * Extracts correlation ID from Hapi request
    */
   getCorrelationId(request: Request): string {
-    return (request.headers['x-correlation-id'] as string) ||
-           (request.headers['x-request-id'] as string) ||
-           `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return (
+      (request.headers['x-correlation-id'] as string) ||
+      (request.headers['x-request-id'] as string) ||
+      `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    );
   }
 
   /**
@@ -476,7 +529,10 @@ export class HapiMiddlewareUtils {
       .header('X-Content-Type-Options', 'nosniff')
       .header('X-Frame-Options', 'DENY')
       .header('X-XSS-Protection', '1; mode=block')
-      .header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+      .header(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains',
+      )
       .header('Referrer-Policy', 'strict-origin-when-cross-origin')
       .header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   }
@@ -491,22 +547,24 @@ export class HapiMiddlewareUtils {
       role: credentials?.role,
       permissions: credentials?.permissions || [],
       facilityId: credentials?.facilityId || request.headers['x-facility-id'],
-      sessionId: (request as any).yar?.id
+      sessionId: (request as any).yar?.id,
     };
   }
 
   /**
    * Creates error response with HIPAA compliance
    */
-  createErrorResponse(h: ResponseToolkit, error: Error, statusCode: number = 500): any {
-    const sanitizedError = process.env.NODE_ENV === 'development'
-      ? { message: error.message, stack: error.stack }
-      : { message: 'Internal Server Error' };
+  createErrorResponse(
+    h: ResponseToolkit,
+    error: Error,
+    statusCode: number = 500,
+  ): any {
+    const sanitizedError =
+      process.env.NODE_ENV === 'development'
+        ? { message: error.message, stack: error.stack }
+        : { message: 'Internal Server Error' };
 
-    return h
-      .response(sanitizedError)
-      .code(statusCode)
-      .type('application/json');
+    return h.response(sanitizedError).code(statusCode).type('application/json');
   }
 
   /**

@@ -5,16 +5,16 @@
  * @description REST API endpoints for advanced monitoring, metrics, and dashboard
  */
 
-import { Controller, Get, Post, Param, Query, Body, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiQuery, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MonitoringService } from './monitoring.service';
 import type {
-  MetricsSnapshot,
-  DashboardData,
   Alert,
-  PerformanceEntry,
+  DashboardData,
   LogEntry,
   LogQueryParams,
+  MetricsSnapshot,
+  PerformanceEntry,
 } from './interfaces/metrics.interface';
 
 /**
@@ -122,7 +122,8 @@ export class MonitoringController {
   @Get('alerts')
   @ApiOperation({
     summary: 'Get active alerts',
-    description: 'Returns all active system alerts that have not been acknowledged or resolved',
+    description:
+      'Returns all active system alerts that have not been acknowledged or resolved',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -150,7 +151,8 @@ export class MonitoringController {
   @Post('alerts/:alertId/acknowledge')
   @ApiOperation({
     summary: 'Acknowledge an alert',
-    description: 'Marks an alert as acknowledged to prevent repeated notifications',
+    description:
+      'Marks an alert as acknowledged to prevent repeated notifications',
   })
   @ApiParam({
     name: 'alertId',
@@ -161,9 +163,7 @@ export class MonitoringController {
     status: HttpStatus.OK,
     description: 'Alert acknowledged successfully',
   })
-  acknowledgeAlert(
-    @Param('alertId') alertId: string,
-  ): {
+  acknowledgeAlert(@Param('alertId') alertId: string): {
     message: string;
     statusCode: HttpStatus;
   } {
@@ -184,7 +184,8 @@ export class MonitoringController {
   @Post('alerts/:alertId/resolve')
   @ApiOperation({
     summary: 'Resolve an alert',
-    description: 'Marks an alert as resolved when the underlying issue has been fixed',
+    description:
+      'Marks an alert as resolved when the underlying issue has been fixed',
   })
   @ApiParam({
     name: 'alertId',
@@ -195,9 +196,7 @@ export class MonitoringController {
     status: HttpStatus.OK,
     description: 'Alert resolved successfully',
   })
-  resolveAlert(
-    @Param('alertId') alertId: string,
-  ): {
+  resolveAlert(@Param('alertId') alertId: string): {
     message: string;
     statusCode: HttpStatus;
   } {
@@ -218,7 +217,8 @@ export class MonitoringController {
   @Get('performance')
   @ApiOperation({
     summary: 'Get recent performance entries',
-    description: 'Returns recent performance tracking entries with operation timings and success status',
+    description:
+      'Returns recent performance tracking entries with operation timings and success status',
   })
   @ApiQuery({
     name: 'limit',
@@ -231,9 +231,7 @@ export class MonitoringController {
     description: 'Performance entries retrieved successfully',
     type: Array,
   })
-  getRecentPerformance(
-    @Query('limit') limit?: number,
-  ): {
+  getRecentPerformance(@Query('limit') limit?: number): {
     data: PerformanceEntry[];
     statusCode: HttpStatus;
   } {
@@ -262,9 +260,7 @@ export class MonitoringController {
     status: HttpStatus.CREATED,
     description: 'Performance entry tracked successfully',
   })
-  trackPerformance(
-    @Body() entry: PerformanceEntry,
-  ): {
+  trackPerformance(@Body() entry: PerformanceEntry): {
     message: string;
     statusCode: HttpStatus;
   } {
@@ -370,14 +366,15 @@ export class MonitoringController {
   @Get('metrics/system')
   @ApiOperation({
     summary: 'Get system metrics only',
-    description: 'Returns only system-level metrics (CPU, memory, process info)',
+    description:
+      'Returns only system-level metrics (CPU, memory, process info)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'System metrics retrieved successfully',
   })
   async getSystemMetrics(): Promise<{
-    data: any;
+    data: Record<string, unknown>;
     statusCode: HttpStatus;
   }> {
     const metrics = await this.monitoringService.collectSystemMetrics();
@@ -396,14 +393,15 @@ export class MonitoringController {
   @Get('metrics/performance')
   @ApiOperation({
     summary: 'Get performance metrics only',
-    description: 'Returns only application performance metrics (requests, database, cache, etc.)',
+    description:
+      'Returns only application performance metrics (requests, database, cache, etc.)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Performance metrics retrieved successfully',
   })
   async getPerformanceMetrics(): Promise<{
-    data: any;
+    data: Record<string, unknown>;
     statusCode: HttpStatus;
   }> {
     const metrics = await this.monitoringService.collectPerformanceMetrics();

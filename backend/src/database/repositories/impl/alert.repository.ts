@@ -2,12 +2,11 @@
  * Alert Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
-import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { Inject, Injectable } from '@nestjs/common';
+import { BaseRepository } from '../base/base.repository';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 
 export interface AlertAttributes {
   id: string;
@@ -24,31 +23,40 @@ export interface UpdateAlertDTO {
 }
 
 @Injectable()
-export class AlertRepository extends BaseRepository<any, AlertAttributes, CreateAlertDTO> {
+export class AlertRepository extends BaseRepository<
+  any,
+  AlertAttributes,
+  CreateAlertDTO
+> {
   constructor(
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     // TODO: Inject proper Alert model when implemented
-    super(null as any, auditLogger, cacheManager, 'Alert');
+    super(null as Alert, auditLogger, cacheManager, 'Alert');
   }
 
   protected async validateCreate(data: CreateAlertDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateAlertDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateAlertDTO,
+  ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Alert): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<AlertAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

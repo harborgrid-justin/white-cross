@@ -6,18 +6,18 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../../../database/repositories/base/base.repository';
 import {
+  CreateMedicalHistoryDTO,
   IMedicalHistoryRepository,
   MedicalHistoryAttributes,
-  CreateMedicalHistoryDTO,
-  UpdateMedicalHistoryDTO
+  UpdateMedicalHistoryDTO,
 } from '../interfaces/medical-history.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { QueryOptions } from '../../../database/types';
 import { MedicalHistory } from '../../../database/models/medical-history.model';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class MedicalHistoryRepository
   constructor(
     @InjectModel(MedicalHistory) model: typeof MedicalHistory,
     auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'MedicalHistory');
   }
@@ -38,18 +38,21 @@ export class MedicalHistoryRepository
    */
   async findByStudent(
     studentId: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<MedicalHistoryAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'by-student'
+        'by-student',
       );
 
-      const cached = await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
       if (cached) {
-        this.logger.debug(`Cache hit for medical history by student: ${studentId}`);
+        this.logger.debug(
+          `Cache hit for medical history by student: ${studentId}`,
+        );
         return cached;
       }
 
@@ -58,8 +61,8 @@ export class MedicalHistoryRepository
         order: [
           ['isCritical', 'DESC'],
           ['isActive', 'DESC'],
-          ['diagnosisDate', 'DESC']
-        ]
+          ['diagnosisDate', 'DESC'],
+        ],
       });
 
       const entities = records.map((r: any) => this.mapToEntity(r));
@@ -72,7 +75,7 @@ export class MedicalHistoryRepository
         'Failed to find medical history by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -82,17 +85,17 @@ export class MedicalHistoryRepository
    */
   async findByCondition(
     condition: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<MedicalHistoryAttributes[]> {
     try {
       const records = await this.model.findAll({
         where: {
           condition: {
-            [Op.iLike]: `%${condition}%`
-          }
+            [Op.iLike]: `%${condition}%`,
+          },
         },
         order: [['diagnosisDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return records.map((r: any) => this.mapToEntity(r));
@@ -102,7 +105,7 @@ export class MedicalHistoryRepository
         'Failed to find medical history by condition',
         'FIND_BY_CONDITION_ERROR',
         500,
-        { condition, error: (error as Error).message }
+        { condition, error: (error as Error).message },
       );
     }
   }
@@ -111,16 +114,17 @@ export class MedicalHistoryRepository
    * Find active medical conditions for a student
    */
   async findActiveConditions(
-    studentId: string
+    studentId: string,
   ): Promise<MedicalHistoryAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'active'
+        'active',
       );
 
-      const cached = await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
       if (cached) {
         return cached;
       }
@@ -128,9 +132,12 @@ export class MedicalHistoryRepository
       const records = await this.model.findAll({
         where: {
           studentId,
-          isActive: true
+          isActive: true,
         },
-        order: [['isCritical', 'DESC'], ['diagnosisDate', 'DESC']]
+        order: [
+          ['isCritical', 'DESC'],
+          ['diagnosisDate', 'DESC'],
+        ],
       });
 
       const entities = records.map((r: any) => this.mapToEntity(r));
@@ -143,7 +150,7 @@ export class MedicalHistoryRepository
         'Failed to find active conditions',
         'FIND_ACTIVE_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -153,13 +160,13 @@ export class MedicalHistoryRepository
    */
   async findByCategory(
     category: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<MedicalHistoryAttributes[]> {
     try {
       const records = await this.model.findAll({
         where: { category },
         order: [['diagnosisDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return records.map((r: any) => this.mapToEntity(r));
@@ -169,7 +176,7 @@ export class MedicalHistoryRepository
         'Failed to find medical history by category',
         'FIND_BY_CATEGORY_ERROR',
         500,
-        { category, error: (error as Error).message }
+        { category, error: (error as Error).message },
       );
     }
   }
@@ -178,16 +185,17 @@ export class MedicalHistoryRepository
    * Find family medical history for a student
    */
   async findFamilyHistory(
-    studentId: string
+    studentId: string,
   ): Promise<MedicalHistoryAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'family-history'
+        'family-history',
       );
 
-      const cached = await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
       if (cached) {
         return cached;
       }
@@ -195,9 +203,12 @@ export class MedicalHistoryRepository
       const records = await this.model.findAll({
         where: {
           studentId,
-          isFamilyHistory: true
+          isFamilyHistory: true,
         },
-        order: [['familyRelation', 'ASC'], ['condition', 'ASC']]
+        order: [
+          ['familyRelation', 'ASC'],
+          ['condition', 'ASC'],
+        ],
       });
 
       const entities = records.map((r: any) => this.mapToEntity(r));
@@ -210,7 +221,7 @@ export class MedicalHistoryRepository
         'Failed to find family history',
         'FIND_FAMILY_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -220,7 +231,7 @@ export class MedicalHistoryRepository
    */
   async searchConditions(
     query: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<MedicalHistoryAttributes[]> {
     try {
       const searchTerm = `%${query}%`;
@@ -231,11 +242,11 @@ export class MedicalHistoryRepository
             { condition: { [Op.iLike]: searchTerm } },
             { diagnosisCode: { [Op.iLike]: searchTerm } },
             { treatment: { [Op.iLike]: searchTerm } },
-            { medication: { [Op.iLike]: searchTerm } }
-          ]
+            { medication: { [Op.iLike]: searchTerm } },
+          ],
         },
         order: [['diagnosisDate', 'DESC']],
-        limit: options?.limit || 50
+        limit: options?.limit || 50,
       });
 
       return records.map((r: any) => this.mapToEntity(r));
@@ -245,7 +256,7 @@ export class MedicalHistoryRepository
         'Failed to search medical conditions',
         'SEARCH_ERROR',
         500,
-        { query, error: (error as Error).message }
+        { query, error: (error as Error).message },
       );
     }
   }
@@ -254,16 +265,17 @@ export class MedicalHistoryRepository
    * Flag and retrieve critical medical conditions for a student
    */
   async flagCriticalConditions(
-    studentId: string
+    studentId: string,
   ): Promise<MedicalHistoryAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'critical'
+        'critical',
       );
 
-      const cached = await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<MedicalHistoryAttributes[]>(cacheKey);
       if (cached) {
         return cached;
       }
@@ -272,9 +284,9 @@ export class MedicalHistoryRepository
         where: {
           studentId,
           isCritical: true,
-          isActive: true
+          isActive: true,
         },
-        order: [['diagnosisDate', 'DESC']]
+        order: [['diagnosisDate', 'DESC']],
       });
 
       const entities = records.map((r: any) => this.mapToEntity(r));
@@ -287,7 +299,7 @@ export class MedicalHistoryRepository
         'Failed to find critical conditions',
         'FIND_CRITICAL_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -301,7 +313,7 @@ export class MedicalHistoryRepository
         'Student ID is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'studentId' }
+        { field: 'studentId' },
       );
     }
 
@@ -310,7 +322,7 @@ export class MedicalHistoryRepository
         'Record type is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'recordType' }
+        { field: 'recordType' },
       );
     }
 
@@ -319,7 +331,7 @@ export class MedicalHistoryRepository
         'Condition is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'condition' }
+        { field: 'condition' },
       );
     }
 
@@ -331,7 +343,7 @@ export class MedicalHistoryRepository
       'hospitalization',
       'family_history',
       'medication',
-      'immunization'
+      'immunization',
     ];
 
     if (!validTypes.includes(data.recordType.toLowerCase())) {
@@ -339,7 +351,7 @@ export class MedicalHistoryRepository
         'Invalid record type',
         'VALIDATION_ERROR',
         400,
-        { recordType: data.recordType, validTypes }
+        { recordType: data.recordType, validTypes },
       );
     }
 
@@ -351,7 +363,7 @@ export class MedicalHistoryRepository
           'Invalid severity level',
           'VALIDATION_ERROR',
           400,
-          { severity: data.severity, validSeverities }
+          { severity: data.severity, validSeverities },
         );
       }
     }
@@ -362,7 +374,7 @@ export class MedicalHistoryRepository
         'Family relation is required for family history records',
         'VALIDATION_ERROR',
         400,
-        { field: 'familyRelation' }
+        { field: 'familyRelation' },
       );
     }
 
@@ -373,7 +385,10 @@ export class MedicalHistoryRepository
           'Resolved date cannot be before diagnosis date',
           'VALIDATION_ERROR',
           400,
-          { diagnosisDate: data.diagnosisDate, resolvedDate: data.resolvedDate }
+          {
+            diagnosisDate: data.diagnosisDate,
+            resolvedDate: data.resolvedDate,
+          },
         );
       }
     }
@@ -384,7 +399,7 @@ export class MedicalHistoryRepository
    */
   protected async validateUpdate(
     id: string,
-    data: UpdateMedicalHistoryDTO
+    data: UpdateMedicalHistoryDTO,
   ): Promise<void> {
     // Validate record type if provided
     if (data.recordType) {
@@ -395,7 +410,7 @@ export class MedicalHistoryRepository
         'hospitalization',
         'family_history',
         'medication',
-        'immunization'
+        'immunization',
       ];
 
       if (!validTypes.includes(data.recordType.toLowerCase())) {
@@ -403,7 +418,7 @@ export class MedicalHistoryRepository
           'Invalid record type',
           'VALIDATION_ERROR',
           400,
-          { recordType: data.recordType, validTypes }
+          { recordType: data.recordType, validTypes },
         );
       }
     }
@@ -416,7 +431,7 @@ export class MedicalHistoryRepository
           'Invalid severity level',
           'VALIDATION_ERROR',
           400,
-          { severity: data.severity, validSeverities }
+          { severity: data.severity, validSeverities },
         );
       }
     }
@@ -431,7 +446,7 @@ export class MedicalHistoryRepository
 
       // Invalidate entity cache
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, historyData.id)
+        this.cacheKeyBuilder.entity(this.entityName, historyData.id),
       );
 
       // Invalidate student-specific caches
@@ -440,51 +455,51 @@ export class MedicalHistoryRepository
           this.cacheKeyBuilder.summary(
             this.entityName,
             historyData.studentId,
-            'by-student'
-          )
+            'by-student',
+          ),
         );
 
         await this.cacheManager.delete(
           this.cacheKeyBuilder.summary(
             this.entityName,
             historyData.studentId,
-            'active'
-          )
+            'active',
+          ),
         );
 
         await this.cacheManager.delete(
           this.cacheKeyBuilder.summary(
             this.entityName,
             historyData.studentId,
-            'critical'
-          )
+            'critical',
+          ),
         );
 
         await this.cacheManager.delete(
           this.cacheKeyBuilder.summary(
             this.entityName,
             historyData.studentId,
-            'family-history'
-          )
+            'family-history',
+          ),
         );
 
         // Invalidate all student medical history patterns
         await this.cacheManager.deletePattern(
-          `white-cross:medicalhistory:student:${historyData.studentId}:*`
+          `white-cross:medicalhistory:student:${historyData.studentId}:*`,
         );
       }
 
       // Invalidate condition caches
       if (historyData.condition) {
         await this.cacheManager.deletePattern(
-          `white-cross:medicalhistory:condition:*`
+          `white-cross:medicalhistory:condition:*`,
         );
       }
 
       // Invalidate category caches
       if (historyData.category) {
         await this.cacheManager.deletePattern(
-          `white-cross:medicalhistory:category:${historyData.category}:*`
+          `white-cross:medicalhistory:category:${historyData.category}:*`,
         );
       }
     } catch (error) {

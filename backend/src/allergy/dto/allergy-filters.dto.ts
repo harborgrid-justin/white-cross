@@ -3,13 +3,7 @@
  *
  * Supports advanced search with multiple optional filter criteria.
  */
-import {
-  IsOptional,
-  IsUUID,
-  IsEnum,
-  IsBoolean,
-  IsString,
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AllergySeverity } from '../../common/enums';
 import { AllergenType } from '../entities/allergy.entity';

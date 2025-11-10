@@ -4,6 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  PhiDisclosure
-} from '../../database/models/phi-disclosure.model';
+export { PhiDisclosure } from '../../database/models/phi-disclosure.model';

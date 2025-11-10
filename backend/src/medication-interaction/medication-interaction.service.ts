@@ -2,11 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { StudentMedication } from '../database/models/student-medication.model';
 import { Medication } from '../database/models/medication.model';
-import {
-  DrugInteractionDto,
-  InteractionCheckResultDto,
-  InteractionSeverity,
-} from './dto';
+import { DrugInteractionDto, InteractionCheckResultDto, InteractionSeverity } from './dto';
 
 /**
  * Medication Interaction Checker Service
@@ -18,24 +14,24 @@ import {
 
 // Mock drug interaction database
 const KNOWN_INTERACTIONS: { [key: string]: DrugInteractionDto[] } = {
-  'warfarin': [
+  warfarin: [
     {
       severity: InteractionSeverity.MAJOR,
       medication1: 'warfarin',
       medication2: 'aspirin',
       description: 'Increased risk of bleeding',
-      recommendation: 'Monitor INR closely, consider alternative pain management'
-    }
+      recommendation: 'Monitor INR closely, consider alternative pain management',
+    },
   ],
-  'metformin': [
+  metformin: [
     {
       severity: InteractionSeverity.MODERATE,
       medication1: 'metformin',
       medication2: 'insulin',
       description: 'Increased risk of hypoglycemia',
-      recommendation: 'Monitor blood glucose levels frequently'
-    }
-  ]
+      recommendation: 'Monitor blood glucose levels frequently',
+    },
+  ],
 };
 
 @Injectable()
@@ -62,8 +58,8 @@ export class MedicationInteractionService {
       // Check all medication pairs
       for (let i = 0; i < medications.length; i++) {
         for (let j = i + 1; j < medications.length; j++) {
-          const med1 = medications[i].medication?.name.toLowerCase() || '';
-          const med2 = medications[j].medication?.name.toLowerCase() || '';
+          const med1 = medications[i]?.medication?.name?.toLowerCase() ?? '';
+          const med2 = medications[j]?.medication?.name?.toLowerCase() ?? '';
 
           const foundInteractions = this.findInteractions(med1, med2);
           interactions.push(...foundInteractions);
@@ -134,7 +130,9 @@ export class MedicationInteractionService {
         safetyScore,
       };
     } catch (error) {
-      this.logger.error('Error checking new medication interactions', { error });
+      this.logger.error('Error checking new medication interactions', {
+        error,
+      });
       throw error;
     }
   }
@@ -180,16 +178,12 @@ export class MedicationInteractionService {
 
     // Check both directions
     if (KNOWN_INTERACTIONS[med1]) {
-      const matches = KNOWN_INTERACTIONS[med1].filter(
-        (i) => i.medication2.toLowerCase() === med2,
-      );
+      const matches = KNOWN_INTERACTIONS[med1].filter((i) => i.medication2.toLowerCase() === med2);
       interactions.push(...matches);
     }
 
     if (KNOWN_INTERACTIONS[med2]) {
-      const matches = KNOWN_INTERACTIONS[med2].filter(
-        (i) => i.medication2.toLowerCase() === med1,
-      );
+      const matches = KNOWN_INTERACTIONS[med2].filter((i) => i.medication2.toLowerCase() === med1);
       interactions.push(...matches);
     }
 

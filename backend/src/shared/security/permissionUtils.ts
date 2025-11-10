@@ -122,13 +122,17 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
 /**
  * Check if user has required permission
- * 
+ *
  * @param userRole - The role of the user
  * @param resource - The resource being accessed
  * @param action - The action being performed
  * @returns true if user has permission, false otherwise
  */
-export function hasPermission(userRole: UserRole, resource: string, action: string): boolean {
+export function hasPermission(
+  userRole: UserRole,
+  resource: string,
+  action: string,
+): boolean {
   const permissions = ROLE_PERMISSIONS[userRole] || [];
 
   // Check for wildcard permission (admin)
@@ -138,18 +142,22 @@ export function hasPermission(userRole: UserRole, resource: string, action: stri
 
   // Check for specific permission
   return permissions.some(
-    (p) => p.resource === resource && (p.action === action || p.action === 'manage')
+    (p) =>
+      p.resource === resource && (p.action === action || p.action === 'manage'),
   );
 }
 
 /**
  * RBAC middleware factory
- * 
+ *
  * @param resource - The resource being protected
  * @param action - The action being performed
  * @returns Hapi middleware function
  */
-export function requirePermission(resource: string, action: 'create' | 'read' | 'update' | 'delete' | 'manage') {
+export function requirePermission(
+  resource: string,
+  action: 'create' | 'read' | 'update' | 'delete' | 'manage',
+) {
   return (request: Request, h: ResponseToolkit) => {
     const credentials = request.auth.credentials as any;
     const user = credentials?.user || credentials;
@@ -171,16 +179,16 @@ export function requirePermission(resource: string, action: 'create' | 'read' | 
  *
  * HIPAA Compliance: Enforces least-privilege access to student PHI based on relationships
  * and assignments. Critical for maintaining data privacy and audit compliance.
- * 
+ *
  * @param userId - ID of the user requesting access
  * @param userRole - Role of the user
  * @param studentId - ID of the student being accessed
  * @returns Promise<boolean> indicating if access is allowed
  */
 export async function canAccessStudent(
-  userId: string,
+  _userId: string,
   userRole: UserRole,
-  studentId: string
+  _studentId: string,
 ): Promise<boolean> {
   // Admins and District Admins can access all students
   if (userRole === UserRole.ADMIN || userRole === UserRole.DISTRICT_ADMIN) {
@@ -222,14 +230,15 @@ export async function canAccessStudent(
  *
  * Security: Validates user has appropriate permissions to access student data
  * before proceeding with the request.
- * 
+ *
  * @returns Hapi middleware function
  */
 export function requireStudentAccess() {
   return async (request: Request, h: ResponseToolkit) => {
     const credentials = request.auth.credentials as any;
     const user = credentials?.user || credentials;
-    const studentId = request.params.studentId || (request.payload as any)?.studentId;
+    const studentId =
+      request.params.studentId || (request.payload as any)?.studentId;
 
     if (!user) {
       throw Boom.unauthorized('Authentication required');
@@ -239,7 +248,11 @@ export function requireStudentAccess() {
       throw Boom.badRequest('Student ID required');
     }
 
-    const hasAccess = await canAccessStudent(user.id, user.role as UserRole, studentId);
+    const hasAccess = await canAccessStudent(
+      user.id,
+      user.role as UserRole,
+      studentId,
+    );
 
     if (!hasAccess) {
       throw Boom.forbidden('You do not have access to this student');

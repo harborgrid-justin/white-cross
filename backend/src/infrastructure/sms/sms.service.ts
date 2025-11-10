@@ -23,20 +23,20 @@
  * ```
  */
 
-import { Injectable, Logger, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bullmq';
 import {
   AlertSmsDto,
-  GenericSmsDto,
-  SendSmsDto,
-  SendTemplatedSmsDto,
   BulkSmsDto,
   BulkSmsResultDto,
+  GenericSmsDto,
+  PhoneNumberValidationResult,
+  SendSmsDto,
+  SendTemplatedSmsDto,
   SmsPriority,
   SmsQueueJobDto,
-  PhoneNumberValidationResult,
 } from './dto';
 import { TwilioProvider } from './providers/twilio.provider';
 import { PhoneValidatorService } from './services/phone-validator.service';
@@ -64,7 +64,8 @@ export class SmsService {
     private readonly costTracker: CostTrackerService,
     @InjectQueue(SMS_QUEUE_NAME) private readonly smsQueue: Queue,
   ) {
-    this.isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+    this.isProduction =
+      this.configService.get<string>('NODE_ENV') === 'production';
 
     this.logger.log(
       `SMS Service initialized - Environment: ${this.isProduction ? 'production' : 'development'}`,
@@ -74,7 +75,9 @@ export class SmsService {
     if (this.twilioProvider.isReady()) {
       this.logger.log('Twilio provider is configured and ready');
     } else {
-      this.logger.warn('Twilio provider is not configured - SMS will be logged only');
+      this.logger.warn(
+        'Twilio provider is not configured - SMS will be logged only',
+      );
     }
   }
 
@@ -98,7 +101,9 @@ export class SmsService {
    * ```
    */
   async sendAlertSMS(to: string, data: AlertSmsDto): Promise<void> {
-    this.logger.log(`Sending alert SMS to ${to} - [${data.severity}] ${data.title}`);
+    this.logger.log(
+      `Sending alert SMS to ${to} - [${data.severity}] ${data.title}`,
+    );
 
     try {
       // 1. Validate and normalize phone number
@@ -177,9 +182,14 @@ export class SmsService {
 
       // 4. Send via appropriate method
       if (this.twilioProvider.isReady() && this.isProduction) {
-        await this.queueSms(normalizedPhone, truncatedMessage, SmsPriority.NORMAL, {
-          type: 'generic',
-        });
+        await this.queueSms(
+          normalizedPhone,
+          truncatedMessage,
+          SmsPriority.NORMAL,
+          {
+            type: 'generic',
+          },
+        );
       } else {
         await this.logSmsToConsole(normalizedPhone, truncatedMessage);
       }
@@ -203,13 +213,17 @@ export class SmsService {
    * @returns Promise that resolves when SMS is queued
    */
   async sendAdvancedSMS(to: string, data: SendSmsDto): Promise<void> {
-    this.logger.log(`Sending advanced SMS to ${to} with priority ${data.priority}`);
+    this.logger.log(
+      `Sending advanced SMS to ${to} with priority ${data.priority}`,
+    );
 
     try {
       // Validate phone number
       const validation = await this.phoneValidator.validatePhoneNumber(to);
       if (!validation.isValid) {
-        throw new BadRequestException(`Invalid phone number: ${validation.error}`);
+        throw new BadRequestException(
+          `Invalid phone number: ${validation.error}`,
+        );
       }
 
       const normalizedPhone = validation.e164Format!;
@@ -222,7 +236,10 @@ export class SmsService {
       if (data.templateVariables) {
         // Simple variable substitution
         Object.entries(data.templateVariables).forEach(([key, value]) => {
-          message = message.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+          message = message.replace(
+            new RegExp(`{{${key}}}`, 'g'),
+            String(value),
+          );
         });
       }
 
@@ -252,7 +269,9 @@ export class SmsService {
 
       this.logger.log(`Advanced SMS queued for ${normalizedPhone}`);
     } catch (error) {
-      this.logger.error(`Failed to send advanced SMS to ${to}: ${error.message}`);
+      this.logger.error(
+        `Failed to send advanced SMS to ${to}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -271,7 +290,9 @@ export class SmsService {
       // Validate phone number
       const validation = await this.phoneValidator.validatePhoneNumber(to);
       if (!validation.isValid) {
-        throw new BadRequestException(`Invalid phone number: ${validation.error}`);
+        throw new BadRequestException(
+          `Invalid phone number: ${validation.error}`,
+        );
       }
 
       const normalizedPhone = validation.e164Format!;
@@ -280,15 +301,23 @@ export class SmsService {
       await this.checkRateLimits(normalizedPhone);
 
       // Render template
-      const message = await this.templateService.renderTemplate(data.templateId, data.variables);
+      const message = await this.templateService.renderTemplate(
+        data.templateId,
+        data.variables,
+      );
       const truncatedMessage = this.truncateMessage(message);
 
       // Send
       if (this.twilioProvider.isReady() && this.isProduction) {
-        await this.queueSms(normalizedPhone, truncatedMessage, SmsPriority.NORMAL, {
-          templateId: data.templateId,
-          type: 'templated',
-        });
+        await this.queueSms(
+          normalizedPhone,
+          truncatedMessage,
+          SmsPriority.NORMAL,
+          {
+            templateId: data.templateId,
+            type: 'templated',
+          },
+        );
       } else {
         await this.logSmsToConsole(normalizedPhone, truncatedMessage);
       }
@@ -299,7 +328,9 @@ export class SmsService {
 
       this.logger.log(`Templated SMS queued for ${normalizedPhone}`);
     } catch (error) {
-      this.logger.error(`Failed to send templated SMS to ${to}: ${error.message}`);
+      this.logger.error(
+        `Failed to send templated SMS to ${to}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -320,7 +351,8 @@ export class SmsService {
     for (const recipient of data.recipients) {
       try {
         // Validate phone number
-        const validation = await this.phoneValidator.validatePhoneNumber(recipient);
+        const validation =
+          await this.phoneValidator.validatePhoneNumber(recipient);
 
         if (!validation.isValid) {
           results.push({ phoneNumber: recipient, error: validation.error });
@@ -330,7 +362,8 @@ export class SmsService {
         const normalizedPhone = validation.e164Format!;
 
         // Check rate limit (but don't throw, just skip)
-        const rateLimitStatus = await this.rateLimiter.checkPhoneNumberLimit(normalizedPhone);
+        const rateLimitStatus =
+          await this.rateLimiter.checkPhoneNumberLimit(normalizedPhone);
         if (rateLimitStatus.isLimited) {
           results.push({
             phoneNumber: recipient,
@@ -365,7 +398,9 @@ export class SmsService {
     }
 
     const failedCount = data.recipients.length - successCount;
-    const failures = results.filter((r) => r.error).map((r) => ({ phoneNumber: r.phoneNumber, error: r.error! }));
+    const failures = results
+      .filter((r) => r.error)
+      .map((r) => ({ phoneNumber: r.phoneNumber, error: r.error! }));
 
     this.logger.log(
       `Bulk SMS completed - ${successCount} successful, ${failedCount} failed`,
@@ -408,7 +443,9 @@ export class SmsService {
       // Validate phone number first
       const validation = await this.phoneValidator.validatePhoneNumber(to);
       if (!validation.isValid) {
-        this.logger.error(`Test failed: Invalid phone number - ${validation.error}`);
+        this.logger.error(
+          `Test failed: Invalid phone number - ${validation.error}`,
+        );
         return false;
       }
 
@@ -442,7 +479,9 @@ export class SmsService {
    */
   setMaxLength(length: number): void {
     if (length < 1 || length > 1600) {
-      throw new BadRequestException('SMS length must be between 1 and 1600 characters');
+      throw new BadRequestException(
+        'SMS length must be between 1 and 1600 characters',
+      );
     }
 
     this.maxLength = length;
@@ -512,7 +551,8 @@ export class SmsService {
    */
   private async checkRateLimits(phoneNumber: string): Promise<void> {
     // Check per-phone rate limit
-    const phoneLimit = await this.rateLimiter.checkPhoneNumberLimit(phoneNumber);
+    const phoneLimit =
+      await this.rateLimiter.checkPhoneNumberLimit(phoneNumber);
     if (phoneLimit.isLimited) {
       this.logger.warn(`Rate limit exceeded for ${phoneNumber}`);
       throw new HttpException(

@@ -1,15 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsUUID,
-  IsOptional,
-  IsArray,
-  IsUrl,
-  MaxLength,
-  MinLength,
-  IsBoolean,
-  ArrayMinSize,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString, IsUrl, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 /**
  * DTO for sending group messages (1-to-many conversations)

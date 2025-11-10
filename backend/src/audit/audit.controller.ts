@@ -1,27 +1,11 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Param,
-  UseGuards,
-  HttpStatus,
-  HttpException,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
-import {
-  AuditLogFilterDto,
-  PHIAccessFilterDto,
-  AuditLogSearchDto,
-  DateRangeDto,
-  PaginatedAuditLogsDto,
-} from './dto';
+import { AuditLogFilterDto } from './dto/audit-log-filter.dto';
+import { AuditLogSearchDto } from './dto/audit-log-search.dto';
+import { DateRangeDto } from './dto/date-range.dto';
+import { PaginatedAuditLogsDto } from './dto/paginated-audit-logs.dto';
+import { PHIAccessFilterDto } from './dto/phi-access-filter.dto';
 
 /**
  * Audit Controller
@@ -42,17 +26,23 @@ export class AuditController {
 
   @Get('logs')
   @ApiOperation({ summary: 'Get audit logs with filters' })
-  @ApiResponse({ status: 200, description: 'Returns paginated audit logs', type: PaginatedAuditLogsDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns paginated audit logs',
+    type: PaginatedAuditLogsDto,
+  })
   async getAuditLogs(@Query() filters: AuditLogFilterDto) {
     try {
-      const result = await this.auditService.getAuditLogs({
+      return await this.auditService.getAuditLogs({
         ...filters,
         startDate: filters.startDate ? new Date(filters.startDate) : undefined,
         endDate: filters.endDate ? new Date(filters.endDate) : undefined,
       });
-      return result;
     } catch (error) {
-      throw new HttpException('Failed to fetch audit logs', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Failed to fetch audit logs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -66,7 +56,11 @@ export class AuditController {
 
   @Get('logs/search')
   @ApiOperation({ summary: 'Search audit logs by keyword' })
-  @ApiResponse({ status: 200, description: 'Returns search results', type: PaginatedAuditLogsDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns search results',
+    type: PaginatedAuditLogsDto,
+  })
   async searchLogs(@Query() searchDto: AuditLogSearchDto) {
     return this.auditService.searchAuditLogs(searchDto);
   }
@@ -75,7 +69,11 @@ export class AuditController {
   @ApiOperation({ summary: 'Get audit history for a specific entity' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({ status: 200, description: 'Returns entity audit history', type: PaginatedAuditLogsDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns entity audit history',
+    type: PaginatedAuditLogsDto,
+  })
   async getEntityHistory(
     @Param('type') entityType: string,
     @Param('id') entityId: string,
@@ -94,13 +92,21 @@ export class AuditController {
   @ApiOperation({ summary: 'Get audit history for a specific user' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiResponse({ status: 200, description: 'Returns user audit history', type: PaginatedAuditLogsDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns user audit history',
+    type: PaginatedAuditLogsDto,
+  })
   async getUserHistory(
     @Param('userId') userId: string,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.auditService.getUserAuditHistory(userId, page || 1, limit || 20);
+    return this.auditService.getUserAuditHistory(
+      userId,
+      page || 1,
+      limit || 20,
+    );
   }
 
   @Get('logs/:id')
@@ -119,17 +125,22 @@ export class AuditController {
 
   @Get('phi-access')
   @ApiOperation({ summary: 'Get PHI access logs with filters (HIPAA)' })
-  @ApiResponse({ status: 200, description: 'Returns paginated PHI access logs' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns paginated PHI access logs',
+  })
   async getPHIAccessLogs(@Query() filters: PHIAccessFilterDto) {
     try {
-      const result = await this.auditService.getPHIAccessLogs({
+      return await this.auditService.getPHIAccessLogs({
         ...filters,
         startDate: filters.startDate ? new Date(filters.startDate) : undefined,
         endDate: filters.endDate ? new Date(filters.endDate) : undefined,
       });
-      return result;
     } catch (error) {
-      throw new HttpException('Failed to fetch PHI access logs', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Failed to fetch PHI access logs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -143,7 +154,11 @@ export class AuditController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.auditService.getStudentPHIAccessLogs(studentId, page || 1, limit || 20);
+    return this.auditService.getStudentPHIAccessLogs(
+      studentId,
+      page || 1,
+      limit || 20,
+    );
   }
 
   @Get('phi-access/user/:userId')
@@ -156,7 +171,11 @@ export class AuditController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ) {
-    return this.auditService.getUserPHIAccessLogs(userId, page || 1, limit || 20);
+    return this.auditService.getUserPHIAccessLogs(
+      userId,
+      page || 1,
+      limit || 20,
+    );
   }
 
   // ========== COMPLIANCE ENDPOINTS ==========
@@ -203,7 +222,10 @@ export class AuditController {
 
   @Get('security/suspicious-logins')
   @ApiOperation({ summary: 'Detect suspicious login patterns' })
-  @ApiResponse({ status: 200, description: 'Returns suspicious login analysis' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns suspicious login analysis',
+  })
   async detectSuspiciousLogins(@Query() dateRange: DateRangeDto) {
     const startDate = new Date(dateRange.startDate);
     const endDate = new Date(dateRange.endDate);

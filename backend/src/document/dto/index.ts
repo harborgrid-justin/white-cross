@@ -9,3 +9,5 @@ export * from './share-document.dto';
 export * from './filter-documents.dto';
 export * from './create-from-template.dto';
 export * from './bulk-delete-documents.dto';
+
+export * from './search-documents.dto';

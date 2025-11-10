@@ -4,36 +4,29 @@
  */
 
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Put,
-  Body,
-  Param,
   HttpCode,
   HttpStatus,
-  ValidationPipe,
-  UsePipes,
   Logger,
+  Param,
+  Post,
+  Put,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmergencyBroadcastService } from './emergency-broadcast.service';
 import {
-  CreateEmergencyBroadcastDto,
-  UpdateEmergencyBroadcastDto,
-  EmergencyBroadcastResponseDto,
-  SendBroadcastResponseDto,
   BroadcastStatusResponseDto,
   CancelBroadcastDto,
-  RecordAcknowledgmentDto,
+  CreateEmergencyBroadcastDto,
+  EmergencyBroadcastResponseDto,
   EmergencyTemplatesResponseDto,
+  RecordAcknowledgmentDto,
+  SendBroadcastResponseDto,
+  UpdateEmergencyBroadcastDto,
 } from './dto';
 
 @ApiTags('Emergency Broadcast')
@@ -55,7 +48,8 @@ export class EmergencyBroadcastController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create emergency broadcast',
-    description: 'Creates a new emergency broadcast message for immediate or scheduled delivery',
+    description:
+      'Creates a new emergency broadcast message for immediate or scheduled delivery',
   })
   @ApiBody({
     type: CreateEmergencyBroadcastDto,

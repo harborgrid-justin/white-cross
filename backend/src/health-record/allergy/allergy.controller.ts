@@ -1,27 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
   Body,
-  Param,
-  UseGuards,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Post,
+  Put,
   Request,
+  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllergyService } from './allergy.service';
-import { HealthRecordCreateAllergyDto } from './dto/create-allergy.dto';
-import { HealthRecordUpdateAllergyDto } from './dto/update-allergy.dto';
+import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { CheckMedicationConflictsDto, MedicationConflictResponseDto } from './dto/check-conflicts.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
@@ -39,7 +32,7 @@ import { UserRole } from '../../database/models/user.model';
 @Controller('health-records/allergies')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class AllergyController {
+export class HealthRecordAllergyController {
   constructor(private readonly allergyService: AllergyService) {}
 
   /**
@@ -55,7 +48,10 @@ export class AllergyController {
     status: 200,
     description: 'Allergy retrieved successfully',
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async getAllergyById(@Param('id') id: string, @Request() req: any) {
@@ -77,9 +73,15 @@ export class AllergyController {
     description: 'Student allergies retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Must be assigned nurse or admin' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Must be assigned nurse or admin',
+  })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async getStudentAllergies(@Param('studentId') studentId: string, @Request() req: any) {
+  async getStudentAllergies(
+    @Param('studentId') studentId: string,
+    @Request() req: any,
+  ) {
     return this.allergyService.findByStudent(studentId, req.user);
   }
 
@@ -92,19 +94,31 @@ export class AllergyController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.NURSE)
   @ApiOperation({ summary: 'Create new allergy record' })
-  @ApiBody({ type: HealthRecordCreateAllergyDto })
+    @ApiBody({ type: CreateAllergyDto })
   @ApiResponse({
     status: 201,
-    description: 'Allergy created successfully with audit trail entry',
+    description: 'The allergy record has been successfully created.',
   })
   @ApiResponse({
     status: 400,
-    description: 'Bad request - Validation error',
+    description: 'Bad request - invalid data provided.',
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE or ADMIN role' })
-  @ApiResponse({ status: 404, description: 'Student not found' })
-  async createAllergy(@Body() createAllergyDto: HealthRecordCreateAllergyDto, @Request() req: any) {
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - insufficient permissions.',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error.',
+  })
+  async create(
+    @Request() req: any,
+    @Body() createAllergyDto: CreateAllergyDto,
+  ) {
     return this.allergyService.create(createAllergyDto, req.user);
   }
 
@@ -119,18 +133,21 @@ export class AllergyController {
   @Roles(UserRole.ADMIN, UserRole.NURSE)
   @ApiOperation({ summary: 'Update allergy record' })
   @ApiParam({ name: 'id', description: 'Allergy UUID', type: 'string' })
-  @ApiBody({ type: HealthRecordUpdateAllergyDto })
+  @ApiBody({ type: UpdateAllergyDto })
   @ApiResponse({
     status: 200,
     description: 'Allergy updated successfully with audit entry',
   })
   @ApiResponse({ status: 400, description: 'Bad request - Validation error' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE or ADMIN role' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE or ADMIN role',
+  })
   @ApiResponse({ status: 404, description: 'Allergy not found' })
   async updateAllergy(
     @Param('id') id: string,
-    @Body() updateAllergyDto: HealthRecordUpdateAllergyDto,
+    @Body() updateAllergyDto: UpdateAllergyDto,
     @Request() req: any,
   ) {
     return this.allergyService.update(id, updateAllergyDto, req.user);
@@ -148,7 +165,8 @@ export class AllergyController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Check medication-allergy conflicts (CRITICAL SAFETY)',
-    description: 'Checks if a medication conflicts with student\'s known allergies. Returns severity level and recommendations.'
+    description:
+      "Checks if a medication conflicts with student's known allergies. Returns severity level and recommendations.",
   })
   @ApiBody({ type: CheckMedicationConflictsDto })
   @ApiResponse({
@@ -160,8 +178,14 @@ export class AllergyController {
     status: 400,
     description: 'Bad request - Invalid student ID or medication name',
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Requires NURSE, COUNSELOR, or ADMIN role' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Requires NURSE, COUNSELOR, or ADMIN role',
+  })
   @ApiResponse({ status: 404, description: 'Student not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async checkMedicationConflicts(
@@ -174,12 +198,13 @@ export class AllergyController {
     );
 
     // Enhanced response with safety recommendations
-    let recommendation: 'SAFE' | 'CONSULT_PHYSICIAN' | 'DO_NOT_ADMINISTER' = 'SAFE';
+    let recommendation: 'SAFE' | 'CONSULT_PHYSICIAN' | 'DO_NOT_ADMINISTER' =
+      'SAFE';
     let warning: string | undefined;
 
     if (result.hasInteractions) {
       const hasSevere = result.interactions.some(
-        (i) => i.severity === 'SEVERE' || i.severity === 'LIFE_THREATENING',
+        (i: any) => i.severity === 'SEVERE' || i.severity === 'LIFE_THREATENING',
       );
 
       if (hasSevere) {
@@ -193,7 +218,7 @@ export class AllergyController {
 
     return {
       hasConflicts: result.hasInteractions,
-      conflicts: result.interactions.map((interaction) => ({
+      conflicts: result.interactions.map((interaction: any) => ({
         allergen: interaction.allergen,
         severity: interaction.severity,
         reaction: interaction.reaction,

@@ -4,7 +4,7 @@
  * Defines GraphQL object types for Medication entity
  * using NestJS GraphQL decorators for code-first schema generation.
  */
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 /**
  * Medication GraphQL Object Type

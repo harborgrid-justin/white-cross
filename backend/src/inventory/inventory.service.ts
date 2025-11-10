@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { InventoryItem } from '../database/models/inventory-item.model';
@@ -17,7 +17,9 @@ export class InventoryService {
   /**
    * Create new inventory item
    */
-  async createInventoryItem(data: CreateInventoryItemDto): Promise<InventoryItem> {
+  async createInventoryItem(
+    data: CreateInventoryItemDto,
+  ): Promise<InventoryItem> {
     try {
       // Check if item with same name already exists
       const existingItem = await this.inventoryItemModel.findOne({
@@ -28,7 +30,9 @@ export class InventoryService {
       });
 
       if (existingItem) {
-        throw new ConflictException('Inventory item with this name already exists');
+        throw new ConflictException(
+          'Inventory item with this name already exists',
+        );
       }
 
       const savedItem = await this.inventoryItemModel.create({
@@ -36,7 +40,9 @@ export class InventoryService {
         isActive: true,
       } as any);
 
-      this.logger.log(`Inventory item created: ${savedItem.name} (${savedItem.category})`);
+      this.logger.log(
+        `Inventory item created: ${savedItem.name} (${savedItem.category})`,
+      );
       return savedItem;
     } catch (error) {
       this.logger.error('Error creating inventory item:', error);
@@ -47,7 +53,10 @@ export class InventoryService {
   /**
    * Update inventory item
    */
-  async updateInventoryItem(id: string, data: UpdateInventoryItemDto): Promise<InventoryItem> {
+  async updateInventoryItem(
+    id: string,
+    data: UpdateInventoryItemDto,
+  ): Promise<InventoryItem> {
     try {
       const existingItem = await this.inventoryItemModel.findByPk(id);
 
@@ -167,7 +176,10 @@ export class InventoryService {
    * @param limit Maximum number of results (default: 20)
    * @returns Array of matching inventory items ordered by relevance
    */
-  async searchInventoryItems(query: string, limit: number = 20): Promise<InventoryItem[]> {
+  async searchInventoryItems(
+    query: string,
+    limit: number = 20,
+  ): Promise<InventoryItem[]> {
     try {
       if (!query || query.trim().length === 0) {
         // Return empty for empty queries
@@ -179,8 +191,8 @@ export class InventoryService {
         .trim()
         .replace(/[&|!():*]/g, ' ') // Remove special ts_query characters
         .split(/\s+/) // Split on whitespace
-        .filter(term => term.length > 0) // Remove empty terms
-        .map(term => `${term}:*`) // Add prefix matching
+        .filter((term) => term.length > 0) // Remove empty terms
+        .map((term) => `${term}:*`) // Add prefix matching
         .join(' & '); // Combine with AND
 
       if (!sanitizedQuery) {
@@ -189,8 +201,9 @@ export class InventoryService {
 
       // OPTIMIZATION: Use raw query with full-text search and GIN index
       // This is much faster than multiple ILIKE operations
-      const items = await this.inventoryItemModel.sequelize!.query<InventoryItem>(
-        `
+      const items =
+        await this.inventoryItemModel.sequelize!.query<InventoryItem>(
+          `
         SELECT
           "id",
           "name",
@@ -214,20 +227,24 @@ export class InventoryService {
         ORDER BY rank DESC, "name" ASC
         LIMIT :limit
         `,
-        {
-          replacements: { query: sanitizedQuery, limit },
-          type: 'SELECT',
-          model: this.inventoryItemModel,
-          mapToModel: true,
-        }
-      );
+          {
+            replacements: { query: sanitizedQuery, limit },
+            type: 'SELECT',
+            model: this.inventoryItemModel,
+            mapToModel: true,
+          },
+        );
 
-      this.logger.log(`Full-text search returned ${items.length} results for query: "${query}"`);
+      this.logger.log(
+        `Full-text search returned ${items.length} results for query: "${query}"`,
+      );
       return items;
     } catch (error) {
       this.logger.error('Error searching inventory items:', error);
       // Fallback to ILIKE search if full-text search fails (e.g., column doesn't exist yet)
-      this.logger.warn('Falling back to ILIKE search - consider running full-text search migration');
+      this.logger.warn(
+        'Falling back to ILIKE search - consider running full-text search migration',
+      );
       return this.fallbackILikeSearch(query, limit);
     }
   }
@@ -238,7 +255,10 @@ export class InventoryService {
    *
    * @private
    */
-  private async fallbackILikeSearch(query: string, limit: number): Promise<InventoryItem[]> {
+  private async fallbackILikeSearch(
+    query: string,
+    limit: number,
+  ): Promise<InventoryItem[]> {
     return this.inventoryItemModel.findAll({
       where: {
         isActive: true,

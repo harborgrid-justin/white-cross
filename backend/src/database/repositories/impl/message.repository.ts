@@ -2,14 +2,12 @@
  * Message Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { BaseRepository } from '../base/base.repository';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 
 export interface MessageAttributes {
   id: string;
@@ -26,31 +24,40 @@ export interface UpdateMessageDTO {
 }
 
 @Injectable()
-export class MessageRepository extends BaseRepository<any, MessageAttributes, CreateMessageDTO> {
+export class MessageRepository extends BaseRepository<
+  any,
+  MessageAttributes,
+  CreateMessageDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Message');
   }
 
   protected async validateCreate(data: CreateMessageDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateMessageDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateMessageDTO,
+  ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Message): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<MessageAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

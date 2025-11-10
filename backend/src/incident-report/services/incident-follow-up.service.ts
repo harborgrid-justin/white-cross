@@ -1,17 +1,12 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { FollowUpAction } from '../../database/models/follow-up-action.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
+import { FollowUpAction, IncidentReport } from '@/database';
 import { CreateFollowUpActionDto } from '../dto/create-follow-up-action.dto';
 import { UpdateFollowUpActionDto } from '../dto/update-follow-up-action.dto';
 import { IncidentValidationService } from './incident-validation.service';
-import { ActionStatus, ActionPriority } from '../enums';
+import { ActionPriority } from '../enums/action-priority.enum';
+import { ActionStatus } from '../enums/action-status.enum';
 
 @Injectable()
 export class IncidentFollowUpService {
@@ -99,7 +94,9 @@ export class IncidentFollowUpService {
   /**
    * Get follow-up actions for an incident
    */
-  async getFollowUpActions(incidentReportId: string): Promise<FollowUpAction[]> {
+  async getFollowUpActions(
+    incidentReportId: string,
+  ): Promise<FollowUpAction[]> {
     try {
       const actions = await this.followUpActionModel.findAll({
         where: { incidentReportId },
@@ -195,7 +192,9 @@ export class IncidentFollowUpService {
 
       // Don't allow deleting completed actions
       if (action.status === ActionStatus.COMPLETED) {
-        throw new BadRequestException('Cannot delete completed follow-up actions');
+        throw new BadRequestException(
+          'Cannot delete completed follow-up actions',
+        );
       }
 
       await action.destroy();
@@ -218,10 +217,16 @@ export class IncidentFollowUpService {
       if (dateFrom || dateTo) {
         whereClause.createdAt = {};
         if (dateFrom) {
-          whereClause.createdAt = { ...whereClause.createdAt, [Op.gte]: dateFrom };
+          whereClause.createdAt = {
+            ...whereClause.createdAt,
+            [Op.gte]: dateFrom,
+          };
         }
         if (dateTo) {
-          whereClause.createdAt = { ...whereClause.createdAt, [Op.lte]: dateTo };
+          whereClause.createdAt = {
+            ...whereClause.createdAt,
+            [Op.lte]: dateTo,
+          };
         }
       }
 

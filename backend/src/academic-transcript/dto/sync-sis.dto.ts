@@ -5,13 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  IsUrl,
-  IsOptional,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
 /**
  * Sync SIS DTO

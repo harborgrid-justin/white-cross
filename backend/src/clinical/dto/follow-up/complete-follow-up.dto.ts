@@ -1,4 +1,4 @@
-import { IsUUID, IsDate, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -10,7 +10,10 @@ export class CompleteFollowUpDto {
   @IsUUID()
   completedVisitId: string;
 
-  @ApiProperty({ description: 'Completion timestamp', example: '2025-11-15T14:30:00Z' })
+  @ApiProperty({
+    description: 'Completion timestamp',
+    example: '2025-11-15T14:30:00Z',
+  })
   @Type(() => Date)
   @IsDate()
   completedAt: Date;

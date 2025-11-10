@@ -1,17 +1,16 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { ProtocolStatus } from '../../clinical/enums/protocol-status.enum';
 
@@ -53,10 +52,10 @@ export interface ClinicalProtocolAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'clinical_protocols',
@@ -64,29 +63,32 @@ export interface ClinicalProtocolAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['name']
+      fields: ['name'],
     },
     {
-      fields: ['status']
+      fields: ['status'],
     },
     {
-      fields: ['category']
+      fields: ['category'],
     },
     {
       fields: ['code'],
-      unique: true
+      unique: true,
     },
     {
       fields: ['createdAt'],
-      name: 'idx_clinical_protocol_created_at'
+      name: 'idx_clinical_protocol_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_clinical_protocol_updated_at'
-    }
-  ]
-  })
-export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implements ClinicalProtocolAttributes {
+      name: 'idx_clinical_protocol_updated_at',
+    },
+  ],
+})
+export class ClinicalProtocol
+  extends Model<ClinicalProtocolAttributes>
+  implements ClinicalProtocolAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -94,52 +96,52 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   name: string;
 
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    unique: true
+    unique: true,
   })
   @Index({ unique: true })
   code: string;
 
   @Column({
     type: DataType.STRING(20),
-    allowNull: false
+    allowNull: false,
   })
   declare version: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   @Index
   category: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   indications: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   contraindications?: string[];
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   steps: Array<{
     order: number;
@@ -150,7 +152,7 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   decisionPoints?: Array<{
     step: number;
@@ -161,66 +163,66 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   requiredEquipment?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   medications?: string[];
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ProtocolStatus)]
+      isIn: [Object.values(ProtocolStatus)],
     },
     allowNull: false,
-    defaultValue: ProtocolStatus.DRAFT
+    defaultValue: ProtocolStatus.DRAFT,
   })
   @Index
   status: ProtocolStatus;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   createdBy: string;
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   approvedBy?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   approvedDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY
+    type: DataType.DATEONLY,
   })
   effectiveDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY
+    type: DataType.DATEONLY,
   })
   reviewDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   references?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   tags?: string[];
 
@@ -261,14 +263,15 @@ export class ClinicalProtocol extends Model<ClinicalProtocolAttributes> implemen
     return this.steps.filter((step) => step.required);
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ClinicalProtocol) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ClinicalProtocol ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ClinicalProtocol ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

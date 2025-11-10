@@ -1,15 +1,14 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { TreatmentStatus } from '../../clinical/enums/treatment-status.enum';
 
@@ -29,10 +28,10 @@ export interface TreatmentPlanAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'treatment_plans',
@@ -41,22 +40,25 @@ export interface TreatmentPlanAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
+      fields: ['studentId'],
     },
     {
-      fields: ['status']
+      fields: ['status'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_treatment_plan_created_at'
+      name: 'idx_treatment_plan_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_treatment_plan_updated_at'
-    }
-  ]
+      name: 'idx_treatment_plan_updated_at',
+    },
+  ],
 })
-export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements TreatmentPlanAttributes {
+export class TreatmentPlan
+  extends Model<TreatmentPlanAttributes>
+  implements TreatmentPlanAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -64,25 +66,25 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   diagnosis: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   planDetails: any;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   startDate: Date;
 
@@ -92,15 +94,15 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(TreatmentStatus)]
+      isIn: [Object.values(TreatmentStatus)],
     },
-    allowNull: false
+    allowNull: false,
   })
   status: TreatmentStatus;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   prescribedBy: string;
 
@@ -110,14 +112,15 @@ export class TreatmentPlan extends Model<TreatmentPlanAttributes> implements Tre
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: TreatmentPlan) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] TreatmentPlan ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] TreatmentPlan ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

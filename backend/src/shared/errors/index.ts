@@ -30,3 +30,5 @@ export {
   isRetryable,
   ServiceErrorFactory,
 } from './ServiceErrors';
+
+export * from './ServiceErrors';

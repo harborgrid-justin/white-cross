@@ -5,33 +5,24 @@
  */
 
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/auth';
+import { CurrentUser } from '@/auth/decorators';
 import { AlertsService } from './alerts.service';
-import { CreateAlertDto } from './dto/create-alert.dto';
-import { AlertFilterDto } from './dto/alert-filter.dto';
-import { AlertsUpdatePreferencesDto } from './dto/update-preferences.dto';
+import { AlertFilterDto, AlertsUpdatePreferencesDto, CreateAlertDto } from '@/alerts/dto';
 
 @ApiTags('alerts')
 @Controller('alerts')
@@ -104,9 +95,7 @@ export class AlertsController {
     status: 204,
     description: 'Alert deleted successfully',
   })
-  async remove(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ) {
+  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     await this.alertsService.deleteAlert(id);
   }
 

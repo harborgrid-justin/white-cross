@@ -1,11 +1,5 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
 import { TreatmentPlan } from '../entities/treatment-plan.entity';
 import { TreatmentStatus } from '../enums/treatment-status.enum';
 import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.dto';
@@ -29,7 +23,9 @@ export class TreatmentPlanService {
    * Create a new treatment plan
    */
   async create(createDto: CreateTreatmentPlanDto): Promise<TreatmentPlan> {
-    this.logger.log(`Creating treatment plan for student ${createDto.studentId}`);
+    this.logger.log(
+      `Creating treatment plan for student ${createDto.studentId}`,
+    );
 
     return this.treatmentPlanModel.create(createDto as any);
   }
@@ -70,12 +66,13 @@ export class TreatmentPlanService {
       whereClause.createdBy = filters.createdBy;
     }
 
-    const { rows: plans, count: total } = await this.treatmentPlanModel.findAndCountAll({
-      where: whereClause,
-      offset: filters.offset || 0,
-      limit: filters.limit || 20,
-      order: [['createdAt', 'DESC']],
-    });
+    const { rows: plans, count: total } =
+      await this.treatmentPlanModel.findAndCountAll({
+        where: whereClause,
+        offset: filters.offset || 0,
+        limit: filters.limit || 20,
+        order: [['createdAt', 'DESC']],
+      });
 
     return { plans, total };
   }
@@ -83,7 +80,10 @@ export class TreatmentPlanService {
   /**
    * Get treatment plans by student ID
    */
-  async findByStudent(studentId: string, limit: number = 10): Promise<TreatmentPlan[]> {
+  async findByStudent(
+    studentId: string,
+    limit: number = 10,
+  ): Promise<TreatmentPlan[]> {
     return this.treatmentPlanModel.findAll({
       where: { studentId },
       order: [['createdAt', 'DESC']],
@@ -104,12 +104,13 @@ export class TreatmentPlanService {
     });
   }
 
-
-
   /**
    * Update treatment plan
    */
-  async update(id: string, updateDto: UpdateTreatmentPlanDto): Promise<TreatmentPlan> {
+  async update(
+    id: string,
+    updateDto: UpdateTreatmentPlanDto,
+  ): Promise<TreatmentPlan> {
     const plan = await this.findOne(id);
 
     Object.assign(plan, updateDto);
@@ -175,6 +176,4 @@ export class TreatmentPlanService {
 
     this.logger.log(`Deleted treatment plan ${id}`);
   }
-
-
 }

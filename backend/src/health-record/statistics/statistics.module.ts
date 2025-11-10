@@ -3,6 +3,6 @@ import { StatisticsService } from './statistics.service';
 
 @Module({
   providers: [StatisticsService],
-  exports: [StatisticsService]
+  exports: [StatisticsService],
 })
 export class StatisticsModule {}

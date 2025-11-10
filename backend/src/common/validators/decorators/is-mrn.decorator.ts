@@ -6,8 +6,8 @@
 
 import {
   registerDecorator,
-  ValidationOptions,
   ValidationArguments,
+  ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
@@ -106,7 +106,7 @@ export function IsMRN(
   options?: MRNValidationOptions,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isMRN',
       target: object.constructor,

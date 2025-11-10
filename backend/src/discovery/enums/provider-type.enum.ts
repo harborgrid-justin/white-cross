@@ -4,17 +4,17 @@ export enum ProviderType {
   CACHEABLE = 'cacheable',
   MONITORED = 'monitored',
   RATE_LIMITED = 'rate-limited',
-  ALL = 'all'
+  ALL = 'all',
 }
 
 export enum MonitoringLevel {
   BASIC = 'basic',
-  DETAILED = 'detailed'
+  DETAILED = 'detailed',
 }
 
 export enum FeatureFlag {
   EXPERIMENTAL = 'experimental',
   BETA = 'beta',
   STABLE = 'stable',
-  DEPRECATED = 'deprecated'
+  DEPRECATED = 'deprecated',
 }

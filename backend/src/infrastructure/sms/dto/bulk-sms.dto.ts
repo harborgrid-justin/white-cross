@@ -5,15 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsArray,
-  IsString,
-  ArrayMinSize,
-  ArrayMaxSize,
-  IsOptional,
-  IsObject,
-} from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 import { GenericSmsDto } from './generic-sms.dto';
 import { SmsPriority } from './send-sms.dto';
 
@@ -75,9 +67,7 @@ export class BulkSmsResultDto {
 
   @ApiProperty({
     description: 'Failed recipients with error details',
-    example: [
-      { phoneNumber: '+15551234567', error: 'Invalid phone number' },
-    ],
+    example: [{ phoneNumber: '+15551234567', error: 'Invalid phone number' }],
   })
   failures: Array<{ phoneNumber: string; error: string }>;
 

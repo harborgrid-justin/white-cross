@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Medication } from '../../database/models/medication.model';
 import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
-import { UpdateMedicationDto } from './dto/update-medication.dto';
+import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
 import { Op } from 'sequelize';
 
 @Injectable()
@@ -15,14 +15,18 @@ export class MedicationService {
   /**
    * Create a new medication
    */
-  async create(createDto: HealthRecordCreateMedicationDto): Promise<Medication> {
+  async create(
+    createDto: HealthRecordCreateMedicationDto,
+  ): Promise<Medication> {
     // Check if medication with same NDC already exists
     if (createDto.ndc) {
       const existing = await this.medicationModel.findOne({
         where: { ndc: createDto.ndc, isActive: true },
       });
       if (existing) {
-        throw new ConflictException(`Medication with NDC ${createDto.ndc} already exists`);
+        throw new ConflictException(
+          `Medication with NDC ${createDto.ndc} already exists`,
+        );
       }
     }
 
@@ -75,7 +79,10 @@ export class MedicationService {
   /**
    * Update medication
    */
-  async update(id: string, updateDto: UpdateMedicationDto): Promise<Medication> {
+  async update(
+    id: string,
+    updateDto: UpdateHealthRecordMedicationDto,
+  ): Promise<Medication> {
     const medication = await this.findById(id);
 
     // Check NDC uniqueness if being updated
@@ -84,7 +91,9 @@ export class MedicationService {
         where: { ndc: updateDto.ndc, isActive: true, id: { [Op.ne]: id } },
       });
       if (existing) {
-        throw new ConflictException(`Medication with NDC ${updateDto.ndc} already exists`);
+        throw new ConflictException(
+          `Medication with NDC ${updateDto.ndc} already exists`,
+        );
       }
     }
 
@@ -134,7 +143,10 @@ export class MedicationService {
         isControlled: true,
         isActive: true,
       },
-      order: [['deaSchedule', 'ASC'], ['name', 'ASC']],
+      order: [
+        ['deaSchedule', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
   }
 

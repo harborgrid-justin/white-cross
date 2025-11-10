@@ -8,35 +8,35 @@
  */
 export enum EmergencyType {
   // CRITICAL - Immediate life safety threats
-  ACTIVE_THREAT = 'ACTIVE_THREAT',           // Active shooter, intruder
-  MEDICAL_EMERGENCY = 'MEDICAL_EMERGENCY',    // Severe medical situation
-  FIRE = 'FIRE',                             // Fire or explosion
-  NATURAL_DISASTER = 'NATURAL_DISASTER',     // Tornado, earthquake, etc.
+  ACTIVE_THREAT = 'ACTIVE_THREAT', // Active shooter, intruder
+  MEDICAL_EMERGENCY = 'MEDICAL_EMERGENCY', // Severe medical situation
+  FIRE = 'FIRE', // Fire or explosion
+  NATURAL_DISASTER = 'NATURAL_DISASTER', // Tornado, earthquake, etc.
 
   // HIGH - Urgent but not immediate threat
-  LOCKDOWN = 'LOCKDOWN',                     // Security lockdown
-  EVACUATION = 'EVACUATION',                 // Building evacuation
-  SHELTER_IN_PLACE = 'SHELTER_IN_PLACE',     // Shelter in place order
+  LOCKDOWN = 'LOCKDOWN', // Security lockdown
+  EVACUATION = 'EVACUATION', // Building evacuation
+  SHELTER_IN_PLACE = 'SHELTER_IN_PLACE', // Shelter in place order
 
   // MEDIUM - Important notifications
-  WEATHER_ALERT = 'WEATHER_ALERT',           // Severe weather
-  TRANSPORTATION = 'TRANSPORTATION',         // Bus delays/cancellations
-  FACILITY_ISSUE = 'FACILITY_ISSUE',         // Power outage, water issue
+  WEATHER_ALERT = 'WEATHER_ALERT', // Severe weather
+  TRANSPORTATION = 'TRANSPORTATION', // Bus delays/cancellations
+  FACILITY_ISSUE = 'FACILITY_ISSUE', // Power outage, water issue
 
   // LOW - General announcements
-  SCHOOL_CLOSURE = 'SCHOOL_CLOSURE',         // Planned closure
-  EARLY_DISMISSAL = 'EARLY_DISMISSAL',       // Early dismissal
-  GENERAL_ANNOUNCEMENT = 'GENERAL_ANNOUNCEMENT'
+  SCHOOL_CLOSURE = 'SCHOOL_CLOSURE', // Planned closure
+  EARLY_DISMISSAL = 'EARLY_DISMISSAL', // Early dismissal
+  GENERAL_ANNOUNCEMENT = 'GENERAL_ANNOUNCEMENT',
 }
 
 /**
  * Emergency priority levels determine delivery speed and channels
  */
 export enum EmergencyPriority {
-  CRITICAL = 'CRITICAL',  // All channels, immediate delivery
-  HIGH = 'HIGH',          // SMS + Email + Push, prioritized
-  MEDIUM = 'MEDIUM',      // Email + Push, normal delivery
-  LOW = 'LOW'             // Email only, batch delivery
+  CRITICAL = 'CRITICAL', // All channels, immediate delivery
+  HIGH = 'HIGH', // SMS + Email + Push, prioritized
+  MEDIUM = 'MEDIUM', // Email + Push, normal delivery
+  LOW = 'LOW', // Email only, batch delivery
 }
 
 /**
@@ -50,7 +50,7 @@ export enum BroadcastAudience {
   SPECIFIC_SCHOOL = 'SPECIFIC_SCHOOL',
   SPECIFIC_CLASS = 'SPECIFIC_CLASS',
   SPECIFIC_GROUP = 'SPECIFIC_GROUP',
-  EMERGENCY_CONTACTS = 'EMERGENCY_CONTACTS'
+  EMERGENCY_CONTACTS = 'EMERGENCY_CONTACTS',
 }
 
 /**
@@ -61,7 +61,7 @@ export enum BroadcastStatus {
   SENDING = 'SENDING',
   SENT = 'SENT',
   FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 /**
@@ -71,7 +71,7 @@ export enum CommunicationChannel {
   SMS = 'SMS',
   EMAIL = 'EMAIL',
   PUSH = 'PUSH',
-  VOICE = 'VOICE'
+  VOICE = 'VOICE',
 }
 
 /**
@@ -80,7 +80,7 @@ export enum CommunicationChannel {
 export enum RecipientType {
   PARENT = 'PARENT',
   STUDENT = 'STUDENT',
-  STAFF = 'STAFF'
+  STAFF = 'STAFF',
 }
 
 /**
@@ -91,5 +91,5 @@ export enum DeliveryStatus {
   SENDING = 'SENDING',
   DELIVERED = 'DELIVERED',
   FAILED = 'FAILED',
-  BOUNCED = 'BOUNCED'
+  BOUNCED = 'BOUNCED',
 }

@@ -6,7 +6,7 @@
  * HIPAA Compliance: Captures user, IP, and timestamp for audit trail
  */
 
-import { UserRole } from '../models/user.model';
+import { UserRole } from './user-role.enum';
 
 export type ExecutionUserRole = UserRole | 'SYSTEM';
 
@@ -77,7 +77,7 @@ export function createExecutionContext(
     ip?: string;
     headers?: { 'user-agent'?: string };
   },
-  additionalData?: Partial<ExecutionContext>
+  additionalData?: Partial<ExecutionContext>,
 ): ExecutionContext {
   return {
     userId,
@@ -87,7 +87,7 @@ export function createExecutionContext(
     timestamp: new Date(),
     transactionId: generateTransactionId(),
     correlationId: additionalData?.correlationId,
-    metadata: additionalData?.metadata
+    metadata: additionalData?.metadata,
   };
 }
 
@@ -97,7 +97,7 @@ export function createExecutionContext(
  */
 export function createSystemExecutionContext(
   operation: string,
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): ExecutionContext {
   return {
     userId: 'system',
@@ -106,8 +106,8 @@ export function createSystemExecutionContext(
     transactionId: generateTransactionId(),
     metadata: {
       ...metadata,
-      systemOperation: operation
-    }
+      systemOperation: operation,
+    },
   };
 }
 

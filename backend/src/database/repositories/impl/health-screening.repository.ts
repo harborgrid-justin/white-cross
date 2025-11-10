@@ -3,14 +3,12 @@
  * Injectable NestJS repository for health screening program management
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 import { HealthScreening } from '../../models/health-screening.model';
 
 export interface HealthScreeningAttributes {
@@ -49,13 +47,15 @@ export interface UpdateHealthScreeningDTO {
 }
 
 @Injectable()
-export class HealthScreeningRepository
-  extends BaseRepository<any, HealthScreeningAttributes, CreateHealthScreeningDTO>
-{
+export class HealthScreeningRepository extends BaseRepository<
+  any,
+  HealthScreeningAttributes,
+  CreateHealthScreeningDTO
+> {
   constructor(
-    @InjectModel(HealthScreening) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel(HealthScreening) model: typeof HealthScreening,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'HealthScreening');
   }
@@ -64,34 +64,36 @@ export class HealthScreeningRepository
     try {
       const screenings = await this.model.findAll({
         where: { studentId },
-        order: [['screeningDate', 'DESC']]
+        order: [['screeningDate', 'DESC']],
       });
-      return screenings.map((s: any) => this.mapToEntity(s));
+      return screenings.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding health screenings by student:', error);
       throw new RepositoryError(
         'Failed to find health screenings by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByType(screeningType: string): Promise<HealthScreeningAttributes[]> {
+  async findByType(
+    screeningType: string,
+  ): Promise<HealthScreeningAttributes[]> {
     try {
       const screenings = await this.model.findAll({
         where: { screeningType },
-        order: [['screeningDate', 'DESC']]
+        order: [['screeningDate', 'DESC']],
       });
-      return screenings.map((s: any) => this.mapToEntity(s));
+      return screenings.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding health screenings by type:', error);
       throw new RepositoryError(
         'Failed to find health screenings by type',
         'FIND_BY_TYPE_ERROR',
         500,
-        { screeningType, error: (error as Error).message }
+        { screeningType, error: (error as Error).message },
       );
     }
   }
@@ -100,39 +102,48 @@ export class HealthScreeningRepository
     try {
       const screenings = await this.model.findAll({
         where: { followUpRequired: true },
-        order: [['screeningDate', 'ASC']]
+        order: [['screeningDate', 'ASC']],
       });
-      return screenings.map((s: any) => this.mapToEntity(s));
+      return screenings.map((s: Student) => this.mapToEntity(s));
     } catch (error) {
       this.logger.error('Error finding screenings requiring follow-up:', error);
       throw new RepositoryError(
         'Failed to find screenings requiring follow-up',
         'FIND_FOLLOW_UP_REQUIRED_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
 
-  protected async validateCreate(data: CreateHealthScreeningDTO): Promise<void> {
+  protected async validateCreate(
+    data: CreateHealthScreeningDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateHealthScreeningDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateHealthScreeningDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async invalidateCaches(screening: any): Promise<void> {
+  protected async invalidateCaches(screening: HealthScreening): Promise<void> {
     try {
       const screeningData = screening.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, screeningData.id));
-      await this.cacheManager.deletePattern(`white-cross:health-screening:student:${screeningData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, screeningData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:health-screening:student:${screeningData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating health screening caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<HealthScreeningAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

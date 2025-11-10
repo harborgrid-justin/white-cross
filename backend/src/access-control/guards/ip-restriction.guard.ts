@@ -1,6 +1,7 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { RequestWithConnection } from '../types/user-context.types';
+
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AccessControlService } from '../access-control.service';
 
 /**
@@ -33,7 +34,8 @@ export class IpRestrictionGuard implements CanActivate {
     }
 
     // Check if IP is restricted
-    const restrictionCheck = await this.accessControlService.checkIpRestriction(ipAddress);
+    const restrictionCheck =
+      await this.accessControlService.checkIpRestriction(ipAddress);
 
     if (restrictionCheck.isRestricted) {
       throw new ForbiddenException(
@@ -47,7 +49,7 @@ export class IpRestrictionGuard implements CanActivate {
   /**
    * Extract IP address from request, handling proxies
    */
-  private extractIpAddress(request: any): string | null {
+  private extractIpAddress(request: RequestWithConnection): string | null {
     // Check X-Forwarded-For header (for proxies/load balancers)
     const forwardedFor = request.headers['x-forwarded-for'];
     if (forwardedFor) {
@@ -63,6 +65,8 @@ export class IpRestrictionGuard implements CanActivate {
     }
 
     // Fall back to connection remote address
-    return request.connection?.remoteAddress || request.socket?.remoteAddress || null;
+    return (
+      request.connection?.remoteAddress || request.socket?.remoteAddress || null
+    );
   }
 }

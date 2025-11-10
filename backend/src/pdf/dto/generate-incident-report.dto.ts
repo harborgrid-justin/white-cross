@@ -1,36 +1,31 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsDateString,
-} from 'class-validator';
+import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class GenerateIncidentReportDto {
   @ApiProperty({ description: 'Incident ID' })
   @IsString()
   @IsNotEmpty()
-  id: string;
+  id!: string;
 
   @ApiProperty({ description: 'Incident date and time' })
   @IsDateString()
   @IsNotEmpty()
-  incidentDateTime: string;
+  incidentDateTime!: string;
 
   @ApiProperty({ description: 'Location of incident' })
   @IsString()
   @IsNotEmpty()
-  location: string;
+  location!: string;
 
   @ApiProperty({ description: 'Severity of incident' })
   @IsString()
   @IsNotEmpty()
-  severity: string;
+  severity!: string;
 
   @ApiProperty({ description: 'Student name' })
   @IsString()
   @IsNotEmpty()
-  studentName: string;
+  studentName!: string;
 
   @ApiPropertyOptional({ description: 'Student grade' })
   @IsString()
@@ -40,7 +35,7 @@ export class GenerateIncidentReportDto {
   @ApiProperty({ description: 'Incident description' })
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @ApiPropertyOptional({ description: 'Actions taken' })
   @IsString()

@@ -1,6 +1,6 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { IntegrationType } from '../entities/integration-config.entity';
-import { CreateIntegrationDto } from '../dto';
+import { CreateIntegrationDto } from '../dto/create-integration.dto';
 
 @Injectable()
 export class IntegrationValidationService {
@@ -142,7 +142,6 @@ export class IntegrationValidationService {
    */
   validateIntegrationSettings(
     settings: Record<string, unknown>,
-    integrationType: IntegrationType,
   ): void {
     if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
       throw new BadRequestException('Settings must be a valid JSON object');
@@ -160,7 +159,9 @@ export class IntegrationValidationService {
     if ('retryAttempts' in settings && settings.retryAttempts !== undefined) {
       const retryAttempts = Number(settings.retryAttempts);
       if (isNaN(retryAttempts) || retryAttempts < 0 || retryAttempts > 10) {
-        throw new BadRequestException('Retry attempts must be between 0 and 10');
+        throw new BadRequestException(
+          'Retry attempts must be between 0 and 10',
+        );
       }
     }
 
@@ -198,7 +199,10 @@ export class IntegrationValidationService {
       }
     }
 
-    if ('rateLimitPerSecond' in settings && settings.rateLimitPerSecond !== undefined) {
+    if (
+      'rateLimitPerSecond' in settings &&
+      settings.rateLimitPerSecond !== undefined
+    ) {
       const rateLimit = Number(settings.rateLimitPerSecond);
       if (isNaN(rateLimit) || rateLimit < 1 || rateLimit > 1000) {
         throw new BadRequestException(

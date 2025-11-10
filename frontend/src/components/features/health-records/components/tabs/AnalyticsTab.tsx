@@ -15,7 +15,7 @@ import { BarChart3, TrendingUp, Users, AlertCircle } from 'lucide-react'
 
 interface AnalyticsTabProps {}
 
-export const AnalyticsTab: React.FC<AnalyticsTabProps> = () => {
+export const AnalyticsTab = React.memo<AnalyticsTabProps>(() => {
   return (
     <div className="space-y-6" data-testid="analytics-content">
       <div>
@@ -121,4 +121,6 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = () => {
       </div>
     </div>
   )
-}
+})
+
+AnalyticsTab.displayName = 'AnalyticsTab'

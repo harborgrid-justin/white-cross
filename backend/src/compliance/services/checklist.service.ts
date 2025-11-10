@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChecklistRepository } from '../repositories/checklist.repository';
-import { CreateChecklistDto, UpdateChecklistDto, QueryChecklistDto } from '../dto/checklist.dto';
+import { CreateChecklistDto, QueryChecklistDto, UpdateChecklistDto } from '../dto/checklist.dto';
 import { ChecklistItemStatus } from '../../database/models/compliance-checklist-item.model';
 
 @Injectable()
@@ -9,7 +9,11 @@ export class ChecklistService {
 
   async listChecklists(query: QueryChecklistDto) {
     const { page = 1, limit = 20, ...filters } = query;
-    const { data, total } = await this.checklistRepository.findAll(filters, page, limit);
+    const { data, total } = await this.checklistRepository.findAll(
+      filters,
+      page,
+      limit,
+    );
     return {
       data,
       pagination: {
@@ -41,7 +45,10 @@ export class ChecklistService {
     await this.getChecklistById(id); // Verify exists
     const updateData: any = { ...dto };
 
-    if (dto.status === ChecklistItemStatus.COMPLETED && !updateData.completedAt) {
+    if (
+      dto.status === ChecklistItemStatus.COMPLETED &&
+      !updateData.completedAt
+    ) {
       updateData.completedAt = new Date();
     }
 

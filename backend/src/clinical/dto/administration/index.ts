@@ -34,3 +34,9 @@ export {
   CheckSafetyDto,
   CalculateDoseDto,
 } from './administration-filters.dto';
+
+export * from './administration-filters.dto';
+export * from './five-rights-verification.dto';
+export * from './record-administration.dto';
+export * from './record-refusal.dto';
+export * from './witness-signature.dto';

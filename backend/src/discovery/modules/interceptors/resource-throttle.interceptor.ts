@@ -1,8 +1,9 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { DynamicResourcePoolService } from '../services/dynamic-resource-pool.service';
+import { AuthenticatedRequest, ThrottleQueueItem, TypedSubscriber } from '../types/resource.types';
 
 interface ThrottleConfig {
   maxConcurrent: number;
@@ -22,7 +23,7 @@ interface RequestMetrics {
 
 /**
  * Resource Throttle Interceptor
- * 
+ *
  * Manages resource allocation and throttling for requests
  * using Discovery Service patterns
  */
@@ -30,22 +31,31 @@ interface RequestMetrics {
 export class ResourceThrottleInterceptor implements NestInterceptor {
   private readonly logger = new Logger(ResourceThrottleInterceptor.name);
   private readonly activeRequests = new Map<string, RequestMetrics>();
-  private readonly requestQueue = new Map<string, Array<{ resolve: Function; reject: Function; config: ThrottleConfig }>>();
+  private readonly requestQueue = new Map<string, ThrottleQueueItem[]>();
   private readonly resourceCounters = new Map<string, number>();
 
   constructor(
     private readonly reflector: Reflector,
-    private readonly resourcePoolService: DynamicResourcePoolService
+    private readonly resourcePoolService: DynamicResourcePoolService,
   ) {}
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<unknown>> {
     const handler = context.getHandler();
     const controllerClass = context.getClass();
-    
+
     // Get throttle configuration from metadata
-    const methodThrottleConfig = this.reflector.get<ThrottleConfig>('resource-throttle', handler);
-    const classThrottleConfig = this.reflector.get<ThrottleConfig>('resource-throttle', controllerClass);
-    
+    const methodThrottleConfig = this.reflector.get<ThrottleConfig>(
+      'resource-throttle',
+      handler,
+    );
+    const classThrottleConfig = this.reflector.get<ThrottleConfig>(
+      'resource-throttle',
+      controllerClass,
+    );
+
     const throttleConfig = methodThrottleConfig || classThrottleConfig;
 
     if (!throttleConfig) {
@@ -56,22 +66,31 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
     const requestId = this.generateRequestId(context);
     const resourceType = throttleConfig.resourceType || 'default';
 
-    this.logger.debug(`Throttling request ${requestId} for resource type: ${resourceType}`);
+    this.logger.debug(
+      `Throttling request ${requestId} for resource type: ${resourceType}`,
+    );
 
     try {
       // Check if we can acquire resources
-      const canProceed = await this.tryAcquireResources(requestId, throttleConfig);
-      
+      const canProceed = await this.tryAcquireResources(
+        requestId,
+        throttleConfig,
+      );
+
       if (!canProceed) {
         // Add to queue if queue size allows
         if (this.getQueueSize(resourceType) < throttleConfig.queueSize) {
-          return new Observable(subscriber => {
+          return new Observable((subscriber) => {
             this.addToQueue(requestId, throttleConfig, subscriber);
           });
         } else {
           // Queue is full, reject request
-          this.logger.warn(`Resource throttle queue full for ${resourceType}, rejecting request ${requestId}`);
-          return throwError(() => new Error(`Resource limit exceeded for ${resourceType}`));
+          this.logger.warn(
+            `Resource throttle queue full for ${resourceType}, rejecting request ${requestId}`,
+          );
+          return throwError(
+            () => new Error(`Resource limit exceeded for ${resourceType}`),
+          );
         }
       }
 
@@ -83,7 +102,7 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
         tap(() => {
           this.recordRequestSuccess(requestId);
         }),
-        catchError(error => {
+        catchError((error) => {
           this.recordRequestError(requestId, error);
           return throwError(() => error);
         }),
@@ -91,11 +110,13 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
           // Release resources and process queue
           this.releaseResources(requestId, throttleConfig);
           this.processQueue(resourceType);
-        })
+        }),
       );
-
     } catch (error) {
-      this.logger.error(`Error in resource throttle interceptor for request ${requestId}:`, error);
+      this.logger.error(
+        `Error in resource throttle interceptor for request ${requestId}:`,
+        error,
+      );
       return throwError(() => error);
     }
   }
@@ -104,36 +125,51 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
    * Generate unique request ID
    */
   private generateRequestId(context: ExecutionContext): string {
-    const request = context.switchToHttp().getRequest();
+    const request = context
+      .switchToHttp()
+      .getRequest<Partial<AuthenticatedRequest>>();
     const timestamp = Date.now();
     const random = Math.random().toString(36).substr(2, 9);
-    
+
     return `${request.method || 'unknown'}_${timestamp}_${random}`;
   }
 
   /**
    * Try to acquire resources for the request
    */
-  private async tryAcquireResources(requestId: string, config: ThrottleConfig): Promise<boolean> {
+  private async tryAcquireResources(
+    requestId: string,
+    config: ThrottleConfig,
+  ): Promise<boolean> {
     const resourceType = config.resourceType || 'default';
     const currentCount = this.resourceCounters.get(resourceType) || 0;
 
     if (currentCount >= config.maxConcurrent) {
-      this.logger.debug(`Max concurrent limit reached for ${resourceType}: ${currentCount}/${config.maxConcurrent}`);
+      this.logger.debug(
+        `Max concurrent limit reached for ${resourceType}: ${currentCount}/${config.maxConcurrent}`,
+      );
       return false;
     }
 
     // Try to acquire from resource pool
     try {
-      const resource = await this.resourcePoolService.getResource(resourceType, config.timeoutMs);
+      const resource = await this.resourcePoolService.getResource(
+        resourceType,
+        config.timeoutMs,
+      );
 
       if (resource) {
         this.resourceCounters.set(resourceType, currentCount + 1);
-        this.logger.debug(`Acquired resource for ${requestId}, count: ${currentCount + 1}/${config.maxConcurrent}`);
+        this.logger.debug(
+          `Acquired resource for ${requestId}, count: ${currentCount + 1}/${config.maxConcurrent}`,
+        );
         return true;
       }
     } catch (error) {
-      this.logger.warn(`Failed to acquire resource from pool for ${requestId}:`, error);
+      this.logger.warn(
+        `Failed to acquire resource from pool for ${requestId}:`,
+        error,
+      );
     }
 
     return false;
@@ -143,27 +179,27 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
    * Add request to queue
    */
   private addToQueue(
-    requestId: string, 
-    config: ThrottleConfig, 
-    subscriber: any
+    requestId: string,
+    config: ThrottleConfig,
+    subscriber: TypedSubscriber<unknown>,
   ): void {
     const resourceType = config.resourceType || 'default';
-    
+
     if (!this.requestQueue.has(resourceType)) {
       this.requestQueue.set(resourceType, []);
     }
 
     const queue = this.requestQueue.get(resourceType)!;
-    
-    const queueItem = {
-      resolve: (result: any) => {
+
+    const queueItem: ThrottleQueueItem = {
+      resolve: (result: unknown) => {
         subscriber.next(result);
         subscriber.complete();
       },
-      reject: (error: any) => {
+      reject: (error: Error) => {
         subscriber.error(error);
       },
-      config
+      config,
     };
 
     // Insert based on priority (higher priority first)
@@ -176,8 +212,10 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
     }
 
     queue.splice(insertIndex, 0, queueItem);
-    
-    this.logger.debug(`Added request ${requestId} to queue at position ${insertIndex}, queue size: ${queue.length}`);
+
+    this.logger.debug(
+      `Added request ${requestId} to queue at position ${insertIndex}, queue size: ${queue.length}`,
+    );
 
     // Set timeout for queued request
     setTimeout(() => {
@@ -185,7 +223,9 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
       if (index !== -1) {
         queue.splice(index, 1);
         queueItem.reject(new Error(`Request ${requestId} timed out in queue`));
-        this.logger.warn(`Request ${requestId} timed out in queue after ${config.timeoutMs}ms`);
+        this.logger.warn(
+          `Request ${requestId} timed out in queue after ${config.timeoutMs}ms`,
+        );
       }
     }, config.timeoutMs);
   }
@@ -204,12 +244,17 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
 
     if (nextRequest && currentCount < nextRequest.config.maxConcurrent) {
       try {
-        const resource = await this.resourcePoolService.getResource(resourceType, nextRequest.config.timeoutMs);
+        const resource = await this.resourcePoolService.getResource(
+          resourceType,
+          nextRequest.config.timeoutMs,
+        );
 
         if (resource) {
           this.resourceCounters.set(resourceType, currentCount + 1);
-          this.logger.debug(`Processing queued request for ${resourceType}, count: ${currentCount + 1}`);
-          
+          this.logger.debug(
+            `Processing queued request for ${resourceType}, count: ${currentCount + 1}`,
+          );
+
           // The queued request will be processed through the normal flow
           // This is a simplified approach - in a real implementation,
           // you'd need to properly handle the queued execution
@@ -229,13 +274,18 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
   /**
    * Release resources after request completion
    */
-  private async releaseResources(requestId: string, config: ThrottleConfig): Promise<void> {
+  private async releaseResources(
+    requestId: string,
+    config: ThrottleConfig,
+  ): Promise<void> {
     const resourceType = config.resourceType || 'default';
     const currentCount = this.resourceCounters.get(resourceType) || 0;
 
     if (currentCount > 0) {
       this.resourceCounters.set(resourceType, currentCount - 1);
-      this.logger.debug(`Released resource for ${requestId}, count: ${currentCount - 1}`);
+      this.logger.debug(
+        `Released resource for ${requestId}, count: ${currentCount - 1}`,
+      );
     }
 
     try {
@@ -244,7 +294,10 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
       // For now, we'll just handle the counter logic
       this.logger.debug(`Resource released for ${resourceType}`);
     } catch (error) {
-      this.logger.warn(`Error releasing resource to pool for ${requestId}:`, error);
+      this.logger.warn(
+        `Error releasing resource to pool for ${requestId}:`,
+        error,
+      );
     }
 
     // Remove request tracking
@@ -258,7 +311,7 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
     this.activeRequests.set(requestId, {
       startTime: Date.now(),
       resourcesUsed: [resourceType],
-      success: false
+      success: false,
     });
   }
 
@@ -271,22 +324,27 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
       metrics.endTime = Date.now();
       metrics.executionTime = metrics.endTime - metrics.startTime;
       metrics.success = true;
-      
-      this.logger.debug(`Request ${requestId} completed successfully in ${metrics.executionTime}ms`);
+
+      this.logger.debug(
+        `Request ${requestId} completed successfully in ${metrics.executionTime}ms`,
+      );
     }
   }
 
   /**
    * Record request error
    */
-  private recordRequestError(requestId: string, error: any): void {
+  private recordRequestError(requestId: string, error: Error): void {
     const metrics = this.activeRequests.get(requestId);
     if (metrics) {
       metrics.endTime = Date.now();
       metrics.executionTime = metrics.endTime - metrics.startTime;
       metrics.success = false;
-      
-      this.logger.warn(`Request ${requestId} failed after ${metrics.executionTime}ms:`, error.message);
+
+      this.logger.warn(
+        `Request ${requestId} failed after ${metrics.executionTime}ms:`,
+        error.message,
+      );
     }
   }
 
@@ -301,35 +359,46 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
   /**
    * Get current resource usage statistics
    */
-  getResourceStats(): {
+  getResourceStats(): Array<{
     resourceType: string;
     activeRequests: number;
     queuedRequests: number;
     totalProcessed: number;
     averageExecutionTime: number;
-  }[] {
-    const stats: any[] = [];
-    
+  }> {
+    const stats: Array<{
+      resourceType: string;
+      activeRequests: number;
+      queuedRequests: number;
+      totalProcessed: number;
+      averageExecutionTime: number;
+    }> = [];
+
     for (const [resourceType, count] of this.resourceCounters.entries()) {
       const queueSize = this.getQueueSize(resourceType);
-      
+
       // Calculate average execution time for completed requests
-      const completedRequests = Array.from(this.activeRequests.values())
-        .filter(m => m.resourcesUsed.includes(resourceType) && m.executionTime);
-      
-      const averageExecutionTime = completedRequests.length > 0
-        ? completedRequests.reduce((sum, m) => sum + (m.executionTime || 0), 0) / completedRequests.length
-        : 0;
-      
+      const completedRequests = Array.from(this.activeRequests.values()).filter(
+        (m) => m.resourcesUsed.includes(resourceType) && m.executionTime,
+      );
+
+      const averageExecutionTime =
+        completedRequests.length > 0
+          ? completedRequests.reduce(
+              (sum, m) => sum + (m.executionTime || 0),
+              0,
+            ) / completedRequests.length
+          : 0;
+
       stats.push({
         resourceType,
         activeRequests: count,
         queuedRequests: queueSize,
         totalProcessed: completedRequests.length,
-        averageExecutionTime
+        averageExecutionTime,
       });
     }
-    
+
     return stats;
   }
 

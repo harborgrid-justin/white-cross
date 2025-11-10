@@ -5,7 +5,7 @@
  *
  * @class EditMessageDto
  */
-import { IsString, IsNotEmpty, IsUUID, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class EditMessageDto {
   @IsUUID('4')

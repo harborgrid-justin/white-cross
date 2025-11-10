@@ -2,15 +2,7 @@
  * Emergency Contact Query DTO
  * @description DTO for filtering emergency contacts
  */
-import {
-  IsOptional,
-  IsEnum,
-  IsBoolean,
-  IsUUID,
-  IsInt,
-  Min,
-  Max
-} from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsUUID, Max, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ContactPriority, VerificationStatus } from '../enums';
@@ -18,7 +10,7 @@ import { ContactPriority, VerificationStatus } from '../enums';
 export class EmergencyContactQueryDto {
   @ApiPropertyOptional({
     example: '123e4567-e89b-12d3-a456-426614174000',
-    description: 'Filter by student ID'
+    description: 'Filter by student ID',
   })
   @IsOptional()
   @IsUUID()
@@ -26,7 +18,7 @@ export class EmergencyContactQueryDto {
 
   @ApiPropertyOptional({
     enum: ContactPriority,
-    description: 'Filter by priority'
+    description: 'Filter by priority',
   })
   @IsOptional()
   @IsEnum(ContactPriority)
@@ -34,7 +26,7 @@ export class EmergencyContactQueryDto {
 
   @ApiPropertyOptional({
     example: true,
-    description: 'Filter by active status'
+    description: 'Filter by active status',
   })
   @IsOptional()
   @Type(() => Boolean)
@@ -43,7 +35,7 @@ export class EmergencyContactQueryDto {
 
   @ApiPropertyOptional({
     enum: VerificationStatus,
-    description: 'Filter by verification status'
+    description: 'Filter by verification status',
   })
   @IsOptional()
   @IsEnum(VerificationStatus)
@@ -52,7 +44,7 @@ export class EmergencyContactQueryDto {
   @ApiPropertyOptional({
     example: 1,
     description: 'Page number',
-    default: 1
+    default: 1,
   })
   @IsOptional()
   @Type(() => Number)
@@ -63,7 +55,7 @@ export class EmergencyContactQueryDto {
   @ApiPropertyOptional({
     example: 20,
     description: 'Items per page',
-    default: 20
+    default: 20,
   })
   @IsOptional()
   @Type(() => Number)

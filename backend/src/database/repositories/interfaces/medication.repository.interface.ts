@@ -9,7 +9,7 @@ import { ExecutionContext, QueryOptions } from '../../types';
 export enum MedicationStatus {
   ACTIVE = 'ACTIVE',
   DISCONTINUED = 'DISCONTINUED',
-  DELETED = 'DELETED'
+  DELETED = 'DELETED',
 }
 
 export enum ControlledSubstanceSchedule {
@@ -17,7 +17,7 @@ export enum ControlledSubstanceSchedule {
   SCHEDULE_II = 'SCHEDULE_II',
   SCHEDULE_III = 'SCHEDULE_III',
   SCHEDULE_IV = 'SCHEDULE_IV',
-  SCHEDULE_V = 'SCHEDULE_V'
+  SCHEDULE_V = 'SCHEDULE_V',
 }
 
 export interface MedicationAttributes {
@@ -107,14 +107,35 @@ export interface MedicationFilters {
 
 export interface Medication extends MedicationAttributes {}
 
-export interface IMedicationRepository extends IRepository<MedicationAttributes, CreateMedicationData, UpdateMedicationData> {
-  findByStudent(studentId: string, options?: QueryOptions): Promise<MedicationAttributes[]>;
+export interface IMedicationRepository
+  extends IRepository<
+    MedicationAttributes,
+    CreateMedicationData,
+    UpdateMedicationData
+  > {
+  findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<MedicationAttributes[]>;
   findActiveByStudent(studentId: string): Promise<MedicationAttributes[]>;
-  findByOrganization(organizationId: string, options?: QueryOptions): Promise<MedicationAttributes[]>;
-  findControlledSubstances(scheduleClass?: ControlledSubstanceSchedule): Promise<MedicationAttributes[]>;
+  findByOrganization(
+    organizationId: string,
+    options?: QueryOptions,
+  ): Promise<MedicationAttributes[]>;
+  findControlledSubstances(
+    scheduleClass?: ControlledSubstanceSchedule,
+  ): Promise<MedicationAttributes[]>;
   findRequiringRefrigeration(): Promise<MedicationAttributes[]>;
   searchByName(query: string, limit?: number): Promise<MedicationAttributes[]>;
-  discontinueMedication(id: string, reason: string, context: ExecutionContext): Promise<void>;
+  discontinueMedication(
+    id: string,
+    reason: string,
+    context: ExecutionContext,
+  ): Promise<void>;
   getActiveCount(filters?: MedicationFilters): Promise<number>;
-  bulkUpdateStatus(ids: string[], status: MedicationStatus, context: ExecutionContext): Promise<void>;
+  bulkUpdateStatus(
+    ids: string[],
+    status: MedicationStatus,
+    context: ExecutionContext,
+  ): Promise<void>;
 }

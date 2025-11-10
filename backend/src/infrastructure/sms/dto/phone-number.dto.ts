@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 /**
  * Phone number types

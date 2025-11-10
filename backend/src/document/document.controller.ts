@@ -1,25 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
-  UseGuards,
+  Controller,
+  DefaultValuePipe,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   ParseIntPipe,
-  DefaultValuePipe,
-  UseInterceptors,
-  UploadedFile,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBearerAuth, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
-import { CreateDocumentDto, UpdateDocumentDto, SignDocumentDto } from './dto';
-import { CurrentUser, IpAddress } from '../auth/decorators';
+import { CreateDocumentDto } from './dto/create-document.dto';
+import { SignDocumentDto } from './dto/sign-document.dto';
+import { UpdateDocumentDto } from './dto/update-document.dto';
+import { CurrentUser, IpAddress } from '@/auth/decorators';
 
 /**
  * Document Controller
@@ -32,19 +30,52 @@ export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all documents with pagination and filters',
-    description: 'Retrieves a paginated list of documents with optional filtering by category, status, student ID, uploader, and search terms. HIPAA compliant with audit logging.'
+    description:
+      'Retrieves a paginated list of documents with optional filtering by category, status, student ID, uploader, and search terms. HIPAA compliant with audit logging.',
   })
-  @ApiQuery({ name: 'page', required: false, type: 'number', example: 1, description: 'Page number for pagination' })
-  @ApiQuery({ name: 'limit', required: false, type: 'number', example: 20, description: 'Items per page (max 100)' })
-  @ApiQuery({ name: 'category', required: false, description: 'Filter by document category' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by document status' })
-  @ApiQuery({ name: 'studentId', required: false, description: 'Filter by student UUID' })
-  @ApiQuery({ name: 'uploadedBy', required: false, description: 'Filter by uploader user ID' })
-  @ApiQuery({ name: 'searchTerm', required: false, description: 'Search in document titles and descriptions' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: 'number',
+    example: 1,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: 'number',
+    example: 20,
+    description: 'Items per page (max 100)',
+  })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Filter by document category',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filter by document status',
+  })
+  @ApiQuery({
+    name: 'studentId',
+    required: false,
+    description: 'Filter by student UUID',
+  })
+  @ApiQuery({
+    name: 'uploadedBy',
+    required: false,
+    description: 'Filter by uploader user ID',
+  })
+  @ApiQuery({
+    name: 'searchTerm',
+    required: false,
+    description: 'Search in document titles and descriptions',
+  })
+  @ApiResponse({
+    status: 200,
     description: 'Documents retrieved successfully with pagination metadata',
     schema: {
       type: 'object',
@@ -61,9 +92,9 @@ export class DocumentController {
               fileSize: { type: 'number' },
               mimeType: { type: 'string' },
               uploadedAt: { type: 'string', format: 'date-time' },
-              studentId: { type: 'string', format: 'uuid', nullable: true }
-            }
-          }
+              studentId: { type: 'string', format: 'uuid', nullable: true },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -71,14 +102,20 @@ export class DocumentController {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            pages: { type: 'number' }
-          }
-        }
-      }
-    }
+            pages: { type: 'number' },
+          },
+        },
+      },
+    },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async getDocuments(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -96,7 +133,8 @@ export class DocumentController {
   @Get(':id')
   @ApiOperation({
     summary: 'Get document by ID with all associations',
-    description: 'Retrieves a single document by UUID with full details including metadata, signatures, and access history. Logs access for HIPAA audit trail.'
+    description:
+      'Retrieves a single document by UUID with full details including metadata, signatures, and access history. Logs access for HIPAA audit trail.',
   })
   @ApiParam({ name: 'id', description: 'Document UUID', format: 'uuid' })
   @ApiResponse({
@@ -124,15 +162,21 @@ export class DocumentController {
             properties: {
               signedBy: { type: 'string' },
               signedAt: { type: 'string', format: 'date-time' },
-              signatureType: { type: 'string' }
-            }
-          }
-        }
-      }
-    }
+              signatureType: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - No access to this document' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - No access to this document',
+  })
   @ApiResponse({ status: 404, description: 'Document not found' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async getDocumentById(@Param('id') id: string): Promise<any> {
@@ -140,13 +184,14 @@ export class DocumentController {
   }
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create a new document',
-    description: 'Creates a new document record with metadata. File upload is handled separately. Supports various document types including medical forms, consent documents, and reports.'
+    description:
+      'Creates a new document record with metadata. File upload is handled separately. Supports various document types including medical forms, consent documents, and reports.',
   })
   @ApiBody({ type: CreateDocumentDto })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'Document created successfully with generated UUID',
     schema: {
       type: 'object',
@@ -157,13 +202,22 @@ export class DocumentController {
         status: { type: 'string', example: 'draft' },
         uploadedBy: { type: 'string' },
         uploadedAt: { type: 'string', format: 'date-time' },
-        studentId: { type: 'string', format: 'uuid', nullable: true }
-      }
-    }
+        studentId: { type: 'string', format: 'uuid', nullable: true },
+      },
+    },
   })
-  @ApiResponse({ status: 400, description: 'Invalid input data or validation errors' })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions to create documents' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data or validation errors',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions to create documents',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async createDocument(@Body() createDto: CreateDocumentDto): Promise<any> {
     return this.documentService.createDocument(createDto);
@@ -196,14 +250,15 @@ export class DocumentController {
   }
 
   @Post(':id/sign')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Sign a document',
-    description: 'Adds a digital signature to a document. Supports various signature types including electronic consent, parent approval, and medical authorization. Creates audit trail for legal compliance.'
+    description:
+      'Adds a digital signature to a document. Supports various signature types including electronic consent, parent approval, and medical authorization. Creates audit trail for legal compliance.',
   })
   @ApiParam({ name: 'id', description: 'Document UUID', format: 'uuid' })
   @ApiBody({ type: SignDocumentDto })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Document signed successfully with signature record',
     schema: {
       type: 'object',
@@ -214,15 +269,27 @@ export class DocumentController {
         signatureType: { type: 'string' },
         ipAddress: { type: 'string' },
         userAgent: { type: 'string' },
-        documentStatus: { type: 'string', example: 'signed' }
-      }
-    }
+        documentStatus: { type: 'string', example: 'signed' },
+      },
+    },
   })
-  @ApiResponse({ status: 400, description: 'Invalid signature data or document not signable' })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - No permission to sign this document' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid signature data or document not signable',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - No permission to sign this document',
+  })
   @ApiResponse({ status: 404, description: 'Document not found' })
-  @ApiResponse({ status: 409, description: 'Document already signed or in invalid state' })
+  @ApiResponse({
+    status: 409,
+    description: 'Document already signed or in invalid state',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async signDocument(@Body() signDto: SignDocumentDto): Promise<any> {
     return this.documentService.signDocument(signDto);
@@ -231,7 +298,8 @@ export class DocumentController {
   @Post(':id/download')
   @ApiOperation({
     summary: 'Download a document (tracks access)',
-    description: 'Initiates secure download of document file with comprehensive access logging. Tracks user, IP address, and timestamp for HIPAA audit compliance. Returns download URL or file stream.'
+    description:
+      'Initiates secure download of document file with comprehensive access logging. Tracks user, IP address, and timestamp for HIPAA audit compliance. Returns download URL or file stream.',
   })
   @ApiParam({ name: 'id', description: 'Document UUID', format: 'uuid' })
   @ApiResponse({
@@ -240,19 +308,34 @@ export class DocumentController {
     schema: {
       type: 'object',
       properties: {
-        downloadUrl: { type: 'string', description: 'Secure temporary download URL' },
+        downloadUrl: {
+          type: 'string',
+          description: 'Secure temporary download URL',
+        },
         fileName: { type: 'string' },
         fileSize: { type: 'number' },
         mimeType: { type: 'string' },
         expiresAt: { type: 'string', format: 'date-time' },
-        accessRecordId: { type: 'string', format: 'uuid' }
-      }
-    }
+        accessRecordId: { type: 'string', format: 'uuid' },
+      },
+    },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - No download permission for this document' })
-  @ApiResponse({ status: 404, description: 'Document not found or file missing' })
-  @ApiResponse({ status: 500, description: 'Internal server error or file system error' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - No download permission for this document',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Document not found or file missing',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error or file system error',
+  })
   async downloadDocument(
     @Param('id') id: string,
     @CurrentUser('id') userId: string,

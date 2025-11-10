@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber, IsOptional, Min, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -17,7 +17,8 @@ export class CreateBudgetCategoryDto {
 
   @ApiPropertyOptional({
     description: 'Detailed description of the budget category',
-    example: 'Budget allocation for bandages, medications, and first aid supplies',
+    example:
+      'Budget allocation for bandages, medications, and first aid supplies',
   })
   @IsOptional()
   @IsString()
@@ -35,7 +36,7 @@ export class CreateBudgetCategoryDto {
 
   @ApiProperty({
     description: 'Total amount allocated for this category in dollars',
-    example: 50000.00,
+    example: 50000.0,
     minimum: 0,
   })
   @IsNotEmpty()

@@ -42,19 +42,27 @@ export class IntegrationSyncService {
       }
 
       // Update status to SYNCING
-      await this.configModel.update({ status: IntegrationStatus.SYNCING }, { where: { id } });
+      await this.configModel.update(
+        { status: IntegrationStatus.SYNCING },
+        { where: { id } },
+      );
 
       // Perform the sync operation
-      const syncResult = await this.performSync(integration);
+      const syncResult = await this.performSync();
 
       const duration = Date.now() - startTime;
 
       // Update integration with sync results
-      await this.configModel.update({
-        status: syncResult.success ? IntegrationStatus.ACTIVE : IntegrationStatus.ERROR,
-        lastSyncAt: new Date(),
-        lastSyncStatus: syncResult.success ? 'success' : 'failed',
-      }, { where: { id } });
+      await this.configModel.update(
+        {
+          status: syncResult.success
+            ? IntegrationStatus.ACTIVE
+            : IntegrationStatus.ERROR,
+          lastSyncAt: new Date(),
+          lastSyncStatus: syncResult.success ? 'success' : 'failed',
+        },
+        { where: { id } },
+      );
 
       // Log the sync
       await this.logService.create({
@@ -74,7 +82,9 @@ export class IntegrationSyncService {
         })),
       });
 
-      this.logger.log(`Sync ${syncResult.success ? 'completed' : 'failed'} for ${integration.name}`);
+      this.logger.log(
+        `Sync ${syncResult.success ? 'completed' : 'failed'} for ${integration.name}`,
+      );
 
       return {
         ...syncResult,
@@ -83,11 +93,14 @@ export class IntegrationSyncService {
     } catch (error) {
       const duration = Date.now() - startTime;
 
-      await this.configModel.update({
-        status: IntegrationStatus.ERROR,
-        lastSyncAt: new Date(),
-        lastSyncStatus: 'failed',
-      }, { where: { id } });
+      await this.configModel.update(
+        {
+          status: IntegrationStatus.ERROR,
+          lastSyncAt: new Date(),
+          lastSyncStatus: 'failed',
+        },
+        { where: { id } },
+      );
 
       this.logger.error('Error syncing integration', error);
 
@@ -106,19 +119,21 @@ export class IntegrationSyncService {
    * Perform actual sync operation
    * Mock implementation - in production, this would perform real data synchronization
    */
-  private async performSync(integration: any): Promise<IntegrationSyncResult> {
+  private async performSync(): Promise<IntegrationSyncResult> {
     // Simulate processing records
     const recordsProcessed = Math.floor(Math.random() * 100) + 50;
     const recordsFailed = Math.floor(Math.random() * 5);
     const recordsSucceeded = recordsProcessed - recordsFailed;
 
     // Simulate some processing time
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const errors: string[] = [];
     if (recordsFailed > 0) {
       for (let i = 0; i < Math.min(recordsFailed, 3); i++) {
-        errors.push(`Record ${i + 1}: Validation error - missing required field`);
+        errors.push(
+          `Record ${i + 1}: Validation error - missing required field`,
+        );
       }
       if (recordsFailed > 3) {
         errors.push(`... and ${recordsFailed - 3} more errors`);

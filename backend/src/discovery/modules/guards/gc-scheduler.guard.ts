@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, Logger } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SmartGarbageCollectionService } from '../services/smart-garbage-collection.service';
 import { GCOptimizationService } from '../services/gc-optimization.service';
@@ -26,7 +26,7 @@ interface GCScheduleState {
 
 /**
  * GC Scheduler Guard
- * 
+ *
  * Manages garbage collection scheduling and memory-aware request handling
  * using Discovery Service patterns
  */
@@ -39,7 +39,7 @@ export class GCSchedulerGuard implements CanActivate {
     lastMemoryCheck: Date.now(),
     gcInProgress: false,
     scheduledGCCount: 0,
-    preventedRequests: 0
+    preventedRequests: 0,
   };
   private gcTimer?: NodeJS.Timeout;
   private memoryCheckTimer?: NodeJS.Timeout;
@@ -48,7 +48,7 @@ export class GCSchedulerGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly smartGCService: SmartGarbageCollectionService,
     private readonly gcOptimizationService: GCOptimizationService,
-    private readonly leakDetectionService: MemoryLeakDetectionService
+    private readonly leakDetectionService: MemoryLeakDetectionService,
   ) {
     // Start periodic memory monitoring
     this.startMemoryMonitoring();
@@ -57,11 +57,17 @@ export class GCSchedulerGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const handler = context.getHandler();
     const controllerClass = context.getClass();
-    
+
     // Get GC schedule configuration from metadata
-    const methodGCConfig = this.reflector.get<GCScheduleConfig>('gc-scheduler', handler);
-    const classGCConfig = this.reflector.get<GCScheduleConfig>('gc-scheduler', controllerClass);
-    
+    const methodGCConfig = this.reflector.get<GCScheduleConfig>(
+      'gc-scheduler',
+      handler,
+    );
+    const classGCConfig = this.reflector.get<GCScheduleConfig>(
+      'gc-scheduler',
+      controllerClass,
+    );
+
     const gcConfig = methodGCConfig || classGCConfig;
 
     if (!gcConfig) {
@@ -75,20 +81,26 @@ export class GCSchedulerGuard implements CanActivate {
 
       // Check if we should perform GC before allowing the request
       const shouldPerformGC = await this.shouldTriggerGC(gcConfig);
-      
+
       if (shouldPerformGC) {
-        const canProceedDuringGC = await this.handleGCExecution(gcConfig, context);
-        
+        const canProceedDuringGC = await this.handleGCExecution(
+          gcConfig,
+          context,
+        );
+
         if (!canProceedDuringGC) {
           this.gcState.preventedRequests++;
-          this.logger.warn('Request prevented due to active garbage collection');
+          this.logger.warn(
+            'Request prevented due to active garbage collection',
+          );
           return false;
         }
       }
 
       // Check memory pressure and leak detection
       if (gcConfig.leakDetectionEnabled) {
-        const memoryPressureAllowsRequest = await this.checkMemoryPressure(gcConfig);
+        const memoryPressureAllowsRequest =
+          await this.checkMemoryPressure(gcConfig);
         if (!memoryPressureAllowsRequest) {
           this.gcState.preventedRequests++;
           this.logger.warn('Request prevented due to high memory pressure');
@@ -101,9 +113,10 @@ export class GCSchedulerGuard implements CanActivate {
         this.schedulePreventiveGC(gcConfig);
       }
 
-      this.logger.debug(`GC scheduler check passed, request count: ${this.gcState.requestCount}`);
+      this.logger.debug(
+        `GC scheduler check passed, request count: ${this.gcState.requestCount}`,
+      );
       return true;
-
     } catch (error) {
       this.logger.error('Error in GC scheduler guard:', error);
       // On error, allow request but log the issue
@@ -121,24 +134,35 @@ export class GCSchedulerGuard implements CanActivate {
 
     // Check memory-based triggers
     if (heapUsedMB > config.aggressiveGcThreshold) {
-      this.logger.warn(`Aggressive GC threshold exceeded: ${heapUsedMB.toFixed(2)}MB > ${config.aggressiveGcThreshold}MB`);
+      this.logger.warn(
+        `Aggressive GC threshold exceeded: ${heapUsedMB.toFixed(2)}MB > ${config.aggressiveGcThreshold}MB`,
+      );
       return true;
     }
 
     if (heapUsedMB > config.gcTriggerThreshold) {
-      this.logger.debug(`GC threshold exceeded: ${heapUsedMB.toFixed(2)}MB > ${config.gcTriggerThreshold}MB`);
+      this.logger.debug(
+        `GC threshold exceeded: ${heapUsedMB.toFixed(2)}MB > ${config.gcTriggerThreshold}MB`,
+      );
       return true;
     }
 
     // Check request count trigger
     if (this.gcState.requestCount >= config.maxRequestsBeforeGC) {
-      this.logger.debug(`Max requests threshold reached: ${this.gcState.requestCount} >= ${config.maxRequestsBeforeGC}`);
+      this.logger.debug(
+        `Max requests threshold reached: ${this.gcState.requestCount} >= ${config.maxRequestsBeforeGC}`,
+      );
       return true;
     }
 
     // Check time-based trigger
-    if (config.timeBasedGC && currentTime - this.gcState.lastGCTime > config.gcInterval) {
-      this.logger.debug(`Time-based GC interval reached: ${currentTime - this.gcState.lastGCTime}ms >= ${config.gcInterval}ms`);
+    if (
+      config.timeBasedGC &&
+      currentTime - this.gcState.lastGCTime > config.gcInterval
+    ) {
+      this.logger.debug(
+        `Time-based GC interval reached: ${currentTime - this.gcState.lastGCTime}ms >= ${config.gcInterval}ms`,
+      );
       return true;
     }
 
@@ -146,9 +170,11 @@ export class GCSchedulerGuard implements CanActivate {
     if (config.leakDetectionEnabled) {
       const leakSuspects = await this.leakDetectionService.getLeakSuspects();
       if (leakSuspects.length > 0) {
-        const criticalLeaks = leakSuspects.filter(s => s.confidence > 0.8);
+        const criticalLeaks = leakSuspects.filter((s) => s.confidence > 0.8);
         if (criticalLeaks.length > 0) {
-          this.logger.warn(`Critical memory leaks detected: ${criticalLeaks.length} suspects`);
+          this.logger.warn(
+            `Critical memory leaks detected: ${criticalLeaks.length} suspects`,
+          );
           return true;
         }
       }
@@ -160,14 +186,19 @@ export class GCSchedulerGuard implements CanActivate {
   /**
    * Handle GC execution and determine if request can proceed
    */
-  private async handleGCExecution(config: GCScheduleConfig, context: ExecutionContext): Promise<boolean> {
+  private async handleGCExecution(
+    config: GCScheduleConfig,
+    context: ExecutionContext,
+  ): Promise<boolean> {
     // If GC is already in progress, decide based on priority
     if (this.gcState.gcInProgress) {
       if (config.priority === 'critical') {
         this.logger.debug('Critical priority request allowed during GC');
         return true;
       } else {
-        this.logger.debug(`${config.priority} priority request blocked during GC`);
+        this.logger.debug(
+          `${config.priority} priority request blocked during GC`,
+        );
         return false;
       }
     }
@@ -194,7 +225,6 @@ export class GCSchedulerGuard implements CanActivate {
 
       // Allow request to proceed after GC
       return true;
-
     } catch (error) {
       this.logger.error('GC execution failed:', error);
       // Allow request even if GC failed
@@ -209,7 +239,7 @@ export class GCSchedulerGuard implements CanActivate {
    */
   private async performAggressiveGC(config: GCScheduleConfig): Promise<void> {
     const startTime = Date.now();
-    
+
     // Use both services for comprehensive cleanup
     await Promise.all([
       this.smartGCService.performAggressiveGarbageCollection(),
@@ -218,8 +248,8 @@ export class GCSchedulerGuard implements CanActivate {
         gcInterval: 1000,
         aggressiveThreshold: config.aggressiveGcThreshold,
         enableHeapProfiling: true,
-        customStrategies: new Map()
-      })
+        customStrategies: new Map(),
+      }),
     ]);
 
     const duration = Date.now() - startTime;
@@ -231,7 +261,7 @@ export class GCSchedulerGuard implements CanActivate {
    */
   private async performStandardGC(config: GCScheduleConfig): Promise<void> {
     const startTime = Date.now();
-    
+
     // Use both services for standard cleanup
     await Promise.all([
       this.smartGCService.performSmartGarbageCollection(),
@@ -240,8 +270,8 @@ export class GCSchedulerGuard implements CanActivate {
         gcInterval: config.gcInterval,
         aggressiveThreshold: config.aggressiveGcThreshold,
         enableHeapProfiling: false,
-        customStrategies: new Map()
-      })
+        customStrategies: new Map(),
+      }),
     ]);
 
     const duration = Date.now() - startTime;
@@ -251,30 +281,39 @@ export class GCSchedulerGuard implements CanActivate {
   /**
    * Check memory pressure and leak conditions
    */
-  private async checkMemoryPressure(config: GCScheduleConfig): Promise<boolean> {
+  private async checkMemoryPressure(
+    config: GCScheduleConfig,
+  ): Promise<boolean> {
     const memoryUsage = process.memoryUsage();
     const heapUsedMB = memoryUsage.heapUsed / (1024 * 1024);
-    const heapUtilization = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
+    const heapUtilization =
+      (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
 
     // Critical memory pressure check
-    if (heapUsedMB > config.aggressiveGcThreshold * 1.2) { // 20% above aggressive threshold
+    if (heapUsedMB > config.aggressiveGcThreshold * 1.2) {
+      // 20% above aggressive threshold
       this.logger.error(`Critical memory pressure: ${heapUsedMB.toFixed(2)}MB`);
       return false;
     }
 
     // High heap utilization check
     if (heapUtilization > 95) {
-      this.logger.warn(`Critical heap utilization: ${heapUtilization.toFixed(1)}%`);
+      this.logger.warn(
+        `Critical heap utilization: ${heapUtilization.toFixed(1)}%`,
+      );
       return false;
     }
 
     // Check for memory leaks if enabled
     if (config.leakDetectionEnabled) {
       const leakSuspects = await this.leakDetectionService.getLeakSuspects();
-      const criticalLeaks = leakSuspects.filter(s => s.confidence > 0.9);
-      
-      if (criticalLeaks.length > 3) { // More than 3 critical leaks
-        this.logger.error(`Multiple critical memory leaks detected: ${criticalLeaks.length}`);
+      const criticalLeaks = leakSuspects.filter((s) => s.confidence > 0.9);
+
+      if (criticalLeaks.length > 3) {
+        // More than 3 critical leaks
+        this.logger.error(
+          `Multiple critical memory leaks detected: ${criticalLeaks.length}`,
+        );
         return false;
       }
     }
@@ -288,13 +327,13 @@ export class GCSchedulerGuard implements CanActivate {
   private schedulePreventiveGC(config: GCScheduleConfig): void {
     const memoryUsage = process.memoryUsage();
     const heapUsedMB = memoryUsage.heapUsed / (1024 * 1024);
-    
+
     // Schedule preventive GC if approaching threshold
     const preventiveThreshold = config.gcTriggerThreshold * 0.8; // 80% of trigger threshold
-    
+
     if (heapUsedMB > preventiveThreshold && !this.gcTimer) {
       const delay = Math.max(1000, config.gcInterval * 0.1); // 10% of interval, min 1 second
-      
+
       this.gcTimer = setTimeout(async () => {
         try {
           this.logger.debug('Executing preventive garbage collection');
@@ -305,7 +344,7 @@ export class GCSchedulerGuard implements CanActivate {
           this.gcTimer = undefined;
         }
       }, delay);
-      
+
       this.logger.debug(`Scheduled preventive GC in ${delay}ms`);
     }
   }
@@ -316,13 +355,16 @@ export class GCSchedulerGuard implements CanActivate {
   private startMemoryMonitoring(): void {
     this.memoryCheckTimer = setInterval(() => {
       this.gcState.lastMemoryCheck = Date.now();
-      
+
       const memoryUsage = process.memoryUsage();
       const heapUsedMB = memoryUsage.heapUsed / (1024 * 1024);
-      
+
       // Log memory stats periodically
-      if (heapUsedMB > 100) { // Log if over 100MB
-        this.logger.debug(`Memory usage: ${heapUsedMB.toFixed(2)}MB, Requests: ${this.gcState.requestCount}, GC runs: ${this.gcState.scheduledGCCount}`);
+      if (heapUsedMB > 100) {
+        // Log if over 100MB
+        this.logger.debug(
+          `Memory usage: ${heapUsedMB.toFixed(2)}MB, Requests: ${this.gcState.requestCount}, GC runs: ${this.gcState.scheduledGCCount}`,
+        );
       }
     }, 30000); // Every 30 seconds
   }
@@ -355,27 +397,36 @@ export class GCSchedulerGuard implements CanActivate {
 
     // Generate recommendations
     if (this.gcState.preventedRequests > 10) {
-      recommendations.push(`High number of prevented requests (${this.gcState.preventedRequests}) - consider adjusting GC thresholds`);
+      recommendations.push(
+        `High number of prevented requests (${this.gcState.preventedRequests}) - consider adjusting GC thresholds`,
+      );
     }
 
     if (this.gcState.scheduledGCCount > 100) {
-      recommendations.push(`High GC frequency (${this.gcState.scheduledGCCount} runs) - review memory usage patterns`);
+      recommendations.push(
+        `High GC frequency (${this.gcState.scheduledGCCount} runs) - review memory usage patterns`,
+      );
     }
 
     if (heapUsedMB > 500) {
-      recommendations.push(`High memory usage (${heapUsedMB.toFixed(2)}MB) - consider more aggressive GC settings`);
+      recommendations.push(
+        `High memory usage (${heapUsedMB.toFixed(2)}MB) - consider more aggressive GC settings`,
+      );
     }
 
     const timeSinceLastGC = Date.now() - this.gcState.lastGCTime;
-    if (timeSinceLastGC > 600000) { // 10 minutes
-      recommendations.push('Long time since last GC - consider enabling time-based GC');
+    if (timeSinceLastGC > 600000) {
+      // 10 minutes
+      recommendations.push(
+        'Long time since last GC - consider enabling time-based GC',
+      );
     }
 
     return {
       state: { ...this.gcState },
       memoryUsage,
       gcMetrics: this.smartGCService.getGcMetrics(),
-      recommendations
+      recommendations,
     };
   }
 
@@ -389,7 +440,7 @@ export class GCSchedulerGuard implements CanActivate {
     }
 
     this.logger.log('Forcing immediate garbage collection');
-    
+
     const config: GCScheduleConfig = {
       gcTriggerThreshold: 100,
       aggressiveGcThreshold: 500,
@@ -398,7 +449,7 @@ export class GCSchedulerGuard implements CanActivate {
       gcInterval: 300000,
       priority: 'critical',
       leakDetectionEnabled: true,
-      preventiveGC: false
+      preventiveGC: false,
     };
 
     await this.handleGCExecution(config, null as any);
@@ -428,7 +479,8 @@ export class GCSchedulerGuard implements CanActivate {
    */
   getCurrentMemoryPressure(): 'low' | 'medium' | 'high' | 'critical' {
     const memoryUsage = process.memoryUsage();
-    const heapUtilization = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
+    const heapUtilization =
+      (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
 
     if (heapUtilization > 95) {
       return 'critical';
@@ -466,10 +518,13 @@ export class GCSchedulerGuard implements CanActivate {
 
     if (this.gcState.preventedRequests > 20) {
       status = status === 'healthy' ? 'warning' : status;
-      issues.push(`High number of prevented requests: ${this.gcState.preventedRequests}`);
+      issues.push(
+        `High number of prevented requests: ${this.gcState.preventedRequests}`,
+      );
     }
 
-    if (uptime > 900000) { // 15 minutes
+    if (uptime > 900000) {
+      // 15 minutes
       status = status === 'healthy' ? 'warning' : status;
       issues.push('Long time since last GC execution');
     }
@@ -479,14 +534,18 @@ export class GCSchedulerGuard implements CanActivate {
     }
 
     // Calculate efficiency (simplified)
-    const totalRequests = this.gcState.requestCount + this.gcState.preventedRequests;
-    const efficiency = totalRequests > 0 ? (this.gcState.requestCount / totalRequests) * 100 : 100;
+    const totalRequests =
+      this.gcState.requestCount + this.gcState.preventedRequests;
+    const efficiency =
+      totalRequests > 0
+        ? (this.gcState.requestCount / totalRequests) * 100
+        : 100;
 
     return {
       status,
       issues,
       uptime,
-      efficiency
+      efficiency,
     };
   }
 }

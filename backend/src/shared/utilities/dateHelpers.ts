@@ -32,12 +32,12 @@ import { logger } from '../logging/logger';
  * Date formatting options for different contexts
  */
 export const DATE_FORMATS = {
-  US_SHORT: 'MM/dd/yyyy',           // 12/25/2024
-  US_LONG: 'MMMM d, yyyy',          // December 25, 2024
-  ISO_DATE: 'yyyy-MM-dd',           // 2024-12-25
+  US_SHORT: 'MM/dd/yyyy', // 12/25/2024
+  US_LONG: 'MMMM d, yyyy', // December 25, 2024
+  ISO_DATE: 'yyyy-MM-dd', // 2024-12-25
   ISO_DATETIME: 'yyyy-MM-dd HH:mm:ss', // 2024-12-25 14:30:00
-  MEDICAL: 'dd-MMM-yyyy',           // 25-Dec-2024 (common in medical records)
-  READABLE: 'MMM d, yyyy h:mm a'    // Dec 25, 2024 2:30 PM
+  MEDICAL: 'dd-MMM-yyyy', // 25-Dec-2024 (common in medical records)
+  READABLE: 'MMM d, yyyy h:mm a', // Dec 25, 2024 2:30 PM
 } as const;
 
 export type DateFormat = keyof typeof DATE_FORMATS;
@@ -50,7 +50,14 @@ export interface AgeInfo {
   months: number;
   days: number;
   totalDays: number;
-  ageGroup: 'infant' | 'toddler' | 'preschool' | 'elementary' | 'middle' | 'high' | 'adult';
+  ageGroup:
+    | 'infant'
+    | 'toddler'
+    | 'preschool'
+    | 'elementary'
+    | 'middle'
+    | 'high'
+    | 'adult';
 }
 
 /**
@@ -58,7 +65,8 @@ export interface AgeInfo {
  * Common in healthcare applications for pediatric care
  */
 export function calculateAge(dateOfBirth: Date | string): AgeInfo {
-  const dob = typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
+  const dob =
+    typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
   const now = new Date();
 
   if (!isValidDate(dob) || dob > now) {
@@ -68,7 +76,7 @@ export function calculateAge(dateOfBirth: Date | string): AgeInfo {
       months: 0,
       days: 0,
       totalDays: 0,
-      ageGroup: 'infant'
+      ageGroup: 'infant',
     };
   }
 
@@ -80,7 +88,11 @@ export function calculateAge(dateOfBirth: Date | string): AgeInfo {
   // Adjust for negative values
   if (days < 0) {
     months--;
-    const daysInLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    const daysInLastMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0,
+    ).getDate();
     days += daysInLastMonth;
   }
 
@@ -90,7 +102,9 @@ export function calculateAge(dateOfBirth: Date | string): AgeInfo {
   }
 
   // Calculate total days
-  const totalDays = Math.floor((now.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24));
+  const totalDays = Math.floor(
+    (now.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   // Determine age group (useful for school health)
   let ageGroup: AgeInfo['ageGroup'] = 'adult';
@@ -106,7 +120,7 @@ export function calculateAge(dateOfBirth: Date | string): AgeInfo {
     months,
     days,
     totalDays,
-    ageGroup
+    ageGroup,
   };
 }
 
@@ -120,9 +134,12 @@ export function isValidDate(date: any): date is Date {
 /**
  * Format date for display
  */
-export function formatDate(date: Date | string, format: DateFormat = 'US_SHORT'): string {
+export function formatDate(
+  date: Date | string,
+  format: DateFormat = 'US_SHORT',
+): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  
+
   if (!isValidDate(d)) {
     logger.warn('Invalid date provided for formatting', { date });
     return '';
@@ -137,12 +154,32 @@ export function formatDate(date: Date | string, format: DateFormat = 'US_SHORT')
   const seconds = d.getSeconds();
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   const monthNamesShort = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   const pad = (num: number) => num.toString().padStart(2, '0');
@@ -172,17 +209,49 @@ export function formatDate(date: Date | string, format: DateFormat = 'US_SHORT')
  */
 export function getDateRange(date: Date | string): { start: Date; end: Date } {
   const d = typeof date === 'string' ? new Date(date) : new Date(date);
-  
+
   if (!isValidDate(d)) {
     const now = new Date();
     return {
-      start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0),
-      end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+      start: new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        0,
+        0,
+        0,
+        0,
+      ),
+      end: new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        59,
+        999,
+      ),
     };
   }
 
-  const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-  const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+  const start = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+  const end = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate(),
+    23,
+    59,
+    59,
+    999,
+  );
 
   return { start, end };
 }
@@ -193,12 +262,14 @@ export function getDateRange(date: Date | string): { start: Date; end: Date } {
 export function isToday(date: Date | string): boolean {
   const d = typeof date === 'string' ? new Date(date) : date;
   const today = new Date();
-  
+
   if (!isValidDate(d)) return false;
 
-  return d.getFullYear() === today.getFullYear() &&
-         d.getMonth() === today.getMonth() &&
-         d.getDate() === today.getDate();
+  return (
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+  );
 }
 
 /**
@@ -225,7 +296,7 @@ export function isFuture(date: Date | string): boolean {
 export function addDays(date: Date | string, days: number): Date {
   const d = typeof date === 'string' ? new Date(date) : new Date(date);
   if (!isValidDate(d)) return new Date();
-  
+
   const result = new Date(d);
   result.setDate(result.getDate() + days);
   return result;
@@ -237,7 +308,7 @@ export function addDays(date: Date | string, days: number): Date {
 export function addMonths(date: Date | string, months: number): Date {
   const d = typeof date === 'string' ? new Date(date) : new Date(date);
   if (!isValidDate(d)) return new Date();
-  
+
   const result = new Date(d);
   result.setMonth(result.getMonth() + months);
   return result;
@@ -249,7 +320,7 @@ export function addMonths(date: Date | string, months: number): Date {
 export function addYears(date: Date | string, years: number): Date {
   const d = typeof date === 'string' ? new Date(date) : new Date(date);
   if (!isValidDate(d)) return new Date();
-  
+
   const result = new Date(d);
   result.setFullYear(result.getFullYear() + years);
   return result;
@@ -258,12 +329,15 @@ export function addYears(date: Date | string, years: number): Date {
 /**
  * Get difference between two dates in days
  */
-export function getDaysDifference(date1: Date | string, date2: Date | string): number {
+export function getDaysDifference(
+  date1: Date | string,
+  date2: Date | string,
+): number {
   const d1 = typeof date1 === 'string' ? new Date(date1) : date1;
   const d2 = typeof date2 === 'string' ? new Date(date2) : date2;
-  
+
   if (!isValidDate(d1) || !isValidDate(d2)) return 0;
-  
+
   const diffTime = Math.abs(d2.getTime() - d1.getTime());
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 }
@@ -282,7 +356,7 @@ export function toISOString(date: Date | string): string {
  */
 export function parseDate(dateString: string): Date | null {
   if (!dateString) return null;
-  
+
   const parsed = new Date(dateString);
   return isValidDate(parsed) ? parsed : null;
 }
@@ -296,7 +370,8 @@ export function getVaccinationPeriods(dateOfBirth: Date | string): {
   ageRange: string;
   dueDate: Date;
 }[] {
-  const dob = typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
+  const dob =
+    typeof dateOfBirth === 'string' ? new Date(dateOfBirth) : dateOfBirth;
   if (!isValidDate(dob)) return [];
 
   return [
@@ -304,9 +379,21 @@ export function getVaccinationPeriods(dateOfBirth: Date | string): {
     { period: '2 months', ageRange: '2-4 months', dueDate: addDays(dob, 120) },
     { period: '4 months', ageRange: '4-6 months', dueDate: addDays(dob, 180) },
     { period: '6 months', ageRange: '6-12 months', dueDate: addDays(dob, 365) },
-    { period: '12-15 months', ageRange: '12-18 months', dueDate: addMonths(dob, 18) },
-    { period: '4-6 years', ageRange: 'School entry', dueDate: addYears(dob, 5) },
-    { period: '11-12 years', ageRange: 'Middle school', dueDate: addYears(dob, 11) }
+    {
+      period: '12-15 months',
+      ageRange: '12-18 months',
+      dueDate: addMonths(dob, 18),
+    },
+    {
+      period: '4-6 years',
+      ageRange: 'School entry',
+      dueDate: addYears(dob, 5),
+    },
+    {
+      period: '11-12 years',
+      ageRange: 'Middle school',
+      dueDate: addYears(dob, 11),
+    },
   ];
 }
 
@@ -324,5 +411,5 @@ export default {
   getDaysDifference,
   toISOString,
   parseDate,
-  getVaccinationPeriods
+  getVaccinationPeriods,
 };

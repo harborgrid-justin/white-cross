@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt, Min, Max } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -17,7 +17,12 @@ export class AuditLogSearchDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ description: 'Number of items per page', default: 20, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Number of items per page',
+    default: 20,
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()

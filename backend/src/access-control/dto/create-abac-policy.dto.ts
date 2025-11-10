@@ -1,7 +1,7 @@
-import { IsString, IsEnum, IsArray, IsNumber, IsBoolean, IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { AbacOperator } from '../interfaces/abac-policy.interface';
+import { AbacAttributeValue, AbacOperator } from '../interfaces/abac-policy.interface';
 
 /**
  * DTO for ABAC Condition
@@ -16,14 +16,17 @@ export class AbacConditionDto {
   operator: AbacOperator;
 
   @ApiProperty({ description: 'Value to compare against' })
-  value: any;
+  value: AbacAttributeValue;
 }
 
 /**
  * DTO for creating ABAC policy rule
  */
 export class CreateAbacPolicyDto {
-  @ApiProperty({ description: 'Policy name', example: 'Allow access during business hours' })
+  @ApiProperty({
+    description: 'Policy name',
+    example: 'Allow access during business hours',
+  })
   @IsString()
   name: string;
 
@@ -42,7 +45,10 @@ export class CreateAbacPolicyDto {
   @Type(() => AbacConditionDto)
   conditions: AbacConditionDto[];
 
-  @ApiProperty({ description: 'Policy priority (higher = evaluated first)', example: 100 })
+  @ApiProperty({
+    description: 'Policy priority (higher = evaluated first)',
+    example: 100,
+  })
   @IsNumber()
   priority: number;
 

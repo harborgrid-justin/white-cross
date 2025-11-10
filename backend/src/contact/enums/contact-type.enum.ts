@@ -7,5 +7,5 @@ export enum ContactType {
   Staff = 'staff',
   Vendor = 'vendor',
   Provider = 'provider', // Healthcare provider
-  Other = 'other'
+  Other = 'other',
 }

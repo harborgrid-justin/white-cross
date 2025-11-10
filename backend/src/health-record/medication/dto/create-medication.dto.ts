@@ -1,6 +1,6 @@
-import { IsString, IsEnum, IsOptional, IsBoolean, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DosageForm, DEASchedule } from '../../interfaces/medication.interface';
+import { DEASchedule, DosageForm } from '../../interfaces/medication.interface';
 
 /**
  * DTO for creating a new medication record

@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsEnum, IsOptional, IsObject, IsNumber, IsBoolean, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { NotificationCategory, NotificationPriority } from '../enums';
@@ -9,11 +9,11 @@ import { NotificationCategory, NotificationPriority } from '../enums';
 export class NotificationActionDto {
   @ApiProperty({ description: 'Action label' })
   @IsString()
-  label: string;
+  label!: string;
 
   @ApiProperty({ description: 'Action identifier' })
   @IsString()
-  action: string;
+  action!: string;
 
   @ApiProperty({ description: 'Action icon URL', required: false })
   @IsString()
@@ -28,28 +28,28 @@ export class SendNotificationDto {
   @ApiProperty({ description: 'Array of user IDs to send notification to' })
   @IsArray()
   @IsString({ each: true })
-  userIds: string[];
+  userIds!: string[];
 
   @ApiProperty({ description: 'Notification title' })
   @IsString()
-  title: string;
+  title!: string;
 
   @ApiProperty({ description: 'Notification body text' })
   @IsString()
-  body: string;
+  body!: string;
 
   @ApiProperty({
     description: 'Notification category',
-    enum: NotificationCategory
+    enum: NotificationCategory,
   })
   @IsEnum(NotificationCategory)
-  category: NotificationCategory;
+  category!: NotificationCategory;
 
   @ApiProperty({
     description: 'Notification priority',
     enum: NotificationPriority,
     required: false,
-    default: NotificationPriority.NORMAL
+    default: NotificationPriority.NORMAL,
   })
   @IsEnum(NotificationPriority)
   @IsOptional()
@@ -60,7 +60,11 @@ export class SendNotificationDto {
   @IsOptional()
   data?: Record<string, string>;
 
-  @ApiProperty({ description: 'Notification actions', required: false, type: [NotificationActionDto] })
+  @ApiProperty({
+    description: 'Notification actions',
+    required: false,
+    type: [NotificationActionDto],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => NotificationActionDto)

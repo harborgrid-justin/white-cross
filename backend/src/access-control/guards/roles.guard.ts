@@ -1,4 +1,6 @@
-import { Injectable, CanActivate, ExecutionContext, Logger, ForbiddenException } from '@nestjs/common';
+import { RoleModel } from '../types/sequelize-models.types';
+
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -29,10 +31,10 @@ export class RolesGuard implements CanActivate {
 
     try {
       // Check if route is marked as public
-      const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
+      const isPublic = this.reflector.getAllAndOverride<boolean>(
+        IS_PUBLIC_KEY,
+        [context.getHandler(), context.getClass()],
+      );
 
       if (isPublic) {
         this.logger.debug('Public route - skipping role check', {
@@ -43,10 +45,10 @@ export class RolesGuard implements CanActivate {
       }
 
       // Get required roles from decorator
-      const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
+      const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+        ROLES_KEY,
+        [context.getHandler(), context.getClass()],
+      );
 
       // If no roles are required, allow access
       if (!requiredRoles || requiredRoles.length === 0) {
@@ -76,13 +78,14 @@ export class RolesGuard implements CanActivate {
       }
 
       // Get user's roles
-      const userPermissions = await this.accessControlService.getUserPermissions(user.id);
+      const userPermissions =
+        await this.accessControlService.getUserPermissions(user.id);
       const userRoles = userPermissions.roles;
-      const userRoleNames = userRoles.map((role: any) => role.name);
+      const userRoleNames = userRoles.map((role: RoleModel) => role.name);
 
       // Check if user has at least one of the required roles
       const hasRequiredRole = requiredRoles.some((requiredRole) =>
-        userRoles.some((role: any) => role.name === requiredRole)
+        userRoles.some((role: RoleModel) => role.name === requiredRole),
       );
 
       const duration = Date.now() - startTime;

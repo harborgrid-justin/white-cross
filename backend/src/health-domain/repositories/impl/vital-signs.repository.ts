@@ -9,10 +9,10 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../../../database/repositories/base/base.repository';
 import {
-  IVitalSignsRepository,
-  VitalSignsAttributes,
   CreateVitalSignsDTO,
-  UpdateVitalSignsDTO
+  IVitalSignsRepository,
+  UpdateVitalSignsDTO,
+  VitalSignsAttributes,
 } from '../interfaces/vital-signs.repository.interface';
 import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
@@ -28,7 +28,7 @@ export class VitalSignsRepository
   constructor(
     @InjectModel(VitalSigns) model: typeof VitalSigns,
     auditLogger: IAuditLogger,
-    cacheManager: ICacheManager
+    cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'VitalSigns');
   }
@@ -38,16 +38,17 @@ export class VitalSignsRepository
    */
   async findByStudent(
     studentId: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<VitalSignsAttributes[]> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'by-student'
+        'by-student',
       );
 
-      const cached = await this.cacheManager.get<VitalSignsAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<VitalSignsAttributes[]>(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit for vital signs by student: ${studentId}`);
         return cached;
@@ -56,7 +57,7 @@ export class VitalSignsRepository
       const vitalSigns = await this.model.findAll({
         where: { studentId },
         order: [['measurementDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       const entities = vitalSigns.map((v: any) => this.mapToEntity(v));
@@ -69,7 +70,7 @@ export class VitalSignsRepository
         'Failed to find vital signs by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -78,16 +79,17 @@ export class VitalSignsRepository
    * Find latest vital signs measurement for a student
    */
   async findLatestByStudent(
-    studentId: string
+    studentId: string,
   ): Promise<VitalSignsAttributes | null> {
     try {
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         studentId,
-        'latest'
+        'latest',
       );
 
-      const cached = await this.cacheManager.get<VitalSignsAttributes>(cacheKey);
+      const cached =
+        await this.cacheManager.get<VitalSignsAttributes>(cacheKey);
       if (cached) {
         this.logger.debug(`Cache hit for latest vital signs: ${studentId}`);
         return cached;
@@ -95,7 +97,7 @@ export class VitalSignsRepository
 
       const vitalSign = await this.model.findOne({
         where: { studentId },
-        order: [['measurementDate', 'DESC']]
+        order: [['measurementDate', 'DESC']],
       });
 
       if (!vitalSign) {
@@ -112,7 +114,7 @@ export class VitalSignsRepository
         'Failed to find latest vital signs',
         'FIND_LATEST_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -123,17 +125,17 @@ export class VitalSignsRepository
   async findByDateRange(
     studentId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<VitalSignsAttributes[]> {
     try {
       const vitalSigns = await this.model.findAll({
         where: {
           studentId,
           measurementDate: {
-            [Op.between]: [startDate, endDate]
-          }
+            [Op.between]: [startDate, endDate],
+          },
         },
-        order: [['measurementDate', 'ASC']]
+        order: [['measurementDate', 'ASC']],
       });
 
       return vitalSigns.map((v: any) => this.mapToEntity(v));
@@ -143,7 +145,7 @@ export class VitalSignsRepository
         'Failed to find vital signs by date range',
         'FIND_BY_DATE_RANGE_ERROR',
         500,
-        { studentId, startDate, endDate, error: (error as Error).message }
+        { studentId, startDate, endDate, error: (error as Error).message },
       );
     }
   }
@@ -153,11 +155,11 @@ export class VitalSignsRepository
    */
   async findAbnormalVitals(
     studentId?: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<VitalSignsAttributes[]> {
     try {
       const whereClause: any = {
-        isAbnormal: true
+        isAbnormal: true,
       };
 
       if (studentId) {
@@ -167,7 +169,7 @@ export class VitalSignsRepository
       const vitalSigns = await this.model.findAll({
         where: whereClause,
         order: [['measurementDate', 'DESC']],
-        limit: options?.limit || 100
+        limit: options?.limit || 100,
       });
 
       return vitalSigns.map((v: any) => this.mapToEntity(v));
@@ -177,7 +179,7 @@ export class VitalSignsRepository
         'Failed to find abnormal vital signs',
         'FIND_ABNORMAL_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -188,7 +190,7 @@ export class VitalSignsRepository
   async getVitalTrends(
     studentId: string,
     vitalType: string,
-    days: number = 30
+    days: number = 30,
   ): Promise<VitalSignsAttributes[]> {
     try {
       const startDate = new Date();
@@ -197,10 +199,11 @@ export class VitalSignsRepository
       const cacheKey = this.cacheKeyBuilder.summary(
         this.entityName,
         `${studentId}:${vitalType}:${days}`,
-        'trends'
+        'trends',
       );
 
-      const cached = await this.cacheManager.get<VitalSignsAttributes[]>(cacheKey);
+      const cached =
+        await this.cacheManager.get<VitalSignsAttributes[]>(cacheKey);
       if (cached) {
         return cached;
       }
@@ -209,10 +212,10 @@ export class VitalSignsRepository
         where: {
           studentId,
           measurementDate: {
-            [Op.gte]: startDate
-          }
+            [Op.gte]: startDate,
+          },
         },
-        order: [['measurementDate', 'ASC']]
+        order: [['measurementDate', 'ASC']],
       });
 
       const entities = vitalSigns.map((v: any) => this.mapToEntity(v));
@@ -225,7 +228,7 @@ export class VitalSignsRepository
         'Failed to get vital trends',
         'TRENDS_ERROR',
         500,
-        { studentId, vitalType, days, error: (error as Error).message }
+        { studentId, vitalType, days, error: (error as Error).message },
       );
     }
   }
@@ -235,7 +238,7 @@ export class VitalSignsRepository
    */
   async bulkRecordVitals(
     records: CreateVitalSignsDTO[],
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<VitalSignsAttributes[]> {
     let transaction: Transaction | undefined;
 
@@ -245,21 +248,23 @@ export class VitalSignsRepository
       const results = await this.model.bulkCreate(records as any, {
         transaction,
         validate: true,
-        returning: true
+        returning: true,
       });
 
       await this.auditLogger.logBulkOperation(
         'BULK_RECORD_VITALS',
         this.entityName,
         context,
-        { count: results.length }
+        { count: results.length },
       );
 
       if (transaction) {
         await transaction.commit();
       }
 
-      this.logger.log(`Bulk recorded ${results.length} vital sign measurements`);
+      this.logger.log(
+        `Bulk recorded ${results.length} vital sign measurements`,
+      );
 
       return results.map((r: any) => this.mapToEntity(r));
     } catch (error) {
@@ -272,7 +277,7 @@ export class VitalSignsRepository
         'Failed to bulk record vital signs',
         'BULK_RECORD_ERROR',
         500,
-        { count: records.length, error: (error as Error).message }
+        { count: records.length, error: (error as Error).message },
       );
     }
   }
@@ -286,7 +291,7 @@ export class VitalSignsRepository
         'Student ID is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'studentId' }
+        { field: 'studentId' },
       );
     }
 
@@ -295,7 +300,7 @@ export class VitalSignsRepository
         'Measurement date is required',
         'VALIDATION_ERROR',
         400,
-        { field: 'measurementDate' }
+        { field: 'measurementDate' },
       );
     }
 
@@ -305,7 +310,7 @@ export class VitalSignsRepository
         'Measurement date cannot be in the future',
         'VALIDATION_ERROR',
         400,
-        { measurementDate: data.measurementDate }
+        { measurementDate: data.measurementDate },
       );
     }
 
@@ -316,7 +321,7 @@ export class VitalSignsRepository
           'Temperature value out of valid range',
           'VALIDATION_ERROR',
           400,
-          { temperature: data.temperature, range: '90-110°F' }
+          { temperature: data.temperature, range: '90-110°F' },
         );
       }
     }
@@ -327,7 +332,7 @@ export class VitalSignsRepository
           'Heart rate value out of valid range',
           'VALIDATION_ERROR',
           400,
-          { heartRate: data.heartRate, range: '30-220 bpm' }
+          { heartRate: data.heartRate, range: '30-220 bpm' },
         );
       }
     }
@@ -338,7 +343,7 @@ export class VitalSignsRepository
           'Oxygen saturation value out of valid range',
           'VALIDATION_ERROR',
           400,
-          { oxygenSaturation: data.oxygenSaturation, range: '70-100%' }
+          { oxygenSaturation: data.oxygenSaturation, range: '70-100%' },
         );
       }
     }
@@ -349,7 +354,10 @@ export class VitalSignsRepository
           'Blood pressure systolic value out of valid range',
           'VALIDATION_ERROR',
           400,
-          { bloodPressureSystolic: data.bloodPressureSystolic, range: '60-250 mmHg' }
+          {
+            bloodPressureSystolic: data.bloodPressureSystolic,
+            range: '60-250 mmHg',
+          },
         );
       }
     }
@@ -360,7 +368,7 @@ export class VitalSignsRepository
    */
   protected async validateUpdate(
     id: string,
-    data: UpdateVitalSignsDTO
+    data: UpdateVitalSignsDTO,
   ): Promise<void> {
     // Apply same range validations as create
     if (data.temperature !== undefined) {
@@ -369,7 +377,7 @@ export class VitalSignsRepository
           'Temperature value out of valid range',
           'VALIDATION_ERROR',
           400,
-          { temperature: data.temperature, range: '90-110°F' }
+          { temperature: data.temperature, range: '90-110°F' },
         );
       }
     }
@@ -380,7 +388,7 @@ export class VitalSignsRepository
           'Heart rate value out of valid range',
           'VALIDATION_ERROR',
           400,
-          { heartRate: data.heartRate, range: '30-220 bpm' }
+          { heartRate: data.heartRate, range: '30-220 bpm' },
         );
       }
     }
@@ -395,7 +403,7 @@ export class VitalSignsRepository
 
       // Invalidate entity cache
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, vitalSignData.id)
+        this.cacheKeyBuilder.entity(this.entityName, vitalSignData.id),
       );
 
       // Invalidate student-specific caches
@@ -404,33 +412,33 @@ export class VitalSignsRepository
           this.cacheKeyBuilder.summary(
             this.entityName,
             vitalSignData.studentId,
-            'by-student'
-          )
+            'by-student',
+          ),
         );
 
         await this.cacheManager.delete(
           this.cacheKeyBuilder.summary(
             this.entityName,
             vitalSignData.studentId,
-            'latest'
-          )
+            'latest',
+          ),
         );
 
         // Invalidate all student vital sign patterns
         await this.cacheManager.deletePattern(
-          `white-cross:vitalsigns:student:${vitalSignData.studentId}:*`
+          `white-cross:vitalsigns:student:${vitalSignData.studentId}:*`,
         );
 
         // Invalidate trend caches
         await this.cacheManager.deletePattern(
-          `white-cross:vitalsigns:${vitalSignData.studentId}:*:trends`
+          `white-cross:vitalsigns:${vitalSignData.studentId}:*:trends`,
         );
       }
 
       // Invalidate abnormal vitals cache if applicable
       if (vitalSignData.isAbnormal) {
         await this.cacheManager.deletePattern(
-          `white-cross:vitalsigns:abnormal:*`
+          `white-cross:vitalsigns:abnormal:*`,
         );
       }
     } catch (error) {

@@ -15,7 +15,7 @@ export enum ValidationErrorCode {
   DUPLICATE_VALUE = 'DUPLICATE_VALUE',
   INVALID_REFERENCE = 'INVALID_REFERENCE',
   PERMISSION_DENIED = 'PERMISSION_DENIED',
-  BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION'
+  BUSINESS_RULE_VIOLATION = 'BUSINESS_RULE_VIOLATION',
 }
 
 // Validation error interface
@@ -23,14 +23,14 @@ export interface ValidationError {
   field: string;
   message: string;
   code: ValidationErrorCode;
-  value?: any;
+  value?: unknown;
 }
 
 // Field change for audit
 export interface FieldChange {
   field: string;
-  oldValue?: any;
-  newValue?: any;
+  oldValue?: unknown;
+  newValue?: unknown;
 }
 
 // Common ID type
@@ -197,5 +197,15 @@ export interface ExportImportResult {
 // Common enums as types
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | 'PREFER_NOT_TO_SAY';
 export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type Severity = 'MILD' | 'MODERATE' | 'SEVERE' | 'CRITICAL' | 'LIFE_THREATENING';
-export type Status = 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'SUSPENDED' | 'ARCHIVED';
+export type Severity =
+  | 'MILD'
+  | 'MODERATE'
+  | 'SEVERE'
+  | 'CRITICAL'
+  | 'LIFE_THREATENING';
+export type Status =
+  | 'ACTIVE'
+  | 'INACTIVE'
+  | 'PENDING'
+  | 'SUSPENDED'
+  | 'ARCHIVED';

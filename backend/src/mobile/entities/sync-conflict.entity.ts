@@ -4,10 +4,6 @@
  */
 
 // Re-export the Sequelize model and interfaces
-export {
-  SyncConflict
-} from '../../database/models/sync-conflict.model';
+export { SyncConflict } from '../../database/models/sync-conflict.model';
 
-export type {
-  ConflictVersion
-} from '../../database/models/sync-conflict.model';
+export type { ConflictVersion } from '../../database/models/sync-conflict.model';

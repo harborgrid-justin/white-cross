@@ -2,38 +2,40 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
 // Models
-import { DrugCatalog } from '../database/models/drug-catalog.model';
-import { DrugInteraction } from '../database/models/drug-interaction.model';
-import { StudentDrugAllergy } from '../database/models/student-drug-allergy.model';
-import { TreatmentPlan } from '../database/models/treatment-plan.model';
-import { VitalSigns } from '../database/models/vital-signs.model';
-import { ClinicVisit } from '../database/models/clinic-visit.model';
-import { Prescription } from '../database/models/prescription.model';
-import { ClinicalProtocol } from '../database/models/clinical-protocol.model';
-import { ClinicalNote } from '../database/models/clinical-note.model';
-import { FollowUpAppointment } from '../database/models/follow-up-appointment.model';
+import {
+  ClinicalNote,
+  ClinicalProtocol,
+  ClinicVisit,
+  DrugCatalog,
+  DrugInteraction,
+  FollowUpAppointment,
+  Prescription,
+  StudentDrugAllergy,
+  TreatmentPlan,
+  VitalSigns,
+} from '@/database';
 
 // Services
-import { DrugInteractionService } from './services/drug-interaction.service';
-import { ClinicVisitService } from './services/clinic-visit.service';
-import { TreatmentPlanService } from './services/treatment-plan.service';
-import { PrescriptionService } from './services/prescription.service';
-import { ClinicalProtocolService } from './services/clinical-protocol.service';
 import { ClinicalNoteService } from './services/clinical-note.service';
-import { VitalSignsService } from './services/vital-signs.service';
+import { ClinicalProtocolService } from './services/clinical-protocol.service';
+import { ClinicVisitService } from './services/clinic-visit.service';
+import { DrugInteractionService } from './services/drug-interaction.service';
 import { FollowUpService } from './services/follow-up.service';
+import { PrescriptionService } from './services/prescription.service';
+import { TreatmentPlanService } from './services/treatment-plan.service';
+import { VitalSignsService } from './services/vital-signs.service';
 
 // Controllers
-import { DrugInteractionController } from './controllers/drug-interaction.controller';
-import { ClinicVisitController } from './controllers/clinic-visit.controller';
-import { TreatmentPlanController } from './controllers/treatment-plan.controller';
-import { PrescriptionController } from './controllers/prescription.controller';
-import { ClinicalProtocolController } from './controllers/clinical-protocol.controller';
 import { ClinicalNoteController } from './controllers/clinical-note.controller';
-import { VitalSignsController } from './controllers/vital-signs.controller';
+import { ClinicalProtocolController } from './controllers/clinical-protocol.controller';
+import { ClinicVisitController } from './controllers/clinic-visit.controller';
+import { DrugInteractionController } from './controllers/drug-interaction.controller';
 import { FollowUpController } from './controllers/follow-up.controller';
 import { MedicationAdministrationController } from './controllers/medication-administration.controller';
 import { PrescriptionAliasController } from './controllers/prescription-alias.controller';
+import { PrescriptionController } from './controllers/prescription.controller';
+import { TreatmentPlanController } from './controllers/treatment-plan.controller';
+import { VitalSignsController } from './controllers/vital-signs.controller';
 
 /**
  * Clinical Module

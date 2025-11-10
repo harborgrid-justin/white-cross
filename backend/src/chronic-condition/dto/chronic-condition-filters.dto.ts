@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
-import { ConditionStatus } from '../enums';
+import { ConditionStatus } from '../enums/condition-status.enum';
 
 /**
  * DTO for filtering chronic condition search queries.
@@ -51,7 +51,8 @@ export class ChronicConditionFiltersDto {
   isActive?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Full-text search across condition, ICD code, notes, care plan',
+    description:
+      'Full-text search across condition, ICD code, notes, care plan',
     example: 'diabetes',
   })
   @IsOptional()

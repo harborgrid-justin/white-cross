@@ -4,20 +4,9 @@
  *
  * TypeScript type definitions and interfaces for the report management system.
  * Includes report models, DTOs, filters, and analytics types.
+ *
+ * Note: Runtime values (constants) are in reports.constants.ts
  */
-
-// ==========================================
-// CONFIGURATION
-// ==========================================
-
-// Custom cache tags for reports
-export const REPORT_CACHE_TAGS = {
-  REPORTS: 'reports',
-  TEMPLATES: 'report-templates',
-  SCHEDULES: 'report-schedules',
-  EXPORTS: 'report-exports',
-  ANALYTICS: 'report-analytics',
-} as const;
 
 // ==========================================
 // TYPE DEFINITIONS

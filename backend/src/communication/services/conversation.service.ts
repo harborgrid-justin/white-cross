@@ -1,13 +1,17 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
 import { Conversation, ConversationType } from '../../database/models/conversation.model';
 import { ConversationParticipant, ParticipantRole } from '../../database/models/conversation-participant.model';
-import { ParticipantRole as ParticipantRoleEnum } from '../dto/conversation-participant.dto';
+import {
+  AddParticipantDto,
+  ParticipantRole as ParticipantRoleEnum,
+  UpdateParticipantDto,
+} from '../dto/conversation-participant.dto';
 import { Message } from '../../database/models/message.model';
+import { CreateConversationResult } from '../types/conversation.types';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';
-import { AddParticipantDto, UpdateParticipantDto } from '../dto/conversation-participant.dto';
 
 /**
  * ConversationService
@@ -40,7 +44,8 @@ export class ConversationService {
 
   constructor(
     @InjectModel(Conversation) private conversationModel: typeof Conversation,
-    @InjectModel(ConversationParticipant) private participantModel: typeof ConversationParticipant,
+    @InjectModel(ConversationParticipant)
+    private participantModel: typeof ConversationParticipant,
     @InjectModel(Message) private messageModel: typeof Message,
   ) {}
 
@@ -57,14 +62,14 @@ export class ConversationService {
     dto: CreateConversationDto,
     creatorId: string,
     tenantId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     this.logger.log(`Creating ${dto.type} conversation by user ${creatorId}`);
 
     // Validate conversation type constraints
     this.validateConversationConstraints(dto);
 
     // Ensure creator is in participants list
-    const creatorInList = dto.participants.some(p => p.userId === creatorId);
+    const creatorInList = dto.participants.some((p) => p.userId === creatorId);
     const participants = creatorInList
       ? dto.participants
       : [{ userId: creatorId, role: 'OWNER' }, ...dto.participants];
@@ -79,26 +84,30 @@ export class ConversationService {
       createdById: creatorId,
       isArchived: false,
       metadata: dto.metadata || {},
-    } as any);
+    });
 
     // Add participants
-    const participantPromises = participants.map(participant =>
+    const participantPromises = participants.map((participant) =>
       this.participantModel.create({
         conversationId: conversation.id,
         userId: participant.userId,
-        role: participant.role || (participant.userId === creatorId ? ParticipantRole.OWNER : ParticipantRole.MEMBER),
+        role:
+          participant.role ||
+          (participant.userId === creatorId
+            ? ParticipantRole.OWNER
+            : ParticipantRole.MEMBER),
         joinedAt: new Date(),
         isMuted: false,
         isPinned: false,
         notificationPreference: 'ALL',
-      } as any)
+      }),
     );
 
     const createdParticipants = await Promise.all(participantPromises);
 
     return {
       conversation: conversation.toJSON(),
-      participants: createdParticipants.map(p => p.toJSON()),
+      participants: createdParticipants.map((p) => p.toJSON()),
     };
   }
 
@@ -116,7 +125,7 @@ export class ConversationService {
     conversationId: string,
     userId: string,
     tenantId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const conversation = await this.conversationModel.findOne({
       where: { id: conversationId, tenantId },
       include: [
@@ -134,11 +143,16 @@ export class ConversationService {
     // Verify user is a participant
     const isParticipant = await this.isParticipant(conversationId, userId);
     if (!isParticipant) {
-      throw new ForbiddenException('You are not a participant in this conversation');
+      throw new ForbiddenException(
+        'You are not a participant in this conversation',
+      );
     }
 
     // Get unread count for this user
-    const unreadCount = await this.getConversationUnreadCount(conversationId, userId);
+    const unreadCount = await this.getConversationUnreadCount(
+      conversationId,
+      userId,
+    );
 
     return {
       ...conversation.toJSON(),
@@ -163,7 +177,7 @@ export class ConversationService {
       page?: number;
       limit?: number;
     } = {},
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const page = options.page || 1;
     const limit = options.limit || 20;
     const offset = (page - 1) * limit;
@@ -174,7 +188,7 @@ export class ConversationService {
       attributes: ['conversationId', 'isMuted', 'isPinned', 'lastReadAt'],
     });
 
-    const conversationIds = participations.map(p => p.conversationId);
+    const conversationIds = participations.map((p) => p.conversationId);
 
     if (conversationIds.length === 0) {
       return {
@@ -198,24 +212,33 @@ export class ConversationService {
     }
 
     // Get conversations
-    const { rows: conversations, count: total } = await this.conversationModel.findAndCountAll({
-      where,
-      include: [
-        {
-          model: this.participantModel,
-          as: 'participants',
-        },
-      ],
-      order: [['lastMessageAt', 'DESC NULLS LAST'], ['createdAt', 'DESC']],
-      offset,
-      limit,
-    });
+    const { rows: conversations, count: total } =
+      await this.conversationModel.findAndCountAll({
+        where,
+        include: [
+          {
+            model: this.participantModel,
+            as: 'participants',
+          },
+        ],
+        order: [
+          ['lastMessageAt', 'DESC NULLS LAST'],
+          ['createdAt', 'DESC'],
+        ],
+        offset,
+        limit,
+      });
 
     // Enrich with user-specific data
     const enrichedConversations = await Promise.all(
-      conversations.map(async conv => {
-        const participation = participations.find(p => p.conversationId === conv.id);
-        const unreadCount = await this.getConversationUnreadCount(conv.id, userId);
+      conversations.map(async (conv) => {
+        const participation = participations.find(
+          (p) => p.conversationId === conv.id,
+        );
+        const unreadCount = await this.getConversationUnreadCount(
+          conv.id,
+          userId,
+        );
 
         return {
           ...conv.toJSON(),
@@ -226,7 +249,7 @@ export class ConversationService {
           },
           unreadCount,
         };
-      })
+      }),
     );
 
     // Sort pinned conversations first
@@ -265,7 +288,7 @@ export class ConversationService {
     dto: UpdateConversationDto,
     userId: string,
     tenantId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const conversation = await this.conversationModel.findOne({
       where: { id: conversationId, tenantId },
     });
@@ -275,15 +298,26 @@ export class ConversationService {
     }
 
     // Check permissions
-    await this.checkPermission(conversationId, userId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
+    await this.checkPermission(conversationId, userId, [
+      ParticipantRoleEnum.OWNER,
+      ParticipantRoleEnum.ADMIN,
+    ]);
 
     // Update conversation
     await conversation.update({
       name: dto.name !== undefined ? dto.name : conversation.name,
-      description: dto.description !== undefined ? dto.description : conversation.description,
-      avatarUrl: dto.avatarUrl !== undefined ? dto.avatarUrl : conversation.avatarUrl,
-      isArchived: dto.isArchived !== undefined ? dto.isArchived : conversation.isArchived,
-      metadata: dto.metadata !== undefined ? { ...conversation.metadata, ...dto.metadata } : conversation.metadata,
+      description:
+        dto.description !== undefined
+          ? dto.description
+          : conversation.description,
+      avatarUrl:
+        dto.avatarUrl !== undefined ? dto.avatarUrl : conversation.avatarUrl,
+      isArchived:
+        dto.isArchived !== undefined ? dto.isArchived : conversation.isArchived,
+      metadata:
+        dto.metadata !== undefined
+          ? { ...conversation.metadata, ...dto.metadata }
+          : conversation.metadata,
     });
 
     return { conversation: conversation.toJSON() };
@@ -314,7 +348,9 @@ export class ConversationService {
     }
 
     // Check permissions - only owner can delete
-    await this.checkPermission(conversationId, userId, [ParticipantRoleEnum.OWNER]);
+    await this.checkPermission(conversationId, userId, [
+      ParticipantRoleEnum.OWNER,
+    ]);
 
     // Soft delete conversation
     await conversation.destroy();
@@ -340,8 +376,10 @@ export class ConversationService {
     dto: AddParticipantDto,
     requesterId: string,
     tenantId: string,
-  ): Promise<any> {
-    this.logger.log(`Adding participant ${dto.userId} to conversation ${conversationId}`);
+  ): Promise<CreateConversationResult> {
+    this.logger.log(
+      `Adding participant ${dto.userId} to conversation ${conversationId}`,
+    );
 
     // Verify conversation exists
     const conversation = await this.conversationModel.findOne({
@@ -353,11 +391,16 @@ export class ConversationService {
     }
 
     // Check permissions
-    await this.checkPermission(conversationId, requesterId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
+    await this.checkPermission(conversationId, requesterId, [
+      ParticipantRoleEnum.OWNER,
+      ParticipantRoleEnum.ADMIN,
+    ]);
 
     // Validate for direct conversations
     if (conversation.type === ConversationType.DIRECT) {
-      throw new BadRequestException('Cannot add participants to direct conversations');
+      throw new BadRequestException(
+        'Cannot add participants to direct conversations',
+      );
     }
 
     // Check if participant already exists
@@ -378,7 +421,7 @@ export class ConversationService {
       isMuted: false,
       isPinned: false,
       notificationPreference: 'ALL',
-    } as any);
+    });
 
     return { participant: participant.toJSON() };
   }
@@ -402,7 +445,9 @@ export class ConversationService {
     requesterId: string,
     tenantId: string,
   ): Promise<void> {
-    this.logger.log(`Removing participant ${participantUserId} from conversation ${conversationId}`);
+    this.logger.log(
+      `Removing participant ${participantUserId} from conversation ${conversationId}`,
+    );
 
     // Verify conversation exists
     const conversation = await this.conversationModel.findOne({
@@ -435,7 +480,10 @@ export class ConversationService {
     }
 
     // Check permissions for removing others
-    await this.checkPermission(conversationId, requesterId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
+    await this.checkPermission(conversationId, requesterId, [
+      ParticipantRoleEnum.OWNER,
+      ParticipantRoleEnum.ADMIN,
+    ]);
 
     await participant.destroy();
   }
@@ -452,7 +500,7 @@ export class ConversationService {
     conversationId: string,
     dto: UpdateParticipantDto,
     userId: string,
-  ): Promise<any> {
+  ): Promise<CreateConversationResult> {
     const participant = await this.participantModel.findOne({
       where: { conversationId, userId },
     });
@@ -463,16 +511,24 @@ export class ConversationService {
 
     // If updating role, check permissions
     if (dto.role !== undefined) {
-      await this.checkPermission(conversationId, userId, [ParticipantRoleEnum.OWNER, ParticipantRoleEnum.ADMIN]);
+      await this.checkPermission(conversationId, userId, [
+        ParticipantRoleEnum.OWNER,
+        ParticipantRoleEnum.ADMIN,
+      ]);
     }
 
     // Update participant
     await participant.update({
       role: dto.role !== undefined ? dto.role : participant.role,
       isMuted: dto.isMuted !== undefined ? dto.isMuted : participant.isMuted,
-      isPinned: dto.isPinned !== undefined ? dto.isPinned : participant.isPinned,
-      customName: dto.customName !== undefined ? dto.customName : participant.customName,
-      notificationPreference: dto.notificationPreference !== undefined ? dto.notificationPreference : participant.notificationPreference,
+      isPinned:
+        dto.isPinned !== undefined ? dto.isPinned : participant.isPinned,
+      customName:
+        dto.customName !== undefined ? dto.customName : participant.customName,
+      notificationPreference:
+        dto.notificationPreference !== undefined
+          ? dto.notificationPreference
+          : participant.notificationPreference,
     });
 
     return { participant: participant.toJSON() };
@@ -486,20 +542,25 @@ export class ConversationService {
    * @returns List of participants
    * @throws ForbiddenException if user is not a participant
    */
-  async getParticipants(conversationId: string, userId: string): Promise<any> {
+  async getParticipants(conversationId: string, userId: string): Promise<CreateConversationResult> {
     // Verify user is a participant
     const isParticipant = await this.isParticipant(conversationId, userId);
     if (!isParticipant) {
-      throw new ForbiddenException('You are not a participant in this conversation');
+      throw new ForbiddenException(
+        'You are not a participant in this conversation',
+      );
     }
 
     const participants = await this.participantModel.findAll({
       where: { conversationId },
-      order: [['role', 'ASC'], ['joinedAt', 'ASC']],
+      order: [
+        ['role', 'ASC'],
+        ['joinedAt', 'ASC'],
+      ],
     });
 
     return {
-      participants: participants.map(p => p.toJSON()),
+      participants: participants.map((p) => p.toJSON()),
       total: participants.length,
     };
   }
@@ -512,7 +573,9 @@ export class ConversationService {
   private validateConversationConstraints(dto: CreateConversationDto): void {
     if (dto.type === ConversationType.DIRECT) {
       if (dto.participants.length !== 1 && dto.participants.length !== 2) {
-        throw new BadRequestException('Direct conversations must have exactly 2 participants');
+        throw new BadRequestException(
+          'Direct conversations must have exactly 2 participants',
+        );
       }
     }
 
@@ -521,10 +584,14 @@ export class ConversationService {
         throw new BadRequestException('Group conversations must have a name');
       }
       if (dto.participants.length < 1) {
-        throw new BadRequestException('Group conversations must have at least 2 participants (including creator)');
+        throw new BadRequestException(
+          'Group conversations must have at least 2 participants (including creator)',
+        );
       }
       if (dto.participants.length > 99) {
-        throw new BadRequestException('Group conversations cannot have more than 100 participants');
+        throw new BadRequestException(
+          'Group conversations cannot have more than 100 participants',
+        );
       }
     }
 
@@ -538,7 +605,10 @@ export class ConversationService {
   /**
    * Check if user is a participant
    */
-  private async isParticipant(conversationId: string, userId: string): Promise<boolean> {
+  private async isParticipant(
+    conversationId: string,
+    userId: string,
+  ): Promise<boolean> {
     const participant = await this.participantModel.findOne({
       where: { conversationId, userId },
     });
@@ -558,18 +628,25 @@ export class ConversationService {
     });
 
     if (!participant) {
-      throw new ForbiddenException('You are not a participant in this conversation');
+      throw new ForbiddenException(
+        'You are not a participant in this conversation',
+      );
     }
 
-    if (!requiredRoles.includes(participant.role as ParticipantRole)) {
-      throw new ForbiddenException('You do not have permission to perform this action');
+    if (!requiredRoles.includes(participant.role)) {
+      throw new ForbiddenException(
+        'You do not have permission to perform this action',
+      );
     }
   }
 
   /**
    * Get unread count for a specific conversation
    */
-  private async getConversationUnreadCount(conversationId: string, userId: string): Promise<number> {
+  private async getConversationUnreadCount(
+    conversationId: string,
+    userId: string,
+  ): Promise<number> {
     const participant = await this.participantModel.findOne({
       where: { conversationId, userId },
       attributes: ['lastReadAt'],

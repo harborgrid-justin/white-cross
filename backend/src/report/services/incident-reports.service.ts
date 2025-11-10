@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Op, fn, col, QueryTypes } from 'sequelize';
+import { col, fn, Op, QueryTypes } from 'sequelize';
 import { IncidentReport } from '../../database/models/incident-report.model';
 import { IncidentStatisticsReport } from '../interfaces/report-types.interface';
 import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
@@ -60,10 +60,7 @@ export class IncidentReportsService {
       // Group by type
       const incidentsByTypeRaw = await this.incidentReportModel.findAll({
         where: whereClause,
-        attributes: [
-          'type',
-          [fn('COUNT', col('id')), 'count'],
-        ],
+        attributes: ['type', [fn('COUNT', col('id')), 'count']],
         group: ['type'],
         raw: true,
       });
@@ -76,10 +73,7 @@ export class IncidentReportsService {
       // Group by severity
       const incidentsBySeverityRaw = await this.incidentReportModel.findAll({
         where: whereClause,
-        attributes: [
-          'severity',
-          [fn('COUNT', col('id')), 'count'],
-        ],
+        attributes: ['severity', [fn('COUNT', col('id')), 'count']],
         group: ['severity'],
         raw: true,
       });
@@ -119,11 +113,7 @@ export class IncidentReportsService {
       // Get injury types distribution (type + severity)
       const injuryStatsRaw = await this.incidentReportModel.findAll({
         where: whereClause,
-        attributes: [
-          'type',
-          'severity',
-          [fn('COUNT', col('id')), 'count'],
-        ],
+        attributes: ['type', 'severity', [fn('COUNT', col('id')), 'count']],
         group: ['type', 'severity'],
         raw: true,
       });
@@ -137,10 +127,7 @@ export class IncidentReportsService {
       // Get parent notification rate
       const notificationStatsRaw = await this.incidentReportModel.findAll({
         where: whereClause,
-        attributes: [
-          'parentNotified',
-          [fn('COUNT', col('id')), 'count'],
-        ],
+        attributes: ['parentNotified', [fn('COUNT', col('id')), 'count']],
         group: ['parentNotified'],
         raw: true,
       });

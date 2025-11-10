@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataRetentionRepository } from '../repositories/data-retention.repository';
-import { CreateDataRetentionDto, UpdateDataRetentionDto, QueryDataRetentionDto } from '../dto/data-retention.dto';
+import { CreateDataRetentionDto, QueryDataRetentionDto, UpdateDataRetentionDto } from '../dto/data-retention.dto';
 import { RetentionStatus } from '../../database/models/data-retention-policy.model';
 
 @Injectable()
@@ -14,7 +14,9 @@ export class DataRetentionService {
   async getPolicyById(id: string) {
     const policy = await this.retentionRepository.findById(id);
     if (!policy) {
-      throw new NotFoundException(`Data retention policy with ID ${id} not found`);
+      throw new NotFoundException(
+        `Data retention policy with ID ${id} not found`,
+      );
     }
     return policy;
   }
@@ -27,7 +29,11 @@ export class DataRetentionService {
     });
   }
 
-  async updatePolicy(id: string, dto: UpdateDataRetentionDto, reviewedBy: string) {
+  async updatePolicy(
+    id: string,
+    dto: UpdateDataRetentionDto,
+    reviewedBy: string,
+  ) {
     await this.getPolicyById(id); // Verify exists
     return this.retentionRepository.update(id, {
       ...dto,

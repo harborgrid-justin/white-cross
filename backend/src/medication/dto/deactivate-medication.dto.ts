@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -27,7 +27,7 @@ export class DeactivateMedicationDto {
   })
   @IsString()
   @IsNotEmpty()
-  reason: string;
+  reason!: string;
 
   @ApiProperty({
     description: 'Category of deactivation',
@@ -36,5 +36,5 @@ export class DeactivateMedicationDto {
   })
   @IsEnum(DeactivationType)
   @IsNotEmpty()
-  deactivationType: DeactivationType;
+  deactivationType!: DeactivationType;
 }

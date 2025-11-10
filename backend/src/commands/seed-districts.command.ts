@@ -1,7 +1,7 @@
 import { Command, CommandRunner } from 'nest-commander';
 import { InjectModel } from '@nestjs/sequelize';
-import { District } from '../database/models/district.model';
-import { generateDistricts } from '../database/seeds/districts.seed';
+import { District } from '@/database';
+import { generateDistricts } from '@/database/seeds';
 
 @Command({
   name: 'seed:districts',
@@ -21,10 +21,14 @@ export class SeedDistrictsCommand extends CommandRunner {
     try {
       // Check if districts already exist
       const existingCount = await this.districtModel.count();
-      
+
       if (existingCount > 0) {
-        console.log(`⚠️  Found ${existingCount} existing districts in database`);
-        console.log('❌ Skipping seed to avoid duplicates. Clear districts table first if needed.\n');
+        console.log(
+          `⚠️  Found ${existingCount} existing districts in database`,
+        );
+        console.log(
+          '❌ Skipping seed to avoid duplicates. Clear districts table first if needed.\n',
+        );
         return;
       }
 
@@ -35,12 +39,17 @@ export class SeedDistrictsCommand extends CommandRunner {
 
       // Bulk insert districts
       console.log('💾 Inserting districts into database...');
-      const createdDistricts = await this.districtModel.bulkCreate(districts as any[], {
-        validate: true,
-        returning: true,
-      });
+      const createdDistricts = await this.districtModel.bulkCreate(
+        districts as any[],
+        {
+          validate: true,
+          returning: true,
+        },
+      );
 
-      console.log(`✅ Successfully seeded ${createdDistricts.length} districts`);
+      console.log(
+        `✅ Successfully seeded ${createdDistricts.length} districts`,
+      );
       console.log('\nSample districts:');
       createdDistricts.slice(0, 3).forEach((district) => {
         console.log(`  - ${district.name} (${district.code})`);

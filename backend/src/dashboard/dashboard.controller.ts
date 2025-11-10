@@ -3,33 +3,18 @@
  * Provides REST API endpoints for dashboard statistics, analytics, and real-time data
  */
 
-import {
-  Controller,
-  Get,
-  Delete,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ValidationPipe,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Logger, Query, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import {
-  DashboardStatsDto,
-  RecentActivityDto,
-  UpcomingAppointmentDto,
   DashboardChartDataDto,
+  DashboardStatsDto,
   GetChartDataDto,
   GetRecentActivitiesDto,
-  GetUpcomingAppointmentsDto,
   GetStatsByScopeDto,
+  GetUpcomingAppointmentsDto,
+  RecentActivityDto,
+  UpcomingAppointmentDto,
 } from './dto';
 
 /**
@@ -70,9 +55,10 @@ export class DashboardController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get dashboard statistics',
-    description: 'Retrieves comprehensive dashboard statistics with trend analysis. ' +
-                 'Includes total students, active medications, appointments, incidents, health alerts, ' +
-                 'and month-over-month trend comparisons. Results are cached for 5 minutes.',
+    description:
+      'Retrieves comprehensive dashboard statistics with trend analysis. ' +
+      'Includes total students, active medications, appointments, incidents, health alerts, ' +
+      'and month-over-month trend comparisons. Results are cached for 5 minutes.',
   })
   @ApiResponse({
     status: 200,
@@ -104,8 +90,9 @@ export class DashboardController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get recent activities',
-    description: 'Retrieves recent activity feed from medication logs, incident reports, and upcoming appointments. ' +
-                 'Activities are sorted by time and limited to the specified count.',
+    description:
+      'Retrieves recent activity feed from medication logs, incident reports, and upcoming appointments. ' +
+      'Activities are sorted by time and limited to the specified count.',
   })
   @ApiQuery({
     name: 'limit',
@@ -128,9 +115,12 @@ export class DashboardController {
     description: 'Internal server error',
   })
   async getRecentActivities(
-    @Query(new ValidationPipe({ transform: true })) query: GetRecentActivitiesDto,
+    @Query(new ValidationPipe({ transform: true }))
+    query: GetRecentActivitiesDto,
   ): Promise<RecentActivityDto[]> {
-    this.logger.log(`GET /dashboard/recent-activities?limit=${query.limit || 5}`);
+    this.logger.log(
+      `GET /dashboard/recent-activities?limit=${query.limit || 5}`,
+    );
     return this.dashboardService.getRecentActivities(query.limit);
   }
 
@@ -151,8 +141,9 @@ export class DashboardController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get upcoming appointments',
-    description: 'Retrieves upcoming scheduled appointments with priority classification. ' +
-                 'Priority is determined by appointment type (emergency/medication = high, routine = low).',
+    description:
+      'Retrieves upcoming scheduled appointments with priority classification. ' +
+      'Priority is determined by appointment type (emergency/medication = high, routine = low).',
   })
   @ApiQuery({
     name: 'limit',
@@ -175,9 +166,12 @@ export class DashboardController {
     description: 'Internal server error',
   })
   async getUpcomingAppointments(
-    @Query(new ValidationPipe({ transform: true })) query: GetUpcomingAppointmentsDto,
+    @Query(new ValidationPipe({ transform: true }))
+    query: GetUpcomingAppointmentsDto,
   ): Promise<UpcomingAppointmentDto[]> {
-    this.logger.log(`GET /dashboard/upcoming-appointments?limit=${query.limit || 5}`);
+    this.logger.log(
+      `GET /dashboard/upcoming-appointments?limit=${query.limit || 5}`,
+    );
     return this.dashboardService.getUpcomingAppointments(query.limit);
   }
 
@@ -198,8 +192,9 @@ export class DashboardController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get chart data',
-    description: 'Retrieves time-series chart data for dashboard visualizations. ' +
-                 'Includes enrollment trends, medication administration, incident frequency, and appointment trends.',
+    description:
+      'Retrieves time-series chart data for dashboard visualizations. ' +
+      'Includes enrollment trends, medication administration, incident frequency, and appointment trends.',
   })
   @ApiQuery({
     name: 'period',
@@ -224,7 +219,9 @@ export class DashboardController {
   async getChartData(
     @Query(new ValidationPipe({ transform: true })) query: GetChartDataDto,
   ): Promise<DashboardChartDataDto> {
-    this.logger.log(`GET /dashboard/chart-data?period=${query.period || 'week'}`);
+    this.logger.log(
+      `GET /dashboard/chart-data?period=${query.period || 'week'}`,
+    );
     return this.dashboardService.getChartData(query.period);
   }
 
@@ -242,8 +239,9 @@ export class DashboardController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get scoped dashboard statistics',
-    description: 'Retrieves dashboard statistics filtered by school or district for multi-tenant deployments. ' +
-                 'Currently returns general stats but can be extended for specific scope filtering.',
+    description:
+      'Retrieves dashboard statistics filtered by school or district for multi-tenant deployments. ' +
+      'Currently returns general stats but can be extended for specific scope filtering.',
   })
   @ApiQuery({
     name: 'schoolId',
@@ -273,8 +271,13 @@ export class DashboardController {
   async getDashboardStatsByScope(
     @Query(new ValidationPipe({ transform: true })) query: GetStatsByScopeDto,
   ): Promise<DashboardStatsDto> {
-    this.logger.log(`GET /dashboard/stats-by-scope?schoolId=${query.schoolId || 'none'}&districtId=${query.districtId || 'none'}`);
-    return this.dashboardService.getDashboardStatsByScope(query.schoolId, query.districtId);
+    this.logger.log(
+      `GET /dashboard/stats-by-scope?schoolId=${query.schoolId || 'none'}&districtId=${query.districtId || 'none'}`,
+    );
+    return this.dashboardService.getDashboardStatsByScope(
+      query.schoolId,
+      query.districtId,
+    );
   }
 
   /**
@@ -288,8 +291,9 @@ export class DashboardController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Clear dashboard cache',
-    description: 'Clears the dashboard statistics cache, forcing fresh data retrieval on the next request. ' +
-                 'Use this after bulk data operations when immediate dashboard updates are required.',
+    description:
+      'Clears the dashboard statistics cache, forcing fresh data retrieval on the next request. ' +
+      'Use this after bulk data operations when immediate dashboard updates are required.',
   })
   @ApiResponse({
     status: 204,

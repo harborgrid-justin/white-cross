@@ -1,32 +1,33 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { DatabaseModule } from '../database/database.module';
+// External models
+import {
+  Allergy,
+  Appointment,
+  AuditLog,
+  ChronicCondition,
+  DatabaseModule,
+  HealthRecord,
+  IncidentReport,
+  MedicationLog,
+  Student,
+  StudentMedication,
+} from '@/database';
 
 // Models
-import { ReportTemplate } from './models/report-template.model';
-import { ReportSchedule } from './models/report-schedule.model';
 import { ReportExecution } from './models/report-execution.model';
-
-// External models
-import { HealthRecord } from '../database/models/health-record.model';
-import { ChronicCondition } from '../database/models/chronic-condition.model';
-import { Allergy } from '../database/models/allergy.model';
-import { MedicationLog } from '../database/models/medication-log.model';
-import { StudentMedication } from '../database/models/student-medication.model';
-import { IncidentReport } from '../database/models/incident-report.model';
-import { Student } from '../database/models/student.model';
-import { Appointment } from '../database/models/appointment.model';
-import { AuditLog } from '../database/models/audit-log.model';
+import { ReportSchedule } from './models/report-schedule.model';
+import { ReportTemplate } from './models/report-template.model';
 
 // Services
-import { ReportGenerationService } from './services/report-generation.service';
-import { HealthReportsService } from './services/health-reports.service';
-import { MedicationReportsService } from './services/medication-reports.service';
-import { IncidentReportsService } from './services/incident-reports.service';
 import { AttendanceReportsService } from './services/attendance-reports.service';
 import { ComplianceReportsService } from './services/compliance-reports.service';
 import { DashboardService } from './services/dashboard.service';
+import { HealthReportsService } from './services/health-reports.service';
+import { IncidentReportsService } from './services/incident-reports.service';
+import { MedicationReportsService } from './services/medication-reports.service';
 import { ReportExportService } from './services/report-export.service';
+import { ReportGenerationService } from './services/report-generation.service';
 
 // Controllers
 import { ReportsController } from './controllers/reports.controller';
@@ -66,10 +67,6 @@ import { ReportsController } from './controllers/reports.controller';
     ReportExportService,
   ],
   controllers: [ReportsController],
-  exports: [
-    ReportGenerationService,
-    ReportExportService,
-    DashboardService,
-  ],
+  exports: [ReportGenerationService, ReportExportService, DashboardService],
 })
 export class ReportModule {}

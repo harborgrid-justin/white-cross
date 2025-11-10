@@ -2,29 +2,18 @@
  * @fileoverview Health Record Rate Limit Guard
  * @module health-record/guards
  * @description Tiered rate limiting guard for health record operations based on sensitivity
- * 
+ *
  * HIPAA CRITICAL - This guard implements security-focused rate limiting for PHI operations
- * 
+ *
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  * @compliance 45 CFR 164.308(a)(5)(ii)(B) - Protection from malicious software
  */
 
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  Logger,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
 import { PHIAccessLogger } from '../services/phi-access-logger.service';
-import { 
-  HealthRecordRequest, 
-  HealthRecordRateLimitConfig, 
-  ComplianceLevel 
-} from '../interfaces/health-record-types';
+import { HealthRecordRequest } from '../interfaces/health-record-types';
 import { ENTERPRISE_RATE_LIMIT_KEY } from '../../shared/enterprise/decorators/enterprise-decorators';
 
 interface RateLimitEntry {
@@ -44,10 +33,10 @@ interface RateLimitTier {
 
 /**
  * Health Record Rate Limit Guard
- * 
+ *
  * Implements tiered rate limiting based on operation sensitivity:
  * - PHI Read Operations: 100 requests/minute
- * - PHI Write Operations: 50 requests/minute  
+ * - PHI Write Operations: 50 requests/minute
  * - PHI Export Operations: 10 requests/hour
  * - Sensitive PHI Operations: 25 requests/minute
  * - Search Operations: 30 requests/minute
@@ -67,7 +56,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
       blockDuration: 5 * 60 * 1000, // 5 minutes
       escalationThreshold: 3,
     },
-    
+
     // PHI Write operations (POST, PUT, PATCH for health data)
     PHI_WRITE: {
       limit: 50,
@@ -75,7 +64,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
       blockDuration: 10 * 60 * 1000, // 10 minutes
       escalationThreshold: 2,
     },
-    
+
     // PHI Export operations (bulk data export)
     PHI_EXPORT: {
       limit: 10,
@@ -83,7 +72,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
       blockDuration: 30 * 60 * 1000, // 30 minutes
       escalationThreshold: 1,
     },
-    
+
     // Sensitive PHI operations (comprehensive summaries, searches)
     SENSITIVE_PHI: {
       limit: 25,
@@ -91,7 +80,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
       blockDuration: 15 * 60 * 1000, // 15 minutes
       escalationThreshold: 2,
     },
-    
+
     // Search operations
     PHI_SEARCH: {
       limit: 30,
@@ -99,7 +88,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
       blockDuration: 10 * 60 * 1000, // 10 minutes
       escalationThreshold: 2,
     },
-    
+
     // Internal/non-PHI operations
     INTERNAL: {
       limit: 200,
@@ -107,7 +96,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
       blockDuration: 2 * 60 * 1000, // 2 minutes
       escalationThreshold: 5,
     },
-    
+
     // Public operations
     PUBLIC: {
       limit: 500,
@@ -120,7 +109,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly metricsService: HealthRecordMetricsService,
-    private readonly phiAccessLogger: PHIAccessLogger
+    private readonly phiAccessLogger: PHIAccessLogger,
   ) {
     // Start cleanup interval for expired entries
     this.startCleanupInterval();
@@ -132,10 +121,10 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     const controller = context.getClass();
 
     // Get rate limit configuration from decorator
-    const rateLimitConfig = this.reflector.getAllAndOverride(ENTERPRISE_RATE_LIMIT_KEY, [
-      handler,
-      controller,
-    ]);
+    const rateLimitConfig = this.reflector.getAllAndOverride(
+      ENTERPRISE_RATE_LIMIT_KEY,
+      [handler, controller],
+    );
 
     // Skip if rate limiting is not configured
     if (!rateLimitConfig) {
@@ -147,12 +136,17 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     const tier = this.rateLimitTiers[operationType];
 
     try {
-      const allowed = await this.checkRateLimit(clientKey, tier, request, operationType);
-      
+      const allowed = await this.checkRateLimit(
+        clientKey,
+        tier,
+        request,
+        operationType,
+      );
+
       if (!allowed) {
         this.logRateLimitViolation(request, operationType, tier);
         this.recordSecurityIncident(request, operationType);
-        
+
         throw new HttpException(
           {
             error: 'Rate Limit Exceeded',
@@ -160,12 +154,11 @@ export class HealthRecordRateLimitGuard implements CanActivate {
             rateLimitType: operationType,
             retryAfter: Math.ceil(tier.blockDuration / 1000),
           },
-          HttpStatus.TOO_MANY_REQUESTS
+          HttpStatus.TOO_MANY_REQUESTS,
         );
       }
 
       return true;
-
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -184,7 +177,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     clientKey: string,
     tier: RateLimitTier,
     request: HealthRecordRequest,
-    operationType: string
+    operationType: string,
   ): Promise<boolean> {
     const now = Date.now();
     const entry = this.rateLimitStore.get(clientKey) || {
@@ -197,7 +190,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     // Check if client is currently blocked
     if (entry.blocked && entry.blockUntil && now < entry.blockUntil) {
       this.logger.warn(
-        `Blocked client ${clientKey} attempted ${operationType} operation. Block expires: ${new Date(entry.blockUntil).toISOString()}`
+        `Blocked client ${clientKey} attempted ${operationType} operation. Block expires: ${new Date(entry.blockUntil).toISOString()}`,
       );
       return false;
     }
@@ -216,11 +209,11 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     // Check if limit exceeded
     if (entry.count > tier.limit) {
       entry.violations++;
-      
+
       // Apply progressive blocking based on violations
       const blockMultiplier = Math.min(entry.violations, 5); // Max 5x block duration
       const blockDuration = tier.blockDuration * blockMultiplier;
-      
+
       entry.blocked = true;
       entry.blockUntil = now + blockDuration;
 
@@ -280,9 +273,11 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     }
 
     // Sensitive PHI operations
-    if (path.includes('/summary') || 
-        path.includes('/complete-profile') ||
-        path.includes('/comprehensive')) {
+    if (
+      path.includes('/summary') ||
+      path.includes('/complete-profile') ||
+      path.includes('/comprehensive')
+    ) {
       return 'SENSITIVE_PHI';
     }
 
@@ -292,10 +287,12 @@ export class HealthRecordRateLimitGuard implements CanActivate {
       '/allergies',
       '/vaccinations',
       '/conditions',
-      '/vitals'
+      '/vitals',
     ];
 
-    const isPHIEndpoint = phiEndpoints.some(endpoint => path.includes(endpoint));
+    const isPHIEndpoint = phiEndpoints.some((endpoint) =>
+      path.includes(endpoint),
+    );
 
     if (isPHIEndpoint) {
       // Differentiate between read and write operations
@@ -315,8 +312,8 @@ export class HealthRecordRateLimitGuard implements CanActivate {
    */
   private getClientIP(request: HealthRecordRequest): string {
     return (
-      request.headers['x-forwarded-for'] as string ||
-      request.headers['x-real-ip'] as string ||
+      (request.headers['x-forwarded-for'] as string) ||
+      (request.headers['x-real-ip'] as string) ||
       request.socket?.remoteAddress ||
       'unknown'
     );
@@ -328,15 +325,15 @@ export class HealthRecordRateLimitGuard implements CanActivate {
   private logRateLimitViolation(
     request: HealthRecordRequest,
     operationType: string,
-    tier: RateLimitTier
+    tier: RateLimitTier,
   ): void {
     const clientKey = this.generateClientKey(request);
     const entry = this.rateLimitStore.get(clientKey);
 
     this.logger.warn(
       `Rate limit exceeded: ${clientKey} | Operation: ${operationType} | ` +
-      `Count: ${entry?.count}/${tier.limit} | Violations: ${entry?.violations || 0} | ` +
-      `Path: ${request.originalUrl || request.url}`
+        `Count: ${entry?.count}/${tier.limit} | Violations: ${entry?.violations || 0} | ` +
+        `Path: ${request.originalUrl || request.url}`,
     );
   }
 
@@ -346,14 +343,14 @@ export class HealthRecordRateLimitGuard implements CanActivate {
   private logSecurityEscalation(
     request: HealthRecordRequest,
     operationType: string,
-    violations: number
+    violations: number,
   ): void {
     const clientKey = this.generateClientKey(request);
 
     this.logger.error(
       `SECURITY ESCALATION: Repeated rate limit violations detected | ` +
-      `Client: ${clientKey} | Operation: ${operationType} | ` +
-      `Violations: ${violations} | Path: ${request.originalUrl || request.url}`
+        `Client: ${clientKey} | Operation: ${operationType} | ` +
+        `Violations: ${violations} | Path: ${request.originalUrl || request.url}`,
     );
 
     // Log to PHI access logger as security incident
@@ -374,7 +371,7 @@ export class HealthRecordRateLimitGuard implements CanActivate {
    */
   private recordSecurityIncident(
     request: HealthRecordRequest,
-    operationType: string
+    operationType: string,
   ): void {
     this.metricsService.recordSecurityMetric('suspicious_pattern', 1, {
       incident_type: 'rate_limit_violation',
@@ -389,17 +386,17 @@ export class HealthRecordRateLimitGuard implements CanActivate {
   private recordRateLimitMetrics(
     operationType: string,
     currentCount: number,
-    limit: number
+    limit: number,
   ): void {
     // Record current usage as percentage of limit
     const usagePercentage = (currentCount / limit) * 100;
-    
+
     this.metricsService.recordCacheMetrics('SET', 'SEARCH', 0); // Using cache metrics for now
-    
+
     // Log warning if approaching limit
     if (usagePercentage > 80) {
       this.logger.warn(
-        `Rate limit approaching: ${operationType} at ${usagePercentage.toFixed(1)}% (${currentCount}/${limit})`
+        `Rate limit approaching: ${operationType} at ${usagePercentage.toFixed(1)}% (${currentCount}/${limit})`,
       );
     }
   }
@@ -443,10 +440,18 @@ export class HealthRecordRateLimitGuard implements CanActivate {
   getRateLimitStatistics(): {
     totalClients: number;
     blockedClients: number;
-    topViolators: Array<{ clientKey: string; violations: number; blocked: boolean }>;
+    topViolators: Array<{
+      clientKey: string;
+      violations: number;
+      blocked: boolean;
+    }>;
   } {
     let blockedClients = 0;
-    const violators: Array<{ clientKey: string; violations: number; blocked: boolean }> = [];
+    const violators: Array<{
+      clientKey: string;
+      violations: number;
+      blocked: boolean;
+    }> = [];
 
     for (const [clientKey, entry] of this.rateLimitStore.entries()) {
       if (entry.blocked) blockedClients++;
@@ -473,9 +478,12 @@ export class HealthRecordRateLimitGuard implements CanActivate {
    * Start cleanup interval for expired entries
    */
   private startCleanupInterval(): void {
-    this.cleanupInterval = setInterval(() => {
-      this.cleanupExpiredEntries();
-    }, 5 * 60 * 1000); // Every 5 minutes
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanupExpiredEntries();
+      },
+      5 * 60 * 1000,
+    ); // Every 5 minutes
 
     this.logger.debug('Rate limit cleanup interval started');
   }
@@ -505,7 +513,9 @@ export class HealthRecordRateLimitGuard implements CanActivate {
     }
 
     if (cleanedCount > 0) {
-      this.logger.debug(`Cleaned up ${cleanedCount} expired rate limit entries`);
+      this.logger.debug(
+        `Cleaned up ${cleanedCount} expired rate limit entries`,
+      );
     }
   }
 

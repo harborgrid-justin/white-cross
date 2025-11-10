@@ -1,15 +1,14 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ThreatDetectionAttributes {
@@ -28,10 +27,10 @@ export interface ThreatDetectionAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'threat_detections',
@@ -39,25 +38,28 @@ export interface ThreatDetectionAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['threatType']
+      fields: ['threatType'],
     },
     {
-      fields: ['severity']
+      fields: ['severity'],
     },
     {
-      fields: ['isResolved']
+      fields: ['isResolved'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_threat_detection_created_at'
+      name: 'idx_threat_detection_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_threat_detection_updated_at'
-    }
-  ]
+      name: 'idx_threat_detection_updated_at',
+    },
+  ],
 })
-export class ThreatDetection extends Model<ThreatDetectionAttributes> implements ThreatDetectionAttributes {
+export class ThreatDetection
+  extends Model<ThreatDetectionAttributes>
+  implements ThreatDetectionAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -65,25 +67,25 @@ export class ThreatDetection extends Model<ThreatDetectionAttributes> implements
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   threatType: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false
+    allowNull: false,
   })
   severity: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   source: string;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   details: any;
 
@@ -103,14 +105,15 @@ export class ThreatDetection extends Model<ThreatDetectionAttributes> implements
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ThreatDetection) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ThreatDetection ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ThreatDetection ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

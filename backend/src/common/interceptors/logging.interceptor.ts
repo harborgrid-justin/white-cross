@@ -4,18 +4,14 @@
  * @description Comprehensive structured logging with Winston, PHI redaction, and Sentry integration
  */
 
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { SentryService } from '../../infrastructure/monitoring/sentry.service';
+import { AuthenticatedRequest } from '../types/utility-types';
 
 /**
  * Logging Interceptor
@@ -49,8 +45,8 @@ export class LoggingInterceptor implements NestInterceptor {
     this.logger.setContext('HTTP');
   }
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context.switchToHttp().getRequest<Request>();
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const response = context.switchToHttp().getResponse<Response>();
 
     // Generate or retrieve request ID
@@ -60,8 +56,8 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const { method, url, body, query, params } = request;
     const userAgent = request.headers['user-agent'] || 'unknown';
-    const userId = (request as any).user?.id || 'anonymous';
-    const organizationId = (request as any).user?.organizationId;
+    const userId = request.user?.id || 'anonymous';
+    const organizationId = request.user?.organizationId;
     const ipAddress = this.getClientIp(request);
 
     const startTime = Date.now();
@@ -97,22 +93,26 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: (data) => {
+        next: () => {
           const duration = Date.now() - startTime;
 
           // Log successful response with structured format
-          this.logger.logWithMetadata('info', `${method} ${url} - ${response.statusCode}`, {
-            type: 'RESPONSE',
-            requestId,
-            method,
-            url,
-            statusCode: response.statusCode,
-            duration,
-            durationMs: `${duration}ms`,
-            userId,
-            organizationId,
-            timestamp: new Date().toISOString(),
-          });
+          this.logger.logWithMetadata(
+            'info',
+            `${method} ${url} - ${response.statusCode}`,
+            {
+              type: 'RESPONSE',
+              requestId,
+              method,
+              url,
+              statusCode: response.statusCode,
+              duration,
+              durationMs: `${duration}ms`,
+              userId,
+              organizationId,
+              timestamp: new Date().toISOString(),
+            },
+          );
 
           // Add Sentry breadcrumb for successful response
           this.sentryService.addBreadcrumb({
@@ -126,25 +126,29 @@ export class LoggingInterceptor implements NestInterceptor {
             },
           });
         },
-        error: (error) => {
+        error: (error: Error & { status?: number; name: string }) => {
           const duration = Date.now() - startTime;
           const statusCode = error.status || 500;
 
           // Log error response with structured format
-          this.logger.logWithMetadata('error', `${method} ${url} - ${statusCode}`, {
-            type: 'ERROR',
-            requestId,
-            method,
-            url,
-            statusCode,
-            duration,
-            durationMs: `${duration}ms`,
-            userId,
-            organizationId,
-            error: error.message,
-            errorName: error.name,
-            timestamp: new Date().toISOString(),
-          });
+          this.logger.logWithMetadata(
+            'error',
+            `${method} ${url} - ${statusCode}`,
+            {
+              type: 'ERROR',
+              requestId,
+              method,
+              url,
+              statusCode,
+              duration,
+              durationMs: `${duration}ms`,
+              userId,
+              organizationId,
+              error: error.message,
+              errorName: error.name,
+              timestamp: new Date().toISOString(),
+            },
+          );
 
           // Report to Sentry for 5xx errors and critical issues
           if (statusCode >= 500) {
@@ -171,29 +175,46 @@ export class LoggingInterceptor implements NestInterceptor {
 
   /**
    * Get client IP address
+   * @param request - HTTP request
+   * @returns Client IP address
    */
-  private getClientIp(request: Request): string {
+  private getClientIp(request: AuthenticatedRequest): string {
     return (
       (request.headers['x-forwarded-for'] as string)?.split(',')[0] ||
       (request.headers['x-real-ip'] as string) ||
-      request.socket.remoteAddress ||
+      request.socket?.remoteAddress ||
+      request.connection?.remoteAddress ||
       'unknown'
     );
   }
 
   /**
    * Redact sensitive data from object
+   * @param obj - Object to redact
+   * @returns Redacted object
    */
-  private redactSensitiveData(obj: any): any {
+  private redactSensitiveData(obj: unknown): unknown {
     if (!obj || typeof obj !== 'object') return obj;
 
-    const redacted = Array.isArray(obj) ? [...obj] : { ...obj };
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.redactSensitiveData(item));
+    }
 
-    for (const key in redacted) {
-      if (this.isSensitiveField(key)) {
-        redacted[key] = '[REDACTED]';
-      } else if (typeof redacted[key] === 'object' && redacted[key] !== null) {
-        redacted[key] = this.redactSensitiveData(redacted[key]);
+    // Handle objects
+    const redacted: Record<string, unknown> = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (this.isSensitiveField(key)) {
+          redacted[key] = '[REDACTED]';
+        } else {
+          const value = (obj as Record<string, unknown>)[key];
+          if (typeof value === 'object' && value !== null) {
+            redacted[key] = this.redactSensitiveData(value);
+          } else {
+            redacted[key] = value;
+          }
+        }
       }
     }
 
@@ -202,9 +223,13 @@ export class LoggingInterceptor implements NestInterceptor {
 
   /**
    * Check if field is sensitive
+   * @param field - Field name to check
+   * @returns True if field is sensitive
    */
   private isSensitiveField(field: string): boolean {
     const fieldLower = field.toLowerCase();
-    return this.sensitiveFields.some(sensitive => fieldLower.includes(sensitive));
+    return this.sensitiveFields.some((sensitive) =>
+      fieldLower.includes(sensitive),
+    );
   }
 }

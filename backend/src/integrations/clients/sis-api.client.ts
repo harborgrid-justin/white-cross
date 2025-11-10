@@ -29,11 +29,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { BaseApiClient } from './base-api.client';
-import {
-  SisStudentDto,
-  SisAttendanceDto,
-  SisEnrollmentStatus,
-} from '../dto';
+import { SisAttendanceDto, SisEnrollmentStatus, SisStudentDto } from '../dto';
 
 /**
  * Response wrapper for student list from SIS API
@@ -68,11 +64,10 @@ export class SisApiClient extends BaseApiClient {
    */
   constructor(
     protected readonly httpService: HttpService,
-    private readonly configService: ConfigService,
+    configService: ConfigService,
   ) {
     const baseURL =
-      configService.get<string>('SIS_API_URL') ||
-      'https://sis-api.example.com';
+      configService.get<string>('SIS_API_URL') || 'https://sis-api.example.com';
     const apiKey = configService.get<string>('SIS_API_KEY') || '';
 
     super('SIS', baseURL, httpService, new Logger(SisApiClient.name), {
@@ -166,11 +161,14 @@ export class SisApiClient extends BaseApiClient {
       const response = await this.get<SisStudentDto>(`/students/${sisId}`);
 
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       // Return null for 404 (student not found)
-      if (error.response?.status === 404) {
-        this.logger.warn(`Student not found in SIS with ID: ${sisId}`);
-        return null;
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 404) {
+          this.logger.warn(`Student not found in SIS with ID: ${sisId}`);
+          return null;
+        }
       }
 
       // Re-throw other errors
@@ -225,7 +223,9 @@ export class SisApiClient extends BaseApiClient {
       );
 
       const attendance = response.data.attendance;
-      this.logger.log(`Fetched ${attendance.length} attendance records from SIS`);
+      this.logger.log(
+        `Fetched ${attendance.length} attendance records from SIS`,
+      );
 
       return attendance;
     } catch (error) {
@@ -307,7 +307,9 @@ export class SisApiClient extends BaseApiClient {
    */
   async syncStudents(organizationId: string): Promise<SisStudentDto[]> {
     try {
-      this.logger.log(`Starting SIS student sync for organization: ${organizationId}`);
+      this.logger.log(
+        `Starting SIS student sync for organization: ${organizationId}`,
+      );
 
       const sisStudents = await this.getEnrolledStudents(organizationId);
 

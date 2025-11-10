@@ -1,15 +1,14 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ImmunizationAttributes {
@@ -33,10 +32,10 @@ export interface ImmunizationAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'immunizations',
@@ -45,25 +44,28 @@ export interface ImmunizationAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
+      fields: ['studentId'],
     },
     {
-      fields: ['vaccineName']
+      fields: ['vaccineName'],
     },
     {
-      fields: ['administeredDate']
+      fields: ['administeredDate'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_immunization_created_at'
+      name: 'idx_immunization_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_immunization_updated_at'
-    }
-  ]
+      name: 'idx_immunization_updated_at',
+    },
+  ],
 })
-export class Immunization extends Model<ImmunizationAttributes> implements ImmunizationAttributes {
+export class Immunization
+  extends Model<ImmunizationAttributes>
+  implements ImmunizationAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -71,13 +73,13 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   vaccineName: string;
 
@@ -86,7 +88,7 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   administeredDate: Date;
 
@@ -110,7 +112,7 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   administeredBy: string;
 
@@ -123,14 +125,15 @@ export class Immunization extends Model<ImmunizationAttributes> implements Immun
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Immunization) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Immunization ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] Immunization ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

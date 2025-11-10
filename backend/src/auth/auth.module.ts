@@ -5,17 +5,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { MicrosoftStrategy } from './strategies/microsoft.strategy';
-import { User } from '../database/models/user.model';
+import { User } from '@/database';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { TokenBlacklistService } from './services/token-blacklist.service';
+import { EmailVerificationService } from './services/email-verification.service';
 import { MfaService } from './services/mfa.service';
 import { OAuthService } from './services/oauth.service';
 import { PasswordResetService } from './services/password-reset.service';
-import { EmailVerificationService } from './services/email-verification.service';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 
 @Module({
   imports: [
@@ -29,8 +29,8 @@ import { EmailVerificationService } from './services/email-verification.service'
         if (!jwtSecret) {
           throw new Error(
             'CRITICAL SECURITY ERROR: JWT_SECRET is not configured. ' +
-            'Application cannot start without proper JWT secret configuration. ' +
-            'Please set JWT_SECRET in your .env file to a strong, random secret.'
+              'Application cannot start without proper JWT secret configuration. ' +
+              'Please set JWT_SECRET in your .env file to a strong, random secret.',
           );
         }
 
@@ -38,7 +38,8 @@ import { EmailVerificationService } from './services/email-verification.service'
         if (jwtSecret.length < 32) {
           throw new Error(
             'CRITICAL SECURITY ERROR: JWT_SECRET must be at least 32 characters long. ' +
-            'Current length: ' + jwtSecret.length
+              'Current length: ' +
+              jwtSecret.length,
           );
         }
 

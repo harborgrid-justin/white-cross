@@ -36,21 +36,86 @@
  *
  * @class WebSocketService
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { WebSocketGateway } from './websocket.gateway';
+import { AppConfigService } from '@/config';
 import {
   BroadcastMessageDto,
-  MessageEventDto,
-  TypingIndicatorDto,
-  ReadReceiptDto,
   MessageDeliveryDto,
+  MessageEventDto,
+  ReadReceiptDto,
+  TypingIndicatorDto,
 } from './dto';
 
+/**
+ * Alert data structure
+ */
+interface AlertData {
+  id?: string;
+  message: string;
+  severity?: string;
+  timestamp?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Notification data structure
+ */
+interface NotificationData {
+  id?: string;
+  title?: string;
+  message: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Reminder data structure
+ */
+interface ReminderData {
+  id?: string;
+  message: string;
+  dueDate?: string;
+  [key: string]: unknown;
+}
+
 @Injectable()
-export class WebSocketService {
+export class WebSocketService implements OnModuleDestroy {
   private readonly logger = new Logger(WebSocketService.name);
 
-  constructor(private readonly websocketGateway: WebSocketGateway) {}
+  constructor(
+    private readonly websocketGateway: WebSocketGateway,
+    private readonly config: AppConfigService,
+  ) {
+    this.logger.log('WebSocketService initialized');
+  }
+
+  /**
+   * Cleanup resources on module destroy
+   * Implements graceful shutdown for WebSocket connections
+   */
+  async onModuleDestroy() {
+    this.logger.log('WebSocketService shutting down - cleaning up resources');
+
+    // Get current connection count for logging
+    const connectedSockets = this.getConnectedSocketsCount();
+    if (connectedSockets > 0) {
+      this.logger.log(`Disconnecting ${connectedSockets} active WebSocket connections`);
+
+      // Notify all connected clients about server shutdown if enabled
+      if (this.config.get<boolean>('websocket.notifyOnShutdown', true)) {
+        const server = this.getServer();
+        if (server) {
+          server.emit('server:shutdown', {
+            message: 'Server is shutting down',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+    }
+
+    this.logger.log('WebSocketService destroyed, resources cleaned up');
+  }
 
   /**
    * Broadcasts a message to a specific room
@@ -60,7 +125,7 @@ export class WebSocketService {
    * @param data - The data payload to send
    * @throws Error if broadcast fails
    */
-  async broadcastToRoom(room: string, event: string, data: any): Promise<void> {
+  async broadcastToRoom(room: string, event: string, data: unknown): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -69,14 +134,14 @@ export class WebSocketService {
         return;
       }
 
-      const message = new BroadcastMessageDto(data);
+      const message = new BroadcastMessageDto(data as any);
 
       server.to(room).emit(event, message);
 
       this.logger.debug(`Broadcasted ${event} to room ${room}`, {
         event,
         room,
-        dataKeys: Object.keys(data),
+        dataKeys: Object.keys(data as any),
       });
     } catch (error) {
       this.logger.error(`Failed to broadcast to room ${room}`, error);
@@ -91,7 +156,7 @@ export class WebSocketService {
    * @param alert - The alert data
    * @throws Error if broadcast fails
    */
-  async broadcastEmergencyAlert(organizationId: string, alert: any): Promise<void> {
+  async broadcastEmergencyAlert(organizationId: string, alert: AlertData): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -113,7 +178,10 @@ export class WebSocketService {
         severity: alert.severity,
       });
     } catch (error) {
-      this.logger.error(`Failed to broadcast emergency alert to organization ${organizationId}`, error);
+      this.logger.error(
+        `Failed to broadcast emergency alert to organization ${organizationId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -125,7 +193,7 @@ export class WebSocketService {
    * @param notification - The notification data
    * @throws Error if send fails
    */
-  async sendUserNotification(userId: string, notification: any): Promise<void> {
+  async sendUserNotification(userId: string, notification: NotificationData): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -135,7 +203,7 @@ export class WebSocketService {
       }
 
       const room = `user:${userId}`;
-      const message = new BroadcastMessageDto(notification);
+      const message = new BroadcastMessageDto(notification as any);
 
       server.to(room).emit('health:notification', message);
 
@@ -156,7 +224,7 @@ export class WebSocketService {
    * @param reminder - The reminder data
    * @throws Error if broadcast fails
    */
-  async broadcastMedicationReminder(organizationId: string, reminder: any): Promise<void> {
+  async broadcastMedicationReminder(organizationId: string, reminder: ReminderData): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -166,7 +234,7 @@ export class WebSocketService {
       }
 
       const room = `org:${organizationId}`;
-      const message = new BroadcastMessageDto(reminder);
+      const message = new BroadcastMessageDto(reminder as any);
 
       server.to(room).emit('medication:reminder', message);
 
@@ -175,7 +243,10 @@ export class WebSocketService {
         studentId: reminder.studentId,
       });
     } catch (error) {
-      this.logger.error(`Failed to broadcast medication reminder to organization ${organizationId}`, error);
+      this.logger.error(
+        `Failed to broadcast medication reminder to organization ${organizationId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -187,7 +258,7 @@ export class WebSocketService {
    * @param alert - The alert data
    * @throws Error if broadcast fails
    */
-  async broadcastStudentHealthAlert(organizationId: string, alert: any): Promise<void> {
+  async broadcastStudentHealthAlert(organizationId: string, alert: AlertData): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -197,7 +268,7 @@ export class WebSocketService {
       }
 
       const room = `org:${organizationId}`;
-      const message = new BroadcastMessageDto(alert);
+      const message = new BroadcastMessageDto(alert as any);
 
       server.to(room).emit('student:health:alert', message);
 
@@ -206,7 +277,10 @@ export class WebSocketService {
         alertType: alert.type,
       });
     } catch (error) {
-      this.logger.error(`Failed to broadcast student health alert to organization ${organizationId}`, error);
+      this.logger.error(
+        `Failed to broadcast student health alert to organization ${organizationId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -219,7 +293,7 @@ export class WebSocketService {
    * @param data - The data payload to send
    * @throws Error if broadcast fails
    */
-  async broadcastToRooms(rooms: string[], event: string, data: any): Promise<void> {
+  async broadcastToRooms(rooms: string[], event: string, data: unknown): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -228,7 +302,7 @@ export class WebSocketService {
         return;
       }
 
-      const message = new BroadcastMessageDto(data);
+      const message = new BroadcastMessageDto(data as Record<string, any>);
 
       for (const room of rooms) {
         server.to(room).emit(event, message);
@@ -237,7 +311,7 @@ export class WebSocketService {
       this.logger.debug(`Broadcasted ${event} to ${rooms.length} rooms`, {
         event,
         rooms,
-        dataKeys: Object.keys(data),
+        dataKeys: Object.keys(data as any),
       });
     } catch (error) {
       this.logger.error('Failed to broadcast to multiple rooms', error);
@@ -270,7 +344,7 @@ export class WebSocketService {
    * @param event - The event name
    * @param data - The alert data
    */
-  async broadcastToSchool(schoolId: string, event: string, data: any): Promise<void> {
+  async broadcastToSchool(schoolId: string, event: string, data: unknown): Promise<void> {
     await this.broadcastToRoom(`school:${schoolId}`, event, data);
   }
 
@@ -281,7 +355,7 @@ export class WebSocketService {
    * @param event - The event name
    * @param data - The alert data
    */
-  async broadcastToUser(userId: string, event: string, data: any): Promise<void> {
+  async broadcastToUser(userId: string, event: string, data: unknown): Promise<void> {
     await this.broadcastToRoom(`user:${userId}`, event, data);
   }
 
@@ -292,7 +366,7 @@ export class WebSocketService {
    * @param event - The event name
    * @param data - The alert data
    */
-  async broadcastToStudent(studentId: string, event: string, data: any): Promise<void> {
+  async broadcastToStudent(studentId: string, event: string, data: unknown): Promise<void> {
     await this.broadcastToRoom(`student:${studentId}`, event, data);
   }
 
@@ -304,10 +378,7 @@ export class WebSocketService {
    * @param message - The message event DTO
    * @throws Error if broadcast fails
    */
-  async sendMessageToConversation(
-    conversationId: string,
-    message: MessageEventDto,
-  ): Promise<void> {
+  async sendMessageToConversation(conversationId: string, message: MessageEventDto): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -385,15 +456,15 @@ export class WebSocketService {
       const room = `conversation:${conversationId}`;
       server.to(room).emit('message:typing', typingIndicator.toPayload());
 
-      this.logger.debug(
-        `Typing indicator broadcasted to conversation ${conversationId}`,
-        {
-          userId: typingIndicator.userId,
-          isTyping: typingIndicator.isTyping,
-        },
-      );
+      this.logger.debug(`Typing indicator broadcasted to conversation ${conversationId}`, {
+        userId: typingIndicator.userId,
+        isTyping: typingIndicator.isTyping,
+      });
     } catch (error) {
-      this.logger.error(`Failed to broadcast typing indicator to conversation ${conversationId}`, error);
+      this.logger.error(
+        `Failed to broadcast typing indicator to conversation ${conversationId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -405,10 +476,7 @@ export class WebSocketService {
    * @param readReceipt - The read receipt DTO
    * @throws Error if broadcast fails
    */
-  async broadcastReadReceipt(
-    conversationId: string,
-    readReceipt: ReadReceiptDto,
-  ): Promise<void> {
+  async broadcastReadReceipt(conversationId: string, readReceipt: ReadReceiptDto): Promise<void> {
     try {
       const server = this.getServer();
 
@@ -425,7 +493,10 @@ export class WebSocketService {
         userId: readReceipt.userId,
       });
     } catch (error) {
-      this.logger.error(`Failed to broadcast read receipt to conversation ${conversationId}`, error);
+      this.logger.error(
+        `Failed to broadcast read receipt to conversation ${conversationId}`,
+        error,
+      );
       throw error;
     }
   }
@@ -438,10 +509,7 @@ export class WebSocketService {
    * @param delivery - The delivery confirmation DTO
    * @throws Error if broadcast fails
    */
-  async broadcastMessageDelivery(
-    senderId: string,
-    delivery: MessageDeliveryDto,
-  ): Promise<void> {
+  async broadcastMessageDelivery(senderId: string, delivery: MessageDeliveryDto): Promise<void> {
     try {
       const server = this.getServer();
 

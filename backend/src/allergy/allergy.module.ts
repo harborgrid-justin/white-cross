@@ -14,8 +14,8 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
 // Models
-import { Allergy } from './models/allergy.model';
-import { Student } from '../student/models/student.model';
+import { Allergy } from '@/database';
+import { Student } from '@/student/models';
 
 // Services
 import { AllergyCrudService } from './services/allergy-crud.service';

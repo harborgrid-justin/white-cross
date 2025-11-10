@@ -481,10 +481,7 @@ export class EnterpriseFeaturesService {
     }
   }
 
-  async generateComplianceReport(
-    startDate: Date,
-    endDate: Date,
-  ): Promise<any> {
+  async generateComplianceReport(startDate: Date, endDate: Date): Promise<any> {
     return {
       period: { startDate, endDate },
       overallStatus: 'compliant',
@@ -834,7 +831,10 @@ export class EnterpriseFeaturesService {
   // Feature 28: Language Translation for Communications
   // ============================================
 
-  async translateMessage(text: string, targetLanguage: string): Promise<string> {
+  async translateMessage(
+    text: string,
+    targetLanguage: string,
+  ): Promise<string> {
     try {
       // Use translation API (Google Translate, AWS Translate, etc.)
       this.logger.log('Translating message', {

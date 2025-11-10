@@ -2,14 +2,12 @@
  * Broadcast Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { BaseRepository } from '../base/base.repository';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 
 export interface BroadcastAttributes {
   id: string;
@@ -26,31 +24,40 @@ export interface UpdateBroadcastDTO {
 }
 
 @Injectable()
-export class BroadcastRepository extends BaseRepository<any, BroadcastAttributes, CreateBroadcastDTO> {
+export class BroadcastRepository extends BaseRepository<
+  any,
+  BroadcastAttributes,
+  CreateBroadcastDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Broadcast');
   }
 
   protected async validateCreate(data: CreateBroadcastDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateBroadcastDTO): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateBroadcastDTO,
+  ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: Broadcast): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<BroadcastAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

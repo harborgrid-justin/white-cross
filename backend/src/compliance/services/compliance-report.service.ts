@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ComplianceReportRepository } from '../../database/repositories/impl/compliance-report.repository';
-import { CreateComplianceReportDto, UpdateComplianceReportDto, ComplianceGenerateReportDto, QueryComplianceReportDto } from '../dto/compliance-report.dto';
+import {
+  ComplianceGenerateReportDto,
+  CreateComplianceReportDto,
+  QueryComplianceReportDto,
+  UpdateComplianceReportDto,
+} from '../dto/compliance-report.dto';
 import { ComplianceStatus } from '../entities/compliance-report.entity';
 import { ExecutionContext } from '../../database/types';
 
@@ -8,7 +13,7 @@ import { ExecutionContext } from '../../database/types';
 export class ComplianceReportService {
   constructor(
     @Inject('DatabaseComplianceReportRepository')
-    private readonly reportRepository: ComplianceReportRepository
+    private readonly reportRepository: ComplianceReportRepository,
   ) {}
 
   async listReports(query: QueryComplianceReportDto) {
@@ -18,13 +23,19 @@ export class ComplianceReportService {
     // Apply filters manually since repository doesn't support them yet
     let filteredReports = allReports;
     if (filters.status) {
-      filteredReports = filteredReports.filter(report => report.status === filters.status);
+      filteredReports = filteredReports.filter(
+        (report) => report.status === filters.status,
+      );
     }
     if (filters.reportType) {
-      filteredReports = filteredReports.filter(report => report.reportType === filters.reportType);
+      filteredReports = filteredReports.filter(
+        (report) => report.reportType === filters.reportType,
+      );
     }
     if (filters.period) {
-      filteredReports = filteredReports.filter(report => report.period === filters.period);
+      filteredReports = filteredReports.filter(
+        (report) => report.period === filters.period,
+      );
     }
 
     // Apply pagination
@@ -52,7 +63,11 @@ export class ComplianceReportService {
     return report;
   }
 
-  async createReport(dto: CreateComplianceReportDto, createdById: string, context: ExecutionContext) {
+  async createReport(
+    dto: CreateComplianceReportDto,
+    createdById: string,
+    context: ExecutionContext,
+  ) {
     return this.reportRepository.create({
       ...dto,
       createdById,
@@ -61,7 +76,11 @@ export class ComplianceReportService {
     });
   }
 
-  async updateReport(id: string, dto: UpdateComplianceReportDto, context: ExecutionContext) {
+  async updateReport(
+    id: string,
+    dto: UpdateComplianceReportDto,
+    context: ExecutionContext,
+  ) {
     await this.getReportById(id); // Verify exists
     const updateData: any = { ...dto };
 
@@ -80,15 +99,23 @@ export class ComplianceReportService {
     return this.reportRepository.delete(id);
   }
 
-  async generateReport(dto: ComplianceGenerateReportDto, createdById: string, context: ExecutionContext) {
+  async generateReport(
+    dto: ComplianceGenerateReportDto,
+    createdById: string,
+    context: ExecutionContext,
+  ) {
     // Automated report generation logic would go here
     // For now, create a basic report structure
-    return this.createReport({
-      reportType: dto.reportType,
-      title: `${dto.reportType} Compliance Report - ${dto.period}`,
-      description: `Auto-generated compliance report for ${dto.period} period`,
-      period: dto.period,
-      dueDate: dto.startDate,
-    }, createdById, context);
+    return this.createReport(
+      {
+        reportType: dto.reportType,
+        title: `${dto.reportType} Compliance Report - ${dto.period}`,
+        description: `Auto-generated compliance report for ${dto.period} period`,
+        period: dto.period,
+        dueDate: dto.startDate,
+      },
+      createdById,
+      context,
+    );
   }
 }

@@ -1,14 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsEnum,
-  IsArray,
-  IsOptional,
-  IsBoolean,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
-import { MessageType, MessageCategory } from './send-message.dto';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { MessageCategory, MessageType } from './send-message.dto';
 
 export class CreateTemplateDto {
   @ApiProperty({
@@ -36,7 +28,8 @@ export class CreateTemplateDto {
     description: 'Template content with variable placeholders',
     minLength: 1,
     maxLength: 50000,
-    example: 'Dear {{parentName}}, this is a reminder that {{studentName}} has an appointment on {{date}} at {{time}}.',
+    example:
+      'Dear {{parentName}}, this is a reminder that {{studentName}} has an appointment on {{date}} at {{time}}.',
   })
   @IsString()
   @MinLength(1)

@@ -1,20 +1,20 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
-  } from 'sequelize-typescript';
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+} from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { Op, literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 
 import { PrescriptionStatus } from '../../clinical/enums/prescription-status.enum';
 
@@ -51,40 +51,37 @@ export interface PrescriptionAttributes {
   active: {
     where: {
       status: {
-        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP],
       },
       endDate: {
-        [Op.or]: [
-          null,
-          { [Op.gte]: new Date() }
-        ]
-      }
+        [Op.or]: [null, { [Op.gte]: new Date() }],
+      },
     },
-    order: [['startDate', 'DESC']]
+    order: [['startDate', 'DESC']],
   },
   byStudent: (studentId: string) => ({
     where: { studentId },
-    order: [['startDate', 'DESC']]
+    order: [['startDate', 'DESC']],
   }),
   byStatus: (status: PrescriptionStatus) => ({
     where: { status },
-    order: [['startDate', 'DESC']]
+    order: [['startDate', 'DESC']],
   }),
   pending: {
     where: {
-      status: PrescriptionStatus.PENDING
+      status: PrescriptionStatus.PENDING,
     },
-    order: [['createdAt', 'ASC']]
+    order: [['createdAt', 'ASC']],
   },
   needsRefill: {
     where: {
       status: {
-        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP]
+        [Op.in]: [PrescriptionStatus.FILLED, PrescriptionStatus.PICKED_UP],
       },
       refillsAuthorized: {
-        [Op.gt]: literal('"refillsUsed"')
-      }
-    }
+        [Op.gt]: literal('"refillsUsed"'),
+      },
+    },
   },
   expired: {
     where: {
@@ -92,12 +89,12 @@ export interface PrescriptionAttributes {
         { status: PrescriptionStatus.EXPIRED },
         {
           endDate: {
-            [Op.lt]: new Date()
-          }
-        }
-      ]
-    }
-  }
+            [Op.lt]: new Date(),
+          },
+        },
+      ],
+    },
+  },
 }))
 @Table({
   tableName: 'prescriptions',
@@ -106,33 +103,36 @@ export interface PrescriptionAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId', 'status']
-  },
+      fields: ['studentId', 'status'],
+    },
     {
-      fields: ['visitId']
-  },
+      fields: ['visitId'],
+    },
     {
-      fields: ['treatmentPlanId']
-  },
+      fields: ['treatmentPlanId'],
+    },
     {
       fields: ['status', 'startDate'],
-      name: 'idx_prescriptions_status_start_date'
-  },
+      name: 'idx_prescriptions_status_start_date',
+    },
     {
       fields: ['endDate'],
-      name: 'idx_prescriptions_end_date'
-  },
+      name: 'idx_prescriptions_end_date',
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_prescriptions_created_at'
-  },
+      name: 'idx_prescriptions_created_at',
+    },
     {
       fields: ['updatedAt'],
-      name: 'idx_prescriptions_updated_at'
-  }
-  ]
-  })
-export class Prescription extends Model<PrescriptionAttributes> implements PrescriptionAttributes {
+      name: 'idx_prescriptions_updated_at',
+    },
+  ],
+})
+export class Prescription
+  extends Model<PrescriptionAttributes>
+  implements PrescriptionAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -144,10 +144,10 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
     allowNull: false,
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @Index
   studentId: string;
@@ -155,24 +155,33 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @AllowNull
   @ForeignKey(() => require('./clinic-visit.model').ClinicVisit)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   visitId?: string;
 
-  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'visitId', as: 'visit' })
+  @BelongsTo(() => require('./clinic-visit.model').ClinicVisit, {
+    foreignKey: 'visitId',
+    as: 'visit',
+  })
   declare visit?: any;
 
   @AllowNull
   @ForeignKey(() => require('./treatment-plan.model').TreatmentPlan)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   treatmentPlanId?: string;
 
-  @BelongsTo(() => require('./treatment-plan.model').TreatmentPlan, { foreignKey: 'treatmentPlanId', as: 'treatmentPlan' })
+  @BelongsTo(() => require('./treatment-plan.model').TreatmentPlan, {
+    foreignKey: 'treatmentPlanId',
+    as: 'treatmentPlan',
+  })
   declare treatmentPlan?: any;
 
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
   @ForeignKey(() => require('./user.model').User)
@@ -181,16 +190,16 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
     allowNull: false,
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   prescribedBy: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   drugName: string;
 
@@ -200,107 +209,107 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
     validate: {
       is: {
         args: /^\d{4,5}-\d{4}-\d{1,2}$/,
-        msg: 'Drug code must be in NDC format (e.g., 12345-1234-1, 1234-1234-12)'
-      }
-    }
+        msg: 'Drug code must be in NDC format (e.g., 12345-1234-1, 1234-1234-12)',
+      },
+    },
   })
   drugCode?: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   dosage: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   frequency: string;
 
   @Column({
     type: DataType.STRING(50),
-    allowNull: false
+    allowNull: false,
   })
   route: string;
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    allowNull: false,
   })
   quantity: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   quantityFilled: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   refillsAuthorized: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: 0,
   })
   refillsUsed: number;
 
   @Column({
     type: DataType.DATEONLY,
-    allowNull: false
+    allowNull: false,
   })
   startDate: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY
+    type: DataType.DATEONLY,
   })
   endDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   instructions?: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(PrescriptionStatus)]
+      isIn: [Object.values(PrescriptionStatus)],
     },
     allowNull: false,
-    defaultValue: PrescriptionStatus.PENDING
+    defaultValue: PrescriptionStatus.PENDING,
   })
   @Index
   status: PrescriptionStatus;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   pharmacyName?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   filledDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   pickedUpDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   notes?: string;
 
@@ -310,7 +319,10 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'prescribedBy', as: 'prescriber' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'prescribedBy',
+    as: 'prescriber',
+  })
   declare prescriber?: any;
 
   // Hooks for HIPAA compliance
@@ -319,8 +331,12 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   static async auditPHIAccess(instance: Prescription) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Prescription ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Drug: ${instance.drugName}`);
+      console.log(
+        `[AUDIT] Prescription ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      );
+      console.log(
+        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Drug: ${instance.drugName}`,
+      );
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
   }
@@ -334,7 +350,11 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
     if (instance.filledDate && instance.filledDate < instance.startDate) {
       throw new Error('Filled date cannot be before start date');
     }
-    if (instance.pickedUpDate && instance.filledDate && instance.pickedUpDate < instance.filledDate) {
+    if (
+      instance.pickedUpDate &&
+      instance.filledDate &&
+      instance.pickedUpDate < instance.filledDate
+    ) {
       throw new Error('Picked up date cannot be before filled date');
     }
   }
@@ -353,7 +373,11 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
   @BeforeCreate
   @BeforeUpdate
   static async checkExpiration(instance: Prescription) {
-    if (instance.endDate && new Date() > instance.endDate && instance.status !== PrescriptionStatus.EXPIRED) {
+    if (
+      instance.endDate &&
+      new Date() > instance.endDate &&
+      instance.status !== PrescriptionStatus.EXPIRED
+    ) {
       instance.status = PrescriptionStatus.EXPIRED;
     }
   }
@@ -363,15 +387,19 @@ export class Prescription extends Model<PrescriptionAttributes> implements Presc
    */
   isActive(): boolean {
     const now = new Date();
-    if (this.status === PrescriptionStatus.CANCELLED ||
-        this.status === PrescriptionStatus.EXPIRED) {
+    if (
+      this.status === PrescriptionStatus.CANCELLED ||
+      this.status === PrescriptionStatus.EXPIRED
+    ) {
       return false;
     }
     if (this.endDate && now > this.endDate) {
       return false;
     }
-    return this.status === PrescriptionStatus.FILLED ||
-           this.status === PrescriptionStatus.PICKED_UP;
+    return (
+      this.status === PrescriptionStatus.FILLED ||
+      this.status === PrescriptionStatus.PICKED_UP
+    );
   }
 
   /**

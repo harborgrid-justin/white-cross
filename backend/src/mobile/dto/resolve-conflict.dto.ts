@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsObject } from 'class-validator';
+import { IsEnum, IsObject, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ConflictResolution } from '../enums';
 
@@ -8,13 +8,16 @@ import { ConflictResolution } from '../enums';
 export class ResolveConflictDto {
   @ApiProperty({
     description: 'Conflict resolution strategy',
-    enum: ConflictResolution
+    enum: ConflictResolution,
   })
   @IsEnum(ConflictResolution)
-  resolution: ConflictResolution;
+  resolution!: ConflictResolution;
 
-  @ApiProperty({ description: 'Manually merged data (for MERGE strategy)', required: false })
+  @ApiProperty({
+    description: 'Manually merged data (for MERGE strategy)',
+    required: false,
+  })
   @IsObject()
   @IsOptional()
-  mergedData?: any;
+  mergedData?: Record<string, any>;
 }

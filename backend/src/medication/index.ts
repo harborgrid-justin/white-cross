@@ -14,3 +14,6 @@ export * from './entities';
 
 // Services
 export * from './services';
+
+export * from './medication.controller';
+export * from './medication.repository';

@@ -25,16 +25,16 @@ import * as crypto from 'crypto';
 import { CacheService } from '../cache/cache.service';
 import { KeyManagementService } from './key-management.service';
 import {
-  IEncryptionService,
-  EncryptionResult,
   DecryptionResult,
-  EncryptionOptions,
-  EncryptionMetadata,
-  EncryptionAlgorithm,
-  EncryptionStatus,
-  SessionKey,
   EncryptedMessage,
+  EncryptionAlgorithm,
   EncryptionConfig,
+  EncryptionMetadata,
+  EncryptionOptions,
+  EncryptionResult,
+  EncryptionStatus,
+  IEncryptionService,
+  SessionKey,
 } from './interfaces';
 
 /**
@@ -90,7 +90,7 @@ export class EncryptionService implements IEncryptionService {
 
     try {
       // Validate input
-      if (!data || typeof data !== 'string') {
+      if (!data) {
         return {
           success: false,
           error: EncryptionStatus.INVALID_DATA,

@@ -1,4 +1,4 @@
-import { Controller, All, Req, Res } from '@nestjs/common';
+import { All, Controller, Req, Res } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 
@@ -40,7 +40,10 @@ export class PrescriptionAliasController {
    * controller at /clinical/prescriptions maintaining all original request data.
    */
   @All('*')
-  async forwardToClinicalPrescriptions(@Req() req: Request, @Res() res: Response) {
+  async forwardToClinicalPrescriptions(
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     // Extract the path after /prescriptions
     const path = req.path.replace('/prescriptions', '');
 
@@ -64,7 +67,8 @@ export class PrescriptionAliasController {
       originalPath: req.path,
       forwardedTo: newPath,
       method: req.method,
-      implementation: 'TO BE COMPLETED: Integrate with internal routing or reverse proxy',
+      implementation:
+        'TO BE COMPLETED: Integrate with internal routing or reverse proxy',
     });
   }
 }

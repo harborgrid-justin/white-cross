@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, literal } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
-import { IPaginatedResult } from '../interfaces';
-import { AuditAction } from '../enums';
+import { literal, Op, WhereOptions } from 'sequelize';
+import { AuditLog } from '@/database';
+import { IPaginatedResult } from '../interfaces/paginated-result.interface';
+import { AuditLogFilters, AuditLogSearchCriteria } from '../types/audit.types';
 
 /**
  * AuditQueryService - Advanced querying and filtering for audit logs
@@ -26,20 +26,12 @@ export class AuditQueryService {
    * @param filters - Filter criteria for audit logs
    * @returns Promise with paginated audit logs
    */
-  async getAuditLogs(filters: {
-    userId?: string;
-    entityType?: string;
-    action?: AuditAction | string;
-    startDate?: Date;
-    endDate?: Date;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<IPaginatedResult<AuditLog>> {
+  async getAuditLogs(filters: AuditLogFilters = {}): Promise<IPaginatedResult<AuditLog>> {
     try {
       const { userId, entityType, action, startDate, endDate, page = 1, limit = 50 } = filters;
       const skip = (page - 1) * limit;
 
-      const where: any = {};
+      const where: WhereOptions<AuditLog> = {};
 
       if (userId) {
         where.userId = userId;
@@ -55,7 +47,7 @@ export class AuditQueryService {
 
       if (startDate || endDate) {
         where.createdAt = {
-          [Op.between]: [startDate || new Date(0), endDate || new Date()]
+          [Op.between]: [startDate || new Date(0), endDate || new Date()],
         };
       }
 
@@ -168,11 +160,7 @@ export class AuditQueryService {
    * @param criteria - Search criteria including keyword and pagination
    * @returns Promise with paginated search results
    */
-  async searchAuditLogs(criteria: {
-    keyword: string;
-    page?: number;
-    limit?: number;
-  }): Promise<IPaginatedResult<AuditLog>> {
+  async searchAuditLogs(criteria: AuditLogSearchCriteria): Promise<IPaginatedResult<AuditLog>> {
     try {
       const { keyword, page = 1, limit = 20 } = criteria;
       const skip = (page - 1) * limit;
@@ -182,8 +170,8 @@ export class AuditQueryService {
         [Op.or]: [
           { entityType: { [Op.iLike]: `%${keyword}%` } },
           { entityId: { [Op.iLike]: `%${keyword}%` } },
-          literal(`CAST(changes AS TEXT) ILIKE '${keyword.replace(/'/g, "''")}'`)
-        ]
+          literal(`CAST(changes AS TEXT) ILIKE '${keyword.replace(/'/g, "''")}'`),
+        ],
       };
 
       const { rows: data, count: total } = await this.auditLogModel.findAndCountAll({

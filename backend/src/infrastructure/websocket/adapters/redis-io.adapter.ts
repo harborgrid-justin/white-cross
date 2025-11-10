@@ -19,7 +19,8 @@
  * @class RedisIoAdapter
  */
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { ServerOptions } from 'socket.io';
+import { Server, ServerOptions } from 'socket.io';
+import type { RedisClientConfig } from '../types/redis-config.types';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { createClient } from 'redis';
 import type { INestApplicationContext } from '@nestjs/common';
@@ -55,11 +56,11 @@ export class RedisIoAdapter extends IoAdapter {
 
     try {
       // Create pub client with authentication if password is provided
-      const clientConfig: any = {
+      const clientConfig: RedisClientConfig = {
         socket: {
           host: redisHost,
           port: redisPort,
-          reconnectStrategy: (retries) => {
+          reconnectStrategy: (retries: number) => {
             if (retries > maxRetries) {
               this.logger.error(
                 `Redis connection failed after ${maxRetries} retries. Stopping reconnection.`,
@@ -68,7 +69,9 @@ export class RedisIoAdapter extends IoAdapter {
             }
 
             const delay = Math.min(retryDelay * Math.pow(2, retries), 30000);
-            this.logger.warn(`Redis reconnecting in ${delay}ms (attempt ${retries + 1})`);
+            this.logger.warn(
+              `Redis reconnecting in ${delay}ms (attempt ${retries + 1})`,
+            );
             return delay;
           },
         },
@@ -80,7 +83,9 @@ export class RedisIoAdapter extends IoAdapter {
         clientConfig.password = redisPassword;
         this.logger.log('Using Redis authentication');
       } else {
-        this.logger.log('No Redis password configured - connecting without authentication');
+        this.logger.log(
+          'No Redis password configured - connecting without authentication',
+        );
       }
 
       this.pubClient = createClient(clientConfig);
@@ -151,7 +156,7 @@ export class RedisIoAdapter extends IoAdapter {
    * @param options - Socket.IO server options
    * @returns The configured Socket.IO server
    */
-  createIOServer(port: number, options?: ServerOptions): any {
+  createIOServer(port: number, options?: ServerOptions): Server {
     if (!this.isConnected || !this.adapterConstructor) {
       this.logger.error(
         'Redis adapter not initialized. Call connectToRedis() before starting the server.',
@@ -161,7 +166,7 @@ export class RedisIoAdapter extends IoAdapter {
       if (process.env.NODE_ENV === 'development') {
         this.logger.warn(
           'DEVELOPMENT MODE: Falling back to default Socket.IO adapter. ' +
-          'WebSockets will NOT work across multiple server instances.',
+            'WebSockets will NOT work across multiple server instances.',
         );
         return super.createIOServer(port, options);
       }
@@ -187,9 +192,11 @@ export class RedisIoAdapter extends IoAdapter {
    * @returns True if both clients are connected, false otherwise
    */
   isRedisConnected(): boolean {
-    return this.isConnected &&
-           this.pubClient?.isReady === true &&
-           this.subClient?.isReady === true;
+    return (
+      this.isConnected &&
+      this.pubClient?.isReady === true &&
+      this.subClient?.isReady === true
+    );
   }
 
   /**

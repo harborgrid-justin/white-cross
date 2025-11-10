@@ -1,16 +1,17 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  ForeignKey,
-  BelongsTo,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
-  } from 'sequelize-typescript';
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+} from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 
@@ -20,15 +21,15 @@ export enum AllergyType {
   ENVIRONMENTAL = 'ENVIRONMENTAL',
   INSECT = 'INSECT',
   LATEX = 'LATEX',
-  OTHER = 'OTHER'
-  }
+  OTHER = 'OTHER',
+}
 
 export enum AllergySeverity {
   MILD = 'MILD',
   MODERATE = 'MODERATE',
   SEVERE = 'SEVERE',
-  LIFE_THREATENING = 'LIFE_THREATENING'
-  }
+  LIFE_THREATENING = 'LIFE_THREATENING',
+}
 
 export interface AllergyAttributes {
   id: string;
@@ -60,55 +61,64 @@ export interface AllergyAttributes {
   active: {
     where: {
       active: true,
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
+    order: [['createdAt', 'DESC']],
   },
   byStudent: (studentId: string) => ({
     where: { studentId, active: true },
-    order: [['severity', 'DESC'], ['allergen', 'ASC']]
+    order: [
+      ['severity', 'DESC'],
+      ['allergen', 'ASC'],
+    ],
   }),
   byType: (allergyType: AllergyType) => ({
     where: { allergyType, active: true },
-    order: [['severity', 'DESC']]
+    order: [['severity', 'DESC']],
   }),
   bySeverity: (severity: AllergySeverity) => ({
     where: { severity, active: true },
-    order: [['allergen', 'ASC']]
+    order: [['allergen', 'ASC']],
   }),
   severe: {
     where: {
       severity: {
-        [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING]
+        [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING],
       },
-      active: true
+      active: true,
     },
-    order: [['severity', 'DESC'], ['allergen', 'ASC']]
+    order: [
+      ['severity', 'DESC'],
+      ['allergen', 'ASC'],
+    ],
   },
   requiresEpiPen: {
     where: {
       epiPenRequired: true,
-      active: true
+      active: true,
     },
-    order: [['epiPenExpiration', 'ASC']]
+    order: [['epiPenExpiration', 'ASC']],
   },
   expiredEpiPen: {
     where: {
       epiPenRequired: true,
       epiPenExpiration: {
-        [Op.lt]: new Date()
+        [Op.lt]: new Date(),
       },
-      active: true
+      active: true,
     },
-    order: [['epiPenExpiration', 'ASC']]
+    order: [['epiPenExpiration', 'ASC']],
   },
   unverified: {
     where: {
       verified: false,
-      active: true
+      active: true,
     },
-    order: [['severity', 'DESC'], ['createdAt', 'ASC']]
-  }
+    order: [
+      ['severity', 'DESC'],
+      ['createdAt', 'ASC'],
+    ],
+  },
 }))
 @Table({
   tableName: 'allergies',
@@ -117,25 +127,33 @@ export interface AllergyAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId', 'active']
-  },
+      fields: ['studentId', 'active'],
+    },
     {
-      fields: ['allergyType', 'severity']
-  },
+      fields: ['allergyType', 'severity'],
+    },
     {
-      fields: ['epiPenExpiration']
-  },
+      fields: ['epiPenExpiration'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_allergy_created_at'
+      name: 'idx_allergy_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_allergy_updated_at'
-    }
-  ]
-  })
-export class Allergy extends Model<AllergyAttributes> implements AllergyAttributes {
+      name: 'idx_allergy_updated_at',
+    },
+    // Performance index for timeline queries
+    {
+      fields: ['diagnosedDate'],
+      name: 'idx_allergy_diagnosed_date',
+    },
+  ],
+})
+export class Allergy
+  extends Model<AllergyAttributes>
+  implements AllergyAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -147,16 +165,16 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
     allowNull: false,
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   allergen: string;
 
@@ -164,18 +182,18 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AllergyType)]
+      isIn: [Object.values(AllergyType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   allergyType: AllergyType;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AllergySeverity)]
+      isIn: [Object.values(AllergySeverity)],
     },
-    allowNull: false
+    allowNull: false,
   })
   severity: AllergySeverity;
 
@@ -189,22 +207,23 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   treatment?: string;
 
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   emergencyProtocol?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   onsetDate?: Date;
 
+  @Index({ name: 'idx_allergy_diagnosed_date' })
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   diagnosedDate?: Date;
 
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   diagnosedBy?: string;
 
@@ -213,12 +232,12 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   verified: boolean;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   verifiedBy?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   verificationDate?: Date;
 
@@ -231,42 +250,42 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
 
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   epiPenRequired: boolean;
 
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   epiPenLocation?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   epiPenExpiration?: Date;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   healthRecordId?: string;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
@@ -276,12 +295,20 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: Allergy) {
+  static async auditPHIAccess(instance: Allergy, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] Allergy ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
+      );
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'Allergy',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 
@@ -289,7 +316,9 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
   static async validateVerification(instance: Allergy) {
     if (instance.changed('verified') && instance.verified) {
       if (!instance.verifiedBy) {
-        throw new Error('verifiedBy is required when marking allergy as verified');
+        throw new Error(
+          'verifiedBy is required when marking allergy as verified',
+        );
       }
       instance.verificationDate = new Date();
     }
@@ -302,7 +331,26 @@ export class Allergy extends Model<AllergyAttributes> implements AllergyAttribut
       throw new Error('epiPenLocation is required when EpiPen is required');
     }
     if (instance.epiPenExpiration && instance.epiPenExpiration < new Date()) {
-      console.warn(`[WARNING] EpiPen for allergy ${instance.id} has expired`);
+      // Log expired EpiPen validation for HIPAA audit trail
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
+      );
+      await logModelPHIAccess(
+        'Allergy',
+        instance.id,
+        'UPDATE',
+        ['epiPenExpiration - EXPIRED'],
+        undefined,
+      );
+    }
+  }
+
+  @BeforeCreate
+  static async setInitialVerification(instance: Allergy) {
+    // Auto-set verification for new allergies if verifiedBy is provided
+    if (!instance.verified && instance.verifiedBy) {
+      instance.verified = true;
+      instance.verificationDate = new Date();
     }
   }
 

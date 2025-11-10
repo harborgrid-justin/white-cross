@@ -2,24 +2,10 @@
  * @fileoverview Export Type Definitions
  * @module app/export/types
  *
- * TypeScript interfaces, types, and constants for export operations.
- * This module contains no runtime code, only type definitions.
+ * TypeScript interfaces and types for export operations.
+ *
+ * Note: Runtime values (constants) are in export.constants.ts
  */
-
-// ==========================================
-// CONFIGURATION CONSTANTS
-// ==========================================
-
-/**
- * Custom cache tags for export operations
- */
-export const EXPORT_CACHE_TAGS = {
-  JOBS: 'export-jobs',
-  TEMPLATES: 'export-templates',
-  HISTORY: 'export-history',
-  FILES: 'export-files',
-  SCHEDULES: 'export-schedules',
-} as const;
 
 // ==========================================
 // ACTION RESULT TYPE

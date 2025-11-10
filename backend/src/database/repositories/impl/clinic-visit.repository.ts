@@ -3,14 +3,12 @@
  * Injectable NestJS repository for clinic visit tracking with outcomes
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 
 export interface ClinicVisitAttributes {
   id: string;
@@ -54,13 +52,15 @@ export interface UpdateClinicVisitDTO {
 }
 
 @Injectable()
-export class ClinicVisitRepository
-  extends BaseRepository<any, ClinicVisitAttributes, CreateClinicVisitDTO>
-{
+export class ClinicVisitRepository extends BaseRepository<
+  any,
+  ClinicVisitAttributes,
+  CreateClinicVisitDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'ClinicVisit');
   }
@@ -69,16 +69,16 @@ export class ClinicVisitRepository
     try {
       const visits = await this.model.findAll({
         where: { studentId },
-        order: [['visitDate', 'DESC']]
+        order: [['visitDate', 'DESC']],
       });
-      return visits.map((v: any) => this.mapToEntity(v));
+      return visits.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding clinic visits by student:', error);
       throw new RepositoryError(
         'Failed to find clinic visits by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -87,16 +87,16 @@ export class ClinicVisitRepository
     try {
       const visits = await this.model.findAll({
         where: { providerId },
-        order: [['visitDate', 'DESC']]
+        order: [['visitDate', 'DESC']],
       });
-      return visits.map((v: any) => this.mapToEntity(v));
+      return visits.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding clinic visits by provider:', error);
       throw new RepositoryError(
         'Failed to find clinic visits by provider',
         'FIND_BY_PROVIDER_ERROR',
         500,
-        { providerId, error: (error as Error).message }
+        { providerId, error: (error as Error).message },
       );
     }
   }
@@ -105,16 +105,16 @@ export class ClinicVisitRepository
     try {
       const visits = await this.model.findAll({
         where: { followUpRequired: true },
-        order: [['followUpDate', 'ASC']]
+        order: [['followUpDate', 'ASC']],
       });
-      return visits.map((v: any) => this.mapToEntity(v));
+      return visits.map((v: ClinicVisit) => this.mapToEntity(v));
     } catch (error) {
       this.logger.error('Error finding visits requiring follow-up:', error);
       throw new RepositoryError(
         'Failed to find visits requiring follow-up',
         'FIND_FOLLOW_UP_REQUIRED_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -123,26 +123,33 @@ export class ClinicVisitRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateClinicVisitDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateClinicVisitDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async invalidateCaches(visit: any): Promise<void> {
+  protected async invalidateCaches(visit: ClinicVisit): Promise<void> {
     try {
       const visitData = visit.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, visitData.id));
-      await this.cacheManager.deletePattern(`white-cross:clinic-visit:student:${visitData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, visitData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:clinic-visit:student:${visitData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating clinic visit caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<ClinicVisitAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({
       ...data,
       diagnosis: '[PHI]',
       treatment: '[PHI]',
-      notes: '[PHI]'
+      notes: '[PHI]',
     });
   }
 }

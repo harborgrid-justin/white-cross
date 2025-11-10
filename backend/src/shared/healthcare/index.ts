@@ -23,7 +23,7 @@
 
 /**
  * Healthcare utilities index
- * 
+ *
  * Centralized exports for all healthcare-related utilities
  */
 

@@ -6,12 +6,23 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
+import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
 import { CacheService } from './cache.service';
 import { CacheWarmingService } from './cache-warming.service';
 import { RateLimiterService } from './rate-limiter.service';
-import { CacheEvent } from './cache.interfaces';
 import type { CacheEventPayload } from './cache.interfaces';
+import { CacheEvent } from './cache.interfaces';
+
+
+/**
+ * Cache warm event payload
+ */
+interface CacheWarmPayload {
+  keys?: string[];
+  pattern?: string;
+  count?: number;
+  [key: string]: unknown;
+}
 
 /**
  * Detailed cache metrics
@@ -213,11 +224,15 @@ export class CacheStatisticsService extends HealthIndicator {
     lines.push(`cache_memory_bytes ${metrics.stats.memoryUsage}`);
 
     // Latency
-    lines.push('# HELP cache_get_latency_ms Average GET latency in milliseconds');
+    lines.push(
+      '# HELP cache_get_latency_ms Average GET latency in milliseconds',
+    );
     lines.push('# TYPE cache_get_latency_ms gauge');
     lines.push(`cache_get_latency_ms ${metrics.performance.avgGetLatency}`);
 
-    lines.push('# HELP cache_set_latency_ms Average SET latency in milliseconds');
+    lines.push(
+      '# HELP cache_set_latency_ms Average SET latency in milliseconds',
+    );
     lines.push('# TYPE cache_set_latency_ms gauge');
     lines.push(`cache_set_latency_ms ${metrics.performance.avgSetLatency}`);
 
@@ -227,27 +242,43 @@ export class CacheStatisticsService extends HealthIndicator {
     lines.push(`cache_operations_total ${metrics.performance.totalOperations}`);
 
     // Failed operations
-    lines.push('# HELP cache_failed_operations_total Total failed cache operations');
+    lines.push(
+      '# HELP cache_failed_operations_total Total failed cache operations',
+    );
     lines.push('# TYPE cache_failed_operations_total counter');
-    lines.push(`cache_failed_operations_total ${metrics.performance.failedOperations}`);
+    lines.push(
+      `cache_failed_operations_total ${metrics.performance.failedOperations}`,
+    );
 
     // Health
-    lines.push('# HELP cache_health_status Cache health status (1=healthy, 0=unhealthy)');
+    lines.push(
+      '# HELP cache_health_status Cache health status (1=healthy, 0=unhealthy)',
+    );
     lines.push('# TYPE cache_health_status gauge');
-    lines.push(`cache_health_status ${metrics.health.status === 'healthy' ? 1 : 0}`);
+    lines.push(
+      `cache_health_status ${metrics.health.status === 'healthy' ? 1 : 0}`,
+    );
 
     // Redis connection
-    lines.push('# HELP cache_redis_connected Redis connection status (1=connected, 0=disconnected)');
+    lines.push(
+      '# HELP cache_redis_connected Redis connection status (1=connected, 0=disconnected)',
+    );
     lines.push('# TYPE cache_redis_connected gauge');
-    lines.push(`cache_redis_connected ${metrics.health.redisConnected ? 1 : 0}`);
+    lines.push(
+      `cache_redis_connected ${metrics.health.redisConnected ? 1 : 0}`,
+    );
 
     // Redis latency
-    lines.push('# HELP cache_redis_latency_ms Redis ping latency in milliseconds');
+    lines.push(
+      '# HELP cache_redis_latency_ms Redis ping latency in milliseconds',
+    );
     lines.push('# TYPE cache_redis_latency_ms gauge');
     lines.push(`cache_redis_latency_ms ${metrics.health.redisLatency}`);
 
     // Warming
-    lines.push('# HELP cache_warmed_total Total number of cache entries warmed');
+    lines.push(
+      '# HELP cache_warmed_total Total number of cache entries warmed',
+    );
     lines.push('# TYPE cache_warmed_total counter');
     lines.push(`cache_warmed_total ${metrics.warming.totalWarmed}`);
 
@@ -287,11 +318,17 @@ export class CacheStatisticsService extends HealthIndicator {
         });
       }
 
-      throw new HealthCheckError('Cache unhealthy', this.getStatus(key, false, health));
+      throw new HealthCheckError(
+        'Cache unhealthy',
+        this.getStatus(key, false, health),
+      );
     } catch (error) {
-      throw new HealthCheckError('Cache health check failed', this.getStatus(key, false, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      }));
+      throw new HealthCheckError(
+        'Cache health check failed',
+        this.getStatus(key, false, {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }),
+      );
     }
   }
 
@@ -311,18 +348,26 @@ export class CacheStatisticsService extends HealthIndicator {
     lines.push(`  L1 Hits: ${metrics.stats.l1Hits}`);
     lines.push(`  L2 Hits: ${metrics.stats.l2Hits}`);
     lines.push(`  Total Keys: ${metrics.stats.keys}`);
-    lines.push(`  Memory Usage: ${this.formatBytes(metrics.stats.memoryUsage)}`);
+    lines.push(
+      `  Memory Usage: ${this.formatBytes(metrics.stats.memoryUsage)}`,
+    );
     lines.push('');
     lines.push('Performance:');
-    lines.push(`  Avg GET Latency: ${metrics.performance.avgGetLatency.toFixed(2)}ms`);
-    lines.push(`  Avg SET Latency: ${metrics.performance.avgSetLatency.toFixed(2)}ms`);
+    lines.push(
+      `  Avg GET Latency: ${metrics.performance.avgGetLatency.toFixed(2)}ms`,
+    );
+    lines.push(
+      `  Avg SET Latency: ${metrics.performance.avgSetLatency.toFixed(2)}ms`,
+    );
     lines.push(`  Total Operations: ${metrics.performance.totalOperations}`);
     lines.push(`  Failed Operations: ${metrics.performance.failedOperations}`);
     lines.push(`  Failure Rate: ${metrics.performance.failureRate}%`);
     lines.push('');
     lines.push('Health:');
     lines.push(`  Status: ${metrics.health.status}`);
-    lines.push(`  Redis Connected: ${metrics.health.redisConnected ? 'Yes' : 'No'}`);
+    lines.push(
+      `  Redis Connected: ${metrics.health.redisConnected ? 'Yes' : 'No'}`,
+    );
     lines.push(`  Redis Latency: ${metrics.health.redisLatency}ms`);
     lines.push(`  L1 Status: ${metrics.health.l1Status}`);
     lines.push(`  Uptime: ${this.formatDuration(metrics.health.uptime)}`);
@@ -333,7 +378,9 @@ export class CacheStatisticsService extends HealthIndicator {
     lines.push(`  Failures: ${metrics.warming.failures}`);
     lines.push(`  Strategies: ${metrics.warming.strategies}`);
     if (metrics.warming.lastWarmingTime) {
-      lines.push(`  Last Warming: ${metrics.warming.lastWarmingTime.toISOString()}`);
+      lines.push(
+        `  Last Warming: ${metrics.warming.lastWarmingTime.toISOString()}`,
+      );
     }
     lines.push('');
     lines.push('Rate Limiting:');
@@ -421,7 +468,7 @@ export class CacheStatisticsService extends HealthIndicator {
   }
 
   @OnEvent(CacheEvent.WARM)
-  handleCacheWarm(payload: any): void {
+  handleCacheWarm(payload: CacheWarmPayload): void {
     this.eventCounts.warms++;
   }
 

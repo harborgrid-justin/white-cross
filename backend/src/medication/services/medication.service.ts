@@ -1,20 +1,12 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MedicationRepository } from '../medication.repository';
-import {
-  CreateMedicationDto,
-  UpdateMedicationDto,
-  DeactivateMedicationDto,
-  ListMedicationsQueryDto,
-} from '../dto';
-import { StudentMedication, PaginatedMedicationResponse } from '../entities';
-import { WebSocketService } from '../../infrastructure/websocket/websocket.service';
+import { CreateMedicationDto } from '../dto/create-medication.dto';
+import { DeactivateMedicationDto } from '../dto/deactivate-medication.dto';
+import { ListMedicationsQueryDto } from '../dto/list-medications-query.dto';
+import { UpdateMedicationDto } from '../dto/update-medication.dto';
+import { PaginatedMedicationResponse } from '../entities/medication.entity';
+import { StudentMedication } from '../entities/student-medication.entity';
 
 /**
  * Medication Service
@@ -41,14 +33,38 @@ import { WebSocketService } from '../../infrastructure/websocket/websocket.servi
  * - Active medications have status='ACTIVE'
  * - Inactive medications have status != 'ACTIVE'
  */
+/**
+ * Medication Events
+ * Used for event-driven architecture to avoid circular dependencies
+ */
+export class MedicationCreatedEvent {
+  constructor(
+    public readonly medication: any,
+    public readonly timestamp: Date = new Date(),
+  ) {}
+}
+
+export class MedicationUpdatedEvent {
+  constructor(
+    public readonly medication: any,
+    public readonly timestamp: Date = new Date(),
+  ) {}
+}
+
+export class MedicationDeactivatedEvent {
+  constructor(
+    public readonly medication: any,
+    public readonly timestamp: Date = new Date(),
+  ) {}
+}
+
 @Injectable()
 export class MedicationService {
   private readonly logger = new Logger(MedicationService.name);
 
   constructor(
     private readonly medicationRepository: MedicationRepository,
-    @Inject(forwardRef(() => WebSocketService))
-    private readonly websocketService: WebSocketService,
+    @Optional() private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -96,7 +112,9 @@ export class MedicationService {
    * @returns Created medication record
    * @throws BadRequestException if validation fails
    */
-  async createMedication(createDto: CreateMedicationDto): Promise<StudentMedication> {
+  async createMedication(
+    createDto: CreateMedicationDto,
+  ): Promise<StudentMedication> {
     this.logger.log(
       `Creating medication: ${createDto.medicationName} for student ${createDto.studentId}`,
     );
@@ -128,12 +146,13 @@ export class MedicationService {
 
     this.logger.log(`Created medication: ${medication.id}`);
 
-    // Send real-time notification about new medication
-    try {
-      await this.sendMedicationNotification(medication, 'medication:created');
-    } catch (error) {
-      this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
-      // Don't fail the operation if notification fails
+    // Emit event for medication creation
+    // Event listeners (like WebSocket service) will handle notifications
+    if (this.eventEmitter) {
+      this.eventEmitter.emit(
+        'medication.created',
+        new MedicationCreatedEvent(medication),
+      );
     }
 
     return medication;
@@ -234,12 +253,12 @@ export class MedicationService {
 
     this.logger.log(`Updated medication: ${id}`);
 
-    // Send real-time notification about medication update
-    try {
-      await this.sendMedicationNotification(medication, 'medication:updated');
-    } catch (error) {
-      this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
-      // Don't fail the operation if notification fails
+    // Emit event for medication update
+    if (this.eventEmitter) {
+      this.eventEmitter.emit(
+        'medication.updated',
+        new MedicationUpdatedEvent(medication),
+      );
     }
 
     return medication;
@@ -278,12 +297,12 @@ export class MedicationService {
 
     this.logger.log(`Deactivated medication: ${id}`);
 
-    // Send real-time notification about medication deactivation
-    try {
-      await this.sendMedicationNotification(medication, 'medication:deactivated');
-    } catch (error) {
-      this.logger.error(`Failed to send WebSocket notification: ${error.message}`);
-      // Don't fail the operation if notification fails
+    // Emit event for medication deactivation
+    if (this.eventEmitter) {
+      this.eventEmitter.emit(
+        'medication.deactivated',
+        new MedicationDeactivatedEvent(medication),
+      );
     }
 
     return medication;
@@ -366,65 +385,24 @@ export class MedicationService {
   }
 
   /**
-   * Send real-time WebSocket notification for medication events
+   * NOTE: WebSocket notifications are now handled via event listeners
    *
-   * Broadcasts medication events to relevant users via WebSockets:
-   * - Sends to student's room for student-specific notifications
-   * - Sends to organization's room for nurse/admin notifications
+   * The WebSocket service listens for medication events:
+   * - medication.created
+   * - medication.updated
+   * - medication.deactivated
    *
-   * Events:
-   * - medication:created - New medication added
-   * - medication:updated - Medication modified
-   * - medication:deactivated - Medication stopped/discontinued
-   * - medication:reminder - Medication administration reminder
+   * This decouples MedicationService from WebSocketService and eliminates
+   * the circular dependency.
    *
-   * @param medication - The medication record
-   * @param event - The event type to broadcast
-   * @private
+   * To implement WebSocket notifications, create an event listener in the
+   * WebSocket module:
+   *
+   * @OnEvent('medication.created')
+   * async handleMedicationCreated(event: MedicationCreatedEvent) {
+   *   // Send WebSocket notification
+   * }
    */
-  private async sendMedicationNotification(
-    medication: any,
-    event: 'medication:created' | 'medication:updated' | 'medication:deactivated' | 'medication:reminder',
-  ): Promise<void> {
-    if (!this.websocketService || !this.websocketService.isInitialized()) {
-      this.logger.warn('WebSocket service not initialized, skipping notification');
-      return;
-    }
-
-    const payload = {
-      medicationId: medication.id,
-      studentId: medication.studentId,
-      medicationName: medication.medicationName,
-      dosage: medication.dosage,
-      frequency: medication.frequency,
-      route: medication.route,
-      isActive: medication.isActive,
-      timestamp: new Date().toISOString(),
-    };
-
-    try {
-      // Send to student-specific room
-      if (medication.studentId) {
-        await this.websocketService.broadcastToRoom(
-          `student:${medication.studentId}`,
-          event,
-          payload,
-        );
-      }
-
-      // Send to organization room (for nurses/admins monitoring all students)
-      // Note: organizationId should be added to medication model for multi-tenant support
-      // For now, broadcast to all connected users
-      this.logger.log(
-        `Sent ${event} notification for medication ${medication.id} (student: ${medication.studentId})`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to send ${event} notification: ${error.message}`,
-        error.stack,
-      );
-    }
-  }
 
   /**
    * Batch find medications by IDs (for DataLoader)
@@ -442,7 +420,9 @@ export class MedicationService {
    * Delegates to repository for database access
    */
   async findByStudentIds(studentIds: string[]): Promise<StudentMedication[][]> {
-    this.logger.log(`Batch fetching medications for ${studentIds.length} students`);
+    this.logger.log(
+      `Batch fetching medications for ${studentIds.length} students`,
+    );
     return this.medicationRepository.findByStudentIds(studentIds);
   }
 }

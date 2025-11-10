@@ -5,13 +5,12 @@
  * Migrated from backend/src/services/academicTranscript
  */
 
-import { Injectable, Logger, NotFoundException, ConflictException } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   AcademicRecord,
-  SubjectGrade,
   AttendanceRecord,
   BehaviorRecord,
+  SubjectGrade,
 } from './interfaces/academic-record.interface';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
 import { AcademicTranscriptRepository } from '../database/repositories/impl/academic-transcript.repository';
@@ -67,7 +66,15 @@ export class AcademicTranscriptService {
    */
   async importTranscript(data: TranscriptImportDto): Promise<AcademicRecord> {
     try {
-      const { studentId, academicYear, semester, subjects, attendance, behavior, importedBy } = data;
+      const {
+        studentId,
+        academicYear,
+        semester,
+        subjects,
+        attendance,
+        behavior,
+        importedBy,
+      } = data;
 
       // Validate student exists
       const student = await this.studentRepository.findById(studentId);
@@ -82,9 +89,10 @@ export class AcademicTranscriptService {
           academicYear,
           semester,
         },
-        pagination: { page: 1, limit: 1 }
+        pagination: { page: 1, limit: 1 },
       });
-      const existingTranscript = existingResults.data.length > 0 ? existingResults.data[0] : null;
+      const existingTranscript =
+        existingResults.data.length > 0 ? existingResults.data[0] : null;
 
       if (existingTranscript) {
         throw new ConflictException(
@@ -96,23 +104,30 @@ export class AcademicTranscriptService {
       const gpa = this.calculateGPA(subjects as SubjectGrade[]);
 
       // Create academic transcript record in database
-      const transcript = await this.academicTranscriptRepository.create({
-        studentId,
-        academicYear,
-        semester,
-        grade: student.grade,
-        gpa,
-        subjects: subjects as SubjectGrade[],
-        attendance: attendance as AttendanceRecord,
-        behavior: (behavior as BehaviorRecord) || {
-          conductGrade: 'N/A',
-          incidents: 0,
-          commendations: 0,
+      const transcript = await this.academicTranscriptRepository.create(
+        {
+          studentId,
+          academicYear,
+          semester,
+          grade: student.grade,
+          gpa,
+          subjects: subjects as SubjectGrade[],
+          attendance: attendance as AttendanceRecord,
+          behavior: (behavior as BehaviorRecord) || {
+            conductGrade: 'N/A',
+            incidents: 0,
+            commendations: 0,
+          },
+          importedBy,
+          importedAt: new Date(),
+          importSource: 'API',
         },
-        importedBy,
-        importedAt: new Date(),
-        importSource: 'API',
-      }, { userId: importedBy || 'system', userRole: 'SYSTEM', timestamp: new Date() });
+        {
+          userId: importedBy || 'system',
+          userRole: 'SYSTEM',
+          timestamp: new Date(),
+        },
+      );
 
       this.logger.log(
         `Academic transcript imported: Student ${studentId}, ${academicYear} ${semester}, GPA: ${gpa}, imported by ${importedBy}`,
@@ -133,7 +148,10 @@ export class AcademicTranscriptService {
         updatedAt: transcript.updatedAt || new Date(),
       };
     } catch (error) {
-      this.logger.error(`Error importing academic transcript: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error importing academic transcript: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -170,23 +188,33 @@ export class AcademicTranscriptService {
     if (subjects.length === 0) return 0;
 
     const gradePoints: { [key: string]: number } = {
-      'A+': 4.0, 'A': 4.0, 'A-': 3.7,
-      'B+': 3.3, 'B': 3.0, 'B-': 2.7,
-      'C+': 2.3, 'C': 2.0, 'C-': 1.7,
-      'D+': 1.3, 'D': 1.0, 'D-': 0.7,
-      'F': 0.0,
+      'A+': 4.0,
+      A: 4.0,
+      'A-': 3.7,
+      'B+': 3.3,
+      B: 3.0,
+      'B-': 2.7,
+      'C+': 2.3,
+      C: 2.0,
+      'C-': 1.7,
+      'D+': 1.3,
+      D: 1.0,
+      'D-': 0.7,
+      F: 0.0,
     };
 
     let totalPoints = 0;
     let totalCredits = 0;
 
-    subjects.forEach(subject => {
+    subjects.forEach((subject) => {
       const points = gradePoints[subject.grade] || 0;
       totalPoints += points * subject.credits;
       totalCredits += subject.credits;
     });
 
-    return totalCredits > 0 ? Math.round((totalPoints / totalCredits) * 100) / 100 : 0;
+    return totalCredits > 0
+      ? Math.round((totalPoints / totalCredits) * 100) / 100
+      : 0;
   }
 
   /**
@@ -229,10 +257,11 @@ export class AcademicTranscriptService {
       }
 
       // Query academic transcripts from database
-      const transcriptResults = await this.academicTranscriptRepository.findMany({
-        where: { studentId },
-        orderBy: { academicYear: 'DESC', semester: 'DESC' }
-      });
+      const transcriptResults =
+        await this.academicTranscriptRepository.findMany({
+          where: { studentId },
+          orderBy: { academicYear: 'DESC', semester: 'DESC' },
+        });
       const transcripts = transcriptResults.data;
 
       this.logger.log(
@@ -240,7 +269,7 @@ export class AcademicTranscriptService {
       );
 
       // Convert to AcademicRecord interface
-      return transcripts.map(transcript => ({
+      return transcripts.map((transcript) => ({
         id: transcript.id,
         studentId: transcript.studentId,
         academicYear: transcript.academicYear,
@@ -254,7 +283,10 @@ export class AcademicTranscriptService {
         updatedAt: transcript.updatedAt || new Date(),
       }));
     } catch (error) {
-      this.logger.error(`Error fetching academic history: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error fetching academic history: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -283,7 +315,9 @@ export class AcademicTranscriptService {
    * - More efficient than calling getAcademicHistory repeatedly
    * - Use this for bulk operations like graduating students report
    */
-  async batchGetAcademicHistories(studentIds: string[]): Promise<Map<string, AcademicRecord[]>> {
+  async batchGetAcademicHistories(
+    studentIds: string[],
+  ): Promise<Map<string, AcademicRecord[]>> {
     try {
       if (!studentIds || studentIds.length === 0) {
         return new Map();
@@ -294,22 +328,23 @@ export class AcademicTranscriptService {
       );
 
       // OPTIMIZATION: Single query to fetch all transcripts for all students
-      const transcriptResults = await this.academicTranscriptRepository.findMany({
-        where: {
-          studentId: { in: studentIds }, // Sequelize will translate this to IN clause
-        },
-        orderBy: { academicYear: 'DESC', semester: 'DESC' }
-      });
+      const transcriptResults =
+        await this.academicTranscriptRepository.findMany({
+          where: {
+            studentId: { in: studentIds }, // Sequelize will translate this to IN clause
+          },
+          orderBy: { academicYear: 'DESC', semester: 'DESC' },
+        });
       const allTranscripts = transcriptResults.data;
 
       // Group transcripts by student ID using Map for O(1) lookup
       const transcriptsByStudent = new Map<string, AcademicRecord[]>();
 
       // Initialize map with empty arrays for all student IDs
-      studentIds.forEach(id => transcriptsByStudent.set(id, []));
+      studentIds.forEach((id) => transcriptsByStudent.set(id, []));
 
       // Group transcripts by student
-      allTranscripts.forEach(transcript => {
+      allTranscripts.forEach((transcript) => {
         const studentId = transcript.studentId;
         const academicRecord: AcademicRecord = {
           id: transcript.id,
@@ -337,7 +372,10 @@ export class AcademicTranscriptService {
 
       return transcriptsByStudent;
     } catch (error) {
-      this.logger.error(`Error batch fetching academic histories: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error batch fetching academic histories: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -399,12 +437,18 @@ export class AcademicTranscriptService {
 
       // Calculate summary statistics
       const totalCredits = academicHistory.reduce(
-        (sum, record) => sum + record.subjects.reduce((s, subj) => s + subj.credits, 0),
+        (sum, record) =>
+          sum + record.subjects.reduce((s, subj) => s + subj.credits, 0),
         0,
       );
-      const cumulativeGPA = academicHistory.length > 0
-        ? Math.round((academicHistory.reduce((sum, record) => sum + record.gpa, 0) / academicHistory.length) * 100) / 100
-        : 0;
+      const cumulativeGPA =
+        academicHistory.length > 0
+          ? Math.round(
+              (academicHistory.reduce((sum, record) => sum + record.gpa, 0) /
+                academicHistory.length) *
+                100,
+            ) / 100
+          : 0;
 
       const report = {
         student: {
@@ -451,7 +495,10 @@ export class AcademicTranscriptService {
       // JSON format (default)
       return report;
     } catch (error) {
-      this.logger.error(`Error generating transcript report: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error generating transcript report: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -515,7 +562,9 @@ export class AcademicTranscriptService {
     <p><strong>Total Credits:</strong> ${summary.totalCredits}</p>
   </div>
 
-  ${academicRecords.map((record: any) => `
+  ${academicRecords
+    .map(
+      (record: any) => `
     <div class="record">
       <h3>${record.academicYear} - ${record.semester}</h3>
       <p><strong>Grade Level:</strong> ${record.grade}</p>
@@ -535,7 +584,9 @@ export class AcademicTranscriptService {
             </tr>
           </thead>
           <tbody>
-            ${record.subjects.map((subj: any) => `
+            ${record.subjects
+              .map(
+                (subj: any) => `
               <tr>
                 <td>${subj.subjectName}</td>
                 <td>${subj.teacher || 'N/A'}</td>
@@ -543,12 +594,16 @@ export class AcademicTranscriptService {
                 <td>${subj.percentage}%</td>
                 <td>${subj.credits}</td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </tbody>
         </table>
       </div>
     </div>
-  `).join('')}
+  `,
+    )
+    .join('')}
 </body>
 </html>
     `.trim();
@@ -589,14 +644,19 @@ export class AcademicTranscriptService {
    *
    * @see {@link importTranscript} for transcript import logic
    */
-  async syncWithSIS(studentId: string, sisApiEndpoint: string): Promise<boolean> {
+  async syncWithSIS(
+    studentId: string,
+    sisApiEndpoint: string,
+  ): Promise<boolean> {
     try {
       // In production, this would:
       // 1. Call external SIS API
       // 2. Parse response
       // 3. Import transcript data
 
-      this.logger.log(`Syncing with external SIS for student ${studentId} at ${sisApiEndpoint}`);
+      this.logger.log(
+        `Syncing with external SIS for student ${studentId} at ${sisApiEndpoint}`,
+      );
 
       // Placeholder for actual API integration
       const mockTranscriptData: TranscriptImportDto = {
@@ -604,9 +664,30 @@ export class AcademicTranscriptService {
         academicYear: '2024-2025',
         semester: 'Fall',
         subjects: [
-          { subjectName: 'Mathematics', subjectCode: 'MATH101', grade: 'A', percentage: 92, credits: 3, teacher: 'Ms. Johnson' },
-          { subjectName: 'English', subjectCode: 'ENG101', grade: 'B+', percentage: 87, credits: 3, teacher: 'Mr. Smith' },
-          { subjectName: 'Science', subjectCode: 'SCI101', grade: 'A-', percentage: 90, credits: 3, teacher: 'Dr. Williams' },
+          {
+            subjectName: 'Mathematics',
+            subjectCode: 'MATH101',
+            grade: 'A',
+            percentage: 92,
+            credits: 3,
+            teacher: 'Ms. Johnson',
+          },
+          {
+            subjectName: 'English',
+            subjectCode: 'ENG101',
+            grade: 'B+',
+            percentage: 87,
+            credits: 3,
+            teacher: 'Mr. Smith',
+          },
+          {
+            subjectName: 'Science',
+            subjectCode: 'SCI101',
+            grade: 'A-',
+            percentage: 90,
+            credits: 3,
+            teacher: 'Dr. Williams',
+          },
         ],
         attendance: {
           totalDays: 180,
@@ -627,7 +708,10 @@ export class AcademicTranscriptService {
 
       return true;
     } catch (error) {
-      this.logger.error(`Error syncing with SIS: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error syncing with SIS: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -679,8 +763,10 @@ export class AcademicTranscriptService {
       }
 
       // Calculate trends
-      const gpaTrend = academicHistory.map(record => record.gpa);
-      const attendanceTrend = academicHistory.map(record => record.attendance.attendanceRate);
+      const gpaTrend = academicHistory.map((record) => record.gpa);
+      const attendanceTrend = academicHistory.map(
+        (record) => record.attendance.attendanceRate,
+      );
 
       const analysis = {
         gpa: {
@@ -690,17 +776,24 @@ export class AcademicTranscriptService {
         },
         attendance: {
           current: attendanceTrend[attendanceTrend.length - 1],
-          average: attendanceTrend.reduce((a, b) => a + b, 0) / attendanceTrend.length,
+          average:
+            attendanceTrend.reduce((a, b) => a + b, 0) / attendanceTrend.length,
           trend: this.calculateTrend(attendanceTrend),
         },
-        recommendations: this.generateRecommendations(gpaTrend, attendanceTrend),
+        recommendations: this.generateRecommendations(
+          gpaTrend,
+          attendanceTrend,
+        ),
       };
 
       this.logger.log(`Performance trends analyzed for student ${studentId}`);
 
       return analysis;
     } catch (error) {
-      this.logger.error(`Error analyzing performance trends: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error analyzing performance trends: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -724,7 +817,9 @@ export class AcademicTranscriptService {
    *
    * @private
    */
-  private calculateTrend(values: number[]): 'improving' | 'declining' | 'stable' {
+  private calculateTrend(
+    values: number[],
+  ): 'improving' | 'declining' | 'stable' {
     if (values.length < 2) return 'stable';
 
     const firstHalf = values.slice(0, Math.floor(values.length / 2));
@@ -760,7 +855,10 @@ export class AcademicTranscriptService {
    *
    * @private
    */
-  private generateRecommendations(gpaTrend: number[], attendanceTrend: number[]): string[] {
+  private generateRecommendations(
+    gpaTrend: number[],
+    attendanceTrend: number[],
+  ): string[] {
     const recommendations: string[] = [];
 
     const currentGPA = gpaTrend[gpaTrend.length - 1];
@@ -771,11 +869,15 @@ export class AcademicTranscriptService {
     }
 
     if (currentAttendance < 90) {
-      recommendations.push('Attendance is below recommended levels - investigate potential health or social issues');
+      recommendations.push(
+        'Attendance is below recommended levels - investigate potential health or social issues',
+      );
     }
 
     if (this.calculateTrend(gpaTrend) === 'declining') {
-      recommendations.push('Academic performance is declining - schedule conference with parents and teachers');
+      recommendations.push(
+        'Academic performance is declining - schedule conference with parents and teachers',
+      );
     }
 
     return recommendations;

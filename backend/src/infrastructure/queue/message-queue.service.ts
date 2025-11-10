@@ -4,28 +4,21 @@
  * @description Service for managing message-related queues with Bull and Redis
  */
 
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import type { Queue, Job } from 'bull';
-import { QueueName, JobPriority } from './enums';
-import { QueueConfigService, QUEUE_CONFIGS } from './queue.config';
+import type { Job, Queue } from 'bull';
+import { JobPriority, QueueName } from './enums';
+import { QUEUE_CONFIGS, QueueConfigService } from './queue.config';
 import {
-  SendMessageJobDto,
+  BatchMessageJobDto,
   DeliveryConfirmationJobDto,
-  NotificationJobDto,
   EncryptionJobDto,
   IndexingJobDto,
-  BatchMessageJobDto,
   MessageCleanupJobDto,
+  NotificationJobDto,
+  SendMessageJobDto,
 } from './dtos';
-import {
-  QueueJobOptions,
-  JobResult,
-  QueueMetrics,
-  QueueStats,
-  QueueHealth,
-  FailedJobInfo,
-} from './interfaces';
+import { FailedJobInfo, QueueHealth, QueueJobOptions, QueueMetrics, QueueStats } from './interfaces';
 
 /**
  * Message Queue Service
@@ -257,9 +250,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_CLEANUP, options),
     );
 
-    this.logger.log(
-      `Cleanup job added: ${job.id} (type: ${data.cleanupType})`,
-    );
+    this.logger.log(`Cleanup job added: ${job.id} (type: ${data.cleanupType})`);
 
     return job;
   }
@@ -270,7 +261,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   private buildJobOptions(
     queueName: QueueName,
     options?: QueueJobOptions,
-  ): any {
+  ): JobOptions {
     const config = QUEUE_CONFIGS[queueName];
     const priorityOptions = options?.priority
       ? this.queueConfig.getJobOptionsForPriority(options.priority)
@@ -279,24 +270,30 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     return {
       priority: options?.priority || JobPriority.NORMAL,
       delay: options?.delay || 0,
-      attempts: options?.attempts || (priorityOptions as any)?.attempts || config.maxAttempts,
+      attempts:
+        options?.attempts ||
+        (priorityOptions as any)?.attempts ||
+        config.maxAttempts,
       timeout: options?.timeout || config.timeout,
-      backoff: options?.backoff || (priorityOptions as any)?.backoff || {
-        type: config.backoffType,
-        delay: config.backoffDelay,
-      },
-      removeOnComplete: options?.removeOnComplete !== undefined
-        ? options.removeOnComplete
-        : {
-            count: config.removeOnCompleteCount,
-            age: config.removeOnCompleteAge,
-          },
-      removeOnFail: options?.removeOnFail !== undefined
-        ? options.removeOnFail
-        : {
-            count: config.removeOnFailCount,
-            age: config.removeOnFailAge,
-          },
+      backoff: options?.backoff ||
+        (priorityOptions as any)?.backoff || {
+          type: config.backoffType,
+          delay: config.backoffDelay,
+        },
+      removeOnComplete:
+        options?.removeOnComplete !== undefined
+          ? options.removeOnComplete
+          : {
+              count: config.removeOnCompleteCount,
+              age: config.removeOnCompleteAge,
+            },
+      removeOnFail:
+        options?.removeOnFail !== undefined
+          ? options.removeOnFail
+          : {
+              count: config.removeOnFailCount,
+              age: config.removeOnFailAge,
+            },
       repeat: options?.repeat,
     };
   }
@@ -307,14 +304,15 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   async getQueueStats(queueName: QueueName): Promise<QueueStats> {
     const queue = this.getQueue(queueName);
 
-    const [waiting, active, completed, failed, delayed, paused] = await Promise.all([
-      queue.getWaitingCount(),
-      queue.getActiveCount(),
-      queue.getCompletedCount(),
-      queue.getFailedCount(),
-      queue.getDelayedCount(),
-      queue.getPausedCount(),
-    ]);
+    const [waiting, active, completed, failed, delayed, paused] =
+      await Promise.all([
+        queue.getWaitingCount(),
+        queue.getActiveCount(),
+        queue.getCompletedCount(),
+        queue.getFailedCount(),
+        queue.getDelayedCount(),
+        queue.getPausedCount(),
+      ]);
 
     return {
       name: queueName,

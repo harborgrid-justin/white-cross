@@ -5,17 +5,22 @@
  */
 
 import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
   CallHandler,
+  ExecutionContext,
   HttpException,
   HttpStatus,
+  Injectable,
   Logger,
+  NestInterceptor,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { QueryError, ValidationError as SequelizeValidationError, UniqueConstraintError, ForeignKeyConstraintError } from 'sequelize';
+import {
+  ForeignKeyConstraintError,
+  QueryError,
+  UniqueConstraintError,
+  ValidationError as SequelizeValidationError,
+} from 'sequelize';
 
 /**
  * Error Mapping Interceptor
@@ -135,7 +140,10 @@ export class ErrorMappingInterceptor implements NestInterceptor {
     }
 
     // Database Connection Error
-    if (error.name === 'SequelizeConnectionError' || error.name === 'SequelizeConnectionRefusedError') {
+    if (
+      error.name === 'SequelizeConnectionError' ||
+      error.name === 'SequelizeConnectionRefusedError'
+    ) {
       return new HttpException(
         {
           error: 'Service Unavailable',
@@ -171,8 +179,10 @@ export class ErrorMappingInterceptor implements NestInterceptor {
     }
 
     // Unauthorized (authentication errors)
-    if (error.message?.toLowerCase().includes('unauthorized') ||
-        error.message?.toLowerCase().includes('authentication')) {
+    if (
+      error.message?.toLowerCase().includes('unauthorized') ||
+      error.message?.toLowerCase().includes('authentication')
+    ) {
       return new HttpException(
         {
           error: 'Unauthorized',
@@ -184,8 +194,10 @@ export class ErrorMappingInterceptor implements NestInterceptor {
     }
 
     // Forbidden (authorization errors)
-    if (error.message?.toLowerCase().includes('forbidden') ||
-        error.message?.toLowerCase().includes('permission')) {
+    if (
+      error.message?.toLowerCase().includes('forbidden') ||
+      error.message?.toLowerCase().includes('permission')
+    ) {
       return new HttpException(
         {
           error: 'Forbidden',
@@ -200,9 +212,10 @@ export class ErrorMappingInterceptor implements NestInterceptor {
     return new HttpException(
       {
         error: 'Internal Server Error',
-        message: process.env.NODE_ENV === 'production'
-          ? 'An unexpected error occurred'
-          : error.message,
+        message:
+          process.env.NODE_ENV === 'production'
+            ? 'An unexpected error occurred'
+            : error.message,
         errorCode: 'SYSTEM_001',
       },
       HttpStatus.INTERNAL_SERVER_ERROR,

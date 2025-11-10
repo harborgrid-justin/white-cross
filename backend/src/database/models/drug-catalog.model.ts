@@ -1,22 +1,19 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  HasMany,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
-  UpdatedAt,
-  CreatedAt
+  Column,
+  DataType,
+  Default,
+  HasMany,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-
 
 export interface DrugCatalogAttributes {
   id: string;
@@ -41,10 +38,10 @@ export interface DrugCatalogAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'drug_catalog',
@@ -56,39 +53,42 @@ export interface DrugCatalogAttributes {
       unique: true,
       where: {
         rxnormId: {
-          [Op.ne]: null
-  }
-  }
-  },
+          [Op.ne]: null,
+        },
+      },
+    },
     {
       fields: ['rxnormCode'],
       unique: true,
       where: {
         rxnormCode: {
-          [Op.ne]: null
-  }
-  }
-  },
+          [Op.ne]: null,
+        },
+      },
+    },
     {
-      fields: ['genericName']
-  },
+      fields: ['genericName'],
+    },
     {
-      fields: ['drugClass']
-  },
+      fields: ['drugClass'],
+    },
     {
-      fields: ['isActive']
-  },
+      fields: ['isActive'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_drug_catalog_created_at'
+      name: 'idx_drug_catalog_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_drug_catalog_updated_at'
-    }
-  ]
-  })
-export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCatalogAttributes {
+      name: 'idx_drug_catalog_updated_at',
+    },
+  ],
+})
+export class DrugCatalog
+  extends Model<DrugCatalogAttributes>
+  implements DrugCatalogAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -97,7 +97,7 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   @AllowNull
   @Column({
     type: DataType.STRING(50),
-    unique: true
+    unique: true,
   })
   @Index
   rxnormId?: string;
@@ -105,27 +105,27 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   @AllowNull
   @Column({
     type: DataType.STRING(50),
-    unique: true
+    unique: true,
   })
   @Index
   rxnormCode?: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   @Index
   genericName: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   brandNames?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.STRING(100)
+    type: DataType.STRING(100),
   })
   @Index
   drugClass?: string;
@@ -133,38 +133,38 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   fdaApproved: boolean;
 
   @AllowNull
   @Column({
-    type: DataType.JSONB
+    type: DataType.JSONB,
   })
   commonDoses?: Record<string, any>;
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   sideEffects?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   contraindications?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   warnings?: string[];
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   @Index
   isActive: boolean;
@@ -176,15 +176,23 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   declare updatedAt?: Date;
 
   // Relationships
-  @HasMany(() => require('./drug-interaction.model').DrugInteraction, { foreignKey: 'drug1Id', as: 'interactionsAsDrug1' })
+  @HasMany(() => require('./drug-interaction.model').DrugInteraction, {
+    foreignKey: 'drug1Id',
+    as: 'interactionsAsDrug1',
+  })
   interactionsAsDrug1?: any[];
 
-  @HasMany(() => require('./drug-interaction.model').DrugInteraction, { foreignKey: 'drug2Id', as: 'interactionsAsDrug2' })
+  @HasMany(() => require('./drug-interaction.model').DrugInteraction, {
+    foreignKey: 'drug2Id',
+    as: 'interactionsAsDrug2',
+  })
   interactionsAsDrug2?: any[];
 
-  @HasMany(() => require('./student-drug-allergy.model').StudentDrugAllergy, { foreignKey: 'drugId', as: 'allergies' })
+  @HasMany(() => require('./student-drug-allergy.model').StudentDrugAllergy, {
+    foreignKey: 'drugId',
+    as: 'allergies',
+  })
   allergies?: any[];
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -192,7 +200,9 @@ export class DrugCatalog extends Model<DrugCatalogAttributes> implements DrugCat
   static async auditPHIAccess(instance: DrugCatalog) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] DrugCatalog ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] DrugCatalog ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

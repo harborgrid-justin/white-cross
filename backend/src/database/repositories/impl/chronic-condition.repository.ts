@@ -23,11 +23,11 @@ export class ChronicConditionRepository {
   }
 
   async create(data: Partial<ChronicCondition>): Promise<ChronicCondition> {
-    return this.chronicConditionModel.create(data as any);
+    return this.chronicConditionModel.create(data);
   }
 
   async update(id: string, data: Partial<ChronicCondition>): Promise<[number]> {
-    return this.chronicConditionModel.update(data as any, {
+    return this.chronicConditionModel.update(data, {
       where: { id },
     });
   }
@@ -41,14 +41,14 @@ export class ChronicConditionRepository {
   async findByStudent(studentId: string): Promise<ChronicCondition[]> {
     return this.chronicConditionModel.findAll({
       where: { studentId, isActive: true },
-      order: [['diagnosedDate', 'DESC']]
+      order: [['diagnosedDate', 'DESC']],
     });
   }
 
   async findBySeverity(severity: string): Promise<ChronicCondition[]> {
     return this.chronicConditionModel.findAll({
       where: { severity, isActive: true },
-      order: [['condition', 'ASC']]
+      order: [['condition', 'ASC']],
     });
   }
 }

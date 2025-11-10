@@ -2,11 +2,11 @@
  * @fileoverview Central Models Index for Circular Dependency Prevention
  * @module database/models/index
  * @description Provides ordered model imports to prevent circular dependencies
- * 
+ *
  * IMPORTANT: Models are exported in dependency order to prevent circular imports.
  * Base models (with no foreign keys) are exported first, followed by models
  * with foreign key dependencies in proper order.
- * 
+ *
  * Sequelize v6 Compliance:
  * - All associations use proper syntax with foreignKey and as options
  * - No deprecated API usage (findById, string-based includes, etc.)
@@ -97,8 +97,18 @@ export * from './push-notification.model';
 export * from './device-token.model';
 
 // Communication models
+export { Conversation } from './conversation.model';
+export type { ConversationAttributes, ConversationCreationAttributes } from './conversation.model';
+export { ConversationType } from './conversation.model';
+export { ConversationParticipant } from './conversation-participant.model';
+export type { ConversationParticipantAttributes, ConversationParticipantCreationAttributes } from './conversation-participant.model';
+export { ParticipantRole } from './conversation-participant.model';
 export { Message } from './message.model';
 export { MessageDelivery } from './message-delivery.model';
+export { MessageRead } from './message-read.model';
+export type { MessageReadAttributes, MessageReadCreationAttributes } from './message-read.model';
+export { MessageReaction } from './message-reaction.model';
+export type { MessageReactionAttributes, MessageReactionCreationAttributes } from './message-reaction.model';
 
 // Compliance and audit
 export * from './audit-log.model';
@@ -138,6 +148,8 @@ export type { SyncQueueItemAttributes } from './sync-queue-item.model';
 export { SyncConflict } from './sync-conflict.model';
 export type { SyncConflictAttributes } from './sync-conflict.model';
 export { SISSyncConflict } from './sis-sync-conflict.model';
+export { CacheEntry } from './cache-entry.model';
+export type { CacheEntryAttributes, CacheEntryCreationAttributes } from './cache-entry.model';
 
 // Configuration and maintenance
 export * from './configuration-history.model';

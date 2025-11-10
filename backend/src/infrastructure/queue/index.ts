@@ -55,3 +55,6 @@ export {
   BatchMessageProcessor,
   MessageCleanupProcessor,
 } from './message-queue.processor';
+
+export * from './message-queue.processor.complete';
+export * from './message-queue.processor';

@@ -1,16 +1,15 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum PolicyCategory {
@@ -20,14 +19,14 @@ export enum PolicyCategory {
   DATA_RETENTION = 'DATA_RETENTION',
   INCIDENT_RESPONSE = 'INCIDENT_RESPONSE',
   ACCESS_CONTROL = 'ACCESS_CONTROL',
-  TRAINING = 'TRAINING'
+  TRAINING = 'TRAINING',
 }
 
 export enum PolicyStatus {
   DRAFT = 'DRAFT',
   ACTIVE = 'ACTIVE',
   ARCHIVED = 'ARCHIVED',
-  SUPERSEDED = 'SUPERSEDED'
+  SUPERSEDED = 'SUPERSEDED',
 }
 
 export interface PolicyDocumentAttributes {
@@ -48,10 +47,10 @@ export interface PolicyDocumentAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'policy_documents',
@@ -59,31 +58,34 @@ export interface PolicyDocumentAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['category']
-  },
+      fields: ['category'],
+    },
     {
-      fields: ['status']
-  },
+      fields: ['status'],
+    },
     {
-      fields: ['effectiveDate']
-  },
+      fields: ['effectiveDate'],
+    },
     {
-      fields: ['reviewDate']
-  },
+      fields: ['reviewDate'],
+    },
     {
-      fields: ['approvedBy']
-  },
+      fields: ['approvedBy'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_policy_document_created_at'
+      name: 'idx_policy_document_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_policy_document_updated_at'
-    }
-  ]
-  })
-export class PolicyDocument extends Model<PolicyDocumentAttributes> implements PolicyDocumentAttributes {
+      name: 'idx_policy_document_updated_at',
+    },
+  ],
+})
+export class PolicyDocument
+  extends Model<PolicyDocumentAttributes>
+  implements PolicyDocumentAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -91,35 +93,35 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(PolicyCategory)]
+      isIn: [Object.values(PolicyCategory)],
     },
-    allowNull: false
+    allowNull: false,
   })
   category: PolicyCategory;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   content: string;
 
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    defaultValue: '1.0'
+    defaultValue: '1.0',
   })
   declare version: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   effectiveDate: Date;
 
@@ -130,10 +132,10 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(PolicyStatus)]
+      isIn: [Object.values(PolicyStatus)],
     },
     allowNull: false,
-    defaultValue: PolicyStatus.DRAFT
+    defaultValue: PolicyStatus.DRAFT,
   })
   status: PolicyStatus;
 
@@ -151,14 +153,15 @@ export class PolicyDocument extends Model<PolicyDocumentAttributes> implements P
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PolicyDocument) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] PolicyDocument ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] PolicyDocument ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

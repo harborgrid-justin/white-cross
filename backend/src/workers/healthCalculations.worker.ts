@@ -44,7 +44,9 @@ function calculateBMI(heightCm: number, weightKg: number): number {
  * @param records - Array of height/weight pairs
  * @returns Array of BMI values
  */
-function batchCalculateBMI(records: Array<{ height: number; weight: number }>): number[] {
+function batchCalculateBMI(
+  records: Array<{ height: number; weight: number }>,
+): number[] {
   return records.map((r) => calculateBMI(r.height, r.weight));
 }
 
@@ -65,15 +67,15 @@ function analyzeVitalTrends(vitals: Array<{ date: Date; value: number }>) {
 
   // Sort by date
   const sorted = vitals.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 
   // Calculate average
   const average = sorted.reduce((sum, v) => sum + v.value, 0) / sorted.length;
 
   // Simple linear trend analysis
-  const firstValue = sorted[0].value;
-  const lastValue = sorted[sorted.length - 1].value;
+  const firstValue = sorted[0]!.value;
+  const lastValue = sorted[sorted.length - 1]!.value;
   const changeRate = ((lastValue - firstValue) / firstValue) * 100;
 
   let trend: 'increasing' | 'decreasing' | 'stable' = 'stable';
@@ -115,7 +117,8 @@ function calculateAggregations(values: number[]) {
 
   // Calculate median
   const mid = Math.floor(count / 2);
-  const median = count % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+  const median =
+    count % 2 === 0 ? (sorted[mid - 1]! + sorted[mid]!) / 2 : sorted[mid]!;
 
   // Calculate standard deviation
   const squaredDiffs = values.map((v) => Math.pow(v - average, 2));

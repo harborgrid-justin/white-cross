@@ -6,12 +6,12 @@
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
-import { Queue, Job } from 'bullmq';
+import { Job, Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
 import {
+  EmailPriority,
   EmailQueueJobData,
   EmailQueueJobResult,
-  EmailPriority,
   SendEmailDto,
 } from './dto/email.dto';
 
@@ -376,7 +376,10 @@ export class EmailQueueService implements OnModuleInit {
    * Health check for the queue
    * @returns Health status
    */
-  async healthCheck(): Promise<{ healthy: boolean; stats: Record<string, number> }> {
+  async healthCheck(): Promise<{
+    healthy: boolean;
+    stats: Record<string, number>;
+  }> {
     try {
       const stats = await this.getQueueStats();
       const healthy = stats.active >= 0; // Basic check - queue is responding

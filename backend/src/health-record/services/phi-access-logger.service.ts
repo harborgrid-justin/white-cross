@@ -12,7 +12,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { AuditLog, ComplianceType, AuditSeverity } from '../../database/models/audit-log.model';
+import { AuditLog, AuditSeverity, ComplianceType } from '../../database/models/audit-log.model';
 import { AuditAction } from '../../database/types/database.enums';
 import { PhiDisclosureAudit } from '../../database/models/phi-disclosure-audit.model';
 
@@ -66,9 +66,12 @@ export class PHIAccessLogger implements OnModuleDestroy {
 
   constructor(
     @InjectModel(AuditLog) private readonly auditLogModel: typeof AuditLog,
-    @InjectModel(PhiDisclosureAudit) private readonly phiDisclosureAuditModel: typeof PhiDisclosureAudit,
+    @InjectModel(PhiDisclosureAudit)
+    private readonly phiDisclosureAuditModel: typeof PhiDisclosureAudit,
   ) {
-    this.logger.log('PHI Access Logger Service initialized with database persistence');
+    this.logger.log(
+      'PHI Access Logger Service initialized with database persistence',
+    );
   }
 
   /**
@@ -90,7 +93,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
           sensitivityLevel: entry.sensitivityLevel,
           ipAddress: entry.ipAddress,
           userAgent: entry.userAgent,
-          success: entry.success
+          success: entry.success,
         },
         ipAddress: entry.ipAddress,
         userAgent: entry.userAgent,
@@ -103,8 +106,8 @@ export class PHIAccessLogger implements OnModuleDestroy {
           correlationId: entry.correlationId,
           studentId: entry.studentId,
           dataTypes: entry.dataTypes,
-          sensitivityLevel: entry.sensitivityLevel
-        }
+          sensitivityLevel: entry.sensitivityLevel,
+        },
       };
 
       await this.auditLogModel.create(auditEntry);
@@ -124,9 +127,11 @@ export class PHIAccessLogger implements OnModuleDestroy {
 
       // Log to compliance system (placeholder for actual implementation)
       await this.logToComplianceSystem(entry);
-
     } catch (error) {
-      this.logger.error(`Failed to log PHI access for correlationId ${entry.correlationId}:`, error);
+      this.logger.error(
+        `Failed to log PHI access for correlationId ${entry.correlationId}:`,
+        error,
+      );
       // Fallback to console logging if database logging fails
       console.error('PHI ACCESS LOGGING FAILURE:', entry);
     }
@@ -148,7 +153,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
           incidentType: incident.incidentType,
           operation: incident.operation,
           errorMessage: incident.errorMessage,
-          severity: incident.severity
+          severity: incident.severity,
         },
         ipAddress: incident.ipAddress,
         userAgent: null,
@@ -159,8 +164,8 @@ export class PHIAccessLogger implements OnModuleDestroy {
         tags: ['security-incident', incident.severity.toLowerCase()],
         metadata: {
           incidentType: incident.incidentType,
-          correlationId: incident.correlationId
-        }
+          correlationId: incident.correlationId,
+        },
       };
 
       await this.auditLogModel.create(auditEntry);
@@ -171,9 +176,11 @@ export class PHIAccessLogger implements OnModuleDestroy {
 
       // Additional security monitoring could be triggered here
       await this.triggerSecurityAlert(incident);
-
     } catch (error) {
-      this.logger.error(`Failed to log security incident for correlationId ${incident.correlationId}:`, error);
+      this.logger.error(
+        `Failed to log security incident for correlationId ${incident.correlationId}:`,
+        error,
+      );
       // Fallback logging
       console.error('SECURITY INCIDENT LOGGING FAILURE:', incident);
     }
@@ -186,14 +193,14 @@ export class PHIAccessLogger implements OnModuleDestroy {
     startDate: Date,
     endDate: Date,
     userId?: string,
-    studentId?: string
+    studentId?: string,
   ): Promise<PHIAccessStatistics> {
     try {
       const whereClause: any = {
         createdAt: {
-          [Op.between]: [startDate, endDate]
+          [Op.between]: [startDate, endDate],
         },
-        entityType: 'PHI_ACCESS'
+        entityType: 'PHI_ACCESS',
       };
 
       if (userId) {
@@ -206,12 +213,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
 
       const auditLogs = await this.auditLogModel.findAll({
         where: whereClause,
-        attributes: [
-          'userId',
-          'entityId',
-          'changes',
-          'action'
-        ]
+        attributes: ['userId', 'entityId', 'changes', 'action'],
       });
 
       // Aggregate statistics
@@ -220,13 +222,14 @@ export class PHIAccessLogger implements OnModuleDestroy {
       const operationCounts: Record<string, number> = {};
       const dataTypeCounts: Record<string, number> = {};
 
-      auditLogs.forEach(log => {
+      auditLogs.forEach((log) => {
         if (log.userId) uniqueUsers.add(log.userId);
         if (log.entityId) uniqueStudents.add(log.entityId);
 
-        const changes = log.changes as any;
+        const changes = log.changes;
         if (changes?.operation) {
-          operationCounts[changes.operation] = (operationCounts[changes.operation] || 0) + 1;
+          operationCounts[changes.operation] =
+            (operationCounts[changes.operation] || 0) + 1;
         }
 
         if (changes?.dataTypes) {
@@ -240,11 +243,11 @@ export class PHIAccessLogger implements OnModuleDestroy {
       const securityIncidents = await this.auditLogModel.count({
         where: {
           createdAt: {
-            [Op.between]: [startDate, endDate]
+            [Op.between]: [startDate, endDate],
           },
           action: AuditAction.UPDATE, // Using UPDATE for security incident logging
-          entityType: 'PHI_SECURITY'
-        }
+          entityType: 'PHI_SECURITY',
+        },
       });
 
       return {
@@ -256,10 +259,9 @@ export class PHIAccessLogger implements OnModuleDestroy {
         securityIncidents,
         period: {
           start: startDate,
-          end: endDate
-        }
+          end: endDate,
+        },
       };
-
     } catch (error) {
       this.logger.error('Failed to retrieve PHI access statistics:', error);
       return {
@@ -269,7 +271,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
         operationCounts: {},
         dataTypeCounts: {},
         securityIncidents: 0,
-        period: { start: startDate, end: endDate }
+        period: { start: startDate, end: endDate },
       };
     }
   }
@@ -281,11 +283,11 @@ export class PHIAccessLogger implements OnModuleDestroy {
     limit: number = 100,
     offset: number = 0,
     userId?: string,
-    studentId?: string
+    studentId?: string,
   ): Promise<PHIAccessLogEntry[]> {
     try {
       const whereClause: any = {
-        entityType: 'PHI_ACCESS'
+        entityType: 'PHI_ACCESS',
       };
 
       if (userId) {
@@ -300,11 +302,11 @@ export class PHIAccessLogger implements OnModuleDestroy {
         where: whereClause,
         order: [['createdAt', 'DESC']],
         limit,
-        offset
+        offset,
       });
 
-      return auditLogs.map(log => {
-        const changes = log.changes as any;
+      return auditLogs.map((log) => {
+        const changes = log.changes;
         return {
           correlationId: changes?.correlationId || log.id || '',
           timestamp: log.createdAt || new Date(),
@@ -316,10 +318,9 @@ export class PHIAccessLogger implements OnModuleDestroy {
           sensitivityLevel: changes?.sensitivityLevel || 'PHI',
           ipAddress: changes?.ipAddress || log.ipAddress || '',
           userAgent: changes?.userAgent || log.userAgent || '',
-          success: changes?.success !== false
+          success: changes?.success !== false,
         };
       });
-
     } catch (error) {
       this.logger.error('Failed to retrieve recent PHI access logs:', error);
       return [];
@@ -335,7 +336,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
     changes?: any,
     performedBy?: string,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<void> {
     try {
       await this.phiDisclosureAuditModel.create({
@@ -344,13 +345,17 @@ export class PHIAccessLogger implements OnModuleDestroy {
         changes,
         performedBy: performedBy || 'system',
         ipAddress,
-        userAgent
+        userAgent,
       });
 
-      this.logger.log(`PHI disclosure logged: ${disclosureId}, action: ${action}`);
-
+      this.logger.log(
+        `PHI disclosure logged: ${disclosureId}, action: ${action}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to log PHI disclosure for ${disclosureId}:`, error);
+      this.logger.error(
+        `Failed to log PHI disclosure for ${disclosureId}:`,
+        error,
+      );
     }
   }
 
@@ -367,7 +372,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
   }): Promise<PHIAccessLogEntry[]> {
     try {
       const whereClause: any = {
-        entityType: 'PHI_ACCESS'
+        entityType: 'PHI_ACCESS',
       };
 
       if (filters.userId) {
@@ -391,11 +396,11 @@ export class PHIAccessLogger implements OnModuleDestroy {
       const auditLogs = await this.auditLogModel.findAll({
         where: whereClause,
         order: [['createdAt', 'DESC']],
-        limit: filters.limit || 100
+        limit: filters.limit || 100,
       });
 
-      return auditLogs.map(log => {
-        const changes = log.changes as any;
+      return auditLogs.map((log) => {
+        const changes = log.changes;
         return {
           correlationId: changes?.correlationId || log.id || '',
           timestamp: log.createdAt || new Date(),
@@ -407,10 +412,9 @@ export class PHIAccessLogger implements OnModuleDestroy {
           sensitivityLevel: changes?.sensitivityLevel || 'PHI',
           ipAddress: changes?.ipAddress || log.ipAddress || '',
           userAgent: changes?.userAgent || log.userAgent || '',
-          success: changes?.success !== false
+          success: changes?.success !== false,
         };
       });
-
     } catch (error) {
       this.logger.error('Failed to search PHI access logs:', error);
       return [];
@@ -420,19 +424,21 @@ export class PHIAccessLogger implements OnModuleDestroy {
   /**
    * Get security incidents for compliance review
    */
-  async getSecurityIncidents(limit: number = 50): Promise<SecurityIncidentEntry[]> {
+  async getSecurityIncidents(
+    limit: number = 50,
+  ): Promise<SecurityIncidentEntry[]> {
     try {
       const auditLogs = await this.auditLogModel.findAll({
         where: {
           entityType: 'PHI_SECURITY',
-          action: AuditAction.UPDATE // Security incidents are logged as UPDATE actions
+          action: AuditAction.UPDATE, // Security incidents are logged as UPDATE actions
         },
         order: [['createdAt', 'DESC']],
-        limit
+        limit,
       });
 
-      return auditLogs.map(log => {
-        const changes = log.changes as any;
+      return auditLogs.map((log) => {
+        const changes = log.changes;
         return {
           correlationId: changes?.correlationId || log.id || '',
           timestamp: log.createdAt || new Date(),
@@ -441,10 +447,9 @@ export class PHIAccessLogger implements OnModuleDestroy {
           ipAddress: log.ipAddress || '',
           operation: changes?.operation || 'UNKNOWN',
           errorMessage: changes?.errorMessage || '',
-          severity: changes?.severity || 'MEDIUM'
+          severity: changes?.severity || 'MEDIUM',
         };
       });
-
     } catch (error) {
       this.logger.error('Failed to retrieve security incidents:', error);
       return [];
@@ -454,7 +459,10 @@ export class PHIAccessLogger implements OnModuleDestroy {
   /**
    * Generate comprehensive compliance report
    */
-  async generateComplianceReport(startDate: Date, endDate: Date): Promise<{
+  async generateComplianceReport(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{
     phiAccessSummary: PHIAccessStatistics;
     securityIncidents: SecurityIncidentEntry[];
     complianceScore: number;
@@ -463,7 +471,10 @@ export class PHIAccessLogger implements OnModuleDestroy {
   }> {
     try {
       // Get PHI access statistics
-      const phiAccessSummary = await this.getPHIAccessStatistics(startDate, endDate);
+      const phiAccessSummary = await this.getPHIAccessStatistics(
+        startDate,
+        endDate,
+      );
 
       // Get security incidents
       const securityIncidents = await this.getSecurityIncidents(100);
@@ -476,23 +487,33 @@ export class PHIAccessLogger implements OnModuleDestroy {
       if (securityIncidents.length > 0) {
         const deduction = Math.min(securityIncidents.length * 5, 40);
         complianceScore -= deduction;
-        recommendations.push(`Address ${securityIncidents.length} security incidents to improve compliance score`);
+        recommendations.push(
+          `Address ${securityIncidents.length} security incidents to improve compliance score`,
+        );
       }
 
       // Check for high-frequency access patterns
       if (phiAccessSummary.totalAccesses > 1000) {
         complianceScore -= 10;
-        recommendations.push('Implement rate limiting for high-volume PHI access');
+        recommendations.push(
+          'Implement rate limiting for high-volume PHI access',
+        );
       }
 
       // Check for lack of audit coverage
-      if (phiAccessSummary.totalAccesses === 0 && securityIncidents.length === 0) {
+      if (
+        phiAccessSummary.totalAccesses === 0 &&
+        securityIncidents.length === 0
+      ) {
         complianceScore -= 20;
-        recommendations.push('Ensure audit logging is properly configured and active');
+        recommendations.push(
+          'Ensure audit logging is properly configured and active',
+        );
       }
 
       // Check for sensitive PHI access patterns
-      const sensitiveAccessCount = phiAccessSummary.dataTypeCounts['SENSITIVE_PHI'] || 0;
+      const sensitiveAccessCount =
+        phiAccessSummary.dataTypeCounts['SENSITIVE_PHI'] || 0;
       if (sensitiveAccessCount > phiAccessSummary.totalAccesses * 0.1) {
         complianceScore -= 15;
         recommendations.push('Review access controls for sensitive PHI data');
@@ -503,9 +524,8 @@ export class PHIAccessLogger implements OnModuleDestroy {
         securityIncidents,
         complianceScore: Math.max(complianceScore, 0),
         recommendations,
-        period: { start: startDate, end: endDate }
+        period: { start: startDate, end: endDate },
       };
-
     } catch (error) {
       this.logger.error('Failed to generate compliance report:', error);
       return {
@@ -516,12 +536,14 @@ export class PHIAccessLogger implements OnModuleDestroy {
           operationCounts: {},
           dataTypeCounts: {},
           securityIncidents: 0,
-          period: { start: startDate, end: endDate }
+          period: { start: startDate, end: endDate },
         },
         securityIncidents: [],
         complianceScore: 0,
-        recommendations: ['Unable to generate compliance report due to system error'],
-        period: { start: startDate, end: endDate }
+        recommendations: [
+          'Unable to generate compliance report due to system error',
+        ],
+        period: { start: startDate, end: endDate },
       };
     }
   }
@@ -531,14 +553,14 @@ export class PHIAccessLogger implements OnModuleDestroy {
    */
   private mapOperationToAuditAction(operation: string): AuditAction {
     const operationMap: Record<string, AuditAction> = {
-      'READ': AuditAction.READ,
-      'CREATE': AuditAction.CREATE,
-      'UPDATE': AuditAction.UPDATE,
-      'DELETE': AuditAction.DELETE,
-      'EXPORT': AuditAction.EXPORT,
-      'SEARCH': AuditAction.VIEW,
-      'CACHE_READ': AuditAction.READ,
-      'CACHE_WRITE': AuditAction.UPDATE
+      READ: AuditAction.READ,
+      CREATE: AuditAction.CREATE,
+      UPDATE: AuditAction.UPDATE,
+      DELETE: AuditAction.DELETE,
+      EXPORT: AuditAction.EXPORT,
+      SEARCH: AuditAction.VIEW,
+      CACHE_READ: AuditAction.READ,
+      CACHE_WRITE: AuditAction.UPDATE,
     };
 
     return operationMap[operation] || AuditAction.READ;
@@ -568,10 +590,10 @@ export class PHIAccessLogger implements OnModuleDestroy {
    */
   private mapIncidentSeverityToAuditSeverity(severity: string): AuditSeverity {
     const severityMap: Record<string, AuditSeverity> = {
-      'LOW': AuditSeverity.LOW,
-      'MEDIUM': AuditSeverity.MEDIUM,
-      'HIGH': AuditSeverity.HIGH,
-      'CRITICAL': AuditSeverity.CRITICAL
+      LOW: AuditSeverity.LOW,
+      MEDIUM: AuditSeverity.MEDIUM,
+      HIGH: AuditSeverity.HIGH,
+      CRITICAL: AuditSeverity.CRITICAL,
     };
 
     return severityMap[severity] || AuditSeverity.MEDIUM;
@@ -581,25 +603,31 @@ export class PHIAccessLogger implements OnModuleDestroy {
    * Format PHI access log message
    */
   private formatPHIAccessLog(entry: PHIAccessLogEntry): string {
-    return `PHI Access - User: ${entry.userId || 'unknown'}, Student: ${entry.studentId || 'unknown'}, ` +
-           `Operation: ${entry.operation}, DataTypes: [${entry.dataTypes.join(', ')}], ` +
-           `Records: ${entry.recordCount}, Level: ${entry.sensitivityLevel}, ` +
-           `Success: ${entry.success}, IP: ${entry.ipAddress}`;
+    return (
+      `PHI Access - User: ${entry.userId || 'unknown'}, Student: ${entry.studentId || 'unknown'}, ` +
+      `Operation: ${entry.operation}, DataTypes: [${entry.dataTypes.join(', ')}], ` +
+      `Records: ${entry.recordCount}, Level: ${entry.sensitivityLevel}, ` +
+      `Success: ${entry.success}, IP: ${entry.ipAddress}`
+    );
   }
 
   /**
    * Format security incident log message
    */
   private formatSecurityIncidentLog(incident: SecurityIncidentEntry): string {
-    return `Security Incident - Type: ${incident.incidentType}, User: ${incident.userId || 'unknown'}, ` +
-           `Operation: ${incident.operation}, Severity: ${incident.severity}, ` +
-           `IP: ${incident.ipAddress}, Message: ${incident.errorMessage}`;
+    return (
+      `Security Incident - Type: ${incident.incidentType}, User: ${incident.userId || 'unknown'}, ` +
+      `Operation: ${incident.operation}, Severity: ${incident.severity}, ` +
+      `IP: ${incident.ipAddress}, Message: ${incident.errorMessage}`
+    );
   }
 
   /**
    * Detect suspicious activity patterns
    */
-  private async detectSuspiciousActivity(entry: PHIAccessLogEntry): Promise<void> {
+  private async detectSuspiciousActivity(
+    entry: PHIAccessLogEntry,
+  ): Promise<void> {
     try {
       // Check for unusual access patterns
       const recentAccesses = await this.auditLogModel.count({
@@ -607,9 +635,9 @@ export class PHIAccessLogger implements OnModuleDestroy {
           userId: entry.userId,
           entityType: 'PHI_ACCESS',
           createdAt: {
-            [Op.gte]: new Date(Date.now() - 60 * 60 * 1000) // Last hour
-          }
-        }
+            [Op.gte]: new Date(Date.now() - 60 * 60 * 1000), // Last hour
+          },
+        },
       });
 
       // Flag high-frequency access
@@ -622,7 +650,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
           ipAddress: entry.ipAddress,
           operation: entry.operation,
           errorMessage: `High frequency PHI access detected: ${recentAccesses} accesses in last hour`,
-          severity: 'MEDIUM'
+          severity: 'MEDIUM',
         });
       }
 
@@ -633,9 +661,9 @@ export class PHIAccessLogger implements OnModuleDestroy {
             userId: entry.userId,
             entityType: 'PHI_ACCESS',
             createdAt: {
-              [Op.gte]: new Date(Date.now() - 30 * 60 * 1000) // Last 30 minutes
-            }
-          }
+              [Op.gte]: new Date(Date.now() - 30 * 60 * 1000), // Last 30 minutes
+            },
+          },
         });
 
         if (studentAccesses > 20) {
@@ -647,11 +675,10 @@ export class PHIAccessLogger implements OnModuleDestroy {
             ipAddress: entry.ipAddress,
             operation: entry.operation,
             errorMessage: `Multiple student access detected: ${studentAccesses} students in last 30 minutes`,
-            severity: 'HIGH'
+            severity: 'HIGH',
           });
         }
       }
-
     } catch (error) {
       this.logger.error('Failed to detect suspicious activity:', error);
     }
@@ -663,16 +690,22 @@ export class PHIAccessLogger implements OnModuleDestroy {
   private async logToComplianceSystem(entry: PHIAccessLogEntry): Promise<void> {
     // Placeholder for integration with external compliance systems
     // Could send to SIEM, compliance databases, etc.
-    this.logger.debug(`Compliance system logging for PHI access: ${entry.correlationId}`);
+    this.logger.debug(
+      `Compliance system logging for PHI access: ${entry.correlationId}`,
+    );
   }
 
   /**
    * Trigger security alert for critical incidents
    */
-  private async triggerSecurityAlert(incident: SecurityIncidentEntry): Promise<void> {
+  private async triggerSecurityAlert(
+    incident: SecurityIncidentEntry,
+  ): Promise<void> {
     // Placeholder for security alert system integration
     // Could send emails, SMS, trigger workflows, etc.
-    this.logger.warn(`Security alert triggered for incident: ${incident.incidentType}`);
+    this.logger.warn(
+      `Security alert triggered for incident: ${incident.incidentType}`,
+    );
   }
 
   /**

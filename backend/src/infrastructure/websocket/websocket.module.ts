@@ -11,6 +11,7 @@
  * - Token blacklist verification
  * - Rate limiting for spam prevention
  * - Global availability for use across all modules
+ * - EVENT-DRIVEN: Appointment event listeners for real-time notifications
  *
  * Dependencies:
  * - JwtModule: For token verification
@@ -20,10 +21,16 @@
  * Exports:
  * - WebSocketService: For use in other modules to broadcast messages
  * - WebSocketGateway: For direct server access if needed
+ * - AppointmentWebSocketListener: Event listener for appointment events
  *
  * Usage:
  * Import this module in any feature module that needs to broadcast WebSocket messages.
  * Inject WebSocketService to send real-time updates to clients.
+ *
+ * Event-Driven Architecture:
+ * - Appointment events are automatically handled by AppointmentWebSocketListener
+ * - No need to inject WebSocketService into AppointmentService
+ * - Eliminates circular dependencies
  *
  * @example
  * // In another module
@@ -38,21 +45,23 @@
  * // In a service
  * constructor(private readonly websocketService: WebSocketService) {}
  *
- * async sendAlert(organizationId: string, alert: any) {
+ * async sendAlert(organizationId: string, alert: Record<string, unknown>) {
  *   await this.websocketService.broadcastEmergencyAlert(organizationId, alert);
  * }
  *
  * @module WebSocketModule
  */
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WsJwtAuthGuard } from './guards';
-import { RateLimiterService, AdminMetricsService } from './services';
+import { AdminMetricsService, RateLimiterService } from './services';
 import { AdminWebSocketGateway } from './gateways';
-import { AuthModule } from '../../auth/auth.module';
+import { AuthModule } from '@/auth';
+import { AppointmentWebSocketListener } from './listeners/appointment.listener';
+import { AppConfigService } from '../../config/app-config.service';
 
 /**
  * WebSocket Module
@@ -66,12 +75,14 @@ import { AuthModule } from '../../auth/auth.module';
     // JWT Module for authentication
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService): Promise<JwtModuleOptions> => {
+      useFactory: async (
+        configService: ConfigService,
+      ): Promise<JwtModuleOptions> => {
         const jwtSecret = configService.get<string>('JWT_SECRET');
 
         if (!jwtSecret) {
           throw new Error(
-            'CRITICAL SECURITY ERROR: JWT_SECRET not configured for WebSocket module'
+            'CRITICAL SECURITY ERROR: JWT_SECRET not configured for WebSocket module',
           );
         }
 
@@ -92,12 +103,16 @@ import { AuthModule } from '../../auth/auth.module';
     RateLimiterService,
     AdminMetricsService,
     AdminWebSocketGateway,
+    AppConfigService,
+    // Event-driven architecture listeners
+    AppointmentWebSocketListener,
   ],
   exports: [
     WebSocketService,
     WebSocketGateway,
     AdminMetricsService,
     AdminWebSocketGateway,
+    AppointmentWebSocketListener,
   ],
 })
 export class WebSocketModule {}

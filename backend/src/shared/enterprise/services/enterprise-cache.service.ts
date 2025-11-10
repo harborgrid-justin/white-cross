@@ -68,13 +68,13 @@ export class EnterpriseCacheService {
    * Set cache entry with enterprise features
    */
   async set<T>(
-    key: string, 
-    data: T, 
-    ttl: number, 
+    key: string,
+    data: T,
+    ttl: number,
     options?: {
       compliance?: EnterpriseCacheEntry['compliance'];
       encrypt?: boolean;
-    }
+    },
   ): Promise<void> {
     try {
       const fullKey = `${this.moduleName}:${key}`;
@@ -94,8 +94,10 @@ export class EnterpriseCacheService {
 
       this.cache.set(fullKey, entry);
       this.updateStats();
-      
-      this.logger.debug(`Cache set: ${fullKey} (TTL: ${ttl}s, Module: ${this.moduleName})`);
+
+      this.logger.debug(
+        `Cache set: ${fullKey} (TTL: ${ttl}s, Module: ${this.moduleName})`,
+      );
     } catch (error) {
       this.logger.error(`Failed to set cache entry: ${key}`, error);
       throw error;
@@ -108,7 +110,9 @@ export class EnterpriseCacheService {
   async get<T>(key: string): Promise<T | null> {
     try {
       const fullKey = `${this.moduleName}:${key}`;
-      const entry = this.cache.get(fullKey) as EnterpriseCacheEntry<T> | undefined;
+      const entry = this.cache.get(fullKey) as
+        | EnterpriseCacheEntry<T>
+        | undefined;
 
       if (!entry) {
         this.stats.misses++;
@@ -128,7 +132,9 @@ export class EnterpriseCacheService {
 
       // Log PHI access for compliance
       if (entry.compliance?.phiData) {
-        this.logger.log(`PHI cache access: ${key} (Module: ${this.moduleName})`);
+        this.logger.log(
+          `PHI cache access: ${key} (Module: ${this.moduleName})`,
+        );
       }
 
       this.stats.hits++;
@@ -149,11 +155,11 @@ export class EnterpriseCacheService {
       const fullKey = `${this.moduleName}:${key}`;
       const deleted = this.cache.delete(fullKey);
       this.updateStats();
-      
+
       if (deleted) {
         this.logger.debug(`Cache deleted: ${fullKey}`);
       }
-      
+
       return deleted;
     } catch (error) {
       this.logger.error(`Failed to delete cache entry: ${key}`, error);
@@ -169,15 +175,17 @@ export class EnterpriseCacheService {
       let deletedCount = 0;
       const regex = new RegExp(pattern);
 
-      for (const [key, entry] of this.cache.entries()) {
-        if (regex.test(key) && entry.module === this.moduleName) {
-          this.cache.delete(key);
-          deletedCount++;
-        }
+    for (const [_key, entry] of this.cache.entries()) {
+      if (regex.test(_key) && entry.module === this.moduleName) {
+        this.cache.delete(_key);
+        deletedCount++;
       }
+    }
 
       this.updateStats();
-      this.logger.log(`Cleared ${deletedCount} cache entries matching pattern: ${pattern}`);
+      this.logger.log(
+        `Cleared ${deletedCount} cache entries matching pattern: ${pattern}`,
+      );
       return deletedCount;
     } catch (error) {
       this.logger.error(`Failed to clear cache pattern: ${pattern}`, error);
@@ -200,9 +208,14 @@ export class EnterpriseCacheService {
       }
 
       this.updateStats();
-      this.logger.log(`Cleared ${deletedCount} cache entries for module: ${this.moduleName}`);
+      this.logger.log(
+        `Cleared ${deletedCount} cache entries for module: ${this.moduleName}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to clear cache for module: ${this.moduleName}`, error);
+      this.logger.error(
+        `Failed to clear cache for module: ${this.moduleName}`,
+        error,
+      );
     }
   }
 
@@ -217,11 +230,16 @@ export class EnterpriseCacheService {
   /**
    * Get entries by compliance level
    */
-  getEntriesByComplianceLevel(level: 'public' | 'internal' | 'restricted' | 'confidential'): EnterpriseCacheEntry[] {
+  getEntriesByComplianceLevel(
+    level: 'public' | 'internal' | 'restricted' | 'confidential',
+  ): EnterpriseCacheEntry[] {
     const entries: EnterpriseCacheEntry[] = [];
 
     for (const [key, entry] of this.cache.entries()) {
-      if (entry.module === this.moduleName && entry.compliance?.accessLevel === level) {
+      if (
+        entry.module === this.moduleName &&
+        entry.compliance?.accessLevel === level
+      ) {
         entries.push(entry);
       }
     }
@@ -238,7 +256,10 @@ export class EnterpriseCacheService {
       const now = Date.now();
 
       for (const [key, entry] of this.cache.entries()) {
-        if (entry.module === this.moduleName && (now - entry.timestamp > entry.ttl)) {
+        if (
+          entry.module === this.moduleName &&
+          now - entry.timestamp > entry.ttl
+        ) {
           this.cache.delete(key);
           deletedCount++;
         }
@@ -246,14 +267,19 @@ export class EnterpriseCacheService {
 
       this.stats.lastCleanup = now;
       this.updateStats();
-      
+
       if (deletedCount > 0) {
-        this.logger.debug(`Cleaned up ${deletedCount} expired cache entries for module: ${this.moduleName}`);
+        this.logger.debug(
+          `Cleaned up ${deletedCount} expired cache entries for module: ${this.moduleName}`,
+        );
       }
 
       return deletedCount;
     } catch (error) {
-      this.logger.error(`Failed to cleanup cache for module: ${this.moduleName}`, error);
+      this.logger.error(
+        `Failed to cleanup cache for module: ${this.moduleName}`,
+        error,
+      );
       return 0;
     }
   }
@@ -282,7 +308,8 @@ export class EnterpriseCacheService {
 
     // Check last cleanup time
     const timeSinceLastCleanup = Date.now() - this.stats.lastCleanup;
-    if (timeSinceLastCleanup > 30 * 60 * 1000) { // 30 minutes
+    if (timeSinceLastCleanup > 30 * 60 * 1000) {
+      // 30 minutes
       issues.push('Cache cleanup overdue');
     }
 
@@ -301,11 +328,16 @@ export class EnterpriseCacheService {
       clearInterval(this.cleanupInterval);
     }
 
-    this.cleanupInterval = setInterval(async () => {
-      await this.cleanup();
-    }, 5 * 60 * 1000); // Every 5 minutes
+    this.cleanupInterval = setInterval(
+      async () => {
+        await this.cleanup();
+      },
+      5 * 60 * 1000,
+    ); // Every 5 minutes
 
-    this.logger.debug(`Started cache cleanup interval for module: ${this.moduleName}`);
+    this.logger.debug(
+      `Started cache cleanup interval for module: ${this.moduleName}`,
+    );
   }
 
   /**
@@ -315,7 +347,9 @@ export class EnterpriseCacheService {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
-      this.logger.debug(`Stopped cache cleanup interval for module: ${this.moduleName}`);
+      this.logger.debug(
+        `Stopped cache cleanup interval for module: ${this.moduleName}`,
+      );
     }
   }
 
@@ -323,7 +357,9 @@ export class EnterpriseCacheService {
    * Update internal statistics
    */
   private updateStats(): void {
-    this.stats.keys = Array.from(this.cache.values()).filter(entry => entry.module === this.moduleName).length;
+    this.stats.keys = Array.from(this.cache.values()).filter(
+      (entry) => entry.module === this.moduleName,
+    ).length;
     this.stats.memoryUsage = this.estimateMemoryUsage();
     this.updateHitRate();
   }
@@ -341,7 +377,7 @@ export class EnterpriseCacheService {
    */
   private estimateMemoryUsage(): number {
     let totalSize = 0;
-    
+
     for (const [key, entry] of this.cache.entries()) {
       if (entry.module === this.moduleName) {
         totalSize += key.length * 2; // Approximate string size
@@ -358,6 +394,8 @@ export class EnterpriseCacheService {
    */
   onModuleDestroy(): void {
     this.stopCleanupInterval();
-    this.logger.log(`Enterprise cache service destroyed for module: ${this.moduleName}`);
+    this.logger.log(
+      `Enterprise cache service destroyed for module: ${this.moduleName}`,
+    );
   }
 }

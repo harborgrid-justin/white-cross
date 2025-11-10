@@ -4,20 +4,20 @@
  * @description Processors for handling message queue jobs
  */
 
-import { Processor, Process, OnQueueActive, OnQueueCompleted, OnQueueFailed } from '@nestjs/bull';
+import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bull';
 import { QueueName } from './enums';
 import {
-  SendMessageJobDto,
+  BatchMessageJobDto,
   DeliveryConfirmationJobDto,
-  NotificationJobDto,
   EncryptionJobDto,
   IndexingJobDto,
-  BatchMessageJobDto,
   MessageCleanupJobDto,
+  NotificationJobDto,
+  SendMessageJobDto,
 } from './dtos';
-import type { JobResult, JobProgress } from './interfaces';
+import type { JobProgress, JobResult } from './interfaces';
 
 /**
  * Message Delivery Queue Processor
@@ -38,7 +38,10 @@ export class MessageDeliveryProcessor {
 
     try {
       // Update progress
-      await job.progress({ percentage: 10, step: 'Validating message' } as JobProgress);
+      await job.progress({
+        percentage: 10,
+        step: 'Validating message',
+      } as JobProgress);
 
       // TODO: Implement actual message sending logic
       // 1. Validate message content
@@ -47,17 +50,21 @@ export class MessageDeliveryProcessor {
       // 4. Send message via WebSocket or other transport
       // 5. Update message status
 
-      await job.progress({ percentage: 50, step: 'Sending message' } as JobProgress);
+      await job.progress({
+        percentage: 50,
+        step: 'Sending message',
+      } as JobProgress);
 
       // Simulate message sending (replace with actual implementation)
       await this.delay(100);
 
-      await job.progress({ percentage: 100, step: 'Message sent' } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: 'Message sent',
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
-      this.logger.log(
-        `Message sent successfully: ${job.data.messageId} (${processingTime}ms)`,
-      );
+      this.logger.log(`Message sent successfully: ${job.data.messageId} (${processingTime}ms)`);
 
       return {
         success: true,
@@ -98,9 +105,7 @@ export class MessageDeliveryProcessor {
    * Updates message delivery status
    */
   @Process('delivery-confirmation')
-  async processDeliveryConfirmation(
-    job: Job<DeliveryConfirmationJobDto>,
-  ): Promise<JobResult> {
+  async processDeliveryConfirmation(job: Job<DeliveryConfirmationJobDto>): Promise<JobResult> {
     const startTime = Date.now();
     this.logger.log(
       `Processing delivery confirmation for message ${job.data.messageId}: ${job.data.status}`,
@@ -135,10 +140,7 @@ export class MessageDeliveryProcessor {
       };
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error(
-        `Failed to process delivery confirmation: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to process delivery confirmation: ${error.message}`, error.stack);
 
       return {
         success: false,
@@ -162,16 +164,12 @@ export class MessageDeliveryProcessor {
 
   @OnQueueCompleted()
   onCompleted(job: Job, result: JobResult) {
-    this.logger.log(
-      `Job ${job.id} completed successfully (attempts: ${result.metadata.attempts})`,
-    );
+    this.logger.log(`Job ${job.id} completed successfully (attempts: ${result.metadata.attempts})`);
   }
 
   @OnQueueFailed()
   onFailed(job: Job, error: Error) {
-    this.logger.error(
-      `Job ${job.id} failed after ${job.attemptsMade} attempts: ${error.message}`,
-    );
+    this.logger.error(`Job ${job.id} failed after ${job.attemptsMade} attempts: ${error.message}`);
   }
 
   private delay(ms: number): Promise<void> {
@@ -199,7 +197,10 @@ export class MessageNotificationProcessor {
     );
 
     try {
-      await job.progress({ percentage: 20, step: 'Preparing notification' } as JobProgress);
+      await job.progress({
+        percentage: 20,
+        step: 'Preparing notification',
+      } as JobProgress);
 
       // TODO: Implement notification sending based on type
       switch (job.data.type) {
@@ -217,7 +218,10 @@ export class MessageNotificationProcessor {
           break;
       }
 
-      await job.progress({ percentage: 100, step: 'Notification sent' } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: 'Notification sent',
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
@@ -258,25 +262,37 @@ export class MessageNotificationProcessor {
 
   private async sendPushNotification(job: Job<NotificationJobDto>): Promise<void> {
     // TODO: Integrate with Firebase Cloud Messaging or similar service
-    await job.progress({ percentage: 50, step: 'Sending push notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Sending push notification',
+    } as JobProgress);
     await this.delay(100);
   }
 
   private async sendEmailNotification(job: Job<NotificationJobDto>): Promise<void> {
     // TODO: Integrate with email service (use existing EmailModule)
-    await job.progress({ percentage: 50, step: 'Sending email notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Sending email notification',
+    } as JobProgress);
     await this.delay(150);
   }
 
   private async sendSmsNotification(job: Job<NotificationJobDto>): Promise<void> {
     // TODO: Integrate with SMS service (Twilio or similar)
-    await job.progress({ percentage: 50, step: 'Sending SMS notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Sending SMS notification',
+    } as JobProgress);
     await this.delay(120);
   }
 
   private async sendInAppNotification(job: Job<NotificationJobDto>): Promise<void> {
     // TODO: Store notification in database for in-app display
-    await job.progress({ percentage: 50, step: 'Storing in-app notification' } as JobProgress);
+    await job.progress({
+      percentage: 50,
+      step: 'Storing in-app notification',
+    } as JobProgress);
     await this.delay(50);
   }
 
@@ -315,12 +331,13 @@ export class MessageEncryptionProcessor {
   @Process('encrypt-decrypt')
   async processEncryption(job: Job<EncryptionJobDto>): Promise<JobResult> {
     const startTime = Date.now();
-    this.logger.log(
-      `Processing ${job.data.operation} for message ${job.data.messageId}`,
-    );
+    this.logger.log(`Processing ${job.data.operation} for message ${job.data.messageId}`);
 
     try {
-      await job.progress({ percentage: 25, step: `Starting ${job.data.operation}` } as JobProgress);
+      await job.progress({
+        percentage: 25,
+        step: `Starting ${job.data.operation}`,
+      } as JobProgress);
 
       // TODO: Implement encryption/decryption logic
       // 1. Retrieve encryption key
@@ -335,7 +352,10 @@ export class MessageEncryptionProcessor {
         result = await this.decryptContent(job.data.content, job.data.keyId);
       }
 
-      await job.progress({ percentage: 100, step: `${job.data.operation} completed` } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: `${job.data.operation} completed`,
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
@@ -424,12 +444,13 @@ export class MessageIndexingProcessor {
   @Process('index-message')
   async processIndexing(job: Job<IndexingJobDto>): Promise<JobResult> {
     const startTime = Date.now();
-    this.logger.log(
-      `Processing ${job.data.operation} indexing for message ${job.data.messageId}`,
-    );
+    this.logger.log(`Processing ${job.data.operation} indexing for message ${job.data.messageId}`);
 
     try {
-      await job.progress({ percentage: 30, step: `${job.data.operation} index` } as JobProgress);
+      await job.progress({
+        percentage: 30,
+        step: `${job.data.operation} index`,
+      } as JobProgress);
 
       // TODO: Implement search indexing (Elasticsearch, Algolia, or similar)
       switch (job.data.operation) {
@@ -444,7 +465,10 @@ export class MessageIndexingProcessor {
           break;
       }
 
-      await job.progress({ percentage: 100, step: 'Indexing completed' } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: 'Indexing completed',
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
@@ -565,9 +589,7 @@ export class BatchMessageProcessor {
       }
 
       const processingTime = Date.now() - startTime;
-      this.logger.log(
-        `Batch message sent to ${totalRecipients} recipients (${processingTime}ms)`,
-      );
+      this.logger.log(`Batch message sent to ${totalRecipients} recipients (${processingTime}ms)`);
 
       return {
         success: true,
@@ -602,10 +624,7 @@ export class BatchMessageProcessor {
     }
   }
 
-  private async sendToRecipients(
-    recipientIds: string[],
-    data: BatchMessageJobDto,
-  ): Promise<void> {
+  private async sendToRecipients(recipientIds: string[], data: BatchMessageJobDto): Promise<void> {
     // TODO: Create and send messages to recipients
     await this.delay(recipientIds.length * 10);
   }
@@ -648,7 +667,10 @@ export class MessageCleanupProcessor {
     this.logger.log(`Processing cleanup job: ${job.data.cleanupType}`);
 
     try {
-      await job.progress({ percentage: 20, step: 'Starting cleanup' } as JobProgress);
+      await job.progress({
+        percentage: 20,
+        step: 'Starting cleanup',
+      } as JobProgress);
 
       let deletedCount = 0;
 
@@ -665,7 +687,10 @@ export class MessageCleanupProcessor {
           break;
       }
 
-      await job.progress({ percentage: 100, step: 'Cleanup completed' } as JobProgress);
+      await job.progress({
+        percentage: 100,
+        step: 'Cleanup completed',
+      } as JobProgress);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(

@@ -1,18 +1,19 @@
 import {
-  WebSocketGateway,
-  WebSocketServer,
-  SubscribeMessage,
-  MessageBody,
   ConnectedSocket,
-  OnGatewayInit,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { WsExceptionFilter } from '../../infrastructure/websocket/filters/ws-exception.filter';
 import { WsJwtAuthGuard } from '../../infrastructure/websocket/guards/ws-jwt-auth.guard';
 import { WsLoggingInterceptor } from '../../infrastructure/websocket/interceptors/ws-logging.interceptor';
+import { DeliveryStatusUpdate } from '../types/index';
 
 @UseFilters(new WsExceptionFilter())
 @UseInterceptors(WsLoggingInterceptor)
@@ -47,14 +48,18 @@ export class CommunicationGateway
    * Handles new client connections
    */
   handleConnection(client: Socket): void {
-    this.logger.log(`Client connected to communication namespace: ${client.id}`);
+    this.logger.log(
+      `Client connected to communication namespace: ${client.id}`,
+    );
   }
 
   /**
    * Handles client disconnections
    */
   handleDisconnect(client: Socket): void {
-    this.logger.log(`Client disconnected from communication namespace: ${client.id}`);
+    this.logger.log(
+      `Client disconnected from communication namespace: ${client.id}`,
+    );
   }
 
   @UseGuards(WsJwtAuthGuard)
@@ -63,12 +68,16 @@ export class CommunicationGateway
     @MessageBody() data: { messageId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log(`Client ${client.id} subscribed to delivery updates for message ${data.messageId}`);
+    this.logger.log(
+      `Client ${client.id} subscribed to delivery updates for message ${data.messageId}`,
+    );
     client.join('message-' + data.messageId);
     return { success: true };
   }
 
-  emitDeliveryStatusUpdate(messageId: string, status: any) {
-    this.server.to('message-' + messageId).emit('delivery-status-update', status);
+  emitDeliveryStatusUpdate(messageId: string, status: DeliveryStatusUpdate) {
+    this.server
+      .to('message-' + messageId)
+      .emit('delivery-status-update', status);
   }
 }

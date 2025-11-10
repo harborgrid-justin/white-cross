@@ -1,11 +1,6 @@
-import { 
-  Injectable, 
-  NestInterceptor, 
-  ExecutionContext, 
-  CallHandler 
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
 import { DiscoveryMetricsService } from '../services/discovery-metrics.service';
 
@@ -17,7 +12,7 @@ export class DiscoveryMetricsInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
     const startTime = process.hrtime.bigint();
-    
+
     const { method, url, route } = request;
     const user = (request as any).user;
     const endpoint = route?.path || url;
@@ -36,14 +31,28 @@ export class DiscoveryMetricsInterceptor implements NestInterceptor {
           const statusCode = response.statusCode;
 
           // Record successful request metrics
-          this.recordSuccessMetrics(method, endpoint, duration, statusCode, responseData, user);
+          this.recordSuccessMetrics(
+            method,
+            endpoint,
+            duration,
+            statusCode,
+            responseData,
+            user,
+          );
         },
         error: (error) => {
           const duration = this.calculateDuration(startTime);
           const statusCode = error.status || 500;
 
           // Record error metrics
-          this.recordErrorMetrics(method, endpoint, duration, statusCode, error, user);
+          this.recordErrorMetrics(
+            method,
+            endpoint,
+            duration,
+            statusCode,
+            error,
+            user,
+          );
         },
       }),
       catchError((error) => {
@@ -73,15 +82,23 @@ export class DiscoveryMetricsInterceptor implements NestInterceptor {
     };
 
     // Record response time
-    this.metricsService.recordHistogram('discovery_request_duration_ms', duration, labels);
+    this.metricsService.recordHistogram(
+      'discovery_request_duration_ms',
+      duration,
+      labels,
+    );
 
     // Record response size if available
     if (responseData) {
       const responseSize = this.calculateResponseSize(responseData);
-      this.metricsService.recordHistogram('discovery_response_size_bytes', responseSize, {
-        endpoint,
-        method,
-      });
+      this.metricsService.recordHistogram(
+        'discovery_response_size_bytes',
+        responseSize,
+        {
+          endpoint,
+          method,
+        },
+      );
     }
 
     // Record status code distribution
@@ -135,11 +152,15 @@ export class DiscoveryMetricsInterceptor implements NestInterceptor {
     this.metricsService.incrementCounter('discovery_errors_total', labels);
 
     // Record error response time
-    this.metricsService.recordHistogram('discovery_request_duration_ms', duration, {
-      method,
-      endpoint,
-      status: 'error',
-    });
+    this.metricsService.recordHistogram(
+      'discovery_request_duration_ms',
+      duration,
+      {
+        method,
+        endpoint,
+        status: 'error',
+      },
+    );
 
     // Record error by category
     const errorCategory = this.categorizeError(statusCode);
@@ -161,7 +182,7 @@ export class DiscoveryMetricsInterceptor implements NestInterceptor {
 
   private calculateResponseSize(data: any): number {
     if (!data) return 0;
-    
+
     try {
       return JSON.stringify(data).length;
     } catch {

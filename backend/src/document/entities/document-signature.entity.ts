@@ -13,18 +13,18 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  CreatedAt,
-  ForeignKey,
   BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  ForeignKey,
   Index,
+  Model,
+  PrimaryKey,
+  Table,
 } from 'sequelize-typescript';
-import { Document } from './document.entity';
+import type { Document } from './document.entity';
 
 @Table({
   tableName: 'document_signatures',

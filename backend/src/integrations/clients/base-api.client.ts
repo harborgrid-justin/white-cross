@@ -30,14 +30,13 @@
 
 import { HttpService } from '@nestjs/axios';
 import { Logger } from '@nestjs/common';
-import { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { firstValueFrom } from 'rxjs';
-import { catchError, map, retry, delay } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { firstValueFrom, throwError } from 'rxjs';
+import { catchError, delay, map, retry } from 'rxjs/operators';
 import {
-  CircuitState,
   CircuitBreakerConfig,
   CircuitBreakerStatus,
+  CircuitState,
   RateLimiterConfig,
   RateLimiterStatus,
 } from '../interfaces';
@@ -250,9 +249,8 @@ export abstract class BaseApiClient {
 
     // Check if limit exceeded
     if (this.requestTimestamps.length >= this.rateLimitConfig.maxRequests) {
-      const oldestTimestamp = this.requestTimestamps[0];
-      const waitTime =
-        oldestTimestamp + this.rateLimitConfig.windowMs - now;
+      const oldestTimestamp = this.requestTimestamps[0]!;
+      const waitTime = oldestTimestamp + this.rateLimitConfig.windowMs - now;
 
       throw new Error(
         `Rate limit exceeded for ${this.name} API. ` +
@@ -291,7 +289,7 @@ export abstract class BaseApiClient {
    * @throws {Error} If circuit is open, rate limit exceeded, or request fails after retries
    * @protected
    */
-  protected async request<T = any>(
+  protected async request<T = unknown>(
     config: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     // Check circuit breaker
@@ -333,7 +331,8 @@ export abstract class BaseApiClient {
                 (error.response.status >= 500 && error.response.status < 600);
 
               if (shouldRetry) {
-                const delayMs = this.config.retryDelay! * Math.pow(2, retryCount - 1);
+                const delayMs =
+                  this.config.retryDelay! * Math.pow(2, retryCount - 1);
                 this.logger.warn(
                   `${this.name} API retry attempt ${retryCount} after ${delayMs}ms. Error: ${error.message}`,
                   BaseApiClient.name,
@@ -378,7 +377,7 @@ export abstract class BaseApiClient {
    * @returns Promise resolving to Axios response
    * @protected
    */
-  protected async get<T = any>(
+  protected async get<T = unknown>(
     url: string,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
@@ -394,9 +393,9 @@ export abstract class BaseApiClient {
    * @returns Promise resolving to Axios response
    * @protected
    */
-  protected async post<T = any>(
+  protected async post<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     return this.request<T>({ ...config, method: 'POST', url, data });
@@ -411,9 +410,9 @@ export abstract class BaseApiClient {
    * @returns Promise resolving to Axios response
    * @protected
    */
-  protected async put<T = any>(
+  protected async put<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {
     return this.request<T>({ ...config, method: 'PUT', url, data });
@@ -427,7 +426,7 @@ export abstract class BaseApiClient {
    * @returns Promise resolving to Axios response
    * @protected
    */
-  protected async delete<T = any>(
+  protected async delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig,
   ): Promise<AxiosResponse<T>> {

@@ -1,44 +1,25 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-  ValidationPipe,
-  Query,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards, ValidationPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import {
-  RegisterDto,
-  LoginDto,
-  AuthChangePasswordDto,
-  RefreshTokenDto,
-  AuthResponseDto,
-  MfaSetupResponseDto,
-  MfaVerifyDto,
-  MfaEnableDto,
-  MfaDisableDto,
-  MfaStatusDto,
-  MfaRegenerateBackupCodesDto,
-  OAuthLoginDto,
-  ForgotPasswordDto,
-  ResetPasswordDto,
-  VerifyEmailDto,
-  ResendVerificationDto,
-  EmailVerificationResponseDto,
-  ResetPasswordResponseDto,
-} from './dto';
+import { AuthChangePasswordDto } from './dto/change-password.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import { EmailVerificationResponseDto, ResendVerificationDto, VerifyEmailDto } from './dto/email-verification.dto';
+import { ForgotPasswordDto, ResetPasswordDto, ResetPasswordResponseDto } from './dto/password-reset.dto';
+import { LoginDto } from './dto/login.dto';
+import { MfaDisableDto, MfaEnableDto, MfaRegenerateBackupCodesDto, MfaSetupResponseDto, MfaStatusDto, MfaVerifyDto } from './dto/mfa.dto';
+import { OAuthLoginDto } from './dto/oauth.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { Public, CurrentUser, AuthToken } from './decorators';
-import { TokenBlacklistService } from './services/token-blacklist.service';
+import { AuthToken } from './decorators/auth-token.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { Public } from './decorators/public.decorator';
+import { EmailVerificationService } from './services/email-verification.service';
 import { MfaService } from './services/mfa.service';
 import { OAuthService } from './services/oauth.service';
 import { PasswordResetService } from './services/password-reset.service';
-import { EmailVerificationService } from './services/email-verification.service';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -58,7 +39,8 @@ export class AuthController {
   @Throttle({ short: { limit: 3, ttl: 60000 } }) // 3 registration attempts per minute
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Create a new user account with email, password, and user details. Rate limited to 3 attempts per minute to prevent abuse.',
+    description:
+      'Create a new user account with email, password, and user details. Rate limited to 3 attempts per minute to prevent abuse.',
   })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({
@@ -76,14 +58,16 @@ export class AuthController {
   })
   @ApiResponse({
     status: 429,
-    description: 'Too many requests - Rate limit exceeded (3 attempts per minute)',
+    description:
+      'Too many requests - Rate limit exceeded (3 attempts per minute)',
   })
   @ApiResponse({
     status: 500,
     description: 'Internal server error',
   })
   async register(
-    @Body(new ValidationPipe({ transform: true, whitelist: true })) registerDto: RegisterDto,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    registerDto: RegisterDto,
   ): Promise<AuthResponseDto> {
     return this.authService.register(registerDto);
   }
@@ -94,7 +78,8 @@ export class AuthController {
   @Throttle({ short: { limit: 5, ttl: 60000 } }) // 5 login attempts per minute
   @ApiOperation({
     summary: 'User login',
-    description: 'Authenticate user with email and password, returns access and refresh tokens. Rate limited to 5 attempts per minute to prevent brute force attacks.',
+    description:
+      'Authenticate user with email and password, returns access and refresh tokens. Rate limited to 5 attempts per minute to prevent brute force attacks.',
   })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
@@ -108,14 +93,16 @@ export class AuthController {
   })
   @ApiResponse({
     status: 429,
-    description: 'Too many requests - Rate limit exceeded (5 attempts per minute)',
+    description:
+      'Too many requests - Rate limit exceeded (5 attempts per minute)',
   })
   @ApiResponse({
     status: 500,
     description: 'Internal server error',
   })
   async login(
-    @Body(new ValidationPipe({ transform: true, whitelist: true })) loginDto: LoginDto,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    loginDto: LoginDto,
   ): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
   }
@@ -142,7 +129,8 @@ export class AuthController {
     description: 'Internal server error',
   })
   async refresh(
-    @Body(new ValidationPipe({ transform: true, whitelist: true })) refreshTokenDto: RefreshTokenDto,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    refreshTokenDto: RefreshTokenDto,
   ): Promise<AuthResponseDto> {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
@@ -152,7 +140,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get current user profile',
-    description: 'Retrieve the authenticated user\'s profile information',
+    description: "Retrieve the authenticated user's profile information",
   })
   @ApiResponse({
     status: 200,
@@ -166,7 +154,9 @@ export class AuthController {
     status: 500,
     description: 'Internal server error',
   })
-  async getProfile(@CurrentUser() user: Express.User): Promise<{ success: boolean; data: Express.User }> {
+  async getProfile(
+    @CurrentUser() user: Express.User,
+  ): Promise<{ success: boolean; data: Express.User }> {
     return {
       success: true,
       data: user,
@@ -179,7 +169,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Change user password',
-    description: 'Change the authenticated user\'s password',
+    description: "Change the authenticated user's password",
   })
   @ApiBody({ type: AuthChangePasswordDto })
   @ApiResponse({
@@ -192,7 +182,8 @@ export class AuthController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Unauthorized - Current password is incorrect or authentication required',
+    description:
+      'Unauthorized - Current password is incorrect or authentication required',
   })
   @ApiResponse({
     status: 500,
@@ -200,9 +191,13 @@ export class AuthController {
   })
   async changePassword(
     @CurrentUser('id') userId: string,
-    @Body(new ValidationPipe({ transform: true, whitelist: true })) changePasswordDto: AuthChangePasswordDto,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    changePasswordDto: AuthChangePasswordDto,
   ): Promise<{ success: boolean; message: string }> {
-    const result = await this.authService.changePassword(userId, changePasswordDto);
+    const result = await this.authService.changePassword(
+      userId,
+      changePasswordDto,
+    );
     return { success: true, ...result };
   }
 
@@ -226,7 +221,9 @@ export class AuthController {
     status: 500,
     description: 'Internal server error',
   })
-  async logout(@AuthToken() token: string | null): Promise<{ success: boolean; message: string }> {
+  async logout(
+    @AuthToken() token: string | null,
+  ): Promise<{ success: boolean; message: string }> {
     if (token) {
       await this.tokenBlacklistService.blacklistToken(token);
     }
@@ -258,7 +255,8 @@ export class AuthController {
     description: 'Invalid or expired refresh token',
   })
   async refreshTokenAlias(
-    @Body(new ValidationPipe({ transform: true, whitelist: true })) refreshTokenDto: RefreshTokenDto,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    refreshTokenDto: RefreshTokenDto,
   ): Promise<AuthResponseDto> {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
@@ -273,7 +271,8 @@ export class AuthController {
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Google OAuth login',
-    description: 'Authenticate user with Google OAuth token. Creates new user if doesn\'t exist.',
+    description:
+      "Authenticate user with Google OAuth token. Creates new user if doesn't exist.",
   })
   @ApiBody({ type: OAuthLoginDto })
   @ApiResponse({
@@ -285,8 +284,12 @@ export class AuthController {
     status: 401,
     description: 'Invalid Google OAuth token',
   })
-  async loginWithGoogle(@Body(ValidationPipe) dto: OAuthLoginDto): Promise<AuthResponseDto> {
-    const profile = await this.oauthService.verifyGoogleToken(dto.idToken || dto.accessToken);
+  async loginWithGoogle(
+    @Body(ValidationPipe) dto: OAuthLoginDto,
+  ): Promise<AuthResponseDto> {
+    const profile = await this.oauthService.verifyGoogleToken(
+      dto.idToken || dto.accessToken,
+    );
     return this.oauthService.handleOAuthLogin(profile);
   }
 
@@ -296,7 +299,8 @@ export class AuthController {
   @Throttle({ short: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Microsoft OAuth login',
-    description: 'Authenticate user with Microsoft OAuth token. Creates new user if doesn\'t exist.',
+    description:
+      "Authenticate user with Microsoft OAuth token. Creates new user if doesn't exist.",
   })
   @ApiBody({ type: OAuthLoginDto })
   @ApiResponse({
@@ -308,8 +312,12 @@ export class AuthController {
     status: 401,
     description: 'Invalid Microsoft OAuth token',
   })
-  async loginWithMicrosoft(@Body(ValidationPipe) dto: OAuthLoginDto): Promise<AuthResponseDto> {
-    const profile = await this.oauthService.verifyMicrosoftToken(dto.idToken || dto.accessToken);
+  async loginWithMicrosoft(
+    @Body(ValidationPipe) dto: OAuthLoginDto,
+  ): Promise<AuthResponseDto> {
+    const profile = await this.oauthService.verifyMicrosoftToken(
+      dto.idToken || dto.accessToken,
+    );
     return this.oauthService.handleOAuthLogin(profile);
   }
 
@@ -323,7 +331,8 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Setup MFA',
-    description: 'Initialize MFA setup for the authenticated user. Returns QR code and backup codes.',
+    description:
+      'Initialize MFA setup for the authenticated user. Returns QR code and backup codes.',
   })
   @ApiResponse({
     status: 200,
@@ -338,7 +347,9 @@ export class AuthController {
     status: 401,
     description: 'Authentication required',
   })
-  async setupMfa(@CurrentUser('id') userId: string): Promise<MfaSetupResponseDto> {
+  async setupMfa(
+    @CurrentUser('id') userId: string,
+  ): Promise<MfaSetupResponseDto> {
     return this.mfaService.setupMfa(userId);
   }
 
@@ -363,7 +374,11 @@ export class AuthController {
     @CurrentUser('id') userId: string,
     @Body(ValidationPipe) dto: MfaVerifyDto,
   ): Promise<{ success: boolean; verified: boolean; message: string }> {
-    const verified = await this.mfaService.verifyMfa(userId, dto.code, dto.isBackupCode);
+    const verified = await this.mfaService.verifyMfa(
+      userId,
+      dto.code,
+      dto.isBackupCode,
+    );
     return {
       success: true,
       verified,
@@ -456,7 +471,11 @@ export class AuthController {
     @CurrentUser('id') userId: string,
     @Body(ValidationPipe) dto: MfaRegenerateBackupCodesDto,
   ) {
-    return this.mfaService.regenerateBackupCodes(userId, dto.password, dto.code);
+    return this.mfaService.regenerateBackupCodes(
+      userId,
+      dto.password,
+      dto.code,
+    );
   }
 
   // ============================================================================
@@ -480,7 +499,9 @@ export class AuthController {
     status: 429,
     description: 'Too many requests',
   })
-  async forgotPassword(@Body(ValidationPipe) dto: ForgotPasswordDto): Promise<{ message: string; success: boolean }> {
+  async forgotPassword(
+    @Body(ValidationPipe) dto: ForgotPasswordDto,
+  ): Promise<{ message: string; success: boolean }> {
     return this.passwordResetService.initiatePasswordReset(dto.email);
   }
 
@@ -501,7 +522,9 @@ export class AuthController {
     status: 400,
     description: 'Invalid or expired token',
   })
-  async resetPassword(@Body(ValidationPipe) dto: ResetPasswordDto): Promise<ResetPasswordResponseDto> {
+  async resetPassword(
+    @Body(ValidationPipe) dto: ResetPasswordDto,
+  ): Promise<ResetPasswordResponseDto> {
     return this.passwordResetService.resetPassword(dto.token, dto.password);
   }
 
@@ -515,7 +538,9 @@ export class AuthController {
     status: 200,
     description: 'Token validation result',
   })
-  async verifyResetToken(@Query('token') token: string): Promise<{ valid: boolean; message: string }> {
+  async verifyResetToken(
+    @Query('token') token: string,
+  ): Promise<{ valid: boolean; message: string }> {
     return this.passwordResetService.verifyResetToken(token);
   }
 
@@ -540,7 +565,9 @@ export class AuthController {
     status: 400,
     description: 'Invalid or expired token',
   })
-  async verifyEmail(@Body(ValidationPipe) dto: VerifyEmailDto): Promise<EmailVerificationResponseDto> {
+  async verifyEmail(
+    @Body(ValidationPipe) dto: VerifyEmailDto,
+  ): Promise<EmailVerificationResponseDto> {
     return this.emailVerificationService.verifyEmail(dto.token);
   }
 
@@ -561,7 +588,9 @@ export class AuthController {
     status: 429,
     description: 'Too many requests',
   })
-  async resendVerification(@Body(ValidationPipe) dto: ResendVerificationDto): Promise<{ success: boolean; message: string }> {
+  async resendVerification(
+    @Body(ValidationPipe) dto: ResendVerificationDto,
+  ): Promise<{ success: boolean; message: string }> {
     return this.emailVerificationService.resendVerificationEmail(dto.email);
   }
 }

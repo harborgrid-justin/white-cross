@@ -1,6 +1,6 @@
-import { IsString, IsEnum, IsArray, IsOptional, IsDateString, MinLength, MaxLength } from 'class-validator';
+import { IsArray, IsDateString, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ViolationType, ViolationSeverity, ViolationStatus } from '../entities/compliance-violation.entity';
+import { ViolationSeverity, ViolationStatus, ViolationType } from '../entities/compliance-violation.entity';
 import { RemediationPriority, RemediationStatus } from '../entities/remediation-action.entity';
 
 export class CreateViolationDto {
@@ -8,7 +8,11 @@ export class CreateViolationDto {
   @IsEnum(ViolationType)
   violationType: ViolationType;
 
-  @ApiProperty({ description: 'Violation title/summary', minLength: 5, maxLength: 200 })
+  @ApiProperty({
+    description: 'Violation title/summary',
+    minLength: 5,
+    maxLength: 200,
+  })
   @IsString()
   @MinLength(5)
   @MaxLength(200)
@@ -87,7 +91,10 @@ export class CreateRemediationDto {
 }
 
 export class UpdateRemediationDto {
-  @ApiPropertyOptional({ enum: RemediationStatus, description: 'Updated status' })
+  @ApiPropertyOptional({
+    enum: RemediationStatus,
+    description: 'Updated status',
+  })
   @IsOptional()
   @IsEnum(RemediationStatus)
   status?: RemediationStatus;
@@ -114,12 +121,18 @@ export class QueryViolationDto {
   @IsEnum(ViolationType)
   violationType?: ViolationType;
 
-  @ApiPropertyOptional({ enum: ViolationSeverity, description: 'Filter by severity' })
+  @ApiPropertyOptional({
+    enum: ViolationSeverity,
+    description: 'Filter by severity',
+  })
   @IsOptional()
   @IsEnum(ViolationSeverity)
   severity?: ViolationSeverity;
 
-  @ApiPropertyOptional({ enum: ViolationStatus, description: 'Filter by status' })
+  @ApiPropertyOptional({
+    enum: ViolationStatus,
+    description: 'Filter by status',
+  })
   @IsOptional()
   @IsEnum(ViolationStatus)
   status?: ViolationStatus;

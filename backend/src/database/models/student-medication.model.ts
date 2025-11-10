@@ -1,19 +1,18 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
-  BeforeCreate,
+  Index,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeUpdate
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-
 
 export interface StudentMedicationAttributes {
   id: string;
@@ -36,10 +35,10 @@ export interface StudentMedicationAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'student_medications',
@@ -47,71 +46,76 @@ export interface StudentMedicationAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['studentId']
-  },
+      fields: ['studentId'],
+    },
     {
-      fields: ['medicationId']
-  },
+      fields: ['medicationId'],
+    },
     {
-      fields: ['isActive']
-  },
+      fields: ['isActive'],
+    },
     {
-      fields: ['startDate']
-  },
+      fields: ['startDate'],
+    },
     {
-      fields: ['endDate']
-  },
+      fields: ['endDate'],
+    },
     {
-      fields: ['studentId', 'isActive']
-  },
+      fields: ['studentId', 'isActive'],
+    },
     {
-      fields: ['createdBy']
-  },
+      fields: ['createdBy'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_student_medication_created_at'
+      name: 'idx_student_medication_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_student_medication_updated_at'
-    }
-  ]
-  })
-export class StudentMedication extends Model<StudentMedicationAttributes> implements StudentMedicationAttributes {
+      name: 'idx_student_medication_updated_at',
+    },
+  ],
+})
+export class StudentMedication
+  extends Model<StudentMedicationAttributes>
+  implements StudentMedicationAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
   declare id: string;
 
+  @Index
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
+  @Index
   @ForeignKey(() => require('./medication.model').Medication)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   medicationId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   dosage: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   frequency: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   route: string;
 
@@ -120,55 +124,55 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   startDate: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   endDate?: Date;
 
   @Default(true)
   @Column({
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   isActive: boolean;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   prescribedBy: string;
 
   @Column({
-    type: DataType.STRING(255)
+    type: DataType.STRING(255),
   })
   prescriptionNumber?: string;
 
   @Default(0)
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   refillsRemaining?: number;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
@@ -198,16 +202,23 @@ export class StudentMedication extends Model<StudentMedicationAttributes> implem
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: StudentMedication) {
+  static async auditPHIAccess(instance: StudentMedication, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] StudentMedication ${instance.id} modified at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
+      );
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'StudentMedication',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 }

@@ -4,34 +4,18 @@
  * @description HTTP endpoints for AI-powered semantic search
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AiSearchService } from './ai-search.service';
-import { SearchQueryDto } from './dto/search-query.dto';
-import { IndexContentDto } from './dto/index-content.dto';
-import { SemanticSearchDto } from './dto/semantic-search.dto';
-import { AdvancedSearchCriteriaDto } from './dto/advanced-search.dto';
-import { SimilarCasesDto } from './dto/similar-cases.dto';
-import { MedicationSearchDto } from './dto/medication-search.dto';
-import { SearchSuggestionsDto } from './dto/search-suggestions.dto';
-import { SearchAnalyticsDto, AnalyticsPeriod } from './dto/search-analytics.dto';
+import {
+  AdvancedSearchCriteriaDto,
+  AnalyticsPeriod,
+  IndexContentDto,
+  MedicationSearchDto,
+  SearchQueryDto,
+  SemanticSearchDto,
+  SimilarCasesDto,
+} from '@/ai-search/dto';
 
 @ApiTags('AI Search')
 @Controller('ai-search')
@@ -72,7 +56,8 @@ export class AiSearchController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid search query - missing or malformed search parameters',
+    description:
+      'Invalid search query - missing or malformed search parameters',
   })
   @ApiResponse({
     status: 401,
@@ -144,10 +129,7 @@ export class AiSearchController {
     status: 404,
     description: 'Content not found in index',
   })
-  async removeFromIndex(
-    @Param('type') type: string,
-    @Param('id') id: string,
-  ) {
+  async removeFromIndex(@Param('type') type: string, @Param('id') id: string) {
     await this.aiSearchService.deleteFromIndex(type, id);
   }
 
@@ -214,7 +196,8 @@ export class AiSearchController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Perform semantic search',
-    description: 'Execute AI-powered semantic search with vector similarity matching',
+    description:
+      'Execute AI-powered semantic search with vector similarity matching',
   })
   @ApiResponse({
     status: 200,
@@ -227,10 +210,19 @@ export class AiSearchController {
   @Get('suggestions')
   @ApiOperation({
     summary: 'Get search suggestions',
-    description: 'Get intelligent search suggestions based on partial input and user history',
+    description:
+      'Get intelligent search suggestions based on partial input and user history',
   })
-  @ApiQuery({ name: 'partial', description: 'Partial search text', example: 'asth' })
-  @ApiQuery({ name: 'userId', description: 'User ID for personalized suggestions', example: 'uuid-123' })
+  @ApiQuery({
+    name: 'partial',
+    description: 'Partial search text',
+    example: 'asth',
+  })
+  @ApiQuery({
+    name: 'userId',
+    description: 'User ID for personalized suggestions',
+    example: 'uuid-123',
+  })
   @ApiResponse({
     status: 200,
     description: 'Search suggestions retrieved successfully',
@@ -250,7 +242,8 @@ export class AiSearchController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Advanced patient search',
-    description: 'Search patients using multiple criteria including demographics, medical, and behavioral filters',
+    description:
+      'Search patients using multiple criteria including demographics, medical, and behavioral filters',
   })
   @ApiResponse({
     status: 200,
@@ -264,7 +257,8 @@ export class AiSearchController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Find similar medical cases',
-    description: 'Find similar medical cases using vector similarity on symptoms, conditions, and treatments',
+    description:
+      'Find similar medical cases using vector similarity on symptoms, conditions, and treatments',
   })
   @ApiResponse({
     status: 200,
@@ -278,7 +272,8 @@ export class AiSearchController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Medication search',
-    description: 'Search for medication interactions, alternatives, side effects, or contraindications',
+    description:
+      'Search for medication interactions, alternatives, side effects, or contraindications',
   })
   @ApiResponse({
     status: 200,
@@ -291,7 +286,8 @@ export class AiSearchController {
   @Get('analytics')
   @ApiOperation({
     summary: 'Get search analytics',
-    description: 'Get search analytics including top queries, trends, and performance metrics',
+    description:
+      'Get search analytics including top queries, trends, and performance metrics',
   })
   @ApiQuery({
     name: 'period',
@@ -313,6 +309,9 @@ export class AiSearchController {
     @Query('period') period?: AnalyticsPeriod,
     @Query('limit') limit?: number,
   ) {
-    return this.aiSearchService.getSearchAnalytics(period || AnalyticsPeriod.WEEK, limit || 10);
+    return this.aiSearchService.getSearchAnalytics(
+      period || AnalyticsPeriod.WEEK,
+      limit || 10,
+    );
   }
 }

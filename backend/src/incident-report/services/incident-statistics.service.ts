@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { IncidentReport } from '../../database/models/incident-report.model';
-import { IncidentType, IncidentSeverity } from '../enums';
+import { IncidentReport } from '@/database';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentType } from '../enums/incident-type.enum';
 
 @Injectable()
 export class IncidentStatisticsService {
@@ -83,8 +84,11 @@ export class IncidentStatisticsService {
       });
 
       // Parent notification rate
-      const parentNotifiedCount = reports.filter((r) => r.parentNotified).length;
-      const parentNotificationRate = total > 0 ? (parentNotifiedCount / total) * 100 : 0;
+      const parentNotifiedCount = reports.filter(
+        (r) => r.parentNotified,
+      ).length;
+      const parentNotificationRate =
+        total > 0 ? (parentNotifiedCount / total) * 100 : 0;
 
       // Follow-up rate
       const followUpCount = reports.filter((r) => r.followUpRequired).length;
@@ -94,7 +98,8 @@ export class IncidentStatisticsService {
       let totalResponseTime = 0;
       reports.forEach((report) => {
         const responseTime =
-          new Date(report.createdAt).getTime() - new Date(report.occurredAt).getTime();
+          new Date(report.createdAt).getTime() -
+          new Date(report.occurredAt).getTime();
         totalResponseTime += responseTime;
       });
       const averageResponseTime =

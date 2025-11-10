@@ -153,3 +153,5 @@ export const MeasurementModal: React.FC<MeasurementModalProps> = ({
     </div>
   )
 }
+// Default export for dynamic imports
+export default MeasurementModal

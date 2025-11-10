@@ -129,16 +129,17 @@ export class AllergyQueryService {
       ];
     }
 
-    const { rows: allergies, count: total } = await this.allergyModel.findAndCountAll({
-      where: whereClause,
-      include: [{ model: Student, as: 'student' }],
-      offset,
-      limit,
-      order: [
-        ['severity', 'DESC'],
-        ['createdAt', 'DESC'],
-      ],
-    });
+    const { rows: allergies, count: total } =
+      await this.allergyModel.findAndCountAll({
+        where: whereClause,
+        include: [{ model: Student, as: 'student' }],
+        offset,
+        limit,
+        order: [
+          ['severity', 'DESC'],
+          ['createdAt', 'DESC'],
+        ],
+      });
 
     // PHI Audit Log
     this.logger.log(
@@ -165,7 +166,9 @@ export class AllergyQueryService {
     const allergies = await this.allergyModel.findAll({
       where: {
         studentId,
-        severity: { [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING] },
+        severity: {
+          [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING],
+        },
         isActive: true,
       },
       include: [{ model: Student, as: 'student' }],
@@ -207,7 +210,13 @@ export class AllergyQueryService {
       where: whereClause,
       attributes: [
         'severity',
-        [this.allergyModel.sequelize!.fn('COUNT', this.allergyModel.sequelize!.col('id')), 'count']
+        [
+          this.allergyModel.sequelize!.fn(
+            'COUNT',
+            this.allergyModel.sequelize!.col('id'),
+          ),
+          'count',
+        ],
       ],
       group: ['severity'],
       raw: true,
@@ -229,7 +238,13 @@ export class AllergyQueryService {
       },
       attributes: [
         'allergenType',
-        [this.allergyModel.sequelize!.fn('COUNT', this.allergyModel.sequelize!.col('id')), 'count']
+        [
+          this.allergyModel.sequelize!.fn(
+            'COUNT',
+            this.allergyModel.sequelize!.col('id'),
+          ),
+          'count',
+        ],
       ],
       group: ['allergenType'],
       raw: true,
@@ -254,7 +269,9 @@ export class AllergyQueryService {
     const critical = await this.allergyModel.count({
       where: {
         ...whereClause,
-        severity: { [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING] },
+        severity: {
+          [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING],
+        },
       },
     });
 
@@ -267,7 +284,9 @@ export class AllergyQueryService {
       critical,
     };
 
-    this.logger.log(`Allergy statistics retrieved: ${JSON.stringify(statistics)}`);
+    this.logger.log(
+      `Allergy statistics retrieved: ${JSON.stringify(statistics)}`,
+    );
 
     return statistics;
   }

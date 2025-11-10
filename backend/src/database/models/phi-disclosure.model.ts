@@ -1,17 +1,15 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  HasMany,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum DisclosureType {
@@ -21,8 +19,8 @@ export enum DisclosureType {
   AUTHORIZATION = 'AUTHORIZATION',
   REQUIRED_BY_LAW = 'REQUIRED_BY_LAW',
   PUBLIC_HEALTH = 'PUBLIC_HEALTH',
-  RESEARCH = 'RESEARCH'
-  }
+  RESEARCH = 'RESEARCH',
+}
 
 export enum DisclosurePurpose {
   TREATMENT = 'TREATMENT',
@@ -31,16 +29,16 @@ export enum DisclosurePurpose {
   LEGAL_REQUIREMENT = 'LEGAL_REQUIREMENT',
   PUBLIC_HEALTH = 'PUBLIC_HEALTH',
   RESEARCH = 'RESEARCH',
-  PATIENT_REQUEST = 'PATIENT_REQUEST'
-  }
+  PATIENT_REQUEST = 'PATIENT_REQUEST',
+}
 
 export enum DisclosureMethod {
   VERBAL = 'VERBAL',
   WRITTEN = 'WRITTEN',
   ELECTRONIC = 'ELECTRONIC',
   FAX = 'FAX',
-  PHONE = 'PHONE'
-  }
+  PHONE = 'PHONE',
+}
 
 export enum RecipientType {
   HEALTHCARE_PROVIDER = 'HEALTHCARE_PROVIDER',
@@ -49,8 +47,8 @@ export enum RecipientType {
   SCHOOL_OFFICIAL = 'SCHOOL_OFFICIAL',
   GOVERNMENT_AGENCY = 'GOVERNMENT_AGENCY',
   RESEARCHER = 'RESEARCHER',
-  OTHER = 'OTHER'
-  }
+  OTHER = 'OTHER',
+}
 
 export interface PhiDisclosureAttributes {
   id?: string;
@@ -83,10 +81,10 @@ export interface PhiDisclosureAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'phi_disclosures',
@@ -94,34 +92,37 @@ export interface PhiDisclosureAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['studentId', 'disclosureDate']
-  },
+      fields: ['studentId', 'disclosureDate'],
+    },
     {
-      fields: ['purpose', 'disclosureDate']
-  },
+      fields: ['purpose', 'disclosureDate'],
+    },
     {
-      fields: ['studentId']
-  },
+      fields: ['studentId'],
+    },
     {
-      fields: ['purpose']
-  },
+      fields: ['purpose'],
+    },
     {
-      fields: ['disclosureDate']
-  },
+      fields: ['disclosureDate'],
+    },
     {
-      fields: ['followUpDate']
-  },
+      fields: ['followUpDate'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_phi_disclosure_created_at'
+      name: 'idx_phi_disclosure_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_phi_disclosure_updated_at'
-    }
-  ]
-  })
-export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements PhiDisclosureAttributes {
+      name: 'idx_phi_disclosure_updated_at',
+    },
+  ],
+})
+export class PhiDisclosure
+  extends Model<PhiDisclosureAttributes>
+  implements PhiDisclosureAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -129,67 +130,67 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(DisclosureType)]
+      isIn: [Object.values(DisclosureType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   disclosureType: DisclosureType;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(DisclosurePurpose)]
+      isIn: [Object.values(DisclosurePurpose)],
     },
-    allowNull: false
+    allowNull: false,
   })
   purpose: DisclosurePurpose;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(DisclosureMethod)]
+      isIn: [Object.values(DisclosureMethod)],
     },
-    allowNull: false
+    allowNull: false,
   })
   method: DisclosureMethod;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   disclosureDate: Date;
 
   @Column({
     type: DataType.JSONB,
-    allowNull: false
+    allowNull: false,
   })
   informationDisclosed: string[];
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   minimumNecessary: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(RecipientType)]
+      isIn: [Object.values(RecipientType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   recipientType: RecipientType;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   recipientName: string;
 
@@ -211,7 +212,7 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false
+    allowNull: false,
   })
   authorizationObtained: boolean;
 
@@ -225,27 +226,27 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
 
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false
+    allowNull: false,
   })
   patientRequested: boolean;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   disclosedBy: string;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   followUpRequired: boolean;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   followUpCompleted: boolean;
 
@@ -263,14 +264,15 @@ export class PhiDisclosure extends Model<PhiDisclosureAttributes> implements Phi
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PhiDisclosure) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] PhiDisclosure ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] PhiDisclosure ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

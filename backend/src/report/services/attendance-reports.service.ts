@@ -1,9 +1,8 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { Student } from '../../database/models/student.model';
+import { ChronicCondition, Student } from '@/database';
 import { AttendanceCorrelationReport } from '../interfaces/report-types.interface';
 import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 
@@ -46,11 +45,7 @@ export class AttendanceReportsService {
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
         {
-          bind: [
-            startDate,
-            endDate,
-            limit,
-          ].filter(v => v !== undefined),
+          bind: [startDate, endDate, limit].filter((v) => v !== undefined),
           type: QueryTypes.SELECT,
         },
       );
@@ -83,11 +78,7 @@ export class AttendanceReportsService {
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
         {
-          bind: [
-            startDate,
-            endDate,
-            limit,
-          ].filter(v => v !== undefined),
+          bind: [startDate, endDate, limit].filter((v) => v !== undefined),
           type: QueryTypes.SELECT,
         },
       );
@@ -125,11 +116,7 @@ export class AttendanceReportsService {
         ORDER BY count DESC
         LIMIT $${startDate && endDate ? 3 : startDate || endDate ? 2 : 1}`,
         {
-          bind: [
-            startDate,
-            endDate,
-            limit,
-          ].filter(v => v !== undefined),
+          bind: [startDate, endDate, limit].filter((v) => v !== undefined),
           type: QueryTypes.SELECT,
         },
       );

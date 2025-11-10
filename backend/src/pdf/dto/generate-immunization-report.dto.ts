@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsNumber,
-  IsBoolean,
-  IsOptional,
-  IsArray,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -14,12 +6,12 @@ export class ImmunizationStudentDto {
   @ApiProperty({ description: 'Student first name' })
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({ description: 'Student last name' })
   @IsString()
   @IsNotEmpty()
-  lastName: string;
+  lastName!: string;
 
   @ApiPropertyOptional({ description: 'Student grade' })
   @IsString()
@@ -29,7 +21,7 @@ export class ImmunizationStudentDto {
   @ApiProperty({ description: 'Whether student is compliant' })
   @IsBoolean()
   @IsNotEmpty()
-  compliant: boolean;
+  compliant!: boolean;
 
   @ApiPropertyOptional({ description: 'List of missing vaccines' })
   @IsArray()
@@ -42,22 +34,22 @@ export class GenerateImmunizationReportDto {
   @ApiProperty({ description: 'Organization name' })
   @IsString()
   @IsNotEmpty()
-  organizationName: string;
+  organizationName!: string;
 
   @ApiProperty({ description: 'Total number of students' })
   @IsNumber()
   @IsNotEmpty()
-  totalStudents: number;
+  totalStudents!: number;
 
   @ApiProperty({ description: 'Number of compliant students' })
   @IsNumber()
   @IsNotEmpty()
-  compliantStudents: number;
+  compliantStudents!: number;
 
   @ApiProperty({ description: 'Compliance rate percentage' })
   @IsNumber()
   @IsNotEmpty()
-  complianceRate: number;
+  complianceRate!: number;
 
   @ApiPropertyOptional({
     description: 'List of students',

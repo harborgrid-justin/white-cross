@@ -4,8 +4,9 @@
  * @description Sanitizes input to prevent XSS and injection attacks
  */
 
-import { PipeTransform, Injectable } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import sanitizeHtml from 'sanitize-html';
+import { SanitizableObject, SanitizableValue } from '../types/utility-types';
 
 /**
  * Sanitize Pipe
@@ -57,18 +58,33 @@ export class SanitizePipe implements PipeTransform {
   }) {
     this.allowHtml = options?.allowHtml ?? false;
     this.allowedTags = options?.allowedTags ?? [
-      'p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li',
+      'p',
+      'br',
+      'strong',
+      'em',
+      'u',
+      'a',
+      'ul',
+      'ol',
+      'li',
     ];
   }
 
-  transform(value: any): any {
-    return this.sanitize(value);
+  /**
+   * Transform and sanitize the value
+   * @param value - Value to sanitize
+   * @returns Sanitized value
+   */
+  transform<T extends SanitizableValue>(value: T): T {
+    return this.sanitize(value) as T;
   }
 
   /**
    * Recursively sanitize all strings in the value
+   * @param value - Value to sanitize
+   * @returns Sanitized value
    */
-  private sanitize(value: any): any {
+  private sanitize(value: SanitizableValue): SanitizableValue {
     // Handle null/undefined
     if (value === null || value === undefined) {
       return value;
@@ -86,21 +102,23 @@ export class SanitizePipe implements PipeTransform {
 
     // Handle objects
     if (typeof value === 'object') {
-      const sanitizedObject: any = {};
+      const sanitizedObject: SanitizableObject = {};
       for (const key in value) {
-        if (value.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(value, key)) {
           sanitizedObject[key] = this.sanitize(value[key]);
         }
       }
       return sanitizedObject;
     }
 
-    // Return other types as-is
+    // Return other types as-is (numbers, booleans)
     return value;
   }
 
   /**
    * Sanitize a single string
+   * @param value - String to sanitize
+   * @returns Sanitized string
    */
   private sanitizeString(value: string): string {
     if (!value) return value;
@@ -110,7 +128,7 @@ export class SanitizePipe implements PipeTransform {
       return sanitizeHtml(value, {
         allowedTags: this.allowedTags,
         allowedAttributes: {
-          'a': ['href', 'title'],
+          a: ['href', 'title'],
         },
         allowedSchemes: ['http', 'https', 'mailto'],
       });

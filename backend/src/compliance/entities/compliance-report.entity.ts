@@ -7,5 +7,5 @@
 export {
   ComplianceReport,
   ComplianceReportType,
-  ComplianceStatus
+  ComplianceStatus,
 } from '../../database/models/compliance-report.model';

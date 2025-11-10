@@ -9,3 +9,6 @@ export * from './cache-strategy.service';
 export * from './query-performance-analyzer.service';
 export * from './intelligent-cache-invalidation.service';
 export * from './resource-optimization.service';
+
+export * from './cache-warming.service';
+export * from './health-data-cache.service';

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
@@ -27,21 +27,27 @@ export class PurchaseOrderService {
   /**
    * Create purchase order with comprehensive validation
    */
-  async createPurchaseOrder(data: CreatePurchaseOrderDto): Promise<PurchaseOrder> {
+  async createPurchaseOrder(
+    data: CreatePurchaseOrderDto,
+  ): Promise<PurchaseOrder> {
     const transaction = await this.sequelize.transaction({
       isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
     });
 
     try {
       // Verify vendor exists and is active
-      const vendor = await this.vendorModel.findByPk(data.vendorId, { transaction });
+      const vendor = await this.vendorModel.findByPk(data.vendorId, {
+        transaction,
+      });
 
       if (!vendor) {
         throw new NotFoundException('Vendor not found');
       }
 
       if (!vendor.isActive) {
-        throw new BadRequestException('Cannot create purchase order for inactive vendor');
+        throw new BadRequestException(
+          'Cannot create purchase order for inactive vendor',
+        );
       }
 
       // Validate order number uniqueness
@@ -58,7 +64,9 @@ export class PurchaseOrderService {
 
       // Validate items array
       if (!data.items || data.items.length === 0) {
-        throw new BadRequestException('Purchase order must contain at least one item');
+        throw new BadRequestException(
+          'Purchase order must contain at least one item',
+        );
       }
 
       // Calculate totals and validate items
@@ -69,14 +77,21 @@ export class PurchaseOrderService {
       for (const item of data.items) {
         // Check for duplicate items in the order
         if (itemIds.has(item.inventoryItemId)) {
-          throw new BadRequestException('Purchase order cannot contain duplicate items');
+          throw new BadRequestException(
+            'Purchase order cannot contain duplicate items',
+          );
         }
         itemIds.add(item.inventoryItemId);
 
-        const inventoryItem = await this.inventoryItemModel.findByPk(item.inventoryItemId, { transaction });
+        const inventoryItem = await this.inventoryItemModel.findByPk(
+          item.inventoryItemId,
+          { transaction },
+        );
 
         if (!inventoryItem) {
-          throw new NotFoundException(`Inventory item not found: ${item.inventoryItemId}`);
+          throw new NotFoundException(
+            `Inventory item not found: ${item.inventoryItemId}`,
+          );
         }
 
         if (!inventoryItem.isActive) {
@@ -97,39 +112,50 @@ export class PurchaseOrderService {
       }
 
       // Create purchase order
-      const purchaseOrder = await this.purchaseOrderModel.create({
-        orderNumber: data.orderNumber,
-        vendorId: data.vendorId,
-        orderDate: new Date(data.orderDate),
-        expectedDate: data.expectedDate ? new Date(data.expectedDate) : undefined,
-        notes: data.notes,
-        subtotal,
-        tax: 0,
-        shipping: 0,
-        total: subtotal,
-        status: PurchaseOrderStatus.PENDING,
-      } as any, { transaction });
+      const purchaseOrder = await this.purchaseOrderModel.create(
+        {
+          orderNumber: data.orderNumber,
+          vendorId: data.vendorId,
+          orderDate: new Date(data.orderDate),
+          expectedDate: data.expectedDate
+            ? new Date(data.expectedDate)
+            : undefined,
+          notes: data.notes,
+          subtotal,
+          tax: 0,
+          shipping: 0,
+          total: subtotal,
+          status: PurchaseOrderStatus.PENDING,
+        } as any,
+        { transaction },
+      );
 
       // Create purchase order items
       for (const item of orderItems) {
-        await this.purchaseOrderItemModel.create({
-          ...item,
-          purchaseOrderId: purchaseOrder.id,
-        }, { transaction });
+        await this.purchaseOrderItemModel.create(
+          {
+            ...item,
+            purchaseOrderId: purchaseOrder.id,
+          },
+          { transaction },
+        );
       }
 
       // Reload with associations BEFORE commit (while still in transaction)
-      const completeOrder = await this.purchaseOrderModel.findByPk(purchaseOrder.id, {
-        include: [
-          { model: Vendor, as: 'vendor' },
-          {
-            model: PurchaseOrderItem,
-            as: 'items',
-            include: [{ model: InventoryItem, as: 'inventoryItem' }]
-          }
-        ],
-        transaction,
-      });
+      const completeOrder = await this.purchaseOrderModel.findByPk(
+        purchaseOrder.id,
+        {
+          include: [
+            { model: Vendor, as: 'vendor' },
+            {
+              model: PurchaseOrderItem,
+              as: 'items',
+              include: [{ model: InventoryItem, as: 'inventoryItem' }],
+            },
+          ],
+          transaction,
+        },
+      );
 
       if (!completeOrder) {
         throw new Error('Failed to reload purchase order after creation');
@@ -146,7 +172,10 @@ export class PurchaseOrderService {
       await transaction.rollback();
       this.logger.error('Error creating purchase order:', error);
       // Generic error to avoid exposing internal details
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
       throw new Error('Failed to create purchase order. Please try again.');
@@ -156,7 +185,10 @@ export class PurchaseOrderService {
   /**
    * Get purchase orders with filtering
    */
-  async getPurchaseOrders(status?: PurchaseOrderStatus, vendorId?: string): Promise<PurchaseOrder[]> {
+  async getPurchaseOrders(
+    status?: PurchaseOrderStatus,
+    vendorId?: string,
+  ): Promise<PurchaseOrder[]> {
     try {
       const where: any = {};
 
@@ -172,7 +204,7 @@ export class PurchaseOrderService {
         where,
         include: [
           { model: Vendor, as: 'vendor' },
-          { model: PurchaseOrderItem, as: 'items' }
+          { model: PurchaseOrderItem, as: 'items' },
         ],
         order: [['orderDate', 'DESC']],
       });
@@ -195,8 +227,8 @@ export class PurchaseOrderService {
           {
             model: PurchaseOrderItem,
             as: 'items',
-            include: [{ model: InventoryItem, as: 'inventoryItem' }]
-          }
+            include: [{ model: InventoryItem, as: 'inventoryItem' }],
+          },
         ],
       });
 
@@ -231,7 +263,10 @@ export class PurchaseOrderService {
       }
 
       // Validate status transition
-      const validTransitions: Record<PurchaseOrderStatus, PurchaseOrderStatus[]> = {
+      const validTransitions: Record<
+        PurchaseOrderStatus,
+        PurchaseOrderStatus[]
+      > = {
         [PurchaseOrderStatus.PENDING]: [
           PurchaseOrderStatus.APPROVED,
           PurchaseOrderStatus.CANCELLED,
@@ -262,7 +297,12 @@ export class PurchaseOrderService {
 
       // Update status
       purchaseOrder.status = status;
-      if ([PurchaseOrderStatus.RECEIVED, PurchaseOrderStatus.PARTIALLY_RECEIVED].includes(status)) {
+      if (
+        [
+          PurchaseOrderStatus.RECEIVED,
+          PurchaseOrderStatus.PARTIALLY_RECEIVED,
+        ].includes(status)
+      ) {
         purchaseOrder.receivedDate = receivedDate || new Date();
       }
 
@@ -278,10 +318,15 @@ export class PurchaseOrderService {
       await transaction.rollback();
       this.logger.error('Error updating purchase order status:', error);
       // Generic error to avoid exposing internal details
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
         throw error;
       }
-      throw new Error('Failed to update purchase order status. Please try again.');
+      throw new Error(
+        'Failed to update purchase order status. Please try again.',
+      );
     }
   }
 }

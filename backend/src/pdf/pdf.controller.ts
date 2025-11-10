@@ -1,22 +1,17 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  HttpStatus,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
-import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-summary.dto';
-import { GenerateMedicationLogDto } from './dto/generate-medication-log.dto';
-import { GenerateImmunizationReportDto } from './dto/generate-immunization-report.dto';
-import { GenerateIncidentReportDto } from './dto/generate-incident-report.dto';
-import { PdfGenerateCustomReportDto } from './dto/generate-custom-report.dto';
-import { MergePdfsDto } from './dto/merge-pdfs.dto';
-import { WatermarkPdfDto } from './dto/watermark-pdf.dto';
-import { SignPdfDto } from './dto/sign-pdf.dto';
+import {
+  GenerateImmunizationReportDto,
+  GenerateIncidentReportDto,
+  GenerateMedicationLogDto,
+  GenerateStudentHealthSummaryDto,
+  MergePdfsDto,
+  PdfGenerateCustomReportDto,
+  SignPdfDto,
+  WatermarkPdfDto,
+} from '@/pdf/dto';
 
 /**
  * PDF Controller
@@ -42,8 +37,7 @@ export class PdfController {
     @Body() dto: GenerateStudentHealthSummaryDto,
     @Res() res: Response,
   ): Promise<void> {
-    const pdfBuffer =
-      await this.pdfService.generateStudentHealthSummary(dto);
+    const pdfBuffer = await this.pdfService.generateStudentHealthSummary(dto);
 
     res.set({
       'Content-Type': 'application/pdf',
@@ -93,8 +87,7 @@ export class PdfController {
     @Body() dto: GenerateImmunizationReportDto,
     @Res() res: Response,
   ): Promise<void> {
-    const pdfBuffer =
-      await this.pdfService.generateImmunizationReport(dto);
+    const pdfBuffer = await this.pdfService.generateImmunizationReport(dto);
 
     res.set({
       'Content-Type': 'application/pdf',
@@ -167,10 +160,7 @@ export class PdfController {
     description: 'PDFs merged successfully',
     type: Buffer,
   })
-  async mergePdfs(
-    @Body() dto: MergePdfsDto,
-    @Res() res: Response,
-  ): Promise<void> {
+  async mergePdfs(@Body() dto: MergePdfsDto, @Res() res: Response): Promise<void> {
     const pdfBuffer = await this.pdfService.mergePdfs(dto.pdfBuffers);
 
     res.set({
@@ -192,10 +182,7 @@ export class PdfController {
     description: 'Watermark added successfully',
     type: Buffer,
   })
-  async addWatermark(
-    @Body() dto: WatermarkPdfDto,
-    @Res() res: Response,
-  ): Promise<void> {
+  async addWatermark(@Body() dto: WatermarkPdfDto, @Res() res: Response): Promise<void> {
     const pdfBuffer = await this.pdfService.addWatermark(dto);
 
     res.set({
@@ -217,16 +204,8 @@ export class PdfController {
     description: 'PDF signed successfully',
     type: Buffer,
   })
-  async signPdf(
-    @Body() dto: SignPdfDto,
-    @Res() res: Response,
-  ): Promise<void> {
-    const pdfBuffer = await this.pdfService.signPdf(
-      dto.pdfBuffer,
-      dto.signatureName,
-      dto.signatureReason,
-      dto.signatureLocation,
-    );
+  async signPdf(@Body() dto: SignPdfDto, @Res() res: Response): Promise<void> {
+    const pdfBuffer = await this.pdfService.signPdf(dto.pdfBuffer, dto.signatureName);
 
     res.set({
       'Content-Type': 'application/pdf',

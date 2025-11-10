@@ -8,38 +8,31 @@
  * @route /emergency-contact
  */
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  ParseUUIDPipe,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmergencyContactService } from './emergency-contact.service';
-import {
-  EmergencyContactCreateDto,
-  EmergencyContactUpdateDto,
-  NotificationDto,
-  EmergencyVerifyContactDto,
-} from './dto';
+import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
+import { EmergencyContactUpdateDto } from './dto/update-emergency-contact.dto';
+import { EmergencyVerifyContactDto } from './dto/verify-contact.dto';
+import { NotificationDto } from './dto/notification.dto';
 
 @ApiTags('Emergency Contacts')
 @ApiBearerAuth()
 @Controller('emergency-contact')
 export class EmergencyContactController {
-  constructor(private readonly emergencyContactService: EmergencyContactService) {}
+  constructor(
+    private readonly emergencyContactService: EmergencyContactService,
+  ) {}
 
   /**
    * Get all emergency contacts for a student
@@ -48,7 +41,8 @@ export class EmergencyContactController {
   @Get('student/:studentId')
   @ApiOperation({
     summary: 'Get student emergency contacts',
-    description: 'Retrieves all active emergency contacts for a specific student, ordered by priority',
+    description:
+      'Retrieves all active emergency contacts for a specific student, ordered by priority',
   })
   @ApiParam({
     name: 'studentId',
@@ -71,7 +65,10 @@ export class EmergencyContactController {
           relationship: { type: 'string', example: 'Mother' },
           phoneNumber: { type: 'string', example: '+1-555-123-4567' },
           email: { type: 'string', example: 'jane.doe@example.com' },
-          priority: { type: 'string', enum: ['PRIMARY', 'SECONDARY', 'EMERGENCY_ONLY'] },
+          priority: {
+            type: 'string',
+            enum: ['PRIMARY', 'SECONDARY', 'EMERGENCY_ONLY'],
+          },
         },
       },
     },
@@ -80,7 +77,9 @@ export class EmergencyContactController {
     status: 401,
     description: 'Unauthorized',
   })
-  async getStudentEmergencyContacts(@Param('studentId', ParseUUIDPipe) studentId: string) {
+  async getStudentEmergencyContacts(
+    @Param('studentId', ParseUUIDPipe) studentId: string,
+  ) {
     return this.emergencyContactService.getStudentEmergencyContacts(studentId);
   }
 
@@ -127,7 +126,8 @@ export class EmergencyContactController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create emergency contact',
-    description: 'Creates a new emergency contact with validation and primary contact enforcement',
+    description:
+      'Creates a new emergency contact with validation and primary contact enforcement',
   })
   @ApiResponse({
     status: 201,
@@ -135,7 +135,8 @@ export class EmergencyContactController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Invalid input data - validation errors or business rule violations',
+    description:
+      'Invalid input data - validation errors or business rule violations',
   })
   @ApiResponse({
     status: 401,
@@ -149,8 +150,12 @@ export class EmergencyContactController {
     status: 500,
     description: 'Internal server error',
   })
-  async createEmergencyContact(@Body() createEmergencyContactDto: EmergencyContactCreateDto) {
-    return this.emergencyContactService.createEmergencyContact(createEmergencyContactDto);
+  async createEmergencyContact(
+    @Body() createEmergencyContactDto: EmergencyContactCreateDto,
+  ) {
+    return this.emergencyContactService.createEmergencyContact(
+      createEmergencyContactDto,
+    );
   }
 
   /**
@@ -160,7 +165,8 @@ export class EmergencyContactController {
   @Patch(':id')
   @ApiOperation({
     summary: 'Update emergency contact',
-    description: 'Updates an existing emergency contact with validation and business rule enforcement',
+    description:
+      'Updates an existing emergency contact with validation and business rule enforcement',
   })
   @ApiParam({
     name: 'id',
@@ -188,7 +194,10 @@ export class EmergencyContactController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateEmergencyContactDto: EmergencyContactUpdateDto,
   ) {
-    return this.emergencyContactService.updateEmergencyContact(id, updateEmergencyContactDto);
+    return this.emergencyContactService.updateEmergencyContact(
+      id,
+      updateEmergencyContactDto,
+    );
   }
 
   /**
@@ -199,7 +208,8 @@ export class EmergencyContactController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete emergency contact',
-    description: 'Soft deletes an emergency contact (marks as inactive). Cannot delete the only active primary contact.',
+    description:
+      'Soft deletes an emergency contact (marks as inactive). Cannot delete the only active primary contact.',
   })
   @ApiParam({
     name: 'id',
@@ -240,7 +250,8 @@ export class EmergencyContactController {
   @Post('notification/student/:studentId')
   @ApiOperation({
     summary: 'Send emergency notification to all contacts',
-    description: 'Sends emergency notification to all active contacts for a student via specified channels',
+    description:
+      'Sends emergency notification to all active contacts for a student via specified channels',
   })
   @ApiParam({
     name: 'studentId',
@@ -269,9 +280,27 @@ export class EmergencyContactController {
           channels: {
             type: 'object',
             properties: {
-              sms: { type: 'object', properties: { success: { type: 'boolean' }, messageId: { type: 'string' } } },
-              email: { type: 'object', properties: { success: { type: 'boolean' }, messageId: { type: 'string' } } },
-              voice: { type: 'object', properties: { success: { type: 'boolean' }, callId: { type: 'string' } } },
+              sms: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  messageId: { type: 'string' },
+                },
+              },
+              email: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  messageId: { type: 'string' },
+                },
+              },
+              voice: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean' },
+                  callId: { type: 'string' },
+                },
+              },
             },
           },
           timestamp: { type: 'string', format: 'date-time' },
@@ -291,7 +320,10 @@ export class EmergencyContactController {
     @Param('studentId', ParseUUIDPipe) studentId: string,
     @Body() notificationDto: NotificationDto,
   ) {
-    return this.emergencyContactService.sendEmergencyNotification(studentId, notificationDto);
+    return this.emergencyContactService.sendEmergencyNotification(
+      studentId,
+      notificationDto,
+    );
   }
 
   /**
@@ -301,7 +333,8 @@ export class EmergencyContactController {
   @Post('notification/contact/:contactId')
   @ApiOperation({
     summary: 'Send notification to specific contact',
-    description: 'Sends notification to a specific emergency contact via specified channels',
+    description:
+      'Sends notification to a specific emergency contact via specified channels',
   })
   @ApiParam({
     name: 'contactId',
@@ -329,7 +362,10 @@ export class EmergencyContactController {
     @Param('contactId', ParseUUIDPipe) contactId: string,
     @Body() notificationDto: NotificationDto,
   ) {
-    return this.emergencyContactService.sendContactNotification(contactId, notificationDto);
+    return this.emergencyContactService.sendContactNotification(
+      contactId,
+      notificationDto,
+    );
   }
 
   /**
@@ -339,7 +375,8 @@ export class EmergencyContactController {
   @Post(':id/verify')
   @ApiOperation({
     summary: 'Verify emergency contact',
-    description: 'Sends verification code to emergency contact via specified method (SMS, email, or voice)',
+    description:
+      'Sends verification code to emergency contact via specified method (SMS, email, or voice)',
   })
   @ApiParam({
     name: 'id',
@@ -353,7 +390,12 @@ export class EmergencyContactController {
     schema: {
       type: 'object',
       properties: {
-        verificationCode: { type: 'string', example: '123456', description: 'For testing only - should not be returned in production' },
+        verificationCode: {
+          type: 'string',
+          example: '123456',
+          description:
+            'For testing only - should not be returned in production',
+        },
         method: { type: 'string', enum: ['sms', 'email', 'voice'] },
         messageId: { type: 'string', example: 'sms_1234567890' },
       },
@@ -375,7 +417,10 @@ export class EmergencyContactController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() verifyContactDto: EmergencyVerifyContactDto,
   ) {
-    return this.emergencyContactService.verifyContact(id, verifyContactDto.verificationMethod);
+    return this.emergencyContactService.verifyContact(
+      id,
+      verifyContactDto.verificationMethod,
+    );
   }
 
   /**
@@ -385,7 +430,8 @@ export class EmergencyContactController {
   @Get('statistics/all')
   @ApiOperation({
     summary: 'Get emergency contact statistics',
-    description: 'Retrieves aggregated statistics about emergency contacts (counts by priority, students without contacts)',
+    description:
+      'Retrieves aggregated statistics about emergency contacts (counts by priority, students without contacts)',
   })
   @ApiResponse({
     status: 200,

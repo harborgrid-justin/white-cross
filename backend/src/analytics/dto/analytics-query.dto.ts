@@ -1,7 +1,7 @@
-import { IsString, IsEnum, IsOptional, IsDate, IsArray } from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { TimePeriod } from '../enums';
+import { TimePeriod } from '../enums/time-period.enum';
 
 /**
  * Get Population Summary DTO
@@ -36,13 +36,20 @@ export class GetConditionTrendsDto {
   @IsString()
   schoolId: string;
 
-  @ApiPropertyOptional({ type: [String], description: 'Specific conditions to track' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Specific conditions to track',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   conditions?: string[];
 
-  @ApiPropertyOptional({ enum: TimePeriod, description: 'Time period', default: TimePeriod.LAST_90_DAYS })
+  @ApiPropertyOptional({
+    enum: TimePeriod,
+    description: 'Time period',
+    default: TimePeriod.LAST_90_DAYS,
+  })
   @IsOptional()
   @IsEnum(TimePeriod)
   period?: TimePeriod;
@@ -56,7 +63,11 @@ export class GetMedicationTrendsDto {
   @IsString()
   schoolId: string;
 
-  @ApiPropertyOptional({ enum: TimePeriod, description: 'Time period', default: TimePeriod.LAST_30_DAYS })
+  @ApiPropertyOptional({
+    enum: TimePeriod,
+    description: 'Time period',
+    default: TimePeriod.LAST_30_DAYS,
+  })
   @IsOptional()
   @IsEnum(TimePeriod)
   period?: TimePeriod;
@@ -70,7 +81,11 @@ export class GetIncidentAnalyticsDto {
   @IsString()
   schoolId: string;
 
-  @ApiPropertyOptional({ enum: TimePeriod, description: 'Time period', default: TimePeriod.LAST_90_DAYS })
+  @ApiPropertyOptional({
+    enum: TimePeriod,
+    description: 'Time period',
+    default: TimePeriod.LAST_90_DAYS,
+  })
   @IsOptional()
   @IsEnum(TimePeriod)
   period?: TimePeriod;
@@ -93,7 +108,11 @@ export class GetAbsenceCorrelationDto {
   @IsString()
   schoolId: string;
 
-  @ApiPropertyOptional({ enum: TimePeriod, description: 'Time period', default: TimePeriod.LAST_30_DAYS })
+  @ApiPropertyOptional({
+    enum: TimePeriod,
+    description: 'Time period',
+    default: TimePeriod.LAST_30_DAYS,
+  })
   @IsOptional()
   @IsEnum(TimePeriod)
   period?: TimePeriod;

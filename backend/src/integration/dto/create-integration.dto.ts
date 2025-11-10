@@ -1,28 +1,34 @@
 import {
-  IsString,
   IsEnum,
-  IsOptional,
-  IsObject,
   IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
   IsUrl,
-  MinLength,
+  Max,
   MaxLength,
   Min,
-  Max,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IntegrationType } from '../entities/integration-config.entity';
+import type { AuthenticationConfig } from '../types/authentication.types';
+import type { IntegrationSettings } from '../types/integration-settings.types';
 
 export class CreateIntegrationDto {
-  @ApiProperty({ description: 'Integration name', minLength: 2, maxLength: 100 })
+  @ApiProperty({
+    description: 'Integration name',
+    minLength: 2,
+    maxLength: 100,
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @ApiProperty({ enum: IntegrationType, description: 'Type of integration' })
   @IsEnum(IntegrationType)
-  type: IntegrationType;
+  type!: IntegrationType;
 
   @ApiPropertyOptional({ description: 'API endpoint URL' })
   @IsOptional()
@@ -51,12 +57,12 @@ export class CreateIntegrationDto {
   @ApiPropertyOptional({ description: 'Integration-specific settings' })
   @IsOptional()
   @IsObject()
-  settings?: Record<string, any>;
+  settings?: IntegrationSettings;
 
   @ApiPropertyOptional({ description: 'Authentication configuration' })
   @IsOptional()
   @IsObject()
-  authentication?: Record<string, any>;
+  authentication?: AuthenticationConfig;
 
   @ApiPropertyOptional({
     description: 'Sync frequency in minutes',

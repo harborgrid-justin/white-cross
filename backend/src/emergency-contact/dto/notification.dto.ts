@@ -3,17 +3,9 @@
  *
  * Data Transfer Object for sending notifications to emergency contacts.
  */
-import {
-  IsString,
-  IsEnum,
-  IsArray,
-  IsOptional,
-  IsUUID,
-  MinLength,
-  ArrayMinSize,
-} from 'class-validator';
+import { ArrayMinSize, IsArray, IsEnum, IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { NotificationChannel } from '../../contact/enums';
+import { NotificationChannel } from '@/contact';
 
 export enum NotificationType {
   EMERGENCY = 'emergency',
@@ -32,7 +24,7 @@ export enum NotificationPriority {
 export class NotificationDto {
   @ApiProperty({
     description: 'Notification message content',
-    example: 'Your child has a minor injury and is in the nurse\'s office.',
+    example: "Your child has a minor injury and is in the nurse's office.",
     minLength: 1,
   })
   @IsString()

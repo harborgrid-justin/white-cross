@@ -2,7 +2,10 @@ import { IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GetHealthTrendsDto {
-  @ApiProperty({ enum: ['day', 'week', 'month'], description: 'Time period for trends' })
+  @ApiProperty({
+    enum: ['day', 'week', 'month'],
+    description: 'Time period for trends',
+  })
   @IsEnum(['day', 'week', 'month'])
   period: 'day' | 'week' | 'month';
 }

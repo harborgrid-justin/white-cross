@@ -21,7 +21,7 @@
  * 15. Disaster Recovery
  */
 
-import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 // ==================== Interfaces ====================
 
@@ -231,7 +231,9 @@ export class FeaturesService {
    * 1. Advanced Analytics
    */
   async getAdvancedAnalytics(tenantId?: string): Promise<AnalyticsData> {
-    this.logger.log(`Getting advanced analytics for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting advanced analytics for tenant: ${tenantId || 'default'}`,
+    );
 
     return {
       dashboards: [
@@ -260,7 +262,9 @@ export class FeaturesService {
         avgResponseTime: 2.3, // minutes
       },
       trends: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0],
         value: Math.floor(Math.random() * 50) + 10,
       })),
       customReports: [],
@@ -271,7 +275,9 @@ export class FeaturesService {
    * 2. Enterprise Reporting
    */
   async getEnterpriseReporting(tenantId?: string): Promise<Report[]> {
-    this.logger.log(`Getting enterprise reporting for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting enterprise reporting for tenant: ${tenantId || 'default'}`,
+    );
 
     return [
       {
@@ -304,7 +310,9 @@ export class FeaturesService {
    * 3. Single Sign-On (SSO)
    */
   async getSingleSignOn(tenantId?: string): Promise<SSOConfig> {
-    this.logger.log(`Getting SSO configuration for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting SSO configuration for tenant: ${tenantId || 'default'}`,
+    );
 
     return {
       enabled: true,
@@ -312,9 +320,12 @@ export class FeaturesService {
       entityId: `urn:white-cross:${tenantId || 'default'}`,
       ssoUrl: 'https://idp.example.com/saml/sso',
       attributeMapping: {
-        email: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
-        firstName: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname',
-        lastName: 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname',
+        email:
+          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress',
+        firstName:
+          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname',
+        lastName:
+          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname',
       },
     };
   }
@@ -377,7 +388,9 @@ export class FeaturesService {
    * 6. API Access Management
    */
   async getAPIAccess(tenantId?: string): Promise<APIAccessConfig> {
-    this.logger.log(`Getting API access configuration for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting API access configuration for tenant: ${tenantId || 'default'}`,
+    );
 
     return {
       apiKeyEnabled: true,
@@ -390,7 +403,11 @@ export class FeaturesService {
         {
           id: 'webhook-001',
           url: 'https://example.com/webhooks/health-events',
-          events: ['student.created', 'health_record.updated', 'alert.critical'],
+          events: [
+            'student.created',
+            'health_record.updated',
+            'alert.critical',
+          ],
           active: true,
         },
       ],
@@ -404,8 +421,13 @@ export class FeaturesService {
   /**
    * 7. Data Export
    */
-  async getDataExport(params: { format: string; dataType: string }): Promise<ExportData> {
-    this.logger.log(`Creating data export: ${params.dataType} as ${params.format}`);
+  async getDataExport(params: {
+    format: string;
+    dataType: string;
+  }): Promise<ExportData> {
+    this.logger.log(
+      `Creating data export: ${params.dataType} as ${params.format}`,
+    );
 
     const exportId = `export_${Date.now()}`;
 
@@ -455,7 +477,9 @@ export class FeaturesService {
    * 9. Role-Based Access Control (RBAC)
    */
   async getRoleBasedAccess(tenantId?: string): Promise<RBACConfig> {
-    this.logger.log(`Getting RBAC configuration for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting RBAC configuration for tenant: ${tenantId || 'default'}`,
+    );
 
     return {
       roles: [
@@ -480,7 +504,11 @@ export class FeaturesService {
         {
           id: 'teacher',
           name: 'Teacher',
-          permissions: ['students.read', 'alerts.read', 'health_records.read.basic'],
+          permissions: [
+            'students.read',
+            'alerts.read',
+            'health_records.read.basic',
+          ],
           priority: 30,
         },
         {
@@ -509,8 +537,12 @@ export class FeaturesService {
   /**
    * 10. Compliance Certifications
    */
-  async getComplianceCertifications(tenantId?: string): Promise<Certification[]> {
-    this.logger.log(`Getting compliance certifications for tenant: ${tenantId || 'default'}`);
+  async getComplianceCertifications(
+    tenantId?: string,
+  ): Promise<Certification[]> {
+    this.logger.log(
+      `Getting compliance certifications for tenant: ${tenantId || 'default'}`,
+    );
 
     return [
       {
@@ -544,7 +576,9 @@ export class FeaturesService {
    * 11. 24x7 Support
    */
   async get24x7Support(tenantId?: string): Promise<SupportConfig> {
-    this.logger.log(`Getting 24x7 support configuration for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting 24x7 support configuration for tenant: ${tenantId || 'default'}`,
+    );
 
     return {
       tier: '24x7',
@@ -566,7 +600,9 @@ export class FeaturesService {
    * 12. Custom Integrations
    */
   async getCustomIntegrations(tenantId?: string): Promise<Integration[]> {
-    this.logger.log(`Getting custom integrations for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting custom integrations for tenant: ${tenantId || 'default'}`,
+    );
 
     return [
       {
@@ -599,7 +635,9 @@ export class FeaturesService {
    * 13. Advanced Security
    */
   async getAdvancedSecurity(tenantId?: string): Promise<SecurityConfig> {
-    this.logger.log(`Getting advanced security configuration for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting advanced security configuration for tenant: ${tenantId || 'default'}`,
+    );
 
     return {
       mfaEnabled: true,
@@ -623,7 +661,9 @@ export class FeaturesService {
    * 14. Data Retention
    */
   async getDataRetention(tenantId?: string): Promise<RetentionPolicy[]> {
-    this.logger.log(`Getting data retention policies for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting data retention policies for tenant: ${tenantId || 'default'}`,
+    );
 
     return [
       {
@@ -649,7 +689,9 @@ export class FeaturesService {
    * 15. Disaster Recovery
    */
   async getDisasterRecovery(tenantId?: string): Promise<DRConfig> {
-    this.logger.log(`Getting disaster recovery configuration for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Getting disaster recovery configuration for tenant: ${tenantId || 'default'}`,
+    );
 
     return {
       backupFrequency: '0 */6 * * *', // Every 6 hours
@@ -668,8 +710,13 @@ export class FeaturesService {
   /**
    * Check if feature is enabled for tenant
    */
-  async isFeatureEnabled(featureName: string, tenantId?: string): Promise<boolean> {
-    this.logger.log(`Checking feature ${featureName} for tenant: ${tenantId || 'default'}`);
+  async isFeatureEnabled(
+    featureName: string,
+    tenantId?: string,
+  ): Promise<boolean> {
+    this.logger.log(
+      `Checking feature ${featureName} for tenant: ${tenantId || 'default'}`,
+    );
 
     // In a real implementation, this would query the database
     // For now, assume all features are enabled
@@ -689,7 +736,11 @@ export class FeaturesService {
     ];
   }
 
-  async toggleFeature(featureName: string, enabled: boolean, tenantId?: string): Promise<any> {
+  async toggleFeature(
+    featureName: string,
+    enabled: boolean,
+    tenantId?: string,
+  ): Promise<any> {
     // Toggle feature on/off
     return { name: featureName, enabled };
   }
@@ -697,9 +748,11 @@ export class FeaturesService {
   async updateFeatureConfig(
     featureName: string,
     config: any,
-    tenantId?: string
+    tenantId?: string,
   ): Promise<void> {
-    this.logger.log(`Updating feature ${featureName} config for tenant: ${tenantId || 'default'}`);
+    this.logger.log(
+      `Updating feature ${featureName} config for tenant: ${tenantId || 'default'}`,
+    );
 
     const key = `${tenantId || 'default'}:${featureName}`;
     this.featureConfigs.set(key, config);

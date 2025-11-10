@@ -2,14 +2,12 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { DocumentController } from './document.controller';
 import { DocumentService } from './document.service';
-import { Document } from './entities/document.entity';
-import { DocumentSignature } from './entities/document-signature.entity';
-import { DocumentAuditTrail } from './entities/document-audit-trail.entity';
+import { Document, DocumentAuditTrail, DocumentSignature } from '@/document/entities';
 
 /**
  * Document Module
  * Provides comprehensive document management with HIPAA compliance
- * 
+ *
  * Features:
  * - Document CRUD operations with validation
  * - File upload and storage integration

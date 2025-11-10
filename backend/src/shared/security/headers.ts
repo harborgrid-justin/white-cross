@@ -50,7 +50,7 @@ export function applyAPISecurityHeaders(response: any): void {
 export function applyDownloadSecurityHeaders(
   response: any,
   filename: string,
-  contentType: string
+  contentType: string,
 ): void {
   // Standard security headers
   response.header('X-Content-Type-Options', 'nosniff');
@@ -59,14 +59,17 @@ export function applyDownloadSecurityHeaders(
   // Content disposition - force download
   response.header(
     'Content-Disposition',
-    `attachment; filename="${encodeURIComponent(filename)}"`
+    `attachment; filename="${encodeURIComponent(filename)}"`,
   );
 
   // Content type
   response.header('Content-Type', contentType);
 
   // Cache control - don't cache PHI
-  response.header('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  response.header(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, private',
+  );
   response.header('Pragma', 'no-cache');
   response.header('Expires', '0');
 }
@@ -77,25 +80,25 @@ export function applyDownloadSecurityHeaders(
  */
 export async function auditSecurityHeaders(
   response: any,
-  path: string
+  path: string,
 ): Promise<void> {
   const requiredHeaders = [
     'Strict-Transport-Security',
     'X-Content-Type-Options',
     'X-Frame-Options',
     'Content-Security-Policy',
-    'Referrer-Policy'
+    'Referrer-Policy',
   ];
 
   const missingHeaders = requiredHeaders.filter(
-    header => !response.headers[header.toLowerCase()]
+    (header) => !response.headers[header.toLowerCase()],
   );
 
   if (missingHeaders.length > 0) {
     logger.warn('Missing security headers', {
       path,
       missingHeaders,
-      statusCode: response.statusCode
+      statusCode: response.statusCode,
     });
   }
 }
@@ -103,5 +106,5 @@ export async function auditSecurityHeaders(
 export default {
   applyAPISecurityHeaders,
   applyDownloadSecurityHeaders,
-  auditSecurityHeaders
+  auditSecurityHeaders,
 };

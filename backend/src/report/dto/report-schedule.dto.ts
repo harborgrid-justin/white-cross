@@ -1,14 +1,6 @@
-import {
-  IsEnum,
-  IsString,
-  IsEmail,
-  IsArray,
-  IsOptional,
-  IsBoolean,
-  ValidateIf,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsEnum, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ReportType, OutputFormat, ScheduleFrequency } from '../constants/report.constants';
+import { OutputFormat, ReportType, ScheduleFrequency } from '../constants/report.constants';
 
 /**
  * DTO for creating/updating report schedules
@@ -18,21 +10,21 @@ export class ReportScheduleDto {
     description: 'Name of the scheduled report',
   })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     enum: ReportType,
     description: 'Type of report to generate',
   })
   @IsEnum(ReportType)
-  reportType: ReportType;
+  reportType!: ReportType;
 
   @ApiProperty({
     enum: ScheduleFrequency,
     description: 'Schedule frequency',
   })
   @IsEnum(ScheduleFrequency)
-  frequency: ScheduleFrequency;
+  frequency!: ScheduleFrequency;
 
   @ApiPropertyOptional({
     description: 'Custom cron expression (required if frequency is CUSTOM)',
@@ -55,7 +47,7 @@ export class ReportScheduleDto {
   })
   @IsArray()
   @IsEmail({}, { each: true })
-  recipients: string[];
+  recipients!: string[];
 
   @ApiPropertyOptional({
     description: 'Report parameters as JSON',

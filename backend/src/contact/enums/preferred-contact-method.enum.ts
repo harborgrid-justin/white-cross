@@ -5,5 +5,5 @@ export enum PreferredContactMethod {
   SMS = 'SMS',
   EMAIL = 'EMAIL',
   VOICE = 'VOICE',
-  ANY = 'ANY'
+  ANY = 'ANY',
 }

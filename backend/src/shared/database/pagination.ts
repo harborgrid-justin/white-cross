@@ -2,16 +2,15 @@
  * Pagination utility functions for database queries
  */
 
-import { 
-  PaginationParams, 
-  PaginationMeta, 
-  PaginatedResponse, 
+import {
+  PaginatedResponse,
   PaginatedResult,
   PAGINATION_DEFAULTS,
-  PaginationConstraints
+  PaginationConstraints,
+  PaginationMeta,
+  PaginationParams,
 } from '../types/pagination';
-import { ValidationResult, ValidationError } from '../types/common';
-import { ValidationErrorCode } from '../types/common';
+import { ValidationError, ValidationErrorCode, ValidationResult } from '../types/common';
 
 /**
  * Calculate pagination offset from page and limit
@@ -25,13 +24,13 @@ export function calculateOffset(page: number, limit: number): number {
  */
 export function normalizePaginationParams(
   params: PaginationParams = {},
-  constraints: PaginationConstraints = {}
+  constraints: PaginationConstraints = {},
 ): Required<PaginationParams> {
   const {
     maxLimit = PAGINATION_DEFAULTS.MAX_LIMIT,
     minLimit = PAGINATION_DEFAULTS.MIN_LIMIT,
     defaultLimit = PAGINATION_DEFAULTS.LIMIT,
-    defaultPage = PAGINATION_DEFAULTS.PAGE
+    defaultPage = PAGINATION_DEFAULTS.PAGE,
   } = constraints;
 
   // Normalize page
@@ -54,7 +53,7 @@ export function normalizePaginationParams(
 export function createPaginationMeta(
   page: number,
   limit: number,
-  total: number
+  total: number,
 ): PaginationMeta {
   const pages = Math.ceil(total / limit);
   const offset = calculateOffset(page, limit);
@@ -66,7 +65,7 @@ export function createPaginationMeta(
     pages,
     hasNext: page < pages,
     hasPrev: page > 1,
-    offset
+    offset,
   };
 }
 
@@ -77,11 +76,11 @@ export function createPaginatedResponse<T>(
   data: T[],
   page: number,
   limit: number,
-  total: number
+  total: number,
 ): PaginatedResponse<T> {
   return {
     data,
-    pagination: createPaginationMeta(page, limit, total)
+    pagination: createPaginationMeta(page, limit, total),
   };
 }
 
@@ -91,7 +90,7 @@ export function createPaginatedResponse<T>(
 export function processPaginatedResult<T>(
   result: PaginatedResult<T>,
   page: number,
-  limit: number
+  limit: number,
 ): PaginatedResponse<T> {
   return createPaginatedResponse(result.rows, page, limit, result.count);
 }
@@ -101,14 +100,14 @@ export function processPaginatedResult<T>(
  */
 export function buildPaginationQuery(
   params: PaginationParams = {},
-  constraints: PaginationConstraints = {}
+  constraints: PaginationConstraints = {},
 ): { limit: number; offset: number; page: number } {
   const normalized = normalizePaginationParams(params, constraints);
-  
+
   return {
     limit: normalized.limit,
     offset: normalized.offset,
-    page: normalized.page
+    page: normalized.page,
   };
 }
 
@@ -117,12 +116,12 @@ export function buildPaginationQuery(
  */
 export function validatePaginationParams(
   params: PaginationParams,
-  constraints: PaginationConstraints = {}
+  constraints: PaginationConstraints = {},
 ): ValidationResult {
   const errors: ValidationError[] = [];
   const {
     maxLimit = PAGINATION_DEFAULTS.MAX_LIMIT,
-    minLimit = PAGINATION_DEFAULTS.MIN_LIMIT
+    minLimit = PAGINATION_DEFAULTS.MIN_LIMIT,
   } = constraints;
 
   // Validate page
@@ -132,7 +131,7 @@ export function validatePaginationParams(
         field: 'page',
         message: 'Page must be a positive integer',
         code: ValidationErrorCode.INVALID_VALUE,
-        value: params.page
+        value: params.page,
       });
     }
   }
@@ -144,21 +143,21 @@ export function validatePaginationParams(
         field: 'limit',
         message: 'Limit must be an integer',
         code: ValidationErrorCode.INVALID_TYPE,
-        value: params.limit
+        value: params.limit,
       });
     } else if (params.limit < minLimit) {
       errors.push({
         field: 'limit',
         message: `Limit must be at least ${minLimit}`,
         code: ValidationErrorCode.TOO_SMALL,
-        value: params.limit
+        value: params.limit,
       });
     } else if (params.limit > maxLimit) {
       errors.push({
         field: 'limit',
         message: `Limit cannot exceed ${maxLimit}`,
         code: ValidationErrorCode.TOO_LARGE,
-        value: params.limit
+        value: params.limit,
       });
     }
   }
@@ -170,7 +169,7 @@ export function validatePaginationParams(
         field: 'offset',
         message: 'Offset must be a non-negative integer',
         code: ValidationErrorCode.INVALID_VALUE,
-        value: params.offset
+        value: params.offset,
       });
     }
   }
@@ -178,7 +177,7 @@ export function validatePaginationParams(
   return {
     isValid: errors.length === 0,
     errors,
-    warnings: []
+    warnings: [],
   };
 }
 
@@ -188,7 +187,7 @@ export function validatePaginationParams(
 export function calculateCursorPagination(
   items: any[],
   limit: number,
-  cursorField: string = 'id'
+  cursorField: string = 'id',
 ): {
   hasNext: boolean;
   hasPrev: boolean;
@@ -197,16 +196,16 @@ export function calculateCursorPagination(
 } {
   const hasNext = items.length > limit;
   const actualItems = hasNext ? items.slice(0, -1) : items;
-  
+
   return {
     hasNext,
     hasPrev: false, // Would need additional context to determine
-    nextCursor: hasNext && actualItems.length > 0 
-      ? actualItems[actualItems.length - 1][cursorField] 
-      : undefined,
-    prevCursor: actualItems.length > 0 
-      ? actualItems[0][cursorField] 
-      : undefined
+    nextCursor:
+      hasNext && actualItems.length > 0
+        ? actualItems[actualItems.length - 1][cursorField]
+        : undefined,
+    prevCursor:
+      actualItems.length > 0 ? actualItems[0][cursorField] : undefined,
   };
 }
 

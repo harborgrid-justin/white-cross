@@ -11,12 +11,51 @@
  * - Public route support via @Public() decorator
  * - Comprehensive audit logging
  */
-import { Injectable, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
+import { ExecutionContext, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '../../../auth/decorators/public.decorator';
-import { TokenBlacklistService } from '../../../auth/services/token-blacklist.service';
+import { IS_PUBLIC_KEY } from '@/auth/decorators';
+import { TokenBlacklistService } from '@/auth';
+
+
+/**
+ * Passport user structure
+ */
+interface PassportUser {
+  userId: string;
+  organizationId: string;
+  role: string;
+  email: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Incoming request structure
+ */
+interface IncomingRequest {
+  headers?: {
+    authorization?: string;
+    [key: string]: string | string[] | undefined;
+  };
+  cookies?: Record<string, string>;
+  query?: Record<string, string>;
+  [key: string]: unknown;
+}
+
+/**
+ * JWT payload structure
+ */
+interface JwtPayload {
+  sub?: string;
+  userId?: string;
+  organizationId?: string;
+  role?: string;
+  email?: string;
+  exp?: number;
+  iat?: number;
+  [key: string]: unknown;
+}
 
 /**
  * GraphQL JWT Authentication Guard with Token Blacklist Support
@@ -79,7 +118,8 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
 
       if (token) {
         // Check individual token blacklist
-        const isBlacklisted = await this.tokenBlacklistService.isTokenBlacklisted(token);
+        const isBlacklisted =
+          await this.tokenBlacklistService.isTokenBlacklisted(token);
 
         if (isBlacklisted) {
           this.logger.warn('Blacklisted token attempted GraphQL access', {
@@ -95,18 +135,26 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         if (user && user.id) {
           const tokenPayload = this.decodeToken(token);
           if (tokenPayload && tokenPayload.iat) {
-            const userTokensBlacklisted = await this.tokenBlacklistService.areUserTokensBlacklisted(
-              user.id,
-              tokenPayload.iat
-            );
+            const userTokensBlacklisted =
+              await this.tokenBlacklistService.areUserTokensBlacklisted(
+                user.id,
+                tokenPayload.iat,
+              );
 
             if (userTokensBlacklisted) {
-              this.logger.warn('User tokens invalidated - GraphQL access denied', {
-                userId: user.id,
-                tokenIssuedAt: new Date(tokenPayload.iat * 1000).toISOString(),
-              });
+              this.logger.warn(
+                'User tokens invalidated - GraphQL access denied',
+                {
+                  userId: user.id,
+                  tokenIssuedAt: new Date(
+                    tokenPayload.iat * 1000,
+                  ).toISOString(),
+                },
+              );
 
-              throw new UnauthorizedException('Session invalidated. Please login again.');
+              throw new UnauthorizedException(
+                'Session invalidated. Please login again.',
+              );
             }
           }
         }
@@ -141,7 +189,12 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
    *
    * Adds authenticated user to GraphQL context
    */
-  handleRequest<TUser = any>(err: any, user: any, info: any, context: ExecutionContext): TUser {
+  handleRequest<TUser = any>(
+    err: Error | null,
+    user: PassportUser | null,
+    info: unknown,
+    context: ExecutionContext,
+  ): TUser {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       const request = this.getRequest(context);
@@ -152,7 +205,9 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         query: request?.body?.query?.substring(0, 100),
       });
 
-      throw err || new UnauthorizedException('Authentication required for GraphQL');
+      throw (
+        err || new UnauthorizedException('Authentication required for GraphQL')
+      );
     }
 
     return user;
@@ -161,7 +216,7 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
   /**
    * Extract JWT token from request
    */
-  private extractTokenFromRequest(request: any): string | null {
+  private extractTokenFromRequest(request: IncomingRequest): string | null {
     const authHeader = request.headers?.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
@@ -172,7 +227,7 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
   /**
    * Decode JWT token without verification (for reading payload)
    */
-  private decodeToken(token: string): any {
+  private decodeToken(token: string): JwtPayload | null {
     try {
       const base64Payload = token.split('.')[1];
       const payload = Buffer.from(base64Payload, 'base64').toString();

@@ -44,7 +44,7 @@ export interface EmptyStateProps {
  * />
  * ```
  */
-export default function EmptyState({
+function EmptyState({
   icon = '📦',
   title,
   description,
@@ -75,3 +75,7 @@ export default function EmptyState({
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { EmptyState }
+export default EmptyState

@@ -21,30 +21,28 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { GraphQLModule as NestGraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_PIPE } from '@nestjs/core';
-import { ModuleRef } from '@nestjs/core';
+import { APP_PIPE, ModuleRef } from '@nestjs/core';
 import { join } from 'path';
 import type { Request, Response } from 'express';
 import { ContactResolver } from './resolvers/contact.resolver';
 import { StudentResolver } from './resolvers/student.resolver';
 import { HealthRecordResolver } from './resolvers/health-record.resolver';
 import { SubscriptionResolver } from './resolvers/subscription.resolver';
-import { ContactModule } from '../../contact/contact.module';
-import { StudentModule } from '../../student/student.module';
-import { MedicationModule } from '../../medication/medication.module';
-import { HealthRecordModule } from '../../health-record/health-record.module';
-import { AuthModule } from '../../auth/auth.module';
+import { ContactModule } from '@/contact';
+import { StudentModule } from '@/student';
+import { MedicationModule } from '@/medication';
+import { HealthRecordModule } from '@/health-record';
+import { EmergencyContactModule } from '@/emergency-contact';
+import { ChronicConditionModule } from '@/chronic-condition';
+import { IncidentReportModule } from '@/incident-report';
+import { AllergyModule } from '@/health-record/allergy';
+import { AuthModule } from '@/auth';
 import { GraphQLJSON } from 'graphql-scalars';
-import { sanitizeGraphQLError, containsPHI } from './errors/phi-sanitizer';
+import { containsPHI, sanitizeGraphQLError } from './errors/phi-sanitizer';
 import { DataLoaderFactory } from './dataloaders/dataloader.factory';
 import { ComplexityPlugin } from './plugins/complexity.plugin';
 import { PubSubModule } from './pubsub/pubsub.module';
-import {
-  DateTimeScalar,
-  PhoneNumberScalar,
-  EmailAddressScalar,
-  UUIDScalar,
-} from './scalars';
+import { DateTimeScalar, EmailAddressScalar, PhoneNumberScalar, UUIDScalar } from './scalars';
 
 /**
  * GraphQL Module
@@ -63,9 +61,7 @@ import {
         return {
           // Auto-generate schema from TypeScript classes
           // In production or Docker, generate in memory only
-          autoSchemaFile: isProduction || isDocker
-            ? true
-            : join(process.cwd(), 'src/schema.gql'),
+          autoSchemaFile: isProduction || isDocker ? true : join(process.cwd(), 'src/schema.gql'),
 
           // Sort schema alphabetically for consistency
           sortSchema: true,
@@ -84,21 +80,23 @@ import {
 
           // Context builder - extracts request for authentication and creates DataLoaders
           context: ({ req, res }: { req: Request; res: Response }) => {
-          // Get DataLoaderFactory from the request scope
-          // Each GraphQL request gets its own DataLoaderFactory instance
-          // This ensures proper caching scope and prevents data leakage between requests
-          const dataLoaderFactory = moduleRef.get(DataLoaderFactory, { strict: false });
+            // Get DataLoaderFactory from the request scope
+            // Each GraphQL request gets its own DataLoaderFactory instance
+            // This ensures proper caching scope and prevents data leakage between requests
+            const dataLoaderFactory = moduleRef.get(DataLoaderFactory, {
+              strict: false,
+            });
 
-          // Create all DataLoaders for this request
-          const loaders = dataLoaderFactory.createLoaders();
+            // Create all DataLoaders for this request
+            const loaders = dataLoaderFactory.createLoaders();
 
-          return {
-            req,
-            res,
-            // Add DataLoaders to context so resolvers can access them
-            loaders,
-          };
-        },
+            return {
+              req,
+              res,
+              // Add DataLoaders to context so resolvers can access them
+              loaders,
+            };
+          },
 
           // Custom scalars
           resolvers: {
@@ -109,7 +107,7 @@ import {
           subscriptions: {
             'graphql-ws': {
               path: '/graphql',
-              onConnect: (context: any) => {
+              onConnect: (context: Record<string, unknown>) => {
                 const { connectionParams, extra } = context;
 
                 // Authenticate WebSocket connection
@@ -123,7 +121,7 @@ import {
                 // We just pass the token through context here
                 return { token };
               },
-              onDisconnect: (context: any) => {
+              onDisconnect: (context: Record<string, unknown>) => {
                 console.log('Client disconnected from GraphQL subscriptions');
               },
             },
@@ -131,25 +129,22 @@ import {
 
           // Error formatting with PHI sanitization (HIPAA compliance)
           formatError: (error) => {
-          // Check if error contains PHI for audit logging
-          const hasPHI = containsPHI(error.message);
-          if (hasPHI) {
-            console.warn(
-              'SECURITY ALERT: GraphQL error contained PHI and was sanitized',
-              {
+            // Check if error contains PHI for audit logging
+            const hasPHI = containsPHI(error.message);
+            if (hasPHI) {
+              console.warn('SECURITY ALERT: GraphQL error contained PHI and was sanitized', {
                 timestamp: new Date().toISOString(),
                 errorCode: error.extensions?.code,
                 path: error.path,
-              }
-            );
-          }
+              });
+            }
 
-          // Log errors server-side (before sanitization for debugging)
-          console.error('GraphQL Error:', {
-            message: error.message,
-            code: error.extensions?.code,
-            path: error.path,
-          });
+            // Log errors server-side (before sanitization for debugging)
+            console.error('GraphQL Error:', {
+              message: error.message,
+              code: error.extensions?.code,
+              path: error.path,
+            });
 
             // Sanitize error to remove any PHI
             const sanitizedError = sanitizeGraphQLError(error);
@@ -185,6 +180,10 @@ import {
     StudentModule,
     MedicationModule,
     HealthRecordModule,
+    EmergencyContactModule,
+    ChronicConditionModule,
+    IncidentReportModule,
+    AllergyModule, // Required for AllergyService in DataLoaderFactory
     AuthModule, // Required for TokenBlacklistService in GqlAuthGuard
     PubSubModule, // Required for subscriptions
   ],

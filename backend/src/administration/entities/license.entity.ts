@@ -6,11 +6,6 @@
  */
 
 // Re-export the Sequelize model and enums
-export {
-  License
-} from '../../database/models/license.model';
+export { License } from '../../database/models/license.model';
 
-export {
-  LicenseType,
-  LicenseStatus
-} from '../enums/administration.enums';
+export { LicenseType, LicenseStatus } from '../enums/administration.enums';

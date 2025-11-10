@@ -11,7 +11,7 @@
  * Note: This is a stub implementation. Replace with actual business logic and database integration.
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RecordScreeningDto } from './dto/record-screening.dto';
 import { RecordMeasurementDto } from './dto/record-measurement.dto';
 import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.dto';
@@ -29,7 +29,9 @@ export class AdvancedFeaturesService {
    */
   async recordScreening(screeningData: RecordScreeningDto) {
     this.logger.warn('recordScreening called - stub implementation');
-    this.logger.log(`Recording ${screeningData.screeningType} screening for student ${screeningData.studentId}`);
+    this.logger.log(
+      `Recording ${screeningData.screeningType} screening for student ${screeningData.studentId}`,
+    );
 
     // TODO: Implement actual database logic
     // - Validate student exists
@@ -72,14 +74,18 @@ export class AdvancedFeaturesService {
    */
   async recordMeasurement(measurementData: RecordMeasurementDto) {
     this.logger.warn('recordMeasurement called - stub implementation');
-    this.logger.log(`Recording measurement for student ${measurementData.studentId}`);
+    this.logger.log(
+      `Recording measurement for student ${measurementData.studentId}`,
+    );
 
     // Calculate BMI if height and weight are provided
     let bmi = measurementData.bmi;
     if (!bmi && measurementData.height && measurementData.weight) {
       // BMI = weight (kg) / (height (m))^2
       const heightInMeters = measurementData.height / 100;
-      bmi = parseFloat((measurementData.weight / (heightInMeters * heightInMeters)).toFixed(2));
+      bmi = parseFloat(
+        (measurementData.weight / (heightInMeters * heightInMeters)).toFixed(2),
+      );
     }
 
     // TODO: Implement actual database logic
@@ -128,7 +134,9 @@ export class AdvancedFeaturesService {
    */
   async getImmunizationForecast(studentId: string) {
     this.logger.warn('getImmunizationForecast called - stub implementation');
-    this.logger.log(`Generating immunization forecast for student ${studentId}`);
+    this.logger.log(
+      `Generating immunization forecast for student ${studentId}`,
+    );
 
     // TODO: Implement actual forecasting logic
     // - Fetch student's age and immunization history
@@ -153,9 +161,13 @@ export class AdvancedFeaturesService {
   /**
    * Send emergency notification
    */
-  async sendEmergencyNotification(notificationData: SendEmergencyNotificationDto) {
+  async sendEmergencyNotification(
+    notificationData: SendEmergencyNotificationDto,
+  ) {
     this.logger.warn('sendEmergencyNotification called - stub implementation');
-    this.logger.log(`Sending ${notificationData.severity} emergency notification: ${notificationData.title}`);
+    this.logger.log(
+      `Sending ${notificationData.severity} emergency notification: ${notificationData.title}`,
+    );
 
     // TODO: Implement actual notification logic
     // - Validate recipients
@@ -206,7 +218,9 @@ export class AdvancedFeaturesService {
    */
   async scanBarcode(scanData: AdvancedFeaturesScanBarcodeDto) {
     this.logger.warn('scanBarcode called - stub implementation');
-    this.logger.log(`Scanning ${scanData.scanType} barcode: ${scanData.barcodeString}`);
+    this.logger.log(
+      `Scanning ${scanData.scanType} barcode: ${scanData.barcodeString}`,
+    );
 
     // TODO: Implement actual barcode lookup logic
     // - Parse barcode format
@@ -228,9 +242,15 @@ export class AdvancedFeaturesService {
   /**
    * Verify medication administration using Three-Barcode Scan (Five Rights Check)
    */
-  async verifyMedicationAdministration(verificationData: VerifyMedicationAdministrationDto) {
-    this.logger.warn('verifyMedicationAdministration called - stub implementation');
-    this.logger.log(`Verifying medication administration with three-barcode scan`);
+  async verifyMedicationAdministration(
+    verificationData: VerifyMedicationAdministrationDto,
+  ) {
+    this.logger.warn(
+      'verifyMedicationAdministration called - stub implementation',
+    );
+    this.logger.log(
+      `Verifying medication administration with three-barcode scan`,
+    );
 
     // TODO: Implement actual verification logic
     // - Lookup student by barcode

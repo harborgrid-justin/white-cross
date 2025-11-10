@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsBoolean, IsEnum, IsOptional, IsArray, IsDateString } from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export enum AdministrationRoute {
   ORAL = 'oral',
@@ -50,7 +50,8 @@ export class FiveRightsDataDto {
   medicationBarcode: string;
 
   @ApiProperty({
-    description: 'Confirmation that LASA (Look-Alike Sound-Alike) warnings were reviewed',
+    description:
+      'Confirmation that LASA (Look-Alike Sound-Alike) warnings were reviewed',
     example: true,
   })
   @IsBoolean()
@@ -111,7 +112,8 @@ export class FiveRightsDataDto {
   timeOverrideReason?: string;
 
   @ApiProperty({
-    description: 'Confirmation that allergy warnings were reviewed and acknowledged',
+    description:
+      'Confirmation that allergy warnings were reviewed and acknowledged',
     example: true,
   })
   @IsBoolean()

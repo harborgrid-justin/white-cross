@@ -9,7 +9,7 @@
 import React from 'react'
 import CommunicationTemplatesTab from './tabs/CommunicationTemplatesTab'
 
-export default function MessageTemplates() {
+function MessageTemplates() {
   return (
     <div className="space-y-6">
       <div>
@@ -23,3 +23,7 @@ export default function MessageTemplates() {
     </div>
   )
 }
+
+// Export both named and default for flexibility
+export { MessageTemplates }
+export default MessageTemplates

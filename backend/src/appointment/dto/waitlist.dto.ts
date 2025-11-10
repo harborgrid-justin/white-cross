@@ -1,14 +1,4 @@
-import {
-  IsUUID,
-  IsEnum,
-  IsOptional,
-  IsNumber,
-  IsString,
-  IsDate,
-  IsNotEmpty,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AppointmentType } from './create-appointment.dto';
@@ -48,7 +38,8 @@ export class CreateWaitlistEntryDto {
   studentId: string;
 
   @ApiPropertyOptional({
-    description: 'Preferred nurse UUID (optional - any available nurse if not specified)',
+    description:
+      'Preferred nurse UUID (optional - any available nurse if not specified)',
     example: '987fcdeb-51a2-43d1-b456-426614174001',
     format: 'uuid',
   })

@@ -1,15 +1,14 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface GrowthTrackingAttributes {
@@ -33,10 +32,10 @@ export interface GrowthTrackingAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'growth_tracking',
@@ -45,22 +44,25 @@ export interface GrowthTrackingAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
+      fields: ['studentId'],
     },
     {
-      fields: ['measurementDate']
+      fields: ['measurementDate'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_growth_tracking_created_at'
+      name: 'idx_growth_tracking_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_growth_tracking_updated_at'
-    }
-  ]
+      name: 'idx_growth_tracking_updated_at',
+    },
+  ],
 })
-export class GrowthTracking extends Model<GrowthTrackingAttributes> implements GrowthTrackingAttributes {
+export class GrowthTracking
+  extends Model<GrowthTrackingAttributes>
+  implements GrowthTrackingAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -68,13 +70,13 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   measurementDate: Date;
 
@@ -109,7 +111,7 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   measuredBy: string;
 
@@ -119,14 +121,15 @@ export class GrowthTracking extends Model<GrowthTrackingAttributes> implements G
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: GrowthTracking) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] GrowthTracking ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] GrowthTracking ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

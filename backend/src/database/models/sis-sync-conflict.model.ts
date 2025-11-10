@@ -5,24 +5,23 @@
  */
 
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 export enum ConflictResolution {
   KEEP_LOCAL = 'KEEP_LOCAL',
-  KEEP_SIS = 'KEEP_SIS'
+  KEEP_SIS = 'KEEP_SIS',
 }
 
 /**
@@ -32,10 +31,10 @@ export enum ConflictResolution {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'sis_sync_conflicts',
@@ -50,13 +49,13 @@ export enum ConflictResolution {
     { fields: ['createdAt'] },
     {
       fields: ['createdAt'],
-      name: 'idx_sis_sync_conflict_created_at'
+      name: 'idx_sis_sync_conflict_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_sis_sync_conflict_updated_at'
-    }
-  ]
+      name: 'idx_sis_sync_conflict_updated_at',
+    },
+  ],
 })
 export class SISSyncConflict extends Model {
   @PrimaryKey
@@ -68,7 +67,7 @@ export class SISSyncConflict extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'Reference to the sync session that detected this conflict'
+    comment: 'Reference to the sync session that detected this conflict',
   })
   @Index
   sessionId: string;
@@ -76,7 +75,7 @@ export class SISSyncConflict extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: false,
-    comment: 'ID of the student with the conflicting data'
+    comment: 'ID of the student with the conflicting data',
   })
   @Index
   studentId: string;
@@ -84,7 +83,7 @@ export class SISSyncConflict extends Model {
   @Column({
     type: DataType.STRING(100),
     allowNull: false,
-    comment: 'The field name that has conflicting values'
+    comment: 'The field name that has conflicting values',
   })
   @Index
   field: string;
@@ -92,24 +91,24 @@ export class SISSyncConflict extends Model {
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    comment: 'Value from the local system'
+    comment: 'Value from the local system',
   })
   localValue: any;
 
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    comment: 'Value from the SIS system'
+    comment: 'Value from the SIS system',
   })
   sisValue: any;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConflictResolution)]
+      isIn: [Object.values(ConflictResolution)],
     },
     allowNull: true,
-    comment: 'How the conflict was resolved'
+    comment: 'How the conflict was resolved',
   })
   @Index
   resolution: ConflictResolution | null;
@@ -117,7 +116,7 @@ export class SISSyncConflict extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When the conflict was resolved'
+    comment: 'When the conflict was resolved',
   })
   @Index
   resolvedAt: Date | null;
@@ -125,7 +124,7 @@ export class SISSyncConflict extends Model {
   @Column({
     type: DataType.UUID,
     allowNull: true,
-    comment: 'User who resolved the conflict'
+    comment: 'User who resolved the conflict',
   })
   resolvedBy: string | null;
 
@@ -133,7 +132,7 @@ export class SISSyncConflict extends Model {
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'When the conflict was detected'
+    comment: 'When the conflict was detected',
   })
   @Index
   declare createdAt: Date;
@@ -141,17 +140,16 @@ export class SISSyncConflict extends Model {
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'When the conflict was last updated'
+    comment: 'When the conflict was last updated',
   })
   declare updatedAt: Date | null;
 
   // Relationships
   @BelongsTo(() => require('./sync-session.model').SyncSession, {
     foreignKey: 'sessionId',
-    as: 'session'
+    as: 'session',
   })
   declare session: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -159,7 +157,9 @@ export class SISSyncConflict extends Model {
   static async auditPHIAccess(instance: SISSyncConflict) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] SisSyncConflict ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] SisSyncConflict ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

@@ -9,9 +9,7 @@
  */
 import type { Request, Response } from 'express';
 import type DataLoader from 'dataloader';
-import type { Student } from '../../../database/models/student.model';
-import type { Contact } from '../../../database/models/contact.model';
-import type { StudentMedication } from '../../../database/models/student-medication.model';
+import type { Contact, HealthRecord, Student, StudentMedication } from '@/database';
 
 /**
  * GraphQL Context
@@ -81,6 +79,6 @@ export interface GraphQLContext {
      * Load health records for students
      * Returns latest health record for each student ID
      */
-    healthRecordsByStudentLoader: DataLoader<string, any>;
+    healthRecordsByStudentLoader: DataLoader<string, HealthRecord | null>;
   };
 }

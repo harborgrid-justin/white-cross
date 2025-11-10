@@ -1,18 +1,17 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ConsentSignatureAttributes {
@@ -32,10 +31,10 @@ export interface ConsentSignatureAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'consent_signatures',
@@ -43,25 +42,28 @@ export interface ConsentSignatureAttributes {
   indexes: [
     {
       unique: true,
-      fields: ['consentFormId', 'studentId']
-  },
+      fields: ['consentFormId', 'studentId'],
+    },
     {
-      fields: ['consentFormId']
-  },
+      fields: ['consentFormId'],
+    },
     {
-      fields: ['studentId']
-  },
+      fields: ['studentId'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_consent_signature_created_at'
+      name: 'idx_consent_signature_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_consent_signature_updated_at'
-    }
-  ]
-  })
-export class ConsentSignature extends Model<ConsentSignatureAttributes> implements ConsentSignatureAttributes {
+      name: 'idx_consent_signature_updated_at',
+    },
+  ],
+})
+export class ConsentSignature
+  extends Model<ConsentSignatureAttributes>
+  implements ConsentSignatureAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -70,25 +72,25 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
   @ForeignKey(() => require('./consent-form.model').ConsentForm)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   consentFormId: string;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   signedBy: string;
 
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   relationship: string;
 
@@ -103,7 +105,7 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: new Date()
+    defaultValue: new Date(),
   })
   signedAt: Date;
 
@@ -121,14 +123,15 @@ export class ConsentSignature extends Model<ConsentSignatureAttributes> implemen
   @Column(DataType.DATE)
   declare createdAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ConsentSignature) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ConsentSignature ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ConsentSignature ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

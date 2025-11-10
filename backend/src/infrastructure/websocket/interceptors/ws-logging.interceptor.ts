@@ -14,15 +14,9 @@
  *
  * @class WsLoggingInterceptor
  */
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Logger,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Socket } from 'socket.io';
 
 @Injectable()
@@ -47,16 +41,13 @@ export class WsLoggingInterceptor implements NestInterceptor {
     const organizationId = user?.organizationId || 'unknown';
 
     // Log incoming event
-    this.logger.debug(
-      `[${pattern}] ← Received from socket ${client.id}`,
-      {
-        pattern,
-        userId,
-        organizationId,
-        socketId: client.id,
-        dataKeys: this.getDataKeys(data),
-      },
-    );
+    this.logger.debug(`[${pattern}] ← Received from socket ${client.id}`, {
+      pattern,
+      userId,
+      organizationId,
+      socketId: client.id,
+      dataKeys: this.getDataKeys(data),
+    });
 
     const startTime = Date.now();
 
@@ -105,7 +96,7 @@ export class WsLoggingInterceptor implements NestInterceptor {
    * @param data - The data object
    * @returns Array of top-level keys
    */
-  private getDataKeys(data: any): string[] {
+  private getDataKeys(data: unknown): string[] {
     if (!data || typeof data !== 'object') {
       return [];
     }

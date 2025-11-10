@@ -7,7 +7,7 @@
  * @module integrations/dto/sis-attendance
  */
 
-import { IsString, IsEnum, IsOptional, IsDateString } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -35,7 +35,7 @@ export class SisAttendanceDto {
     example: 'PS-12345',
   })
   @IsString()
-  studentSisId: string;
+  studentSisId!: string;
 
   /**
    * Date of attendance record in ISO 8601 format
@@ -46,7 +46,7 @@ export class SisAttendanceDto {
     example: '2024-01-15',
   })
   @IsDateString()
-  date: string;
+  date!: string;
 
   /**
    * Attendance status for the day
@@ -57,7 +57,7 @@ export class SisAttendanceDto {
     example: SisAttendanceStatus.PRESENT,
   })
   @IsEnum(SisAttendanceStatus)
-  status: SisAttendanceStatus;
+  status!: SisAttendanceStatus;
 
   /**
    * Optional notes about the attendance record

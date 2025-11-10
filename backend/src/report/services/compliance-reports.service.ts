@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/sequelize';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
 import { AuditLog } from '../../database/models/audit-log.model';
-import { StudentMedication } from '../../database/models/student-medication.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
 import { ComplianceReport } from '../interfaces/report-types.interface';
 import { BaseReportDto } from '../dto/base-report.dto';
 
@@ -19,10 +17,6 @@ export class ComplianceReportsService {
   constructor(
     @InjectModel(AuditLog)
     private auditLogModel: typeof AuditLog,
-    @InjectModel(StudentMedication)
-    private studentMedicationModel: typeof StudentMedication,
-    @InjectModel(IncidentReport)
-    private incidentReportModel: typeof IncidentReport,
     @InjectConnection()
     private sequelize: Sequelize,
   ) {}
@@ -56,10 +50,14 @@ export class ComplianceReportsService {
         limit: 100,
       });
 
+      // SECURITY FIX: Query is safe (no user input), but adding explicit type for clarity
       // Get medication compliance statistics
       const medicationComplianceRaw = await this.sequelize.query(
         `SELECT "isActive", COUNT("id")::integer as count FROM student_medications GROUP BY "isActive"`,
-        { type: QueryTypes.SELECT },
+        {
+          type: QueryTypes.SELECT,
+          raw: true,
+        },
       );
 
       const medicationCompliance = medicationComplianceRaw.map((record: any) => ({
@@ -67,28 +65,61 @@ export class ComplianceReportsService {
         count: parseInt(record.count, 10),
       }));
 
+      // SECURITY FIX: Replaced complex string concatenation with proper parameterized query
       // Get incident compliance statistics
-      const incidentComplianceRaw = await this.sequelize.query(
-        `SELECT "legalComplianceStatus", COUNT("id")::integer as count FROM incident_reports ${startDate || endDate ? 'WHERE' : ''} ${startDate ? '"createdAt" >= $1' : ''} ${startDate && endDate ? 'AND' : ''} ${endDate && startDate ? '"createdAt" <= $2' : endDate ? '"createdAt" <= $1' : ''} GROUP BY "legalComplianceStatus"`,
-        {
-          bind: [startDate, endDate].filter(v => v !== undefined),
-          type: QueryTypes.SELECT,
-        },
-      );
+      let incidentQuery = `
+        SELECT "legalComplianceStatus", COUNT("id")::integer as count
+        FROM incident_reports
+      `;
+      const incidentReplacements: any = {};
+
+      if (startDate && endDate) {
+        incidentQuery += ' WHERE "createdAt" >= :startDate AND "createdAt" <= :endDate';
+        incidentReplacements.startDate = startDate;
+        incidentReplacements.endDate = endDate;
+      } else if (startDate) {
+        incidentQuery += ' WHERE "createdAt" >= :startDate';
+        incidentReplacements.startDate = startDate;
+      } else if (endDate) {
+        incidentQuery += ' WHERE "createdAt" <= :endDate';
+        incidentReplacements.endDate = endDate;
+      }
+
+      incidentQuery += ' GROUP BY "legalComplianceStatus"';
+
+      const incidentComplianceRaw = await this.sequelize.query(incidentQuery, {
+        replacements: incidentReplacements,
+        type: QueryTypes.SELECT,
+        raw: true,
+      });
 
       const incidentCompliance = incidentComplianceRaw.map((record: any) => ({
         legalComplianceStatus: record.legalComplianceStatus,
         count: parseInt(record.count, 10),
       }));
 
+      // SECURITY FIX: Replaced string concatenation with parameterized query
       // Get vaccination record count
-      const vaccinationRecords = await this.sequelize.query(
-        `SELECT COUNT(*)::integer as count FROM vaccinations ${startDate || endDate ? 'WHERE' : ''} ${startDate ? '"createdAt" >= $1' : ''} ${startDate && endDate ? 'AND' : ''} ${endDate && startDate ? '"createdAt" <= $2' : endDate ? '"createdAt" <= $1' : ''}`,
-        {
-          bind: [startDate, endDate].filter(v => v !== undefined),
-          type: QueryTypes.SELECT,
-        },
-      );
+      let vaccinationQuery = 'SELECT COUNT(*)::integer as count FROM vaccinations';
+      const vaccinationReplacements: any = {};
+
+      if (startDate && endDate) {
+        vaccinationQuery += ' WHERE "createdAt" >= :startDate AND "createdAt" <= :endDate';
+        vaccinationReplacements.startDate = startDate;
+        vaccinationReplacements.endDate = endDate;
+      } else if (startDate) {
+        vaccinationQuery += ' WHERE "createdAt" >= :startDate';
+        vaccinationReplacements.startDate = startDate;
+      } else if (endDate) {
+        vaccinationQuery += ' WHERE "createdAt" <= :endDate';
+        vaccinationReplacements.endDate = endDate;
+      }
+
+      const vaccinationRecords = await this.sequelize.query(vaccinationQuery, {
+        replacements: vaccinationReplacements,
+        type: QueryTypes.SELECT,
+        raw: true,
+      });
 
       this.logger.log('Compliance report generated successfully');
 

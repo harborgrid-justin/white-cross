@@ -45,20 +45,19 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { QueueName } from './enums';
-import { QueueConfigService, QUEUE_CONFIGS } from './queue.config';
+import { QUEUE_CONFIGS, QueueConfigService } from './queue.config';
 import { MessageQueueService } from './message-queue.service';
 import {
-  MessageDeliveryProcessor,
-  MessageNotificationProcessor,
-  MessageEncryptionProcessor,
-  MessageIndexingProcessor,
   BatchMessageProcessor,
   MessageCleanupProcessor,
+  MessageDeliveryProcessor,
+  MessageEncryptionProcessor,
+  MessageIndexingProcessor,
+  MessageNotificationProcessor,
 } from './message-queue.processor.complete';
-import { EncryptionModule } from '../encryption/encryption.module';
-import { WebSocketModule } from '../websocket/websocket.module';
-import { Message } from '../../database/models/message.model';
-import { MessageDelivery } from '../../database/models/message-delivery.model';
+import { EncryptionModule } from '@/infrastructure/encryption';
+import { WebSocketModule } from '@/infrastructure/websocket';
+import { Message, MessageDelivery } from '@/database';
 
 @Module({
   imports: [
@@ -92,7 +91,8 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].removeOnCompleteCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].removeOnCompleteCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_DELIVERY].removeOnCompleteAge,
           },
           removeOnFail: {
@@ -111,11 +111,15 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnCompleteCount,
-            age: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnCompleteAge,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION]
+                .removeOnCompleteCount,
+            age: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION]
+              .removeOnCompleteAge,
           },
           removeOnFail: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnFailCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnFailCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_NOTIFICATION].removeOnFailAge,
           },
         },
@@ -130,7 +134,8 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].removeOnCompleteCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].removeOnCompleteCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_INDEXING].removeOnCompleteAge,
           },
           removeOnFail: {
@@ -149,11 +154,14 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnCompleteCount,
-            age: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnCompleteAge,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnCompleteCount,
+            age: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION]
+              .removeOnCompleteAge,
           },
           removeOnFail: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnFailCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnFailCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_ENCRYPTION].removeOnFailAge,
           },
         },
@@ -168,11 +176,15 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnCompleteCount,
-            age: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnCompleteAge,
+            count:
+              QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING]
+                .removeOnCompleteCount,
+            age: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING]
+              .removeOnCompleteAge,
           },
           removeOnFail: {
-            count: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnFailCount,
+            count:
+              QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnFailCount,
             age: QUEUE_CONFIGS[QueueName.BATCH_MESSAGE_SENDING].removeOnFailAge,
           },
         },
@@ -187,7 +199,8 @@ import { MessageDelivery } from '../../database/models/message-delivery.model';
           },
           timeout: QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].timeout,
           removeOnComplete: {
-            count: QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].removeOnCompleteCount,
+            count:
+              QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].removeOnCompleteCount,
             age: QUEUE_CONFIGS[QueueName.MESSAGE_CLEANUP].removeOnCompleteAge,
           },
           removeOnFail: {

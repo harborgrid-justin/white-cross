@@ -3,14 +3,13 @@
  * Injectable NestJS repository for medication tracking with dosage management
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 
 export interface MedicationAttributes {
   id: string;
@@ -51,13 +50,15 @@ export interface UpdateMedicationDTO {
 }
 
 @Injectable()
-export class MedicationRepository
-  extends BaseRepository<any, MedicationAttributes, CreateMedicationDTO>
-{
+export class MedicationRepository extends BaseRepository<
+  any,
+  MedicationAttributes,
+  CreateMedicationDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Medication');
   }
@@ -66,62 +67,63 @@ export class MedicationRepository
     try {
       const medications = await this.model.findAll({
         where: { studentId },
-        order: [['startDate', 'DESC']]
+        order: [['startDate', 'DESC']],
       });
-      return medications.map((m: any) => this.mapToEntity(m));
+      return medications.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding medications by student:', error);
       throw new RepositoryError(
         'Failed to find medications by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findActiveMedications(studentId: string): Promise<MedicationAttributes[]> {
+  async findActiveMedications(
+    studentId: string,
+  ): Promise<MedicationAttributes[]> {
     try {
       const medications = await this.model.findAll({
         where: {
           studentId,
           isActive: true,
-          [Op.or]: [
-            { endDate: null },
-            { endDate: { [Op.gte]: new Date() } }
-          ]
+          [Op.or]: [{ endDate: null }, { endDate: { [Op.gte]: new Date() } }],
         },
-        order: [['medicationName', 'ASC']]
+        order: [['medicationName', 'ASC']],
       });
-      return medications.map((m: any) => this.mapToEntity(m));
+      return medications.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding active medications:', error);
       throw new RepositoryError(
         'Failed to find active medications',
         'FIND_ACTIVE_MEDICATIONS_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findByMedicationName(medicationName: string): Promise<MedicationAttributes[]> {
+  async findByMedicationName(
+    medicationName: string,
+  ): Promise<MedicationAttributes[]> {
     try {
       const medications = await this.model.findAll({
         where: {
           medicationName: { [Op.iLike]: `%${medicationName}%` },
-          isActive: true
+          isActive: true,
         },
-        order: [['studentId', 'ASC']]
+        order: [['studentId', 'ASC']],
       });
-      return medications.map((m: any) => this.mapToEntity(m));
+      return medications.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding medications by name:', error);
       throw new RepositoryError(
         'Failed to find medications by name',
         'FIND_BY_NAME_ERROR',
         500,
-        { medicationName, error: (error as Error).message }
+        { medicationName, error: (error as Error).message },
       );
     }
   }
@@ -130,23 +132,28 @@ export class MedicationRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateMedicationDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateMedicationDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async invalidateCaches(medication: any): Promise<void> {
+  protected async invalidateCaches(medication: Medication): Promise<void> {
     try {
       const medicationData = medication.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, medicationData.id));
-      await this.cacheManager.deletePattern(`white-cross:medication:student:${medicationData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, medicationData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:medication:student:${medicationData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating medication caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<MedicationAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

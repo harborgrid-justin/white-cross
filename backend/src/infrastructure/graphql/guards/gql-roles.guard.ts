@@ -9,11 +9,11 @@
  * - Logs authorization failures for audit trail
  * - Prevents unauthorized access to sensitive queries/mutations
  */
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { ROLES_KEY } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { ROLES_KEY } from '@/auth/decorators';
+import { UserRole } from '@/database';
 
 /**
  * GraphQL Roles Guard
@@ -33,10 +33,10 @@ export class GqlRolesGuard implements CanActivate {
    */
   canActivate(context: ExecutionContext): boolean {
     // Get required roles from decorator metadata
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     // If no roles are specified, allow access
     if (!requiredRoles || requiredRoles.length === 0) {
@@ -59,11 +59,11 @@ export class GqlRolesGuard implements CanActivate {
       // Log authorization failure for audit trail (HIPAA requirement)
       console.warn(
         `Authorization failed: User ${user.id} (role: ${user.role}) ` +
-        `attempted to access resource requiring roles: ${requiredRoles.join(', ')}`
+          `attempted to access resource requiring roles: ${requiredRoles.join(', ')}`,
       );
 
       throw new ForbiddenException(
-        `Insufficient permissions. Required roles: ${requiredRoles.join(', ')}`
+        `Insufficient permissions. Required roles: ${requiredRoles.join(', ')}`,
       );
     }
 

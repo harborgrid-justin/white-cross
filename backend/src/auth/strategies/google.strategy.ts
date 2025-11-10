@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { OAuthProfile } from '../dto/oauth.dto';
+import { GooglePassportProfile } from '../types/auth.types';
 
 /**
  * Google OAuth2 Strategy
@@ -20,13 +21,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private readonly configService: ConfigService) {
     const clientID = configService.get<string>('GOOGLE_CLIENT_ID');
     const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET');
-    const callbackURL = configService.get<string>('GOOGLE_CALLBACK_URL') ||
-                        'http://localhost:3001/api/auth/oauth/google/callback';
+    const callbackURL =
+      configService.get<string>('GOOGLE_CALLBACK_URL') ||
+      'http://localhost:3001/api/auth/oauth/google/callback';
 
     // If Google OAuth is not configured, log warning and use dummy values
     if (!clientID || !clientSecret) {
       console.warn(
-        'Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to enable Google login.'
+        'Google OAuth not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to enable Google login.',
       );
     }
 
@@ -45,28 +47,30 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: GooglePassportProfile,
     done: VerifyCallback,
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       const { id, emails, name, photos } = profile;
 
       const oauthProfile: OAuthProfile = {
         id,
-        email: emails[0]?.value,
+        email: emails?.[0]?.value || '',
         firstName: name?.givenName,
         lastName: name?.familyName,
         displayName: profile.displayName,
-        picture: photos[0]?.value,
+        picture: photos?.[0]?.value,
         provider: 'google',
       };
 
-      this.logger.log(`Google OAuth validation successful for: ${oauthProfile.email}`);
+      this.logger.log(
+        `Google OAuth validation successful for: ${oauthProfile.email}`,
+      );
 
       done(null, oauthProfile);
     } catch (error) {
-      this.logger.error(`Google OAuth validation failed: ${error.message}`);
-      done(error, null);
+      this.logger.error(`Google OAuth validation failed: ${(error as Error).message}`);
+      done(error as Error, undefined);
     }
   }
 }

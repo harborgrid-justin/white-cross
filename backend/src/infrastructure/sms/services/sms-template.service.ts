@@ -4,7 +4,7 @@
  * @description Manages SMS templates with variable substitution
  */
 
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateSmsTemplateDto, SmsTemplateType } from '../dto/sms-template.dto';
 
 /**
@@ -56,7 +56,9 @@ export class SmsTemplateService {
 
     // Validate required variables match detected variables
     const requiredVars = dto.requiredVariables || detectedVariables;
-    const missingVars = requiredVars.filter((v) => !detectedVariables.includes(v));
+    const missingVars = requiredVars.filter(
+      (v) => !detectedVariables.includes(v),
+    );
 
     if (missingVars.length > 0) {
       throw new BadRequestException(
@@ -115,11 +117,16 @@ export class SmsTemplateService {
    * // Returns: 'Hi John Doe, time for Aspirin at 2:30 PM'
    * ```
    */
-  async renderTemplate(templateId: string, variables: Record<string, unknown>): Promise<string> {
+  async renderTemplate(
+    templateId: string,
+    variables: Record<string, unknown>,
+  ): Promise<string> {
     const template = await this.getTemplate(templateId);
 
     // Validate all required variables are provided
-    const missingVars = template.requiredVariables.filter((varName) => !(varName in variables));
+    const missingVars = template.requiredVariables.filter(
+      (varName) => !(varName in variables),
+    );
 
     if (missingVars.length > 0) {
       throw new BadRequestException(
@@ -219,7 +226,9 @@ export class SmsTemplateService {
 
     // Check for reasonable length (SMS limits)
     if (content.length > 1600) {
-      errors.push('Template content exceeds maximum SMS length (1600 characters)');
+      errors.push(
+        'Template content exceeds maximum SMS length (1600 characters)',
+      );
     }
 
     return {
@@ -287,9 +296,15 @@ export class SmsTemplateService {
       {
         templateId: 'medication-reminder',
         type: SmsTemplateType.REMINDER,
-        content: 'Hi {{studentName}}, reminder: {{medicationName}} at {{time}}. - {{schoolName}}',
+        content:
+          'Hi {{studentName}}, reminder: {{medicationName}} at {{time}}. - {{schoolName}}',
         description: 'Medication reminder for students',
-        requiredVariables: ['studentName', 'medicationName', 'time', 'schoolName'],
+        requiredVariables: [
+          'studentName',
+          'medicationName',
+          'time',
+          'schoolName',
+        ],
       },
       {
         templateId: 'emergency-alert',
@@ -310,7 +325,8 @@ export class SmsTemplateService {
       {
         templateId: 'verification-code',
         type: SmsTemplateType.VERIFICATION,
-        content: 'Your White Cross verification code is: {{code}}. Valid for {{expiryMinutes}} minutes.',
+        content:
+          'Your White Cross verification code is: {{code}}. Valid for {{expiryMinutes}} minutes.',
         description: 'Verification code for authentication',
         requiredVariables: ['code', 'expiryMinutes'],
       },
@@ -336,10 +352,14 @@ export class SmsTemplateService {
       try {
         this.createTemplate(dto);
       } catch (error) {
-        this.logger.error(`Failed to create default template ${dto.templateId}: ${error.message}`);
+        this.logger.error(
+          `Failed to create default template ${dto.templateId}: ${error.message}`,
+        );
       }
     });
 
-    this.logger.log(`Initialized ${defaultTemplates.length} default SMS templates`);
+    this.logger.log(
+      `Initialized ${defaultTemplates.length} default SMS templates`,
+    );
   }
 }

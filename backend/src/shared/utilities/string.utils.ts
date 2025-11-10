@@ -13,12 +13,12 @@
  * File: /backend/src/shared/utils/string.ts
  * Locator: WC-UTL-STR-074
  * Purpose: Healthcare String Utilities - Medical data formatting and sanitization
- * 
+ *
  * Upstream: lodash library, independent utility module
  * Downstream: ../services/*, data validation, name formatting, medical record processing
  * Dependencies: lodash, string manipulation functions
  * Exports: capitalize, camelCase, kebabCase, snakeCase, truncate, padStart, trim, toNumber
- * 
+ *
  * LLM Context: String manipulation utilities for White Cross healthcare system.
  * Handles patient name formatting, medical code processing, data sanitization.
  * Essential for HIPAA-compliant data handling and consistent text formatting.
@@ -118,7 +118,8 @@ export const snakeCase = (str: string) => _.snakeCase(str);
  * // Result: 'Medication administra...'
  * ```
  */
-export const truncate = (str: string, length: number) => _.truncate(str, { length });
+export const truncate = (str: string, length: number) =>
+  _.truncate(str, { length });
 
 /**
  * Pads string at the start to reach specified length with provided characters.
@@ -137,7 +138,8 @@ export const truncate = (str: string, length: number) => _.truncate(str, { lengt
  * padStart('7', 2, '0');           // '07' (useful for time: 07:30)
  * ```
  */
-export const padStart = (str: string, length: number, chars: string) => _.padStart(str, length, chars);
+export const padStart = (str: string, length: number, chars: string) =>
+  _.padStart(str, length, chars);
 
 /**
  * Removes leading and trailing whitespace from string.
@@ -188,5 +190,5 @@ export default {
   truncate,
   padStart,
   trim,
-  toNumber
+  toNumber,
 };

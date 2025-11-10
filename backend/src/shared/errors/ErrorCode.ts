@@ -2,13 +2,13 @@
  * @fileoverview Enhanced Error Code System - Structured Error Handling
  * @module shared/errors/ErrorCode
  * @description Berty-inspired structured error codes with wrapping and context
- * 
+ *
  * Provides:
  * - Typed error codes for all application errors
  * - Error wrapping to preserve error chains
  * - Context preservation for debugging
  * - Integration with existing ErrorHandlerMiddleware
- * 
+ *
  * @see middleware/error-handling/handlers/error-handler.middleware.ts
  * @author White-Cross Platform Team
  * @version 1.0.0
@@ -133,7 +133,7 @@ export class AppError extends Error implements WithCode {
     code: ErrorCode,
     message: string,
     innerError?: Error,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) {
     super(message);
     this.name = 'AppError';
@@ -152,12 +152,10 @@ export class AppError extends Error implements WithCode {
    * Wrap another error with this error code
    */
   wrap(inner: Error, additionalContext?: Record<string, any>): AppError {
-    return new AppError(
-      this.code,
-      this.message,
-      inner,
-      { ...this.context, ...additionalContext }
-    );
+    return new AppError(this.code, this.message, inner, {
+      ...this.context,
+      ...additionalContext,
+    });
   }
 
   /**
@@ -166,12 +164,12 @@ export class AppError extends Error implements WithCode {
   getErrorChain(): Error[] {
     const chain: Error[] = [this];
     let current: Error | undefined = this.innerError;
-    
+
     while (current) {
       chain.push(current);
       current = (current as any).innerError;
     }
-    
+
     return chain;
   }
 
@@ -181,7 +179,7 @@ export class AppError extends Error implements WithCode {
   getCodes(): ErrorCode[] {
     return this.getErrorChain()
       .filter((err): err is AppError => err instanceof AppError)
-      .map(err => err.code);
+      .map((err) => err.code);
   }
 
   /**
@@ -202,10 +200,12 @@ export class AppError extends Error implements WithCode {
       message: this.message,
       context: this.context,
       timestamp: this.timestamp.toISOString(),
-      innerError: this.innerError ? {
-        name: this.innerError.name,
-        message: this.innerError.message,
-      } : undefined,
+      innerError: this.innerError
+        ? {
+            name: this.innerError.name,
+            message: this.innerError.message,
+          }
+        : undefined,
       stack: process.env.NODE_ENV === 'development' ? this.stack : undefined,
     };
   }
@@ -224,7 +224,7 @@ export class AppError extends Error implements WithCode {
     if (this.code >= 700 && this.code < 800) return 500; // Database errors
     if (this.code >= 800 && this.code < 900) return 400; // Validation errors
     if (this.code >= 900 && this.code < 1000) return 503; // Network errors
-    
+
     // Generic errors
     switch (this.code) {
       case ErrorCode.ErrUnauthorized:
@@ -282,7 +282,7 @@ export class ErrorFactory {
       ErrorCode.ErrAuthInvalidToken,
       'Invalid authentication token',
       undefined,
-      context
+      context,
     );
   }
 
@@ -291,112 +291,148 @@ export class ErrorFactory {
       ErrorCode.ErrAuthExpiredToken,
       'Authentication token has expired',
       undefined,
-      context
+      context,
     );
   }
 
-  static insufficientPermissions(action: string, context?: Record<string, any>): AppError {
+  static insufficientPermissions(
+    action: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrAuthInsufficientPermissions,
       `Insufficient permissions to ${action}`,
       undefined,
-      context
+      context,
     );
   }
 
   // Student errors
-  static studentNotFound(studentId: string, context?: Record<string, any>): AppError {
+  static studentNotFound(
+    studentId: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrStudentNotFound,
       `Student with ID ${studentId} not found`,
       undefined,
-      { studentId, ...context }
+      { studentId, ...context },
     );
   }
 
-  static studentNoConsent(studentId: string, context?: Record<string, any>): AppError {
+  static studentNoConsent(
+    studentId: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrStudentNoConsent,
       `Student does not have required consent`,
       undefined,
-      { studentId, ...context }
+      { studentId, ...context },
     );
   }
 
   // Medication errors
-  static medicationNotFound(medicationId: string, context?: Record<string, any>): AppError {
+  static medicationNotFound(
+    medicationId: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrMedicationNotFound,
       `Medication with ID ${medicationId} not found`,
       undefined,
-      { medicationId, ...context }
+      { medicationId, ...context },
     );
   }
 
-  static medicationAlreadyAdministered(medicationLogId: string, context?: Record<string, any>): AppError {
+  static medicationAlreadyAdministered(
+    medicationLogId: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrMedicationAlreadyAdministered,
       'Medication has already been administered',
       undefined,
-      { medicationLogId, ...context }
+      { medicationLogId, ...context },
     );
   }
 
-  static medicationDosageInvalid(dosage: string, reason: string, context?: Record<string, any>): AppError {
+  static medicationDosageInvalid(
+    dosage: string,
+    reason: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrMedicationDosageInvalid,
       `Invalid dosage: ${reason}`,
       undefined,
-      { dosage, reason, ...context }
+      { dosage, reason, ...context },
     );
   }
 
   // Health record errors
-  static healthRecordNotFound(recordId: string, context?: Record<string, any>): AppError {
+  static healthRecordNotFound(
+    recordId: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrHealthRecordNotFound,
       `Health record with ID ${recordId} not found`,
       undefined,
-      { recordId, ...context }
+      { recordId, ...context },
     );
   }
 
-  static healthRecordLocked(recordId: string, context?: Record<string, any>): AppError {
+  static healthRecordLocked(
+    recordId: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrHealthRecordLocked,
       'Health record is locked and cannot be modified',
       undefined,
-      { recordId, ...context }
+      { recordId, ...context },
     );
   }
 
   // Contact errors
-  static contactNotFound(contactId: string, context?: Record<string, any>): AppError {
+  static contactNotFound(
+    contactId: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrContactNotFound,
       `Contact with ID ${contactId} not found`,
       undefined,
-      { contactId, ...context }
+      { contactId, ...context },
     );
   }
 
   // Permission errors
-  static permissionDenied(action: string, resource: string, context?: Record<string, any>): AppError {
+  static permissionDenied(
+    action: string,
+    resource: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrPermissionDenied,
       `Permission denied for action '${action}' on resource '${resource}'`,
       undefined,
-      { action, resource, ...context }
+      { action, resource, ...context },
     );
   }
 
   // Validation errors
-  static validationFailed(field: string, reason: string, context?: Record<string, any>): AppError {
+  static validationFailed(
+    field: string,
+    reason: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrValidationFailed,
       `Validation failed for field '${field}': ${reason}`,
       undefined,
-      { field, reason, ...context }
+      { field, reason, ...context },
     );
   }
 
@@ -405,36 +441,48 @@ export class ErrorFactory {
       ErrorCode.ErrValidationMissingField,
       `Required field '${field}' is missing`,
       undefined,
-      { field, ...context }
+      { field, ...context },
     );
   }
 
   // Database errors
-  static databaseError(operation: string, inner: Error, context?: Record<string, any>): AppError {
+  static databaseError(
+    operation: string,
+    inner: Error,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrDatabaseQuery,
       `Database error during ${operation}`,
       inner,
-      { operation, ...context }
+      { operation, ...context },
     );
   }
 
   // Generic errors
-  static notFound(resource: string, identifier: string, context?: Record<string, any>): AppError {
+  static notFound(
+    resource: string,
+    identifier: string,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrNotFound,
       `${resource} with identifier '${identifier}' not found`,
       undefined,
-      { resource, identifier, ...context }
+      { resource, identifier, ...context },
     );
   }
 
-  static internalError(message: string, inner?: Error, context?: Record<string, any>): AppError {
+  static internalError(
+    message: string,
+    inner?: Error,
+    context?: Record<string, any>,
+  ): AppError {
     return new AppError(
       ErrorCode.ErrInternal,
       message || 'Internal server error',
       inner,
-      context
+      context,
     );
   }
 }

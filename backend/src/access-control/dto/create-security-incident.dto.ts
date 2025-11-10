@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum, IsOptional, IsArray, IsUUID } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 /**
  * Security incident types
@@ -46,7 +46,8 @@ export class AccessControlCreateIncidentDto {
 
   @ApiProperty({
     description: 'Description of the incident',
-    example: 'User attempted to access restricted resource without proper permissions',
+    example:
+      'User attempted to access restricted resource without proper permissions',
   })
   @IsString()
   description: string;

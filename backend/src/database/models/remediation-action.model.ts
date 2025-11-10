@@ -1,23 +1,22 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  Column,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum RemediationPriority {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  URGENT = 'URGENT'
+  URGENT = 'URGENT',
 }
 
 export enum RemediationStatus {
@@ -25,7 +24,7 @@ export enum RemediationStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   VERIFIED = 'VERIFIED',
-  DEFERRED = 'DEFERRED'
+  DEFERRED = 'DEFERRED',
 }
 
 export interface RemediationActionAttributes {
@@ -48,10 +47,10 @@ export interface RemediationActionAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'remediation_actions',
@@ -59,34 +58,37 @@ export interface RemediationActionAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['violationId']
-  },
+      fields: ['violationId'],
+    },
     {
-      fields: ['priority']
-  },
+      fields: ['priority'],
+    },
     {
-      fields: ['status']
-  },
+      fields: ['status'],
+    },
     {
-      fields: ['assignedTo']
-  },
+      fields: ['assignedTo'],
+    },
     {
-      fields: ['dueDate']
-  },
+      fields: ['dueDate'],
+    },
     {
-      fields: ['completedAt']
-  },
+      fields: ['completedAt'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_remediation_action_created_at'
+      name: 'idx_remediation_action_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_remediation_action_updated_at'
-    }
-  ]
-  })
-export class RemediationAction extends Model<RemediationActionAttributes> implements RemediationActionAttributes {
+      name: 'idx_remediation_action_updated_at',
+    },
+  ],
+})
+export class RemediationAction
+  extends Model<RemediationActionAttributes>
+  implements RemediationActionAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -94,45 +96,45 @@ export class RemediationAction extends Model<RemediationActionAttributes> implem
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   violationId: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   action: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(RemediationPriority)]
+      isIn: [Object.values(RemediationPriority)],
     },
     allowNull: false,
-    defaultValue: RemediationPriority.MEDIUM
+    defaultValue: RemediationPriority.MEDIUM,
   })
   priority: RemediationPriority;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(RemediationStatus)]
+      isIn: [Object.values(RemediationStatus)],
     },
     allowNull: false,
-    defaultValue: RemediationStatus.PLANNED
+    defaultValue: RemediationStatus.PLANNED,
   })
   status: RemediationStatus;
 
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   assignedTo: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   dueDate: Date;
 
@@ -162,14 +164,15 @@ export class RemediationAction extends Model<RemediationActionAttributes> implem
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: RemediationAction) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] RemediationAction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] RemediationAction ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

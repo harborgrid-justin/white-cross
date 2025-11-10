@@ -4,7 +4,7 @@
  */
 
 import { IRepository } from '../../../database/repositories/interfaces/repository.interface';
-import { ExecutionContext, QueryOptions } from '../../../database/types';
+import { QueryOptions } from '../../../database/types';
 
 export interface ImmunizationAttributes {
   id: string;
@@ -68,11 +68,31 @@ export interface UpdateImmunizationDTO {
   nextDueDate?: Date;
 }
 
-export interface IImmunizationRepository extends IRepository<ImmunizationAttributes, CreateImmunizationDTO, UpdateImmunizationDTO> {
-  findByStudent(studentId: string, options?: QueryOptions): Promise<ImmunizationAttributes[]>;
-  findByVaccineType(vaccineType: string, options?: QueryOptions): Promise<ImmunizationAttributes[]>;
-  findDueImmunizations(studentId: string, asOfDate?: Date): Promise<ImmunizationAttributes[]>;
-  findByDateRange(startDate: Date, endDate: Date, options?: QueryOptions): Promise<ImmunizationAttributes[]>;
-  checkComplianceStatus(studentId: string): Promise<{ isCompliant: boolean; missingVaccines: string[] }>;
+export interface IImmunizationRepository
+  extends IRepository<
+    ImmunizationAttributes,
+    CreateImmunizationDTO,
+    UpdateImmunizationDTO
+  > {
+  findByStudent(
+    studentId: string,
+    options?: QueryOptions,
+  ): Promise<ImmunizationAttributes[]>;
+  findByVaccineType(
+    vaccineType: string,
+    options?: QueryOptions,
+  ): Promise<ImmunizationAttributes[]>;
+  findDueImmunizations(
+    studentId: string,
+    asOfDate?: Date,
+  ): Promise<ImmunizationAttributes[]>;
+  findByDateRange(
+    startDate: Date,
+    endDate: Date,
+    options?: QueryOptions,
+  ): Promise<ImmunizationAttributes[]>;
+  checkComplianceStatus(
+    studentId: string,
+  ): Promise<{ isCompliant: boolean; missingVaccines: string[] }>;
   getVaccinationHistory(studentId: string): Promise<ImmunizationAttributes[]>;
 }

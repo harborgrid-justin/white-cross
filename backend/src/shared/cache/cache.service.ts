@@ -17,7 +17,8 @@
  * DOWNSTREAM: Services requiring caching (students, medications, health records)
  */
 
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, Optional } from '@nestjs/common';
+import { AppConfigService } from '../../config/app-config.service';
 
 /**
  * Cache entry structure with metadata
@@ -114,19 +115,28 @@ export class CacheService implements OnModuleDestroy {
 
   /**
    * Creates a new CacheService instance
+   * AppConfigService is optional to support direct instantiation in tests
    */
-  constructor() {
+  constructor(
+    @Optional() @Inject(AppConfigService) private readonly appConfig?: AppConfigService,
+  ) {
     this.cache = new Map();
     this.tagIndex = new Map();
     this.stats = { hits: 0, misses: 0, evictions: 0 };
 
     // Apply default configuration
     this.config = {
-      maxSize: parseInt(process.env.CACHE_MAX_SIZE || '1000', 10),
-      defaultTTL: parseInt(process.env.CACHE_DEFAULT_TTL || '300000', 10),
+      maxSize: this.appConfig
+        ? this.appConfig.get<number>('cache.maxSize', 1000)
+        : 1000,
+      defaultTTL: this.appConfig
+        ? this.appConfig.get<number>('cache.defaultTTL', 300000)
+        : 300000,
       autoCleanup: true,
       cleanupInterval: 60000,
-      enableLogging: process.env.CACHE_LOGGING === 'true',
+      enableLogging: this.appConfig
+        ? this.appConfig.get<boolean>('cache.logging', false)
+        : false,
     };
 
     // Start automatic cleanup if enabled
@@ -401,7 +411,10 @@ export class CacheService implements OnModuleDestroy {
       this.cleanup();
     }, this.config.cleanupInterval);
 
-    this.log('CLEANUP', `Started automatic cleanup (interval: ${this.config.cleanupInterval}ms)`);
+    this.log(
+      'CLEANUP',
+      `Started automatic cleanup (interval: ${this.config.cleanupInterval}ms)`,
+    );
   }
 
   /**

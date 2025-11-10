@@ -5,7 +5,7 @@
  * @description REST API endpoints for health monitoring and Kubernetes probes
  */
 
-import { Controller, Get, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpStatus, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MonitoringService } from './monitoring.service';
 import {
@@ -26,6 +26,9 @@ import {
  * All endpoints are unauthenticated to allow infrastructure monitoring tools
  * and Kubernetes to access them without credentials.
  *
+ * VERSION_NEUTRAL: Health endpoints are version-neutral and remain at /health
+ * (not /api/v1/health) for Kubernetes probe compatibility.
+ *
  * @example
  * ```bash
  * # Check overall system health
@@ -39,7 +42,7 @@ import {
  * ```
  */
 @ApiTags('Health & Monitoring')
-@Controller('health')
+@Controller({ path: 'health', version: VERSION_NEUTRAL })
 export class HealthController {
   constructor(private readonly monitoringService: MonitoringService) {}
 

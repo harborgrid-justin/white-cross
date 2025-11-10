@@ -1,17 +1,17 @@
 import {
-  Table,
+  BelongsTo,
   Column,
-  Model,
+  CreatedAt,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
-  CreatedAt,
+  Model,
+  PrimaryKey,
+  Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 import { ReportTemplate } from './report-template.model';
-import { ReportType, OutputFormat, ScheduleFrequency } from '../constants/report.constants';
+import { OutputFormat, ReportType, ScheduleFrequency } from '../constants/report.constants';
 
 /**
  * Report Schedule Model
@@ -31,13 +31,13 @@ export class ReportSchedule extends Model {
     type: DataType.STRING(255),
     allowNull: false,
   })
-  name: string;
+  name!: string;
 
   @Column({
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
-  reportType: ReportType;
+  reportType!: ReportType;
 
   @ForeignKey(() => ReportTemplate)
   @Column({
@@ -53,7 +53,7 @@ export class ReportSchedule extends Model {
     type: DataType.ENUM(...(Object.values(ScheduleFrequency) as string[])),
     allowNull: false,
   })
-  frequency: ScheduleFrequency;
+  frequency!: ScheduleFrequency;
 
   @Column({
     type: DataType.STRING(100),
@@ -66,7 +66,7 @@ export class ReportSchedule extends Model {
     type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
   })
-  outputFormat: OutputFormat;
+  outputFormat!: OutputFormat;
 
   @Column({
     type: DataType.JSONB,
@@ -78,14 +78,14 @@ export class ReportSchedule extends Model {
     type: DataType.ARRAY(DataType.STRING),
     allowNull: false,
   })
-  recipients: string[];
+  recipients!: string[];
 
   @Default(true)
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: DataType.DATE,
@@ -104,14 +104,14 @@ export class ReportSchedule extends Model {
     type: DataType.INTEGER,
     allowNull: false,
   })
-  executionCount: number;
+  executionCount!: number;
 
   @Default(0)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  failureCount: number;
+  failureCount!: number;
 
   @Column({
     type: DataType.TEXT,

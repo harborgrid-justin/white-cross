@@ -29,7 +29,6 @@ import { MessageReaction } from '../../database/models/message-reaction.model';
 import { Conversation } from '../../database/models/conversation.model';
 import { ConversationParticipant } from '../../database/models/conversation-participant.model';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
-import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 
 describe('Encryption Integration Tests', () => {
   let app: INestApplication;

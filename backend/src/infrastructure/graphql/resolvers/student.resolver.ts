@@ -10,23 +10,81 @@
  * - DataLoader integration for efficient relationship loading
  * - Field-level resolvers for nested data
  */
-import { Resolver, Query, Args, ID, Context, ResolveField, Parent } from '@nestjs/graphql';
+import { Args, Context, ID, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { Roles } from '@/auth';
+import { UserRole } from '@/database';
 import {
-  StudentDto,
-  StudentListResponseDto,
-  StudentFilterInputDto,
   ContactDto,
-  MedicationDto,
+  Gender,
   HealthRecordDto,
-  Gender
+  MedicationDto,
+  StudentDto,
+  StudentFilterInputDto,
+  StudentListResponseDto,
+  EmergencyContactDto,
+  ChronicConditionDto,
+  IncidentReportDto,
+  AllergyDto,
 } from '../dto';
-import { StudentService } from '../../../student/student.service';
+import { StudentService } from '@/student';
 import type { GraphQLContext } from '../types/context.interface';
-import { PHIField } from '../guards/field-authorization.guard';
+import { PHIField } from '@/infrastructure/graphql/guards';
+
+
+/**
+ * GraphQL context structure
+ */
+interface GraphQLContext {
+  req?: {
+    user?: {
+      userId: string;
+      organizationId: string;
+      role: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+/**
+ * Contact model type
+ */
+interface ContactModel {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  relationshipType?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Student model type
+ */
+interface StudentModel {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  studentId?: string;
+  gradeLevel?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Student medication model type
+ */
+interface StudentMedicationModel {
+  id?: string;
+  medicationId?: string;
+  studentId?: string;
+  dosage?: string;
+  frequency?: string;
+  [key: string]: unknown;
+}
 
 /**
  * Student Resolver
@@ -34,15 +92,13 @@ import { PHIField } from '../guards/field-authorization.guard';
  */
 @Resolver(() => StudentDto)
 export class StudentResolver {
-  constructor(
-    private readonly studentService: StudentService,
-  ) {}
+  constructor(private readonly studentService: StudentService) {}
 
   /**
    * Map Contact model to ContactDto
    * Simplified mapper for field resolvers
    */
-  private mapContactToDto(contact: any): ContactDto {
+  private mapContactToDto(contact: ContactModel): ContactDto {
     return {
       id: contact.id,
       firstName: contact.firstName,
@@ -64,19 +120,29 @@ export class StudentResolver {
    */
   @Query(() => StudentListResponseDto, { name: 'students' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+    UserRole.COUNSELOR,
+  )
   async getStudents(
     @Args('page', { type: () => Number, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Number, defaultValue: 20 }) limit: number,
-    @Args('orderBy', { type: () => String, defaultValue: 'lastName' }) orderBy: string,
-    @Args('orderDirection', { type: () => String, defaultValue: 'ASC' }) orderDirection: string,
-    @Args('filters', { type: () => StudentFilterInputDto, nullable: true }) filters?: StudentFilterInputDto,
-    @Context() context?: any
+    @Args('orderBy', { type: () => String, defaultValue: 'lastName' })
+    orderBy: string,
+    @Args('orderDirection', { type: () => String, defaultValue: 'ASC' })
+    orderDirection: string,
+    @Args('filters', { type: () => StudentFilterInputDto, nullable: true })
+    filters?: StudentFilterInputDto,
+    @Context() context?: GraphQLContext,
   ): Promise<StudentListResponseDto> {
     // Build filters for student service
-    const studentFilters: any = {};
+    const studentFilters: Record<string, unknown> = {};
     if (filters) {
-      if (filters.isActive !== undefined) studentFilters.isActive = filters.isActive;
+      if (filters.isActive !== undefined)
+        studentFilters.isActive = filters.isActive;
       if (filters.grade) studentFilters.grade = filters.grade;
       if (filters.nurseId) studentFilters.nurseId = filters.nurseId;
       if (filters.search) studentFilters.search = filters.search;
@@ -87,7 +153,7 @@ export class StudentResolver {
       limit,
       orderBy,
       orderDirection,
-      ...studentFilters
+      ...studentFilters,
     });
 
     // Handle different response formats from StudentService
@@ -95,16 +161,16 @@ export class StudentResolver {
     const paginationData = result.meta || {};
 
     return {
-      students: students.map((student: any) => ({
+      students: students.map((student: StudentModel) => ({
         ...student,
-        fullName: `${student.firstName} ${student.lastName}`
+        fullName: `${student.firstName} ${student.lastName}`,
       })),
       pagination: {
         page: paginationData.page || page,
         limit: paginationData.limit || limit,
         total: paginationData.total || 0,
-        totalPages: paginationData.pages || 0
-      }
+        totalPages: paginationData.pages || 0,
+      },
     };
   }
 
@@ -115,10 +181,16 @@ export class StudentResolver {
    */
   @Query(() => StudentDto, { name: 'student', nullable: true })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+    UserRole.COUNSELOR,
+  )
   async getStudent(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any
+    @Context() context?: GraphQLContext,
   ): Promise<StudentDto | null> {
     const student = await this.studentService.findOne(id);
     if (!student) {
@@ -131,9 +203,9 @@ export class StudentResolver {
       photo: student.photo || undefined,
       medicalRecordNum: student.medicalRecordNum || undefined,
       nurseId: student.nurseId || undefined,
-      createdAt: student.createdAt!,
-      updatedAt: student.updatedAt!,
-      fullName: `${student.firstName} ${student.lastName}`
+      createdAt: student.createdAt,
+      updatedAt: student.updatedAt,
+      fullName: `${student.firstName} ${student.lastName}`,
     };
   }
 
@@ -154,9 +226,11 @@ export class StudentResolver {
   ): Promise<ContactDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
-      const contacts = await context.loaders.contactsByStudentLoader.load(student.id);
+      const contacts = await context.loaders.contactsByStudentLoader.load(
+        student.id,
+      );
       // Map Contact entities to ContactDto
-      return (contacts || []).map(contact => this.mapContactToDto(contact));
+      return (contacts || []).map((contact) => this.mapContactToDto(contact));
     } catch (error) {
       console.error(`Error loading contacts for student ${student.id}:`, error);
       return [];
@@ -175,7 +249,10 @@ export class StudentResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of medications for the student or null if unauthorized
    */
-  @ResolveField(() => [MedicationDto], { name: 'medications', nullable: 'items' })
+  @ResolveField(() => [MedicationDto], {
+    name: 'medications',
+    nullable: 'items',
+  })
   @PHIField() // Field-level authorization for PHI
   async medications(
     @Parent() student: StudentDto,
@@ -183,10 +260,11 @@ export class StudentResolver {
   ): Promise<MedicationDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
-      const studentMedications = await context.loaders.medicationsByStudentLoader.load(student.id);
-      
+      const studentMedications =
+        await context.loaders.medicationsByStudentLoader.load(student.id);
+
       // Map StudentMedication to MedicationDto
-      return (studentMedications || []).map((sm: any) => ({
+      return (studentMedications || []).map((sm: StudentMedicationModel) => ({
         id: sm.id,
         studentId: sm.studentId,
         name: sm.medication?.name || sm.medicationName || 'Unknown',
@@ -199,10 +277,13 @@ export class StudentResolver {
         endDate: sm.endDate,
         isActive: sm.isActive,
         createdAt: sm.createdAt,
-        updatedAt: sm.updatedAt
+        updatedAt: sm.updatedAt,
       }));
     } catch (error) {
-      console.error(`Error loading medications for student ${student.id}:`, error);
+      console.error(
+        `Error loading medications for student ${student.id}:`,
+        error,
+      );
       return [];
     }
   }
@@ -227,10 +308,12 @@ export class StudentResolver {
   ): Promise<HealthRecordDto | null> {
     try {
       // Use the shared DataLoader from context for optimal batching
-      const healthRecord = await context.loaders.healthRecordsByStudentLoader.load(student.id);
-      return healthRecord;
+      return await context.loaders.healthRecordsByStudentLoader.load(student.id);
     } catch (error) {
-      console.error(`Error loading health record for student ${student.id}:`, error);
+      console.error(
+        `Error loading health record for student ${student.id}:`,
+        error,
+      );
       return null;
     }
   }
@@ -252,4 +335,149 @@ export class StudentResolver {
     const contacts = await this.contacts(student, context);
     return contacts.length;
   }
+
+  /**
+   * Field Resolver: Load emergency contacts for a student
+   *
+   * Uses DataLoader from context to batch and cache emergency contact queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access emergency contact data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of emergency contacts for the student
+   */
+  @ResolveField(() => [EmergencyContactDto], {
+    name: 'emergencyContacts',
+    nullable: 'items',
+  })
+  @PHIField() // Field-level authorization for PHI
+  async emergencyContacts(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<EmergencyContactDto[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const emergencyContacts =
+        await context.loaders.emergencyContactsByStudentLoader.load(student.id);
+
+      return emergencyContacts || [];
+    } catch (error) {
+      console.error(
+        `Error loading emergency contacts for student ${student.id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Field Resolver: Load chronic conditions for a student
+   *
+   * Uses DataLoader from context to batch and cache chronic condition queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access chronic condition data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of chronic conditions for the student
+   */
+  @ResolveField(() => [ChronicConditionDto], {
+    name: 'chronicConditions',
+    nullable: 'items',
+  })
+  @PHIField() // Field-level authorization for PHI
+  async chronicConditions(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<ChronicConditionDto[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const chronicConditions =
+        await context.loaders.chronicConditionsByStudentLoader.load(student.id);
+
+      return chronicConditions || [];
+    } catch (error) {
+      console.error(
+        `Error loading chronic conditions for student ${student.id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Field Resolver: Load recent incident reports for a student
+   *
+   * Uses DataLoader from context to batch and cache incident report queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access incident report data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of recent incident reports for the student
+   */
+  @ResolveField(() => [IncidentReportDto], {
+    name: 'recentIncidents',
+    nullable: 'items',
+  })
+  @PHIField() // Field-level authorization for PHI
+  async recentIncidents(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<IncidentReportDto[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const incidents = await context.loaders.incidentsByStudentLoader.load(
+        student.id,
+      );
+
+      // Return the 5 most recent incidents (already sorted by date DESC from service)
+      return (incidents || []).slice(0, 5);
+    } catch (error) {
+      console.error(
+        `Error loading recent incidents for student ${student.id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  // Temporarily commented out to isolate GraphQL schema generation issue
+  /*
+  /**
+   * Field Resolver: Load allergies for a student
+   *
+   * Uses DataLoader from context to batch and cache allergy queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * PHI PROTECTED: Only ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, and NURSE can access allergy data
+   *
+   * @param student - Parent student object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Array of allergies for the student
+   */
+  /*
+  @ResolveField(() => [AllergyDto], { name: 'allergies', nullable: 'items' })
+  @PHIField() // Field-level authorization for PHI
+  async allergies(
+    @Parent() student: StudentDto,
+    @Context() context: GraphQLContext,
+  ): Promise<AllergyDto[]> {
+    try {
+      // Use the shared DataLoader from context for optimal batching
+      const allergies = await context.loaders.allergiesByStudentLoader.load(
+        student.id,
+      );
+
+      return allergies || [];
+    } catch (error) {
+      console.error(`Error loading allergies for student ${student.id}:`, error);
+      return [];
+    }
+  }
+  */
 }

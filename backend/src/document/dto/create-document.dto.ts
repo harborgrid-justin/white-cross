@@ -5,22 +5,22 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsString,
-  IsNotEmpty,
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
+  IsOptional,
+  IsString,
   IsUrl,
   IsUUID,
-  IsArray,
-  IsOptional,
-  IsBoolean,
-  MaxLength,
-  MinLength,
-  Min,
   Max,
-  ArrayMaxSize,
+  MaxLength,
+  Min,
+  MinLength,
 } from 'class-validator';
-import { DocumentCategory, DocumentAccessLevel } from '../enums';
+import { DocumentAccessLevel, DocumentCategory } from '../enums/document.enums';
 
 export class CreateDocumentDto {
   @ApiProperty({
@@ -46,7 +46,8 @@ export class CreateDocumentDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Document category - determines retention and compliance requirements',
+    description:
+      'Document category - determines retention and compliance requirements',
     enum: DocumentCategory,
     example: DocumentCategory.MEDICAL_RECORD,
   })
@@ -84,7 +85,8 @@ export class CreateDocumentDto {
   fileSize: number;
 
   @ApiProperty({
-    description: 'Storage URL or file path for document retrieval (HTTPS required for PHI)',
+    description:
+      'Storage URL or file path for document retrieval (HTTPS required for PHI)',
     example: 'https://secure.storage/docs/abc123.pdf',
   })
   @IsString()

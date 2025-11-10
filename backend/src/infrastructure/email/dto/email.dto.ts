@@ -6,20 +6,20 @@
  */
 
 import {
-  IsEmail,
-  IsString,
-  IsOptional,
-  IsBoolean,
   IsArray,
+  IsBoolean,
+  IsEmail,
   IsEnum,
-  ValidateNested,
   IsNotEmpty,
   IsObject,
+  IsOptional,
+  IsString,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AlertSeverity, AlertCategory } from '../../../alerts/alerts.service';
+import { AlertCategory, AlertSeverity } from '@/alerts';
 
 /**
  * Email priority levels

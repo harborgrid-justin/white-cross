@@ -16,7 +16,6 @@
  * @since 2025-10-23
  */
 
-import { logger } from '../..';
 import { isServiceError } from '../../errors';
 
 /**
@@ -119,7 +118,10 @@ function defaultShouldRetry(error: any, attempt: number): boolean {
   }
 
   // Lock errors (but not on last attempt - these may need longer backoff)
-  if (attempt < 3 && (errorMsg.includes('lock') || errorMsg.includes('deadlock'))) {
+  if (
+    attempt < 3 &&
+    (errorMsg.includes('lock') || errorMsg.includes('deadlock'))
+  ) {
     return true;
   }
 
@@ -136,7 +138,7 @@ function calculateDelay(
   exponential: boolean,
   maxDelay: number,
   jitter: boolean,
-  jitterFactor: number
+  jitterFactor: number,
 ): number {
   let delay = baseDelay;
 
@@ -162,7 +164,7 @@ function calculateDelay(
  * Sleep for specified milliseconds
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -196,7 +198,7 @@ function sleep(ms: number): Promise<void> {
  */
 export async function retry<T>(
   fn: () => Promise<T>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<T> {
   const {
     maxAttempts = 3,
@@ -221,11 +223,10 @@ export async function retry<T>(
 
       // Success! Log if we had to retry
       if (attempt > 1) {
-        logger.log(`${operationName} succeeded after ${attempt} attempts`, 'RetryUtility');
+        // Operation succeeded after retries - logging handled by caller
       }
 
       return result;
-
     } catch (error: any) {
       lastError = error;
 
@@ -233,11 +234,11 @@ export async function retry<T>(
       const willRetry = attempt < maxAttempts && shouldRetry(error, attempt);
 
       if (!willRetry) {
-        // No more retries - log and throw
+        // No more retries - throw the error
         if (attempt >= maxAttempts) {
-          logger.error(`${operationName} failed after ${maxAttempts} attempts`, error, 'RetryUtility');
+          // Operation failed after max attempts - error handled by caller
         } else {
-          logger.error(`${operationName} failed (non-retryable error)`, error, 'RetryUtility');
+          // Non-retryable error - error handled by caller
         }
         throw error;
       }
@@ -249,18 +250,15 @@ export async function retry<T>(
         exponentialBackoff,
         maxDelayMs,
         jitter,
-        jitterFactor
+        jitterFactor,
       );
-
-      // Log retry attempt
-      logger.warn(`${operationName} failed (attempt ${attempt}/${maxAttempts}), retrying in ${delay}ms`, 'RetryUtility');
 
       // Call onRetry callback if provided
       if (onRetry) {
         try {
           onRetry(error, attempt, delay);
         } catch (callbackError) {
-          logger.error('Error in onRetry callback', callbackError, 'RetryUtility');
+          // Error in onRetry callback - silently ignore
         }
       }
 
@@ -289,7 +287,7 @@ export async function retryOnError<T>(
   fn: () => Promise<T>,
   shouldRetry: (error: any) => boolean,
   maxAttempts: number = 3,
-  delayMs: number = 1000
+  delayMs: number = 1000,
 ): Promise<T> {
   return retry(fn, {
     maxAttempts,
@@ -314,7 +312,7 @@ export async function retryOnErrorType<T>(
   fn: () => Promise<T>,
   errorType: new (...args: any[]) => Error,
   maxAttempts: number = 3,
-  delayMs: number = 1000
+  delayMs: number = 1000,
 ): Promise<T> {
   return retry(fn, {
     maxAttempts,

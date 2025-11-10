@@ -8,5 +8,7 @@ export {
   HapiMiddlewareUtils,
   HapiRequestWrapper,
   HapiResponseWrapper,
-  HapiNextWrapper
+  HapiNextWrapper,
 } from './hapi.adapter';
+
+export * from './hapi.adapter';

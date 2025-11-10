@@ -22,7 +22,7 @@
  *
  * @class WsValidationPipe
  */
-import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { validate, ValidationError } from 'class-validator';
 import { plainToClass } from 'class-transformer';
@@ -37,7 +37,7 @@ export class WsValidationPipe implements PipeTransform<any> {
    * @returns The validated and transformed DTO instance
    * @throws WsException if validation fails
    */
-  async transform(value: any, metadata: ArgumentMetadata): Promise<any> {
+  async transform(value: unknown, metadata: ArgumentMetadata): Promise<unknown> {
     // Skip validation if no metatype or if it's a native type
     if (!metadata.metatype || !this.toValidate(metadata.metatype)) {
       return value;

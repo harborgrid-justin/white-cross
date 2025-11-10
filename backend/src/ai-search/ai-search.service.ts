@@ -16,7 +16,7 @@
  * - Cache Manager for embedding caching
  */
 
-import { Injectable, Logger, Inject, HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
@@ -81,14 +81,20 @@ export interface SearchAnalytics {
  * AI Search Exception Classes
  */
 export class AISearchException extends HttpException {
-  constructor(message: string, status: number = HttpStatus.INTERNAL_SERVER_ERROR) {
+  constructor(
+    message: string,
+    status: number = HttpStatus.INTERNAL_SERVER_ERROR,
+  ) {
     super(message, status);
   }
 }
 
 export class EmbeddingGenerationException extends AISearchException {
   constructor(message: string) {
-    super(`Embedding generation failed: ${message}`, HttpStatus.SERVICE_UNAVAILABLE);
+    super(
+      `Embedding generation failed: ${message}`,
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
   }
 }
 
@@ -105,11 +111,10 @@ export class AiSearchService {
   private embeddingCache: Map<string, number[]> = new Map();
   private readonly CACHE_MAX_SIZE = 1000;
   private readonly EMBEDDING_DIMENSION = 1536; // text-embedding-3-small or ada-002
-  private searchIndex: Map<string, { embedding: number[]; metadata: any }> = new Map();
+  private searchIndex: Map<string, { embedding: number[]; metadata: any }> =
+    new Map();
 
-  constructor(
-    private readonly configService: ConfigService,
-  ) {
+  constructor(private readonly configService: ConfigService) {
     this.initializeOpenAI();
   }
 
@@ -156,7 +161,10 @@ export class AiSearchService {
         return this.generateMockEmbedding(text);
       }
 
-      const model = this.configService.get<string>('OPENAI_EMBEDDING_MODEL', 'text-embedding-3-small');
+      const model = this.configService.get<string>(
+        'OPENAI_EMBEDDING_MODEL',
+        'text-embedding-3-small',
+      );
 
       const response = await this.openai.embeddings.create({
         model,
@@ -168,7 +176,9 @@ export class AiSearchService {
       // Cache the embedding
       this.cacheEmbedding(cacheKey, embedding);
 
-      this.logger.debug(`Generated embedding for text (length: ${text.length})`);
+      this.logger.debug(
+        `Generated embedding for text (length: ${text.length})`,
+      );
 
       return embedding;
     } catch (error: any) {
@@ -190,7 +200,7 @@ export class AiSearchService {
   async indexContent(
     contentType: string,
     contentId: string,
-    content: string
+    content: string,
   ): Promise<void> {
     try {
       const embedding = await this.generateEmbedding(content);
@@ -209,7 +219,10 @@ export class AiSearchService {
 
       this.logger.log(`Indexed content: ${indexKey}`);
     } catch (error: any) {
-      this.logger.error(`Failed to index content ${contentType}:${contentId}`, error);
+      this.logger.error(
+        `Failed to index content ${contentType}:${contentId}`,
+        error,
+      );
       throw new AISearchException(`Indexing failed: ${error.message}`);
     }
   }
@@ -217,7 +230,10 @@ export class AiSearchService {
   /**
    * Perform semantic search across indexed content
    */
-  async search(query: string, filters?: SearchFilters & { threshold?: number; limit?: number }): Promise<SearchResult[]> {
+  async search(
+    query: string,
+    filters?: SearchFilters & { threshold?: number; limit?: number },
+  ): Promise<SearchResult[]> {
     const startTime = Date.now();
 
     try {
@@ -236,7 +252,10 @@ export class AiSearchService {
         }
 
         // Calculate cosine similarity
-        const similarity = this.cosineSimilarity(queryEmbedding, value.embedding);
+        const similarity = this.cosineSimilarity(
+          queryEmbedding,
+          value.embedding,
+        );
 
         // Apply threshold (default 0.7 means 70% similarity)
         const threshold = filters?.threshold || 0.7;
@@ -251,7 +270,10 @@ export class AiSearchService {
           content: value.metadata.content,
           similarity,
           metadata: value.metadata,
-          relevantFields: this.extractRelevantFields(value.metadata.content, query),
+          relevantFields: this.extractRelevantFields(
+            value.metadata.content,
+            query,
+          ),
         });
       }
 
@@ -263,7 +285,9 @@ export class AiSearchService {
       const limitedResults = results.slice(0, limit);
 
       const processingTime = Date.now() - startTime;
-      this.logger.log(`Search completed in ${processingTime}ms, found ${limitedResults.length} results`);
+      this.logger.log(
+        `Search completed in ${processingTime}ms, found ${limitedResults.length} results`,
+      );
 
       return limitedResults;
     } catch (error: any) {
@@ -312,7 +336,10 @@ export class AiSearchService {
     } as any);
 
     // Generate search suggestions
-    const suggestions = await this.getSearchSuggestions(params.query, params.userId);
+    const suggestions = await this.getSearchSuggestions(
+      params.query,
+      params.userId,
+    );
 
     return {
       results,
@@ -325,7 +352,10 @@ export class AiSearchService {
   /**
    * Get intelligent search suggestions
    */
-  async getSearchSuggestions(partial: string, userId: string): Promise<string[]> {
+  async getSearchSuggestions(
+    partial: string,
+    userId: string,
+  ): Promise<string[]> {
     this.logger.log(`Getting search suggestions for: ${partial}`);
 
     // In a real implementation, this would query a search_logs table
@@ -348,7 +378,7 @@ export class AiSearchService {
     ];
 
     const matching = medicalTerms.filter((term) =>
-      term.toLowerCase().includes(partial.toLowerCase())
+      term.toLowerCase().includes(partial.toLowerCase()),
     );
 
     suggestions.push(...matching.slice(0, 5));
@@ -361,7 +391,7 @@ export class AiSearchService {
    */
   async advancedPatientSearch(
     criteria: AdvancedSearchCriteria,
-    userId: string
+    userId: string,
   ): Promise<any> {
     this.logger.log('Advanced patient search', { criteria });
 
@@ -405,9 +435,15 @@ export class AiSearchService {
         case 'side_effects':
           return await this.findMedicationSideEffects(params.medications);
         case 'contraindications':
-          return await this.findMedicationContraindications(params.medications, params.patientId);
+          return await this.findMedicationContraindications(
+            params.medications,
+            params.patientId,
+          );
         default:
-          throw new AISearchException('Invalid medication search type', HttpStatus.BAD_REQUEST);
+          throw new AISearchException(
+            'Invalid medication search type',
+            HttpStatus.BAD_REQUEST,
+          );
       }
     } catch (error: any) {
       this.logger.error('Medication search error', error);
@@ -418,7 +454,10 @@ export class AiSearchService {
   /**
    * Get search analytics
    */
-  async getSearchAnalytics(period: string = 'week', limit: number = 10): Promise<SearchAnalytics> {
+  async getSearchAnalytics(
+    period: string = 'week',
+    limit: number = 10,
+  ): Promise<SearchAnalytics> {
     this.logger.log(`Getting search analytics for period: ${period}`);
 
     // In a real implementation, this would query search_logs table
@@ -435,8 +474,12 @@ export class AiSearchService {
   /**
    * Find medication interactions
    */
-  private async findMedicationInteractions(medications: string[]): Promise<any> {
-    this.logger.log(`Finding interactions for ${medications.length} medications`);
+  private async findMedicationInteractions(
+    medications: string[],
+  ): Promise<any> {
+    this.logger.log(
+      `Finding interactions for ${medications.length} medications`,
+    );
 
     // In a real implementation, this would:
     // 1. Query medication_interactions table with pgvector similarity
@@ -454,8 +497,12 @@ export class AiSearchService {
   /**
    * Find medication alternatives
    */
-  private async findMedicationAlternatives(medications: string[]): Promise<any> {
-    this.logger.log(`Finding alternatives for ${medications.length} medications`);
+  private async findMedicationAlternatives(
+    medications: string[],
+  ): Promise<any> {
+    this.logger.log(
+      `Finding alternatives for ${medications.length} medications`,
+    );
 
     // In a real implementation, this would:
     // 1. Use vector similarity to find medications with similar properties
@@ -473,7 +520,9 @@ export class AiSearchService {
    * Find medication side effects
    */
   private async findMedicationSideEffects(medications: string[]): Promise<any> {
-    this.logger.log(`Finding side effects for ${medications.length} medications`);
+    this.logger.log(
+      `Finding side effects for ${medications.length} medications`,
+    );
 
     // In a real implementation, this would:
     // 1. Query medication side effects database
@@ -490,8 +539,13 @@ export class AiSearchService {
   /**
    * Find medication contraindications
    */
-  private async findMedicationContraindications(medications: string[], patientId?: string): Promise<any> {
-    this.logger.log(`Finding contraindications for ${medications.length} medications`);
+  private async findMedicationContraindications(
+    medications: string[],
+    patientId?: string,
+  ): Promise<any> {
+    this.logger.log(
+      `Finding contraindications for ${medications.length} medications`,
+    );
 
     // In a real implementation, this would:
     // 1. Get patient's medical profile (allergies, conditions, current medications)
@@ -501,7 +555,7 @@ export class AiSearchService {
 
     return {
       contraindications: [],
-      patientSpecific: patientId ? true : false,
+      patientSpecific: !!patientId,
       message: 'Medication contraindications require database integration',
     };
   }
@@ -608,7 +662,7 @@ export class AiSearchService {
     const contentWords = content.toLowerCase().split(/\s+/);
 
     const relevant = contentWords.filter((word) =>
-      queryTerms.some((term) => word.includes(term) || term.includes(word))
+      queryTerms.some((term) => word.includes(term) || term.includes(word)),
     );
 
     // Return unique relevant words

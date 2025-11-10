@@ -1,28 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IntegrationService } from './services/integration.service';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
 import { RateLimiterService } from './services/rate-limiter.service';
-import { CreateIntegrationDto, UpdateIntegrationDto } from './dto';
+import { CreateIntegrationDto } from './dto/create-integration.dto';
+import { UpdateIntegrationDto } from './dto/update-integration.dto';
 
 @ApiTags('Integrations')
 @ApiBearerAuth()
@@ -37,7 +19,8 @@ export class IntegrationController {
   @Post('configure')
   @ApiOperation({
     summary: 'Configure new integration',
-    description: 'Create a new integration configuration for external systems (SIS, EHR, Pharmacy, Lab, Insurance, etc.)',
+    description:
+      'Create a new integration configuration for external systems (SIS, EHR, Pharmacy, Lab, Insurance, etc.)',
   })
   @ApiResponse({
     status: 201,
@@ -56,7 +39,10 @@ export class IntegrationController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid integration data' })
-  @ApiResponse({ status: 409, description: 'Integration with this name already exists' })
+  @ApiResponse({
+    status: 409,
+    description: 'Integration with this name already exists',
+  })
   @ApiBody({ type: CreateIntegrationDto })
   async createIntegration(@Body() createDto: CreateIntegrationDto) {
     return this.integrationService.createIntegration(createDto);
@@ -65,12 +51,20 @@ export class IntegrationController {
   @Get()
   @ApiOperation({
     summary: 'List all integrations',
-    description: 'Get all integration configurations with optional type filtering',
+    description:
+      'Get all integration configurations with optional type filtering',
   })
   @ApiQuery({
     name: 'type',
     required: false,
-    enum: ['SIS', 'EHR', 'PHARMACY', 'LABORATORY', 'INSURANCE', 'PARENT_PORTAL'],
+    enum: [
+      'SIS',
+      'EHR',
+      'PHARMACY',
+      'LABORATORY',
+      'INSURANCE',
+      'PARENT_PORTAL',
+    ],
     description: 'Filter by integration type',
   })
   @ApiResponse({
@@ -98,7 +92,8 @@ export class IntegrationController {
   @Get('status')
   @ApiOperation({
     summary: 'Get integration status overview',
-    description: 'Get comprehensive statistics and status of all integrations including circuit breaker and rate limiter status',
+    description:
+      'Get comprehensive statistics and status of all integrations including circuit breaker and rate limiter status',
   })
   @ApiResponse({
     status: 200,
@@ -184,7 +179,8 @@ export class IntegrationController {
   @Post(':id/test')
   @ApiOperation({
     summary: 'Test integration connection',
-    description: 'Test connectivity to the external system with circuit breaker protection',
+    description:
+      'Test connectivity to the external system with circuit breaker protection',
   })
   @ApiParam({ name: 'id', description: 'Integration ID' })
   @ApiResponse({
@@ -211,7 +207,8 @@ export class IntegrationController {
   @Post(':id/sync')
   @ApiOperation({
     summary: 'Trigger integration sync',
-    description: 'Manually trigger data synchronization with rate limiting and retry logic',
+    description:
+      'Manually trigger data synchronization with rate limiting and retry logic',
   })
   @ApiParam({ name: 'id', description: 'Integration ID' })
   @ApiResponse({
@@ -237,12 +234,31 @@ export class IntegrationController {
   @Get('logs')
   @ApiOperation({
     summary: 'Get integration logs',
-    description: 'Retrieve integration operation logs with pagination and filtering',
+    description:
+      'Retrieve integration operation logs with pagination and filtering',
   })
-  @ApiQuery({ name: 'integrationId', required: false, description: 'Filter by integration ID' })
-  @ApiQuery({ name: 'type', required: false, description: 'Filter by integration type' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 20)' })
+  @ApiQuery({
+    name: 'integrationId',
+    required: false,
+    description: 'Filter by integration ID',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'Filter by integration type',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 20)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Logs retrieved successfully',
@@ -288,9 +304,13 @@ export class IntegrationController {
   @Get(':serviceName/circuit-breaker/status')
   @ApiOperation({
     summary: 'Get circuit breaker status',
-    description: 'Get the current status of the circuit breaker for a specific service',
+    description:
+      'Get the current status of the circuit breaker for a specific service',
   })
-  @ApiParam({ name: 'serviceName', description: 'Service name (e.g., SIS, EHR, PHARMACY)' })
+  @ApiParam({
+    name: 'serviceName',
+    description: 'Service name (e.g., SIS, EHR, PHARMACY)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Circuit breaker status retrieved',
@@ -303,11 +323,13 @@ export class IntegrationController {
     },
   })
   getCircuitBreakerStatus(@Param('serviceName') serviceName: string) {
-    return this.circuitBreakerService.getStatus(serviceName) || {
-      state: 'CLOSED',
-      failures: 0,
-      message: 'Circuit breaker not initialized for this service',
-    };
+    return (
+      this.circuitBreakerService.getStatus(serviceName) || {
+        state: 'CLOSED',
+        failures: 0,
+        message: 'Circuit breaker not initialized for this service',
+      }
+    );
   }
 
   @Post(':serviceName/circuit-breaker/reset')
@@ -317,7 +339,10 @@ export class IntegrationController {
     description: 'Manually reset the circuit breaker to CLOSED state',
   })
   @ApiParam({ name: 'serviceName', description: 'Service name' })
-  @ApiResponse({ status: 200, description: 'Circuit breaker reset successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Circuit breaker reset successfully',
+  })
   resetCircuitBreaker(@Param('serviceName') serviceName: string) {
     this.circuitBreakerService.reset(serviceName);
     return { message: `Circuit breaker reset for ${serviceName}` };
@@ -342,13 +367,14 @@ export class IntegrationController {
     },
   })
   getRateLimiterStatus(@Param('serviceName') serviceName: string) {
-    return this.rateLimiterService.getStatus(serviceName) || {
-      current: 0,
-      max: 100,
-      window: 60000,
-      remaining: 100,
-      message: 'Rate limiter not initialized for this service',
-    };
+    return (
+      this.rateLimiterService.getStatus(serviceName) || {
+        current: 0,
+        max: 100,
+        window: 60000,
+        remaining: 100,
+        message: 'Rate limiter not initialized for this service',
+      }
+    );
   }
 }
-

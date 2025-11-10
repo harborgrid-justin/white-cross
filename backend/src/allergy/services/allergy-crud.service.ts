@@ -10,14 +10,8 @@
  * @service AllergyCrudService
  * @compliance HIPAA, Healthcare Allergy Documentation Standards
  */
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  Logger,
-} from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model } from 'sequelize-typescript';
 import { Allergy } from '../models/allergy.model';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
 import { AllergyUpdateDto } from '../dto/update-allergy.dto';
@@ -44,7 +38,9 @@ export class AllergyCrudService {
    */
   async createAllergy(createAllergyDto: CreateAllergyDto): Promise<Allergy> {
     // Validate student exists
-    const student = await this.studentModel.findByPk(createAllergyDto.studentId);
+    const student = await this.studentModel.findByPk(
+      createAllergyDto.studentId,
+    );
 
     if (!student) {
       throw new NotFoundException(
@@ -82,9 +78,9 @@ export class AllergyCrudService {
     );
 
     // Reload with relations
-    return await this.allergyModel.findByPk(savedAllergy.id, {
+    return (await this.allergyModel.findByPk(savedAllergy.id, {
       include: [{ model: Student, as: 'student' }],
-    }) as Allergy;
+    })) as Allergy;
   }
 
   /**
@@ -157,7 +153,9 @@ export class AllergyCrudService {
       include: [{ model: Student, as: 'student' }],
     });
     if (!result) {
-      throw new NotFoundException(`Allergy with ID ${updatedAllergy.id} not found after update`);
+      throw new NotFoundException(
+        `Allergy with ID ${updatedAllergy.id} not found after update`,
+      );
     }
     return result;
   }

@@ -9,24 +9,59 @@
  * - Role-based access control with GqlRolesGuard
  * - PHI access protected by role restrictions
  */
-import { Resolver, Query, Mutation, Args, ID, Context } from '@nestjs/graphql';
+import { Args, Context, ID, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { UserRole } from '../../../database/models/user.model';
+import { Roles } from '@/auth';
+import { Contact, UserRole } from '@/database';
 import {
   ContactDto,
-  ContactListResponseDto,
-  ContactInputDto,
-  ContactUpdateInputDto,
   ContactFilterInputDto,
+  ContactInputDto,
+  ContactListResponseDto,
   ContactStatsDto,
+  ContactType,
+  ContactUpdateInputDto,
   DeleteResponseDto,
-  ContactType
+  StudentDto,
 } from '../dto';
-import { ContactService } from '../../../contact/services/contact.service';
+import { ContactService } from '@/contact';
 import { ContactType as DomainContactType } from '../../../contact/enums/contact-type.enum';
-import { Contact } from '../../../database/models/contact.model';
+import type { GraphQLContext } from '../types/context.interface';
+
+
+/**
+ * GraphQL context structure
+ */
+interface GraphQLContext {
+  req?: {
+    user?: {
+      userId: string;
+      organizationId: string;
+      role: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+
+/**
+ * GraphQL context structure
+ */
+interface GraphQLContext {
+  req?: {
+    user?: {
+      userId: string;
+      organizationId: string;
+      role: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
 
 /**
  * Contact Resolver
@@ -59,7 +94,9 @@ export class ContactResolver {
   /**
    * Transform GraphQL ContactType to domain ContactType
    */
-  private transformGraphQLContactType(graphqlType: ContactType): DomainContactType {
+  private transformGraphQLContactType(
+    graphqlType: ContactType,
+  ): DomainContactType {
     switch (graphqlType) {
       case ContactType.Guardian:
         return DomainContactType.Guardian;
@@ -106,7 +143,7 @@ export class ContactResolver {
       fullName: `${contact.firstName} ${contact.lastName}`,
       displayName: contact.organization
         ? `${contact.firstName} ${contact.lastName} (${contact.organization})`
-        : `${contact.firstName} ${contact.lastName}`
+        : `${contact.firstName} ${contact.lastName}`,
     };
   }
 
@@ -117,21 +154,31 @@ export class ContactResolver {
    */
   @Query(() => ContactListResponseDto, { name: 'contacts' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+    UserRole.COUNSELOR,
+  )
   async getContacts(
     @Args('page', { type: () => Number, defaultValue: 1 }) page: number,
     @Args('limit', { type: () => Number, defaultValue: 20 }) limit: number,
-    @Args('orderBy', { type: () => String, defaultValue: 'lastName' }) orderBy: string,
-    @Args('orderDirection', { type: () => String, defaultValue: 'ASC' }) orderDirection: string,
-    @Args('filters', { type: () => ContactFilterInputDto, nullable: true }) filters?: ContactFilterInputDto,
-    @Context() context?: any
+    @Args('orderBy', { type: () => String, defaultValue: 'lastName' })
+    orderBy: string,
+    @Args('orderDirection', { type: () => String, defaultValue: 'ASC' })
+    orderDirection: string,
+    @Args('filters', { type: () => ContactFilterInputDto, nullable: true })
+    filters?: ContactFilterInputDto,
+    @Context() context?: GraphQLContext,
   ): Promise<ContactListResponseDto> {
     // Convert filters to service format
-    const serviceFilters: any = {};
+    const serviceFilters: Record<string, unknown> = {};
     if (filters) {
       if (filters.type) serviceFilters.type = filters.type;
       if (filters.types) serviceFilters.type = filters.types;
-      if (filters.isActive !== undefined) serviceFilters.isActive = filters.isActive;
+      if (filters.isActive !== undefined)
+        serviceFilters.isActive = filters.isActive;
       if (filters.relationTo) serviceFilters.relationTo = filters.relationTo;
       if (filters.search) serviceFilters.search = filters.search;
     }
@@ -141,15 +188,15 @@ export class ContactResolver {
       page,
       limit,
       orderBy,
-      orderDirection
+      orderDirection,
     });
 
     return {
-      contacts: result.contacts.map(contact => this.mapContactToDto(contact)),
+      contacts: result.contacts.map((contact) => this.mapContactToDto(contact)),
       pagination: {
         ...result.pagination,
-        totalPages: result.pagination.pages
-      }
+        totalPages: result.pagination.pages,
+      },
     };
   }
 
@@ -160,10 +207,16 @@ export class ContactResolver {
    */
   @Query(() => ContactDto, { name: 'contact', nullable: true })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+    UserRole.COUNSELOR,
+  )
   async getContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any
+    @Context() context?: GraphQLContext,
   ): Promise<ContactDto | null> {
     const contact = await this.contactService.getContactById(id);
     if (!contact) {
@@ -180,14 +233,23 @@ export class ContactResolver {
    */
   @Query(() => [ContactDto], { name: 'contactsByRelation' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+    UserRole.COUNSELOR,
+  )
   async getContactsByRelation(
     @Args('relationTo', { type: () => ID }) relationTo: string,
     @Args('type', { type: () => String, nullable: true }) type?: string,
-    @Context() context?: any
+    @Context() context?: GraphQLContext,
   ): Promise<ContactDto[]> {
-    const contacts = await this.contactService.getContactsByRelation(relationTo, type as any);
-    return contacts.map(contact => this.mapContactToDto(contact));
+    const contacts = await this.contactService.getContactsByRelation(
+      relationTo,
+      type as any,
+    );
+    return contacts.map((contact) => this.mapContactToDto(contact));
   }
 
   /**
@@ -197,14 +259,20 @@ export class ContactResolver {
    */
   @Query(() => [ContactDto], { name: 'searchContacts' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE, UserRole.COUNSELOR)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+    UserRole.COUNSELOR,
+  )
   async searchContacts(
     @Args('query', { type: () => String }) query: string,
     @Args('limit', { type: () => Number, defaultValue: 10 }) limit: number,
-    @Context() context?: any
+    @Context() context?: GraphQLContext,
   ): Promise<ContactDto[]> {
     const contacts = await this.contactService.searchContacts(query, limit);
-    return contacts.map(contact => this.mapContactToDto(contact));
+    return contacts.map((contact) => this.mapContactToDto(contact));
   }
 
   /**
@@ -215,7 +283,7 @@ export class ContactResolver {
   @Query(() => ContactStatsDto, { name: 'contactStats' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN)
-  async getContactStats(@Context() context?: any): Promise<ContactStatsDto> {
+  async getContactStats(@Context() context?: GraphQLContext): Promise<ContactStatsDto> {
     return await this.contactService.getContactStats();
   }
 
@@ -226,15 +294,20 @@ export class ContactResolver {
    */
   @Mutation(() => ContactDto)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async createContact(
     @Args('input') input: ContactInputDto,
-    @Context() context: any
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const transformedInput = {
       ...input,
-      type: this.transformGraphQLContactType(input.type)
+      type: this.transformGraphQLContactType(input.type),
     };
     const contact = await this.contactService.createContact(transformedInput);
 
@@ -248,18 +321,28 @@ export class ContactResolver {
    */
   @Mutation(() => ContactDto)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async updateContact(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: ContactUpdateInputDto,
-    @Context() context: any
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const transformedInput = {
       ...input,
-      type: input.type ? this.transformGraphQLContactType(input.type) : undefined
+      type: input.type
+        ? this.transformGraphQLContactType(input.type)
+        : undefined,
     };
-    const contact = await this.contactService.updateContact(id, transformedInput);
+    const contact = await this.contactService.updateContact(
+      id,
+      transformedInput,
+    );
 
     return this.mapContactToDto(contact);
   }
@@ -274,12 +357,12 @@ export class ContactResolver {
   @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN)
   async deleteContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context?: any
+    @Context() context?: GraphQLContext,
   ): Promise<DeleteResponseDto> {
     await this.contactService.deleteContact(id);
     return {
       success: true,
-      message: 'Contact deleted successfully'
+      message: 'Contact deleted successfully',
     };
   }
 
@@ -290,10 +373,15 @@ export class ContactResolver {
    */
   @Mutation(() => ContactDto)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async deactivateContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context: any
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const contact = await this.contactService.deactivateContact(id, userId);
@@ -308,14 +396,51 @@ export class ContactResolver {
    */
   @Mutation(() => ContactDto)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.SCHOOL_ADMIN, UserRole.DISTRICT_ADMIN, UserRole.NURSE)
+  @Roles(
+    UserRole.ADMIN,
+    UserRole.SCHOOL_ADMIN,
+    UserRole.DISTRICT_ADMIN,
+    UserRole.NURSE,
+  )
   async reactivateContact(
     @Args('id', { type: () => ID }) id: string,
-    @Context() context: any
+    @Context() context: GraphQLContext,
   ): Promise<ContactDto> {
     const userId = context.req?.user?.id;
     const contact = await this.contactService.reactivateContact(id, userId);
 
     return this.mapContactToDto(contact);
+  }
+
+  /**
+   * Field Resolver: Load student for a contact
+   *
+   * Uses DataLoader from context to batch and cache student queries.
+   * The DataLoader is shared across all field resolvers in this request for optimal batching.
+   *
+   * @param contact - Parent contact object
+   * @param context - GraphQL context containing DataLoaders
+   * @returns Student associated with the contact, or null if not found
+   */
+  @ResolveField(() => StudentDto, { name: 'student', nullable: true })
+  async student(
+    @Parent() contact: ContactDto,
+    @Context() context: GraphQLContext,
+  ): Promise<StudentDto | null> {
+    try {
+      // If contact has relationTo (student ID), use DataLoader to fetch student
+      if (contact.relationTo) {
+        return await context.loaders.studentLoader.load(
+          contact.relationTo,
+        );
+      }
+      return null;
+    } catch (error) {
+      console.error(
+        `Error loading student for contact ${contact.id}:`,
+        error,
+      );
+      return null;
+    }
   }
 }

@@ -12,7 +12,7 @@
 // CONSTANTS
 // ==========================================
 
-export { API_BASE } from './incidents.types';
+export { API_BASE } from './incidents.constants';
 
 // ==========================================
 // TYPE EXPORTS

@@ -8,7 +8,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { AuditLog, ComplianceType, AuditSeverity } from '../../database/models/audit-log.model';
+import { AuditLog, AuditSeverity, ComplianceType } from '../../database/models/audit-log.model';
 import { CreateAuditLogDto } from '../dto/create-audit-log.dto';
 import { AuditAction } from '../../database/types/database.enums';
 
@@ -44,20 +44,24 @@ export class AuditService {
     const lowerEntityType = entityType.toLowerCase();
 
     // HIPAA: Health-related entities
-    if (lowerEntityType.includes('health') ||
-        lowerEntityType.includes('medical') ||
-        lowerEntityType.includes('medication') ||
-        lowerEntityType.includes('immunization') ||
-        lowerEntityType.includes('allergy') ||
-        lowerEntityType.includes('diagnosis')) {
+    if (
+      lowerEntityType.includes('health') ||
+      lowerEntityType.includes('medical') ||
+      lowerEntityType.includes('medication') ||
+      lowerEntityType.includes('immunization') ||
+      lowerEntityType.includes('allergy') ||
+      lowerEntityType.includes('diagnosis')
+    ) {
       return ComplianceType.HIPAA;
     }
 
     // FERPA: Education-related entities
-    if (lowerEntityType.includes('student') ||
-        lowerEntityType.includes('enrollment') ||
-        lowerEntityType.includes('grade') ||
-        lowerEntityType.includes('academic')) {
+    if (
+      lowerEntityType.includes('student') ||
+      lowerEntityType.includes('enrollment') ||
+      lowerEntityType.includes('grade') ||
+      lowerEntityType.includes('academic')
+    ) {
       return ComplianceType.FERPA;
     }
 
@@ -70,12 +74,14 @@ export class AuditService {
    */
   private isPHIEntity(entityType: string): boolean {
     const lowerEntityType = entityType.toLowerCase();
-    return lowerEntityType.includes('health') ||
-           lowerEntityType.includes('medical') ||
-           lowerEntityType.includes('medication') ||
-           lowerEntityType.includes('immunization') ||
-           lowerEntityType.includes('allergy') ||
-           lowerEntityType.includes('diagnosis');
+    return (
+      lowerEntityType.includes('health') ||
+      lowerEntityType.includes('medical') ||
+      lowerEntityType.includes('medication') ||
+      lowerEntityType.includes('immunization') ||
+      lowerEntityType.includes('allergy') ||
+      lowerEntityType.includes('diagnosis')
+    );
   }
 
   /**
@@ -171,12 +177,13 @@ export class AuditService {
         };
       }
 
-      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: logs, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: whereClause,
+          offset,
+          limit,
+          order: [['createdAt', 'DESC']],
+        });
 
       this.logger.log(`Retrieved ${logs.length} audit logs`);
 
@@ -276,14 +283,17 @@ export class AuditService {
     try {
       const offset = (page - 1) * limit;
 
-      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
-        where: { entityType, entityId },
-        offset,
-        limit,
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: logs, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: { entityType, entityId },
+          offset,
+          limit,
+          order: [['createdAt', 'DESC']],
+        });
 
-      this.logger.log(`Retrieved ${logs.length} audit logs for ${entityType} ${entityId}`);
+      this.logger.log(
+        `Retrieved ${logs.length} audit logs for ${entityType} ${entityId}`,
+      );
 
       return {
         logs,
@@ -295,7 +305,10 @@ export class AuditService {
         },
       };
     } catch (error) {
-      this.logger.error(`Error getting audit logs for ${entityType} ${entityId}:`, error);
+      this.logger.error(
+        `Error getting audit logs for ${entityType} ${entityId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -311,12 +324,13 @@ export class AuditService {
     try {
       const offset = (page - 1) * limit;
 
-      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
-        where: { userId },
-        offset,
-        limit,
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: logs, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: { userId },
+          offset,
+          limit,
+          order: [['createdAt', 'DESC']],
+        });
 
       this.logger.log(`Retrieved ${logs.length} audit logs for user ${userId}`);
 
@@ -347,16 +361,17 @@ export class AuditService {
     try {
       const offset = (page - 1) * limit;
 
-      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
-        where: {
-          createdAt: {
-            [Op.between]: [startDate, endDate],
+      const { rows: logs, count: total } =
+        await this.auditLogModel.findAndCountAll({
+          where: {
+            createdAt: {
+              [Op.between]: [startDate, endDate],
+            },
           },
-        },
-        offset,
-        limit,
-        order: [['createdAt', 'DESC']],
-      });
+          offset,
+          limit,
+          order: [['createdAt', 'DESC']],
+        });
 
       this.logger.log(
         `Retrieved ${logs.length} audit logs between ${startDate.toISOString()} and ${endDate.toISOString()}`,
@@ -380,7 +395,10 @@ export class AuditService {
   /**
    * Generate audit statistics for compliance reporting
    */
-  async getAuditStatistics(startDate?: Date, endDate?: Date): Promise<{
+  async getAuditStatistics(
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<{
     totalLogs: number;
     actionBreakdown: { [key: string]: number };
     entityTypeBreakdown: { [key: string]: number };
@@ -420,7 +438,8 @@ export class AuditService {
         actionBreakdown[log.action] = (actionBreakdown[log.action] || 0) + 1;
 
         // Entity type breakdown
-        entityTypeBreakdown[log.entityType] = (entityTypeBreakdown[log.entityType] || 0) + 1;
+        entityTypeBreakdown[log.entityType] =
+          (entityTypeBreakdown[log.entityType] || 0) + 1;
 
         // Daily activity
         const date = log.createdAt!.toISOString().split('T')[0];

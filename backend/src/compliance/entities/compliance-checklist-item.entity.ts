@@ -7,5 +7,5 @@
 export {
   ComplianceChecklistItem,
   ComplianceCategory,
-  ChecklistItemStatus
+  ChecklistItemStatus,
 } from '../../database/models/compliance-checklist-item.model';

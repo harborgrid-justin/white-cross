@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CacheConfig, CacheStats, CacheEntry } from '../interfaces/cache-config.interface';
+import { CacheEntry, CacheStats } from '../interfaces/cache-config.interface';
 
 @Injectable()
 export class DiscoveryCacheService {
@@ -16,9 +16,12 @@ export class DiscoveryCacheService {
 
   constructor() {
     // Start cleanup process every 5 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup();
-    }, 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanup();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   onModuleDestroy() {
@@ -32,7 +35,7 @@ export class DiscoveryCacheService {
    */
   async get<T = any>(key: string): Promise<T | null> {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       this.stats.misses++;
       this.updateHitRate();
@@ -41,7 +44,7 @@ export class DiscoveryCacheService {
 
     // Check if entry has expired
     const now = Date.now();
-    if (now > entry.timestamp + (entry.ttl * 1000)) {
+    if (now > entry.timestamp + entry.ttl * 1000) {
       this.cache.delete(key);
       this.stats.misses++;
       this.updateStats();
@@ -66,7 +69,7 @@ export class DiscoveryCacheService {
 
     this.cache.set(key, entry);
     this.updateStats();
-    
+
     this.logger.debug(`Cache set: ${key} (TTL: ${ttl}s)`);
   }
 
@@ -98,14 +101,14 @@ export class DiscoveryCacheService {
    */
   async has(key: string): Promise<boolean> {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return false;
     }
 
     // Check if entry has expired
     const now = Date.now();
-    if (now > entry.timestamp + (entry.ttl * 1000)) {
+    if (now > entry.timestamp + entry.ttl * 1000) {
       this.cache.delete(key);
       this.updateStats();
       return false;
@@ -143,7 +146,9 @@ export class DiscoveryCacheService {
    * Get cache entries count by prefix
    */
   getKeysByPrefix(prefix: string): string[] {
-    return Array.from(this.cache.keys()).filter(key => key.startsWith(prefix));
+    return Array.from(this.cache.keys()).filter((key) =>
+      key.startsWith(prefix),
+    );
   }
 
   /**
@@ -152,7 +157,7 @@ export class DiscoveryCacheService {
   async invalidateByPattern(pattern: string | RegExp): Promise<number> {
     let invalidated = 0;
     const regex = typeof pattern === 'string' ? new RegExp(pattern) : pattern;
-    
+
     for (const key of this.cache.keys()) {
       if (regex.test(key)) {
         this.cache.delete(key);
@@ -173,12 +178,12 @@ export class DiscoveryCacheService {
    */
   getMemoryUsage(): number {
     let totalSize = 0;
-    
+
     for (const entry of this.cache.values()) {
       // Rough estimation of memory usage
       totalSize += JSON.stringify(entry).length * 2; // Assume 2 bytes per character
     }
-    
+
     return totalSize;
   }
 
@@ -187,14 +192,14 @@ export class DiscoveryCacheService {
    */
   async updateTTL(key: string, newTTL: number): Promise<boolean> {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return false;
     }
 
     entry.ttl = newTTL;
     entry.timestamp = Date.now(); // Reset timestamp to extend life
-    
+
     this.logger.debug(`Cache TTL updated: ${key} (new TTL: ${newTTL}s)`);
     return true;
   }
@@ -202,16 +207,18 @@ export class DiscoveryCacheService {
   /**
    * Get cache entry metadata
    */
-  getEntryMetadata(key: string): { ttl: number; age: number; expiresIn: number } | null {
+  getEntryMetadata(
+    key: string,
+  ): { ttl: number; age: number; expiresIn: number } | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
 
     const now = Date.now();
     const age = now - entry.timestamp;
-    const expiresIn = (entry.timestamp + (entry.ttl * 1000)) - now;
+    const expiresIn = entry.timestamp + entry.ttl * 1000 - now;
 
     return {
       ttl: entry.ttl,
@@ -228,7 +235,7 @@ export class DiscoveryCacheService {
     let cleanedCount = 0;
 
     for (const [key, entry] of this.cache.entries()) {
-      if (now > entry.timestamp + (entry.ttl * 1000)) {
+      if (now > entry.timestamp + entry.ttl * 1000) {
         this.cache.delete(key);
         cleanedCount++;
       }

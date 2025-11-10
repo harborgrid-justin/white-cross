@@ -23,18 +23,12 @@
  * async student(@Args('id') id: string) { }
  * ```
  */
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  SetMetadata,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { UserRole } from '../../../database/models/user.model';
-import { StudentService } from '../../../student/student.service';
-import { HealthRecordService } from '../../../health-record/health-record.service';
+import { UserRole } from '@/database';
+import { StudentService } from '@/student';
+import { HealthRecordService } from '@/health-record';
 
 /**
  * Metadata key for resource type
@@ -58,7 +52,11 @@ interface OwnershipRule {
   /**
    * Check if user owns or has access to the resource
    */
-  checkOwnership: (userId: string, resourceId: string, userRole: UserRole) => Promise<boolean>;
+  checkOwnership: (
+    userId: string,
+    resourceId: string,
+    userRole: UserRole,
+  ) => Promise<boolean>;
 }
 
 /**
@@ -73,7 +71,11 @@ export class ResourceOwnershipGuard implements CanActivate {
    */
   private readonly ownershipRules: Record<string, OwnershipRule> = {
     student: {
-      checkOwnership: async (userId: string, studentId: string, userRole: UserRole) => {
+      checkOwnership: async (
+        userId: string,
+        studentId: string,
+        userRole: UserRole,
+      ) => {
         const student = await this.studentService.findOne(studentId);
 
         if (!student) {
@@ -97,7 +99,11 @@ export class ResourceOwnershipGuard implements CanActivate {
       },
     },
     health_record: {
-      checkOwnership: async (userId: string, recordId: string, userRole: UserRole) => {
+      checkOwnership: async (
+        userId: string,
+        recordId: string,
+        userRole: UserRole,
+      ) => {
         const record = await this.healthRecordService.findOne(recordId);
 
         if (!record) {
@@ -165,10 +171,13 @@ export class ResourceOwnershipGuard implements CanActivate {
     const resourceId = args.id || args.studentId || args.recordId;
 
     if (!resourceId) {
-      console.warn('ResourceOwnershipGuard: No resource ID found in arguments', {
-        resourceType,
-        args,
-      });
+      console.warn(
+        'ResourceOwnershipGuard: No resource ID found in arguments',
+        {
+          resourceType,
+          args,
+        },
+      );
       return true; // Allow if no ID specified (list queries, etc.)
     }
 
@@ -176,7 +185,9 @@ export class ResourceOwnershipGuard implements CanActivate {
     const rule = this.ownershipRules[resourceType];
 
     if (!rule) {
-      console.warn(`No ownership rule defined for resource type: ${resourceType}`);
+      console.warn(
+        `No ownership rule defined for resource type: ${resourceType}`,
+      );
       return true; // Allow if no rule defined
     }
 
@@ -194,7 +205,7 @@ export class ResourceOwnershipGuard implements CanActivate {
       });
 
       throw new ForbiddenException(
-        `You do not have permission to access this ${resourceType}`
+        `You do not have permission to access this ${resourceType}`,
       );
     }
 

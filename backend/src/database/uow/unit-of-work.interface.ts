@@ -36,7 +36,7 @@ export interface IUnitOfWork {
    */
   executeInTransaction<T>(
     operation: (uow: IUnitOfWork) => Promise<T>,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<T>;
 }
 

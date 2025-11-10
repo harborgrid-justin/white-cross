@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsString, IsNotEmpty, ArrayMinSize, ArrayMaxSize, IsUUID } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export class ShareDocumentDto {
   @ApiProperty({

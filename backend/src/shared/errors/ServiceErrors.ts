@@ -3,6 +3,19 @@
  * @module shared/errors/ServiceErrors
  * @description Custom error classes with retry semantics for service layer
  *
+ * @deprecated This file is DEPRECATED. Use /common/exceptions/ instead.
+ * @see /common/exceptions/exceptions/retryable.exception.ts - Modern implementation
+ * @see /common/exceptions/exceptions/business.exception.ts - Business logic errors
+ *
+ * MIGRATION PATH:
+ * - ServiceError -> RetryableException or BusinessException
+ * - ValidationError -> ValidationException from /common/exceptions/
+ * - NotFoundError -> BusinessException.notFound()
+ * - DatabaseError -> DatabaseException from /common/exceptions/exceptions/retryable.exception.ts
+ * - TimeoutError -> TimeoutException from /common/exceptions/exceptions/retryable.exception.ts
+ * - ConflictError -> BusinessException.alreadyExists()
+ * - isRetryable() -> Use exception.isRetryable property
+ *
  * These error classes complement the existing AppError/ErrorCode system
  * and provide service-specific error handling with retry semantics.
  *
@@ -15,7 +28,7 @@
  * @since 2025-10-23
  */
 
-import { ErrorCode, AppError } from './ErrorCode';
+import { AppError, ErrorCode } from './ErrorCode';
 
 /**
  * Base ServiceError class with retry semantics
@@ -38,7 +51,7 @@ export class ServiceError extends Error {
     message: string,
     context: Record<string, any> = {},
     isRetryable: boolean = false,
-    innerError?: Error
+    innerError?: Error,
   ) {
     super(message);
     this.name = 'ServiceError';
@@ -62,7 +75,7 @@ export class ServiceError extends Error {
       errorCode,
       this.message,
       this.innerError || this,
-      this.context
+      this.context,
     );
   }
 
@@ -77,10 +90,12 @@ export class ServiceError extends Error {
       context: this.context,
       isRetryable: this.isRetryable,
       timestamp: this.timestamp.toISOString(),
-      innerError: this.innerError ? {
-        name: this.innerError.name,
-        message: this.innerError.message,
-      } : undefined,
+      innerError: this.innerError
+        ? {
+            name: this.innerError.name,
+            message: this.innerError.message,
+          }
+        : undefined,
       stack: process.env.NODE_ENV === 'development' ? this.stack : undefined,
     };
   }
@@ -105,7 +120,7 @@ export class ValidationError extends ServiceError {
     message: string,
     context: Record<string, any> = {},
     field?: string,
-    value?: any
+    value?: any,
   ) {
     const fullContext = {
       ...context,
@@ -129,35 +144,49 @@ export class ValidationError extends ServiceError {
   /**
    * Factory method for missing field errors
    */
-  static missingField(field: string, context?: Record<string, any>): ValidationError {
+  static missingField(
+    field: string,
+    context?: Record<string, any>,
+  ): ValidationError {
     return new ValidationError(
       `Required field '${field}' is missing`,
       context,
-      field
+      field,
     );
   }
 
   /**
    * Factory method for invalid format errors
    */
-  static invalidFormat(field: string, expectedFormat: string, value?: any, context?: Record<string, any>): ValidationError {
+  static invalidFormat(
+    field: string,
+    expectedFormat: string,
+    value?: any,
+    context?: Record<string, any>,
+  ): ValidationError {
     return new ValidationError(
       `Field '${field}' has invalid format. Expected: ${expectedFormat}`,
       { ...context, expectedFormat },
       field,
-      value
+      value,
     );
   }
 
   /**
    * Factory method for out of range errors
    */
-  static outOfRange(field: string, min: number, max: number, value: any, context?: Record<string, any>): ValidationError {
+  static outOfRange(
+    field: string,
+    min: number,
+    max: number,
+    value: any,
+    context?: Record<string, any>,
+  ): ValidationError {
     return new ValidationError(
       `Field '${field}' is out of range. Expected: ${min}-${max}, Got: ${value}`,
       { ...context, min, max },
       field,
-      value
+      value,
     );
   }
 }
@@ -212,7 +241,7 @@ export class DatabaseError extends ServiceError {
   constructor(
     operation: string,
     originalError: Error,
-    context: Record<string, any> = {}
+    context: Record<string, any> = {},
   ) {
     const message = `Database error during ${operation}`;
     const fullContext = {
@@ -290,7 +319,7 @@ export class TimeoutError extends ServiceError {
   constructor(
     operation: string,
     timeout: number,
-    context: Record<string, any> = {}
+    context: Record<string, any> = {},
   ) {
     const message = `Operation '${operation}' timed out after ${timeout}ms`;
     const fullContext = { operation, timeout, ...context };
@@ -327,7 +356,7 @@ export class ConflictError extends ServiceError {
     resource: string,
     conflictType: string,
     message: string,
-    context: Record<string, any> = {}
+    context: Record<string, any> = {},
   ) {
     const fullContext = { resource, conflictType, ...context };
 
@@ -347,12 +376,16 @@ export class ConflictError extends ServiceError {
   /**
    * Factory method for duplicate entry errors
    */
-  static duplicate(resource: string, identifier: string, context?: Record<string, any>): ConflictError {
+  static duplicate(
+    resource: string,
+    identifier: string,
+    context?: Record<string, any>,
+  ): ConflictError {
     return new ConflictError(
       resource,
       'duplicate',
       `${resource} with identifier '${identifier}' already exists`,
-      { ...context, identifier }
+      { ...context, identifier },
     );
   }
 }
@@ -381,35 +414,57 @@ export class ServiceErrorFactory {
   /**
    * Create a validation error
    */
-  static validation(message: string, field?: string, value?: any, context?: Record<string, any>): ValidationError {
+  static validation(
+    message: string,
+    field?: string,
+    value?: any,
+    context?: Record<string, any>,
+  ): ValidationError {
     return new ValidationError(message, context, field, value);
   }
 
   /**
    * Create a not found error
    */
-  static notFound(resource: string, id: string, context?: Record<string, any>): NotFoundError {
+  static notFound(
+    resource: string,
+    id: string,
+    context?: Record<string, any>,
+  ): NotFoundError {
     return new NotFoundError(resource, id, context);
   }
 
   /**
    * Create a database error
    */
-  static database(operation: string, originalError: Error, context?: Record<string, any>): DatabaseError {
+  static database(
+    operation: string,
+    originalError: Error,
+    context?: Record<string, any>,
+  ): DatabaseError {
     return new DatabaseError(operation, originalError, context);
   }
 
   /**
    * Create a timeout error
    */
-  static timeout(operation: string, timeout: number, context?: Record<string, any>): TimeoutError {
+  static timeout(
+    operation: string,
+    timeout: number,
+    context?: Record<string, any>,
+  ): TimeoutError {
     return new TimeoutError(operation, timeout, context);
   }
 
   /**
    * Create a conflict error
    */
-  static conflict(resource: string, conflictType: string, message: string, context?: Record<string, any>): ConflictError {
+  static conflict(
+    resource: string,
+    conflictType: string,
+    message: string,
+    context?: Record<string, any>,
+  ): ConflictError {
     return new ConflictError(resource, conflictType, message, context);
   }
 }

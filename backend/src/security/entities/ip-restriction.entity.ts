@@ -1,13 +1,5 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  Index,
-} from 'sequelize-typescript';
-import { IpRestrictionType } from '../enums';
+import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
 
 /**
  * IP Restriction Entity
@@ -16,10 +8,7 @@ import { IpRestrictionType } from '../enums';
 @Table({
   tableName: 'ip_restrictions',
   timestamps: true,
-  indexes: [
-    { fields: ['type', 'isActive'] },
-    { fields: ['ipAddress'] },
-  ],
+  indexes: [{ fields: ['type', 'isActive'] }, { fields: ['ipAddress'] }],
 })
 export class IpRestrictionEntity extends Model {
   @PrimaryKey
@@ -31,7 +20,7 @@ export class IpRestrictionEntity extends Model {
     type: DataType.ENUM(...(Object.values(IpRestrictionType) as string[])),
     allowNull: false,
   })
-  type: IpRestrictionType;
+  type!: IpRestrictionType;
 
   @Column({
     type: DataType.STRING,
@@ -59,14 +48,14 @@ export class IpRestrictionEntity extends Model {
     allowNull: false,
     field: 'reason',
   })
-  reason: string;
+  reason!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     field: 'createdBy',
   })
-  createdBy: string;
+  createdBy!: string;
 
   @Column({
     type: DataType.DATE,
@@ -88,7 +77,7 @@ export class IpRestrictionEntity extends Model {
     allowNull: false,
     field: 'isActive',
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: DataType.DATE,

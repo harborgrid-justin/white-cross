@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  AbacPolicyRule,
+  AbacCondition,
   AbacContext,
   AbacEvaluationResult,
   AbacOperator,
-  AbacCondition,
+  AbacPolicyRule,
 } from '../interfaces/abac-policy.interface';
 
 /**
@@ -65,7 +65,10 @@ export class AbacPolicyService {
   /**
    * Update policy
    */
-  updatePolicy(id: string, updates: Partial<AbacPolicyRule>): AbacPolicyRule | null {
+  updatePolicy(
+    id: string,
+    updates: Partial<AbacPolicyRule>,
+  ): AbacPolicyRule | null {
     const policy = this.policies.get(id);
     if (!policy) {
       return null;
@@ -119,22 +122,32 @@ export class AbacPolicyService {
     return {
       allowed: finalDecision,
       matchedRules,
-      reason: finalDecision ? 'Access granted by ABAC policies' : 'No matching allow policies',
+      reason: finalDecision
+        ? 'Access granted by ABAC policies'
+        : 'No matching allow policies',
     };
   }
 
   /**
    * Evaluate a single policy against context
    */
-  private evaluatePolicy(policy: AbacPolicyRule, context: AbacContext): boolean {
+  private evaluatePolicy(
+    policy: AbacPolicyRule,
+    context: AbacContext,
+  ): boolean {
     // All conditions must match (AND logic)
-    return policy.conditions.every((condition) => this.evaluateCondition(condition, context));
+    return policy.conditions.every((condition) =>
+      this.evaluateCondition(condition, context),
+    );
   }
 
   /**
    * Evaluate a single condition
    */
-  private evaluateCondition(condition: AbacCondition, context: AbacContext): boolean {
+  private evaluateCondition(
+    condition: AbacCondition,
+    context: AbacContext,
+  ): boolean {
     const actualValue = this.extractAttribute(condition.attribute, context);
 
     switch (condition.operator) {
@@ -151,10 +164,16 @@ export class AbacPolicyService {
         return actualValue < condition.value;
 
       case AbacOperator.IN:
-        return Array.isArray(condition.value) && condition.value.includes(actualValue);
+        return (
+          Array.isArray(condition.value) &&
+          condition.value.includes(actualValue)
+        );
 
       case AbacOperator.NOT_IN:
-        return Array.isArray(condition.value) && !condition.value.includes(actualValue);
+        return (
+          Array.isArray(condition.value) &&
+          !condition.value.includes(actualValue)
+        );
 
       case AbacOperator.CONTAINS:
         if (typeof actualValue === 'string') {
@@ -182,9 +201,9 @@ export class AbacPolicyService {
    * Extract attribute value from context using dot notation
    * e.g., 'user.role' => context.user.role
    */
-  private extractAttribute(path: string, context: AbacContext): any {
+  private extractAttribute(path: string, context: AbacContext): unknown {
     const parts = path.split('.');
-    let value: any = context;
+    let value: unknown = context;
 
     for (const part of parts) {
       if (value && typeof value === 'object' && part in value) {

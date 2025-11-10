@@ -57,12 +57,22 @@ export interface GradeStatistics {
   inactiveCount: number;
 }
 
-export interface IStudentRepository extends IRepository<StudentAttributes, CreateStudentDTO, UpdateStudentDTO> {
+export interface IStudentRepository
+  extends IRepository<StudentAttributes, CreateStudentDTO, UpdateStudentDTO> {
   findByStudentNumber(studentNumber: string): Promise<StudentAttributes | null>;
-  findByMedicalRecordNumber(medicalRecordNum: string): Promise<StudentAttributes | null>;
+  findByMedicalRecordNumber(
+    medicalRecordNum: string,
+  ): Promise<StudentAttributes | null>;
   findByGrade(grade: string): Promise<StudentAttributes[]>;
-  findByNurse(nurseId: string, options?: QueryOptions): Promise<StudentAttributes[]>;
+  findByNurse(
+    nurseId: string,
+    options?: QueryOptions,
+  ): Promise<StudentAttributes[]>;
   search(query: string): Promise<StudentAttributes[]>;
   getActiveCount(): Promise<number>;
-  bulkAssignToNurse(studentIds: string[], nurseId: string, context: ExecutionContext): Promise<void>;
+  bulkAssignToNurse(
+    studentIds: string[],
+    nurseId: string,
+    context: ExecutionContext,
+  ): Promise<void>;
 }

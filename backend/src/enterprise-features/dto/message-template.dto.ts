@@ -1,4 +1,4 @@
-import { IsString, IsArray } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateMessageTemplateDto {
@@ -18,7 +18,10 @@ export class CreateMessageTemplateDto {
   @IsString()
   body: string;
 
-  @ApiProperty({ description: 'List of variable names in template', type: [String] })
+  @ApiProperty({
+    description: 'List of variable names in template',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   variables: string[];

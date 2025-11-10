@@ -13,12 +13,7 @@
  *
  * @class WsTransformInterceptor
  */
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -39,11 +34,11 @@ export class WsTransformInterceptor implements NestInterceptor {
   /**
    * Intercepts and transforms WebSocket responses
    *
-   * @param context - Execution context
+   * @param _context - Execution context
    * @param next - Call handler
    * @returns Observable with transformed response
    */
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(_context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       map((data) => {
         // Don't transform null/undefined responses
@@ -63,10 +58,10 @@ export class WsTransformInterceptor implements NestInterceptor {
    * @param data - The response data
    * @returns Transformed data
    */
-  private transformResponse(data: any): any {
+  private transformResponse(data: unknown): unknown {
     // If data has a toPayload method, use it
-    if (typeof data?.toPayload === 'function') {
-      return data.toPayload();
+    if (typeof (data as any)?.toPayload === 'function') {
+      return (data as any).toPayload();
     }
 
     // For objects, sanitize and add metadata
@@ -84,7 +79,7 @@ export class WsTransformInterceptor implements NestInterceptor {
    * @param obj - The object to sanitize
    * @returns Sanitized object
    */
-  private sanitizeObject(obj: any): any {
+  private sanitizeObject(obj: unknown): unknown {
     if (Array.isArray(obj)) {
       return obj.map((item) => this.sanitizeObject(item));
     }
@@ -93,7 +88,7 @@ export class WsTransformInterceptor implements NestInterceptor {
       return obj;
     }
 
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(obj)) {
       // Skip sensitive fields

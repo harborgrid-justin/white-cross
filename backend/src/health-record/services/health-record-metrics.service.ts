@@ -14,11 +14,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { EnterpriseMetricsService } from '../../shared/enterprise/services/enterprise-metrics.service';
-import {
-  HealthRecordMetrics,
-  HealthRecordOperation,
-  ComplianceLevel
-} from '../interfaces/health-record-types';
+import { ComplianceLevel, HealthRecordOperation } from '../interfaces/health-record-types';
 import { HealthMetricSnapshot } from '../../database/models/health-metric-snapshot.model';
 
 export interface HealthRecordMetricSnapshot {
@@ -67,10 +63,13 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
   private readonly enterpriseMetrics: EnterpriseMetricsService;
 
   constructor(
-    @InjectModel(HealthMetricSnapshot) private readonly healthMetricSnapshotModel: typeof HealthMetricSnapshot,
+    @InjectModel(HealthMetricSnapshot)
+    private readonly healthMetricSnapshotModel: typeof HealthMetricSnapshot,
   ) {
     this.enterpriseMetrics = new EnterpriseMetricsService('health-record');
-    this.logger.log('Health Record Metrics Service initialized with database persistence');
+    this.logger.log(
+      'Health Record Metrics Service initialized with database persistence',
+    );
   }
 
   /**
@@ -82,25 +81,37 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     dataTypes: string[],
     responseTime: number,
     success: boolean,
-    recordCount: number = 1
+    recordCount: number = 1,
   ): void {
     // Record operation-specific metrics
-    this.enterpriseMetrics.incrementCounter(`phi_operation_${operation.toLowerCase()}`, 1, {
-      compliance_level: complianceLevel,
-      success: success.toString(),
-    });
+    this.enterpriseMetrics.incrementCounter(
+      `phi_operation_${operation.toLowerCase()}`,
+      1,
+      {
+        compliance_level: complianceLevel,
+        success: success.toString(),
+      },
+    );
 
     // Record compliance level metrics
-    this.enterpriseMetrics.incrementCounter('phi_access_by_compliance', recordCount, {
-      level: complianceLevel,
-    });
+    this.enterpriseMetrics.incrementCounter(
+      'phi_access_by_compliance',
+      recordCount,
+      {
+        level: complianceLevel,
+      },
+    );
 
     // Record data type access
-    dataTypes.forEach(dataType => {
-      this.enterpriseMetrics.incrementCounter('phi_access_by_datatype', recordCount, {
-        data_type: dataType,
-        compliance_level: complianceLevel,
-      });
+    dataTypes.forEach((dataType) => {
+      this.enterpriseMetrics.incrementCounter(
+        'phi_access_by_datatype',
+        recordCount,
+        {
+          data_type: dataType,
+          compliance_level: complianceLevel,
+        },
+      );
     });
 
     // Record performance metrics
@@ -118,7 +129,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     // Log high-volume access for monitoring
     if (recordCount > 50) {
       this.logger.warn(
-        `High-volume PHI access detected: ${recordCount} records, operation: ${operation}, compliance: ${complianceLevel}`
+        `High-volume PHI access detected: ${recordCount} records, operation: ${operation}, compliance: ${complianceLevel}`,
       );
       this.recordSecurityMetric('bulk_phi_access', 1);
     }
@@ -136,18 +147,26 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE',
     responseTime: number,
     success: boolean,
-    cached: boolean = false
+    cached: boolean = false,
   ): void {
     // Record operation count
-    this.enterpriseMetrics.incrementCounter(`health_record_${operation.toLowerCase()}`, 1, {
-      success: success.toString(),
-      cached: cached.toString(),
-    });
+    this.enterpriseMetrics.incrementCounter(
+      `health_record_${operation.toLowerCase()}`,
+      1,
+      {
+        success: success.toString(),
+        cached: cached.toString(),
+      },
+    );
 
     // Record performance
-    this.enterpriseMetrics.recordHistogram(`health_record_${operation.toLowerCase()}_time`, responseTime, {
-      success: success.toString(),
-    });
+    this.enterpriseMetrics.recordHistogram(
+      `health_record_${operation.toLowerCase()}_time`,
+      responseTime,
+      {
+        success: success.toString(),
+      },
+    );
 
     // Update cache metrics if applicable
     if (operation === 'READ') {
@@ -174,7 +193,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     searchType: 'BASIC' | 'ADVANCED' | 'EXPORT',
     resultsCount: number,
     responseTime: number,
-    success: boolean
+    success: boolean,
   ): void {
     this.enterpriseMetrics.incrementCounter('health_record_search', 1, {
       search_type: searchType,
@@ -185,13 +204,19 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
       search_type: searchType,
     });
 
-    this.enterpriseMetrics.recordHistogram('search_response_time', responseTime, {
-      search_type: searchType,
-    });
+    this.enterpriseMetrics.recordHistogram(
+      'search_response_time',
+      responseTime,
+      {
+        search_type: searchType,
+      },
+    );
 
     // Track large result sets for performance monitoring
     if (resultsCount > 100) {
-      this.logger.debug(`Large search result set: ${resultsCount} records, type: ${searchType}`);
+      this.logger.debug(
+        `Large search result set: ${resultsCount} records, type: ${searchType}`,
+      );
     }
   }
 
@@ -202,16 +227,24 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE',
     severity: 'MILD' | 'MODERATE' | 'SEVERE' | 'LIFE_THREATENING',
     responseTime: number,
-    success: boolean
+    success: boolean,
   ): void {
-    this.enterpriseMetrics.incrementCounter(`allergy_${operation.toLowerCase()}`, 1, {
-      severity: severity.toLowerCase(),
-      success: success.toString(),
-    });
+    this.enterpriseMetrics.incrementCounter(
+      `allergy_${operation.toLowerCase()}`,
+      1,
+      {
+        severity: severity.toLowerCase(),
+        success: success.toString(),
+      },
+    );
 
-    this.enterpriseMetrics.recordHistogram(`allergy_${operation.toLowerCase()}_time`, responseTime, {
-      severity: severity.toLowerCase(),
-    });
+    this.enterpriseMetrics.recordHistogram(
+      `allergy_${operation.toLowerCase()}_time`,
+      responseTime,
+      {
+        severity: severity.toLowerCase(),
+      },
+    );
 
     // Track severe allergy operations for compliance
     if (severity === 'LIFE_THREATENING') {
@@ -226,16 +259,24 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE',
     vaccineType: string,
     responseTime: number,
-    success: boolean
+    success: boolean,
   ): void {
-    this.enterpriseMetrics.incrementCounter(`vaccination_${operation.toLowerCase()}`, 1, {
-      vaccine_type: vaccineType,
-      success: success.toString(),
-    });
+    this.enterpriseMetrics.incrementCounter(
+      `vaccination_${operation.toLowerCase()}`,
+      1,
+      {
+        vaccine_type: vaccineType,
+        success: success.toString(),
+      },
+    );
 
-    this.enterpriseMetrics.recordHistogram(`vaccination_${operation.toLowerCase()}_time`, responseTime, {
-      vaccine_type: vaccineType,
-    });
+    this.enterpriseMetrics.recordHistogram(
+      `vaccination_${operation.toLowerCase()}_time`,
+      responseTime,
+      {
+        vaccine_type: vaccineType,
+      },
+    );
   }
 
   /**
@@ -245,16 +286,24 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE',
     conditionType: string,
     responseTime: number,
-    success: boolean
+    success: boolean,
   ): void {
-    this.enterpriseMetrics.incrementCounter(`chronic_condition_${operation.toLowerCase()}`, 1, {
-      condition_type: conditionType,
-      success: success.toString(),
-    });
+    this.enterpriseMetrics.incrementCounter(
+      `chronic_condition_${operation.toLowerCase()}`,
+      1,
+      {
+        condition_type: conditionType,
+        success: success.toString(),
+      },
+    );
 
-    this.enterpriseMetrics.recordHistogram(`chronic_condition_${operation.toLowerCase()}_time`, responseTime, {
-      condition_type: conditionType,
-    });
+    this.enterpriseMetrics.recordHistogram(
+      `chronic_condition_${operation.toLowerCase()}_time`,
+      responseTime,
+      {
+        condition_type: conditionType,
+      },
+    );
   }
 
   /**
@@ -265,17 +314,25 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     vitalType: string,
     responseTime: number,
     success: boolean,
-    abnormal: boolean = false
+    abnormal: boolean = false,
   ): void {
-    this.enterpriseMetrics.incrementCounter(`vital_signs_${operation.toLowerCase()}`, 1, {
-      vital_type: vitalType,
-      success: success.toString(),
-      abnormal: abnormal.toString(),
-    });
+    this.enterpriseMetrics.incrementCounter(
+      `vital_signs_${operation.toLowerCase()}`,
+      1,
+      {
+        vital_type: vitalType,
+        success: success.toString(),
+        abnormal: abnormal.toString(),
+      },
+    );
 
-    this.enterpriseMetrics.recordHistogram(`vital_signs_${operation.toLowerCase()}_time`, responseTime, {
-      vital_type: vitalType,
-    });
+    this.enterpriseMetrics.recordHistogram(
+      `vital_signs_${operation.toLowerCase()}_time`,
+      responseTime,
+      {
+        vital_type: vitalType,
+      },
+    );
 
     // Track abnormal vital signs for clinical monitoring
     if (abnormal && operation === 'CREATE') {
@@ -286,8 +343,16 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
   /**
    * Record security-related metrics
    */
-  recordSecurityMetric(metricName: string, value: number, tags?: Record<string, string>): void {
-    this.enterpriseMetrics.incrementCounter(`security_${metricName}`, value, tags);
+  recordSecurityMetric(
+    metricName: string,
+    value: number,
+    tags?: Record<string, string>,
+  ): void {
+    this.enterpriseMetrics.incrementCounter(
+      `security_${metricName}`,
+      value,
+      tags,
+    );
   }
 
   /**
@@ -305,60 +370,60 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
           metricName: 'phi_reads',
           value: snapshot.phiOperations.reads,
           unit: 'count',
-          category: 'phi_operations'
+          category: 'phi_operations',
         },
         {
           metricName: 'phi_writes',
           value: snapshot.phiOperations.writes,
           unit: 'count',
-          category: 'phi_operations'
+          category: 'phi_operations',
         },
         {
           metricName: 'phi_deletes',
           value: snapshot.phiOperations.deletes,
           unit: 'count',
-          category: 'phi_operations'
+          category: 'phi_operations',
         },
         {
           metricName: 'phi_exports',
           value: snapshot.phiOperations.exports,
           unit: 'count',
-          category: 'phi_operations'
+          category: 'phi_operations',
         },
         {
           metricName: 'phi_searches',
           value: snapshot.phiOperations.searches,
           unit: 'count',
-          category: 'phi_operations'
+          category: 'phi_operations',
         },
         {
           metricName: 'average_response_time',
           value: snapshot.performanceMetrics.averageResponseTime,
           unit: 'ms',
-          category: 'performance'
+          category: 'performance',
         },
         {
           metricName: 'error_rate',
           value: snapshot.performanceMetrics.errorRate * 100, // Convert to percentage
           unit: 'percent',
-          category: 'performance'
+          category: 'performance',
         },
         {
           metricName: 'cache_hit_rate',
           value: snapshot.performanceMetrics.cacheHitRate * 100, // Convert to percentage
           unit: 'percent',
-          category: 'performance'
+          category: 'performance',
         },
         {
           metricName: 'security_incidents',
           value: snapshot.securityMetrics.securityIncidents,
           unit: 'count',
-          category: 'security'
-        }
+          category: 'security',
+        },
       ];
 
       // Bulk create metric snapshots
-      const snapshotRecords = metricsToStore.map(metric => ({
+      const snapshotRecords = metricsToStore.map((metric) => ({
         id: uuidv4(),
         schoolId,
         metricName: metric.metricName,
@@ -368,14 +433,15 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
         snapshotDate: snapshot.timestamp,
         metadata: {
           complianceLevels: snapshot.complianceLevels,
-          dataTypes: snapshot.dataTypes
-        }
+          dataTypes: snapshot.dataTypes,
+        },
       }));
 
       await this.healthMetricSnapshotModel.bulkCreate(snapshotRecords);
 
-      this.logger.log(`Stored ${snapshotRecords.length} health metrics snapshots for ${snapshot.timestamp.toISOString()}`);
-
+      this.logger.log(
+        `Stored ${snapshotRecords.length} health metrics snapshots for ${snapshot.timestamp.toISOString()}`,
+      );
     } catch (error) {
       this.logger.error('Failed to store health metrics snapshot:', error);
     }
@@ -388,29 +454,31 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     schoolId: string,
     startDate: Date,
     endDate: Date,
-    metricNames?: string[]
+    metricNames?: string[],
   ): Promise<HealthMetricSnapshot[]> {
     try {
       const whereClause: any = {
         schoolId,
         snapshotDate: {
-          [Op.between]: [startDate, endDate]
-        }
+          [Op.between]: [startDate, endDate],
+        },
       };
 
       if (metricNames && metricNames.length > 0) {
         whereClause.metricName = {
-          [Op.in]: metricNames
+          [Op.in]: metricNames,
         };
       }
 
       const snapshots = await this.healthMetricSnapshotModel.findAll({
         where: whereClause,
-        order: [['snapshotDate', 'ASC'], ['metricName', 'ASC']]
+        order: [
+          ['snapshotDate', 'ASC'],
+          ['metricName', 'ASC'],
+        ],
       });
 
       return snapshots;
-
     } catch (error) {
       this.logger.error('Failed to retrieve historical metrics:', error);
       return [];
@@ -420,10 +488,15 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
   /**
    * Helper method to get metric value from snapshots array
    */
-  private getMetricValue(snapshots: HealthMetricSnapshot[], metricName: string, date: Date): number {
-    const snapshot = snapshots.find(s =>
-      s.metricName === metricName &&
-      s.snapshotDate.toISOString() === date.toISOString()
+  private getMetricValue(
+    snapshots: HealthMetricSnapshot[],
+    metricName: string,
+    date: Date,
+  ): number {
+    const snapshot = snapshots.find(
+      (s) =>
+        s.metricName === metricName &&
+        s.snapshotDate.toISOString() === date.toISOString(),
     );
     return snapshot ? snapshot.value : 0;
   }
@@ -436,35 +509,53 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
       timestamp: new Date(),
       phiOperations: {
         reads: this.enterpriseMetrics.getCounter('phi_operation_read') || 0,
-        writes: this.enterpriseMetrics.getCounter('phi_operation_create') || 0 +
-                this.enterpriseMetrics.getCounter('phi_operation_update') || 0,
+        writes:
+          this.enterpriseMetrics.getCounter('phi_operation_create') ||
+          0 + this.enterpriseMetrics.getCounter('phi_operation_update') ||
+          0,
         deletes: this.enterpriseMetrics.getCounter('phi_operation_delete') || 0,
         exports: this.enterpriseMetrics.getCounter('phi_operation_export') || 0,
-        searches: this.enterpriseMetrics.getCounter('health_record_search') || 0,
+        searches:
+          this.enterpriseMetrics.getCounter('health_record_search') || 0,
       },
       complianceLevels: {
         phi: this.enterpriseMetrics.getCounter('phi_access_phi') || 0,
-        sensitivePhi: this.enterpriseMetrics.getCounter('phi_access_sensitive_phi') || 0,
+        sensitivePhi:
+          this.enterpriseMetrics.getCounter('phi_access_sensitive_phi') || 0,
         internal: this.enterpriseMetrics.getCounter('phi_access_internal') || 0,
         public: this.enterpriseMetrics.getCounter('phi_access_public') || 0,
       },
       dataTypes: {
-        healthRecords: this.enterpriseMetrics.getCounter('datatype_health_records') || 0,
+        healthRecords:
+          this.enterpriseMetrics.getCounter('datatype_health_records') || 0,
         allergies: this.enterpriseMetrics.getCounter('datatype_allergies') || 0,
-        vaccinations: this.enterpriseMetrics.getCounter('datatype_vaccinations') || 0,
-        chronicConditions: this.enterpriseMetrics.getCounter('datatype_chronic_conditions') || 0,
-        vitalSigns: this.enterpriseMetrics.getCounter('datatype_vital_signs') || 0,
+        vaccinations:
+          this.enterpriseMetrics.getCounter('datatype_vaccinations') || 0,
+        chronicConditions:
+          this.enterpriseMetrics.getCounter('datatype_chronic_conditions') || 0,
+        vitalSigns:
+          this.enterpriseMetrics.getCounter('datatype_vital_signs') || 0,
       },
       performanceMetrics: {
-        averageResponseTime: this.enterpriseMetrics.getHistogram('phi_response_time')?.avg || 0,
+        averageResponseTime:
+          this.enterpriseMetrics.getHistogram('phi_response_time')?.avg || 0,
         errorRate: this.calculateErrorRate(),
         cacheHitRate: this.calculateCacheHitRate(),
       },
       securityMetrics: {
-        securityIncidents: this.enterpriseMetrics.getCounter('security_incident_unauthorized_access') || 0,
-        suspiciousActivity: this.enterpriseMetrics.getCounter('security_bulk_phi_access') || 0 +
-                           this.enterpriseMetrics.getCounter('security_life_threatening_allergy_operation') || 0,
-        accessViolations: this.enterpriseMetrics.getCounter('security_phi_access_failure') || 0,
+        securityIncidents:
+          this.enterpriseMetrics.getCounter(
+            'security_incident_unauthorized_access',
+          ) || 0,
+        suspiciousActivity:
+          this.enterpriseMetrics.getCounter('security_bulk_phi_access') ||
+          0 +
+            this.enterpriseMetrics.getCounter(
+              'security_life_threatening_allergy_operation',
+            ) ||
+          0,
+        accessViolations:
+          this.enterpriseMetrics.getCounter('security_phi_access_failure') || 0,
       },
     };
   }
@@ -474,7 +565,8 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
    */
   private calculateErrorRate(): number {
     const totalOperations = this.getTotalOperations();
-    const errorOperations = this.enterpriseMetrics.getCounter('phi_access_failure') || 0;
+    const errorOperations =
+      this.enterpriseMetrics.getCounter('phi_access_failure') || 0;
     return totalOperations > 0 ? errorOperations / totalOperations : 0;
   }
 
@@ -482,8 +574,10 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
    * Calculate cache hit rate
    */
   private calculateCacheHitRate(): number {
-    const cacheHits = this.enterpriseMetrics.getCounter('health_record_cache_hits') || 0;
-    const cacheMisses = this.enterpriseMetrics.getCounter('health_record_cache_misses') || 0;
+    const cacheHits =
+      this.enterpriseMetrics.getCounter('health_record_cache_hits') || 0;
+    const cacheMisses =
+      this.enterpriseMetrics.getCounter('health_record_cache_misses') || 0;
     const totalCacheRequests = cacheHits + cacheMisses;
     return totalCacheRequests > 0 ? cacheHits / totalCacheRequests : 0;
   }
@@ -513,23 +607,34 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     const snapshot = this.getHealthRecordMetricsSnapshot();
 
     // Check error rate
-    if (snapshot.performanceMetrics.errorRate > 0.05) { // 5% error rate
-      issues.push(`High error rate: ${(snapshot.performanceMetrics.errorRate * 100).toFixed(2)}%`);
+    if (snapshot.performanceMetrics.errorRate > 0.05) {
+      // 5% error rate
+      issues.push(
+        `High error rate: ${(snapshot.performanceMetrics.errorRate * 100).toFixed(2)}%`,
+      );
     }
 
     // Check cache hit rate
-    if (snapshot.performanceMetrics.cacheHitRate < 0.7) { // 70% cache hit rate
-      issues.push(`Low cache hit rate: ${(snapshot.performanceMetrics.cacheHitRate * 100).toFixed(2)}%`);
+    if (snapshot.performanceMetrics.cacheHitRate < 0.7) {
+      // 70% cache hit rate
+      issues.push(
+        `Low cache hit rate: ${(snapshot.performanceMetrics.cacheHitRate * 100).toFixed(2)}%`,
+      );
     }
 
     // Check response time
-    if (snapshot.performanceMetrics.averageResponseTime > 2000) { // 2 seconds
-      issues.push(`High average response time: ${snapshot.performanceMetrics.averageResponseTime.toFixed(2)}ms`);
+    if (snapshot.performanceMetrics.averageResponseTime > 2000) {
+      // 2 seconds
+      issues.push(
+        `High average response time: ${snapshot.performanceMetrics.averageResponseTime.toFixed(2)}ms`,
+      );
     }
 
     // Check security incidents
     if (snapshot.securityMetrics.securityIncidents > 10) {
-      issues.push(`High security incidents: ${snapshot.securityMetrics.securityIncidents}`);
+      issues.push(
+        `High security incidents: ${snapshot.securityMetrics.securityIncidents}`,
+      );
     }
 
     return {
@@ -557,15 +662,23 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
     securityIncidents: number;
     complianceScore: number;
   } {
-    const phiAccessCount = this.enterpriseMetrics.getCounter('phi_access_phi') || 0;
-    const sensitivePhiAccessCount = this.enterpriseMetrics.getCounter('phi_access_sensitive_phi') || 0;
-    const auditLogEntries = this.enterpriseMetrics.getCounter('compliance_audit_entries') || 0;
-    const securityIncidents = this.enterpriseMetrics.getCounter('security_incident_unauthorized_access') || 0;
+    const phiAccessCount =
+      this.enterpriseMetrics.getCounter('phi_access_phi') || 0;
+    const sensitivePhiAccessCount =
+      this.enterpriseMetrics.getCounter('phi_access_sensitive_phi') || 0;
+    const auditLogEntries =
+      this.enterpriseMetrics.getCounter('compliance_audit_entries') || 0;
+    const securityIncidents =
+      this.enterpriseMetrics.getCounter(
+        'security_incident_unauthorized_access',
+      ) || 0;
 
     // Calculate compliance score (simplified)
     let complianceScore = 100;
-    if (securityIncidents > 0) complianceScore -= Math.min(securityIncidents * 5, 50);
-    if (auditLogEntries === 0 && (phiAccessCount + sensitivePhiAccessCount) > 0) complianceScore -= 30;
+    if (securityIncidents > 0)
+      complianceScore -= Math.min(securityIncidents * 5, 50);
+    if (auditLogEntries === 0 && phiAccessCount + sensitivePhiAccessCount > 0)
+      complianceScore -= 30;
 
     return {
       phiAccessCount,
@@ -589,17 +702,25 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
   recordCacheMetrics(
     operation: 'HIT' | 'MISS' | 'SET',
     cacheType: string,
-    responseTime: number
+    responseTime: number,
   ): void {
     const metricKey = operation === 'HIT' ? 'cache_hits' : 'cache_misses';
 
-    this.enterpriseMetrics.incrementCounter(metricKey, 1, { cache_type: cacheType });
-    this.enterpriseMetrics.recordHistogram('cache_response_time', responseTime, {
+    this.enterpriseMetrics.incrementCounter(metricKey, 1, {
       cache_type: cacheType,
-      operation: operation.toLowerCase()
     });
+    this.enterpriseMetrics.recordHistogram(
+      'cache_response_time',
+      responseTime,
+      {
+        cache_type: cacheType,
+        operation: operation.toLowerCase(),
+      },
+    );
 
-    this.logger.debug(`Cache ${operation.toLowerCase()} recorded for type: ${cacheType}, response time: ${responseTime}ms`);
+    this.logger.debug(
+      `Cache ${operation.toLowerCase()} recorded for type: ${cacheType}, response time: ${responseTime}ms`,
+    );
   }
 
   /**

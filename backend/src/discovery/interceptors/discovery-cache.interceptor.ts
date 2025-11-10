@@ -1,9 +1,4 @@
-import { 
-  Injectable, 
-  NestInterceptor, 
-  ExecutionContext, 
-  CallHandler 
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
@@ -20,11 +15,14 @@ export class DiscoveryCacheInterceptor implements NestInterceptor {
     private readonly reflector: Reflector,
   ) {}
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
-    const cacheConfig = this.reflector.getAllAndOverride<CacheConfig>(CACHE_CONFIG_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<any>> {
+    const cacheConfig = this.reflector.getAllAndOverride<CacheConfig>(
+      CACHE_CONFIG_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     // If caching is not enabled, proceed without caching
     if (!cacheConfig?.enabled) {
@@ -54,7 +52,7 @@ export class DiscoveryCacheInterceptor implements NestInterceptor {
 
   private generateCacheKey(request: Request, config: CacheConfig): string {
     const keyParts: string[] = [];
-    
+
     // Add prefix if specified
     if (config.keyPrefix) {
       keyParts.push(config.keyPrefix);
@@ -80,7 +78,7 @@ export class DiscoveryCacheInterceptor implements NestInterceptor {
     if (config.includeUser && (request as any).user) {
       const user = (request as any).user;
       keyParts.push('user', user.id || 'anonymous');
-      
+
       // Optionally include user role for role-specific caching
       if (user.role) {
         keyParts.push('role', user.role);
@@ -89,7 +87,7 @@ export class DiscoveryCacheInterceptor implements NestInterceptor {
 
     // Create the final cache key
     const rawKey = keyParts.join('|');
-    
+
     // Hash the key to keep it consistent and manageable
     return crypto.createHash('md5').update(rawKey).digest('hex');
   }
@@ -100,7 +98,7 @@ export class DiscoveryCacheInterceptor implements NestInterceptor {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(item => this.sortObject(item));
+      return obj.map((item) => this.sortObject(item));
     }
 
     const sortedKeys = Object.keys(obj).sort();

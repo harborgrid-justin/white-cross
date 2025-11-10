@@ -6,9 +6,7 @@ import { Vaccination } from '../../database/models/vaccination.model';
 import { Student } from '../../database/models/student.model';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([Vaccination, Student]),
-  ],
+  imports: [SequelizeModule.forFeature([Vaccination, Student])],
   controllers: [VaccinationController],
   providers: [VaccinationService],
   exports: [VaccinationService],

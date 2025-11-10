@@ -2,24 +2,13 @@
  * @fileoverview Broadcast Type Definitions
  * @module lib/actions/broadcasts/types
  *
- * TypeScript interfaces, types, and constants for broadcast communication management.
+ * TypeScript interfaces and types for broadcast communication management.
  * These types are shared across all broadcast modules.
+ *
+ * Note: Runtime values (constants, functions, schemas) are in separate files:
+ * - broadcasts.constants.ts - Const values like cache tags
+ * - broadcasts.utils.ts - Utility functions
  */
-
-// ==========================================
-// CACHE CONFIGURATION
-// ==========================================
-
-/**
- * Custom cache tags for broadcasts
- */
-export const BROADCAST_CACHE_TAGS = {
-  BROADCASTS: 'broadcasts',
-  TEMPLATES: 'broadcast-templates',
-  RECIPIENTS: 'broadcast-recipients',
-  ANALYTICS: 'broadcast-analytics',
-  SCHEDULES: 'broadcast-schedules',
-} as const;
 
 // ==========================================
 // CORE TYPE DEFINITIONS

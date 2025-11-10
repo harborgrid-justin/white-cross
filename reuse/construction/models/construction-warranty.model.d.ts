@@ -1,0 +1,42 @@
+import { Model } from 'sequelize-typescript';
+import { WarrantyType, WarrantyStatus } from '../types/warranty.types';
+export declare class ConstructionWarranty extends Model {
+    id: number;
+    projectId: number;
+    warrantyNumber: string;
+    warrantyType: WarrantyType;
+    title: string;
+    description: string;
+    component: string;
+    location: string;
+    contractorId: number;
+    contractorName: string;
+    contractorContact: string;
+    manufacturerId?: number;
+    manufacturerName?: string;
+    startDate: Date;
+    endDate: Date;
+    durationMonths: number;
+    coverageAmount: number;
+    deductible: number;
+    terms: string;
+    exclusions: string[];
+    conditions: string[];
+    status: WarrantyStatus;
+    documentUrls: string[];
+    certificateNumber?: string;
+    policyNumber?: string;
+    insuranceProvider?: string;
+    notificationsSent: number;
+    lastNotificationDate?: Date;
+    extendedWarranty: boolean;
+    originalWarrantyId?: number;
+    autoRenewalEnabled: boolean;
+    tags: string[];
+    metadata: Record<string, any>;
+    createdBy: string;
+    updatedBy: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+//# sourceMappingURL=construction-warranty.model.d.ts.map

@@ -25,3 +25,7 @@ export {
   MessageCleanupJobDto,
   BatchMessageItem,
 } from './batch-message-job.dto';
+
+export * from './batch-message-job.dto';
+export * from './message-job.dto';
+export * from './notification-job.dto';

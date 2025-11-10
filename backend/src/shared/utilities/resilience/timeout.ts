@@ -17,7 +17,6 @@
  */
 
 import { TimeoutError } from '../../errors';
-import { logger } from '../..';
 
 /**
  * Timeout configuration options
@@ -80,10 +79,7 @@ export interface TimeoutOptions {
  * );
  * ```
  */
-export async function withTimeout<T>(
-  promise: Promise<T>,
-  options: TimeoutOptions
-): Promise<T> {
+export async function withTimeout<T>(promise: Promise<T>, options: TimeoutOptions): Promise<T> {
   const {
     timeoutMs,
     operationName = 'operation',
@@ -96,10 +92,6 @@ export async function withTimeout<T>(
   const timeoutPromise = new Promise<T>((_, reject) => {
     const timeoutId = setTimeout(() => {
       const message = errorMessage || `Operation '${operationName}' timed out after ${timeoutMs}ms`;
-
-      if (logTimeout) {
-        logger.warn(`Operation timeout: ${operationName} (${timeoutMs}ms)`, 'TimeoutUtility');
-      }
 
       reject(new TimeoutError(operationName, timeoutMs, context));
     }, timeoutMs);
@@ -139,7 +131,7 @@ export async function withTimeoutFn<T>(
   fn: () => Promise<T>,
   timeoutMs: number,
   operationName?: string,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ): Promise<T> {
   return withTimeout(fn(), {
     timeoutMs,
@@ -169,7 +161,7 @@ export async function withTimeoutFn<T>(
  */
 export function createTimeoutWrapper(
   timeoutMs: number,
-  operationName?: string
+  operationName?: string,
 ): <T>(fn: () => Promise<T>, context?: Record<string, any>) => Promise<T> {
   return async <T>(fn: () => Promise<T>, context?: Record<string, any>): Promise<T> => {
     return withTimeoutFn(fn, timeoutMs, operationName, context);
@@ -202,7 +194,7 @@ export async function timedOperation<T>(
   level: 'fast' | 'normal' | 'slow',
   timeouts: { fast: number; normal: number; slow: number },
   operationName?: string,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ): Promise<T> {
   const timeoutMs = timeouts[level];
   return withTimeoutFn(fn, timeoutMs, operationName || level, context);

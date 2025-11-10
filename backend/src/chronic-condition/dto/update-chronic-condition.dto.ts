@@ -8,9 +8,7 @@ import { ChronicConditionCreateDto } from './create-chronic-condition.dto';
  * Extends CreateChronicConditionDto with partial semantics, allowing selective
  * field updates. Includes isActive flag for deactivation control.
  */
-export class ChronicConditionUpdateDto extends PartialType(
-  ChronicConditionCreateDto,
-) {
+export class ChronicConditionUpdateDto extends PartialType(ChronicConditionCreateDto) {
   @ApiPropertyOptional({
     description: 'Flag to activate/deactivate condition record',
     example: true,

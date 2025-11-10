@@ -58,7 +58,9 @@ export class TwilioProvider {
       accountSid: this.configService.get<string>('TWILIO_ACCOUNT_SID', ''),
       authToken: this.configService.get<string>('TWILIO_AUTH_TOKEN', ''),
       fromNumber: this.configService.get<string>('TWILIO_FROM_NUMBER', ''),
-      statusCallbackUrl: this.configService.get<string>('TWILIO_STATUS_CALLBACK_URL'),
+      statusCallbackUrl: this.configService.get<string>(
+        'TWILIO_STATUS_CALLBACK_URL',
+      ),
     };
 
     // Check if Twilio is properly configured
@@ -73,7 +75,9 @@ export class TwilioProvider {
         this.client = Twilio(this.config.accountSid, this.config.authToken);
         this.logger.log('Twilio provider initialized successfully');
       } catch (error) {
-        this.logger.error(`Failed to initialize Twilio client: ${error.message}`);
+        this.logger.error(
+          `Failed to initialize Twilio client: ${error.message}`,
+        );
       }
     } else {
       this.logger.warn(
@@ -133,10 +137,13 @@ export class TwilioProvider {
       }
 
       // Send SMS via Twilio
-      const twilioMessage: MessageInstance = await this.client!.messages.create(messageOptions);
+      const twilioMessage: MessageInstance =
+        await this.client!.messages.create(messageOptions);
 
       // Calculate cost based on destination
-      const segmentCount = twilioMessage.numSegments ? parseInt(twilioMessage.numSegments) : 1;
+      const segmentCount = twilioMessage.numSegments
+        ? parseInt(twilioMessage.numSegments)
+        : 1;
       const cost = this.calculateCost(to, segmentCount);
 
       const result: SmsDeliveryResultDto = {
@@ -156,7 +163,9 @@ export class TwilioProvider {
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.logger.error(`Twilio SMS failed to ${to} (${duration}ms): ${error.message}`);
+      this.logger.error(
+        `Twilio SMS failed to ${to} (${duration}ms): ${error.message}`,
+      );
 
       return {
         status: SmsDeliveryStatus.FAILED,
@@ -185,7 +194,9 @@ export class TwilioProvider {
     try {
       const message = await this.client!.messages(messageId).fetch();
 
-      const segmentCount = message.numSegments ? parseInt(message.numSegments) : 1;
+      const segmentCount = message.numSegments
+        ? parseInt(message.numSegments)
+        : 1;
       const cost = this.calculateCost(message.to, segmentCount);
 
       return {
@@ -194,12 +205,15 @@ export class TwilioProvider {
         to: message.to,
         segmentCount: segmentCount,
         cost: cost,
-        timestamp: message.dateUpdated?.toISOString() || new Date().toISOString(),
+        timestamp:
+          message.dateUpdated?.toISOString() || new Date().toISOString(),
         error: message.errorMessage || undefined,
         errorCode: message.errorCode?.toString() || undefined,
       };
     } catch (error) {
-      this.logger.error(`Failed to fetch message status for ${messageId}: ${error.message}`);
+      this.logger.error(
+        `Failed to fetch message status for ${messageId}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -216,7 +230,9 @@ export class TwilioProvider {
       const cost = this.calculateCost(webhookData.To, segmentCount);
 
       return {
-        status: this.mapTwilioStatus(webhookData.MessageStatus || webhookData.SmsStatus),
+        status: this.mapTwilioStatus(
+          webhookData.MessageStatus || webhookData.SmsStatus,
+        ),
         messageId: webhookData.MessageSid || webhookData.SmsSid,
         to: webhookData.To,
         segmentCount: segmentCount,
@@ -305,10 +321,9 @@ export class TwilioProvider {
 
     if (to.startsWith('+1')) {
       // US/Canada
-      costPerSegment =
-        to.substring(2, 5).startsWith('1') // Canadian area codes start with 1
-          ? this.COST_PER_SEGMENT_CA
-          : this.COST_PER_SEGMENT_US;
+      costPerSegment = to.substring(2, 5).startsWith('1') // Canadian area codes start with 1
+        ? this.COST_PER_SEGMENT_CA
+        : this.COST_PER_SEGMENT_US;
     }
 
     return costPerSegment * segmentCount;

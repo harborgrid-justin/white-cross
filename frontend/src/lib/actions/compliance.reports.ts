@@ -39,8 +39,6 @@ export async function generateComplianceReportAction(
   reportType: string,
   period: { start: string; end: string }
 ): Promise<ActionResult<HIPAAReport>> {
-  'use cache';
-
   try {
     // Get compliance metrics for the period
     const metricsResult = await getComplianceMetricsAction(period);
@@ -113,8 +111,6 @@ export async function generateComplianceReportAction(
 export async function getComplianceMetricsAction(
   period?: { start: string; end: string }
 ): Promise<ActionResult<ComplianceMetrics>> {
-  'use cache';
-
   try {
     const params = period ? new URLSearchParams({
       start: period.start,
@@ -159,8 +155,6 @@ export async function getComplianceMetricsAction(
 export async function getComplianceAlertsAction(
   filters?: { severity?: string; status?: string }
 ): Promise<ActionResult<ComplianceAlert[]>> {
-  'use cache';
-
   try {
     const params = filters ? new URLSearchParams(
       Object.entries(filters).filter(([, value]) => value !== undefined)

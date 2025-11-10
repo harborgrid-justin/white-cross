@@ -11,7 +11,7 @@ import { Readable } from 'stream';
  * @returns True if payload is a plain object
  */
 export function isPayloadObject(
-  payload: string | object | Readable | Buffer | undefined
+  payload: string | object | Readable | Buffer | undefined,
 ): payload is Record<string, unknown> {
   return (
     payload !== null &&
@@ -29,7 +29,7 @@ export function isPayloadObject(
  * @throws Error if payload is not an object type
  */
 export function extractPayload(
-  payload: string | object | Readable | Buffer | undefined
+  payload: string | object | Readable | Buffer | undefined,
 ): Record<string, unknown> {
   if (!isPayloadObject(payload)) {
     throw new Error('Request payload must be an object');
@@ -43,7 +43,7 @@ export function extractPayload(
  * @returns Payload as Record<string, unknown> or empty object if invalid
  */
 export function extractPayloadSafe(
-  payload: string | object | Readable | Buffer | undefined
+  payload: string | object | Readable | Buffer | undefined,
 ): Record<string, unknown> {
   if (!isPayloadObject(payload)) {
     return {};
@@ -59,7 +59,7 @@ export function extractPayloadSafe(
  */
 export function extractPayloadProperty<T = unknown>(
   payload: string | object | Readable | Buffer | undefined,
-  key: string
+  key: string,
 ): T | undefined {
   if (!isPayloadObject(payload)) {
     return undefined;
@@ -76,12 +76,12 @@ export function extractPayloadProperty<T = unknown>(
  */
 export function createPayloadWithFields(
   payload: string | object | Readable | Buffer | undefined,
-  additionalFields: Record<string, unknown>
+  additionalFields: Record<string, unknown>,
 ): Record<string, unknown> {
   const basePayload = extractPayload(payload);
   return {
     ...basePayload,
-    ...additionalFields
+    ...additionalFields,
   };
 }
 
@@ -93,13 +93,13 @@ export function createPayloadWithFields(
  */
 export function convertPayloadDates(
   payload: Record<string, unknown>,
-  dateFields: string[]
+  dateFields: string[],
 ): Record<string, unknown> {
   const result = { ...payload };
 
   for (const field of dateFields) {
     if (result[field] && typeof result[field] === 'string') {
-      result[field] = new Date(result[field] as string);
+      result[field] = new Date(result[field]);
     }
   }
 
@@ -119,7 +119,7 @@ export function preparePayload(
   options?: {
     dateFields?: string[];
     additionalFields?: Record<string, unknown>;
-  }
+  },
 ): Record<string, unknown> {
   let result = extractPayload(payload);
 
@@ -130,7 +130,7 @@ export function preparePayload(
   if (options?.additionalFields) {
     result = {
       ...result,
-      ...options.additionalFields
+      ...options.additionalFields,
     };
   }
 

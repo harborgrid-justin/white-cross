@@ -1,25 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-  Req,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
+import { AuthenticatedRequest } from '../types/index';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MessageService } from '../services/message.service';
 import { SendMessageDto } from '../dto/send-message.dto';
 
@@ -63,7 +44,7 @@ export class MessageController {
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async sendMessage(@Body() dto: SendMessageDto, @Req() req: any) {
+  async sendMessage(@Body() dto: SendMessageDto, @Req() req: AuthenticatedRequest) {
     const senderId = req.user?.id;
     return this.messageService.sendMessage({ ...dto, senderId });
   }
@@ -76,10 +57,36 @@ export class MessageController {
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
   @ApiQuery({ name: 'senderId', required: false, type: String })
-  @ApiQuery({ name: 'category', required: false, enum: ['EMERGENCY', 'HEALTH_UPDATE', 'APPOINTMENT_REMINDER', 'MEDICATION_REMINDER', 'GENERAL', 'INCIDENT_NOTIFICATION', 'COMPLIANCE'] })
-  @ApiQuery({ name: 'priority', required: false, enum: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] })
-  @ApiQuery({ name: 'dateFrom', required: false, type: String, example: '2025-10-01' })
-  @ApiQuery({ name: 'dateTo', required: false, type: String, example: '2025-10-31' })
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    enum: [
+      'EMERGENCY',
+      'HEALTH_UPDATE',
+      'APPOINTMENT_REMINDER',
+      'MEDICATION_REMINDER',
+      'GENERAL',
+      'INCIDENT_NOTIFICATION',
+      'COMPLIANCE',
+    ],
+  })
+  @ApiQuery({
+    name: 'priority',
+    required: false,
+    enum: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    type: String,
+    example: '2025-10-01',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    type: String,
+    example: '2025-10-31',
+  })
   @ApiResponse({
     status: 200,
     description: 'Messages retrieved successfully',
@@ -114,11 +121,13 @@ export class MessageController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
-    return this.messageService.getMessages(
-      page,
-      limit,
-      { senderId, category, priority, dateFrom, dateTo }
-    );
+    return this.messageService.getMessages(page, limit, {
+      senderId,
+      category,
+      priority,
+      dateFrom,
+      dateTo,
+    });
   }
 
   @Get('inbox')
@@ -135,7 +144,7 @@ export class MessageController {
   async getInbox(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     const userId = req.user?.id;
     return this.messageService.getInbox(userId, page, limit);
@@ -155,7 +164,7 @@ export class MessageController {
   async getSentMessages(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     const userId = req.user?.id;
     return this.messageService.getSentMessages(userId, page, limit);
@@ -247,7 +256,10 @@ export class MessageController {
         },
         channels: {
           type: 'array',
-          items: { type: 'string', enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'] },
+          items: {
+            type: 'string',
+            enum: ['EMAIL', 'SMS', 'PUSH_NOTIFICATION', 'VOICE'],
+          },
           example: ['EMAIL'],
         },
       },
@@ -262,7 +274,7 @@ export class MessageController {
   async replyToMessage(
     @Param('id') id: string,
     @Body() replyDto: { content: string; channels?: string[] },
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     const senderId = req.user?.id;
     return this.messageService.replyToMessage(id, senderId, replyDto);
@@ -280,9 +292,12 @@ export class MessageController {
     description: 'Message deleted successfully',
   })
   @ApiResponse({ status: 400, description: 'Cannot delete sent messages' })
-  @ApiResponse({ status: 403, description: 'Not authorized to delete this message' })
+  @ApiResponse({
+    status: 403,
+    description: 'Not authorized to delete this message',
+  })
   @ApiResponse({ status: 404, description: 'Message not found' })
-  async deleteMessage(@Param('id') id: string, @Req() req: any) {
+  async deleteMessage(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     const userId = req.user?.id;
     await this.messageService.deleteScheduledMessage(id, userId);
   }

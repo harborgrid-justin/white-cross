@@ -1,0 +1,40 @@
+import { Model } from 'sequelize-typescript';
+import { InspectionType } from '../types/safety.types';
+export declare class SafetyInspection extends Model {
+    id: number;
+    inspectionNumber: string;
+    safetyPlanId: number;
+    projectId: number;
+    inspectionType: InspectionType;
+    inspectionDate: Date;
+    inspectionTime: string;
+    inspector: string;
+    inspectorQualification: string;
+    location: string;
+    areasInspected: string[];
+    checklistUsed: string;
+    weatherConditions: string;
+    workActivities: string[];
+    safeItems: number;
+    unsafeItems: number;
+    totalItems: number;
+    complianceRate: number;
+    findings: string[];
+    violations: Record<string, any>[];
+    hazardsIdentified: number;
+    immediateCorrections: string[];
+    followUpRequired: boolean;
+    followUpItems: string[];
+    responsiblePersons: Record<string, string>;
+    nextInspectionDate?: Date;
+    completedDate: Date;
+    reviewedBy?: string;
+    reviewedDate?: Date;
+    attachments: string[];
+    metadata: Record<string, any>;
+    createdBy: string;
+    updatedBy: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+//# sourceMappingURL=safety-inspection.model.d.ts.map

@@ -21,24 +21,24 @@ export class TypingIndicatorDto {
   /**
    * User ID of the person typing
    */
-  userId: string;
+  userId!: string;
 
   /**
    * Conversation identifier where typing is occurring
    */
-  conversationId: string;
+  conversationId!: string;
 
   /**
    * Organization ID for multi-tenant isolation
    */
-  organizationId: string;
+  organizationId!: string;
 
   /**
    * Typing status
    * - true: User is currently typing
    * - false: User stopped typing
    */
-  isTyping: boolean;
+  isTyping!: boolean;
 
   /**
    * Optional user display name for UI rendering
@@ -50,7 +50,7 @@ export class TypingIndicatorDto {
    * ISO timestamp when the typing status changed
    * Used for automatic expiry of stale indicators
    */
-  timestamp: string;
+  timestamp!: string;
 
   /**
    * Constructs a TypingIndicatorDto from partial data

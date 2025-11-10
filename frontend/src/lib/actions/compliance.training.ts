@@ -29,8 +29,6 @@ export async function recordTrainingCompletionAction(
   courseId: string,
   completedAt: string
 ): Promise<ActionResult<Record<string, unknown>>> {
-  'use cache';
-
   try {
     const context = await getCurrentUserContext();
 
@@ -99,8 +97,6 @@ export async function recordTrainingCompletionAction(
 export async function getUserTrainingStatusAction(
   userId: string
 ): Promise<ActionResult<Record<string, unknown>>> {
-  'use cache';
-
   try {
     // Enhanced fetch with Next.js v16 capabilities
     const response = await fetch(`${BACKEND_URL}/compliance/training/user/${userId}`, {
@@ -138,8 +134,6 @@ export async function getUserTrainingStatusAction(
  * Cache: 10 minutes for overdue training
  */
 export async function getOverdueTrainingAction(): Promise<ActionResult<Record<string, unknown>[]>> {
-  'use cache';
-
   try {
     // Enhanced fetch with Next.js v16 capabilities
     const response = await fetch(`${BACKEND_URL}/compliance/training/overdue`, {

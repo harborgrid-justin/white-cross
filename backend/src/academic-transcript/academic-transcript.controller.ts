@@ -4,25 +4,8 @@
  * @description HTTP endpoints for academic transcript management and SIS integration
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AcademicTranscriptService } from './academic-transcript.service';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
 import { AcademicGenerateReportDto } from './dto/generate-report.dto';
@@ -185,9 +168,8 @@ export class AcademicTranscriptController {
     @Query('academicYear') academicYear?: string,
     @Query('semester') semester?: string,
   ) {
-    const history = await this.academicTranscriptService.getAcademicHistory(
-      studentId,
-    );
+    const history =
+      await this.academicTranscriptService.getAcademicHistory(studentId);
     // Filter by academicYear and semester if provided
     if (academicYear || semester) {
       return history.filter(
@@ -434,9 +416,8 @@ export class AcademicTranscriptController {
     @Param('studentId', new ParseUUIDPipe({ version: '4' })) studentId: string,
     @Query('academicYear') academicYear?: string,
   ) {
-    const history = await this.academicTranscriptService.getAcademicHistory(
-      studentId,
-    );
+    const history =
+      await this.academicTranscriptService.getAcademicHistory(studentId);
 
     // Filter by academic year if provided
     const records = academicYear

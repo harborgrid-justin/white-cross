@@ -3,14 +3,12 @@
  * Injectable NestJS repository for pediatric growth tracking
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { GrowthTracking } from '../../models/growth-tracking.model';
 
 export interface GrowthTrackingAttributes {
@@ -58,13 +56,15 @@ export interface UpdateGrowthTrackingDTO {
 }
 
 @Injectable()
-export class GrowthTrackingRepository
-  extends BaseRepository<any, GrowthTrackingAttributes, CreateGrowthTrackingDTO>
-{
+export class GrowthTrackingRepository extends BaseRepository<
+  any,
+  GrowthTrackingAttributes,
+  CreateGrowthTrackingDTO
+> {
   constructor(
-    @InjectModel(GrowthTracking) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel(GrowthTracking) model: typeof GrowthTracking,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'GrowthTracking');
   }
@@ -73,25 +73,27 @@ export class GrowthTrackingRepository
     try {
       const measurements = await this.model.findAll({
         where: { studentId },
-        order: [['measurementDate', 'ASC']]
+        order: [['measurementDate', 'ASC']],
       });
-      return measurements.map((m: any) => this.mapToEntity(m));
+      return measurements.map((m: Medication) => this.mapToEntity(m));
     } catch (error) {
       this.logger.error('Error finding growth tracking by student:', error);
       throw new RepositoryError(
         'Failed to find growth tracking by student',
         'FIND_BY_STUDENT_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
 
-  async findLatestMeasurement(studentId: string): Promise<GrowthTrackingAttributes | null> {
+  async findLatestMeasurement(
+    studentId: string,
+  ): Promise<GrowthTrackingAttributes | null> {
     try {
       const measurement = await this.model.findOne({
         where: { studentId },
-        order: [['measurementDate', 'DESC']]
+        order: [['measurementDate', 'DESC']],
       });
       return measurement ? this.mapToEntity(measurement) : null;
     } catch (error) {
@@ -100,7 +102,7 @@ export class GrowthTrackingRepository
         'Failed to find latest growth measurement',
         'FIND_LATEST_ERROR',
         500,
-        { studentId, error: (error as Error).message }
+        { studentId, error: (error as Error).message },
       );
     }
   }
@@ -109,23 +111,28 @@ export class GrowthTrackingRepository
     // Validation logic
   }
 
-  protected async validateUpdate(id: string, data: UpdateGrowthTrackingDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdateGrowthTrackingDTO,
+  ): Promise<void> {
     // Validation logic
   }
 
-  protected async invalidateCaches(growth: any): Promise<void> {
+  protected async invalidateCaches(growth: GrowthTracking): Promise<void> {
     try {
       const growthData = growth.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, growthData.id));
-      await this.cacheManager.deletePattern(`white-cross:growth-tracking:student:${growthData.studentId}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, growthData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:growth-tracking:student:${growthData.studentId}:*`,
+      );
     } catch (error) {
       this.logger.warn('Error invalidating growth tracking caches:', error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<GrowthTrackingAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

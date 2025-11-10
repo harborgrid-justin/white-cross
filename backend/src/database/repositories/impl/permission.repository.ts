@@ -3,14 +3,14 @@
  * Injectable NestJS repository for permission management with role assignment
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Transaction } from 'sequelize';
+import { Transaction } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { ExecutionContext, QueryOptions } from '../../types';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import { ExecutionContext } from '../../types';
 
 export interface PermissionAttributes {
   id: string;
@@ -36,21 +36,28 @@ export interface UpdatePermissionDTO {
 }
 
 @Injectable()
-export class PermissionRepository
-  extends BaseRepository<any, PermissionAttributes, CreatePermissionDTO>
-{
+export class PermissionRepository extends BaseRepository<
+  any,
+  PermissionAttributes,
+  CreatePermissionDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'Permission');
   }
 
   async findByName(name: string): Promise<PermissionAttributes | null> {
     try {
-      const cacheKey = this.cacheKeyBuilder.summary(this.entityName, name, 'by-name');
-      const cached = await this.cacheManager.get<PermissionAttributes>(cacheKey);
+      const cacheKey = this.cacheKeyBuilder.summary(
+        this.entityName,
+        name,
+        'by-name',
+      );
+      const cached =
+        await this.cacheManager.get<PermissionAttributes>(cacheKey);
 
       if (cached) {
         this.logger.debug(`Cache hit for permission name: ${name}`);
@@ -69,7 +76,7 @@ export class PermissionRepository
         'Failed to find permission by name',
         'FIND_BY_NAME_ERROR',
         500,
-        { name, error: (error as Error).message }
+        { name, error: (error as Error).message },
       );
     }
   }
@@ -78,33 +85,39 @@ export class PermissionRepository
     try {
       const permissions = await this.model.findAll({
         where: { resource },
-        order: [['action', 'ASC']]
+        order: [['action', 'ASC']],
       });
-      return permissions.map((p: any) => this.mapToEntity(p));
+      return permissions.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding permissions by resource:', error);
       throw new RepositoryError(
         'Failed to find permissions by resource',
         'FIND_BY_RESOURCE_ERROR',
         500,
-        { resource, error: (error as Error).message }
+        { resource, error: (error as Error).message },
       );
     }
   }
 
-  async findByResourceAndAction(resource: string, action: string): Promise<PermissionAttributes | null> {
+  async findByResourceAndAction(
+    resource: string,
+    action: string,
+  ): Promise<PermissionAttributes | null> {
     try {
       const permission = await this.model.findOne({
-        where: { resource, action }
+        where: { resource, action },
       });
       return permission ? this.mapToEntity(permission) : null;
     } catch (error) {
-      this.logger.error('Error finding permission by resource and action:', error);
+      this.logger.error(
+        'Error finding permission by resource and action:',
+        error,
+      );
       throw new RepositoryError(
         'Failed to find permission by resource and action',
         'FIND_BY_RESOURCE_ACTION_ERROR',
         500,
-        { resource, action, error: (error as Error).message }
+        { resource, action, error: (error as Error).message },
       );
     }
   }
@@ -113,16 +126,19 @@ export class PermissionRepository
     try {
       const permissions = await this.model.findAll({
         where: { isSystemPermission: true },
-        order: [['resource', 'ASC'], ['action', 'ASC']]
+        order: [
+          ['resource', 'ASC'],
+          ['action', 'ASC'],
+        ],
       });
-      return permissions.map((p: any) => this.mapToEntity(p));
+      return permissions.map((p: Prescription) => this.mapToEntity(p));
     } catch (error) {
       this.logger.error('Error finding system permissions:', error);
       throw new RepositoryError(
         'Failed to find system permissions',
         'FIND_SYSTEM_PERMISSIONS_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
@@ -130,7 +146,7 @@ export class PermissionRepository
   async bulkAssignToRole(
     permissionIds: string[],
     roleId: string,
-    context: ExecutionContext
+    context: ExecutionContext,
   ): Promise<void> {
     let transaction: Transaction | undefined;
 
@@ -141,14 +157,16 @@ export class PermissionRepository
         'BULK_ASSIGN_PERMISSIONS',
         this.entityName,
         context,
-        { permissionIds, roleId, count: permissionIds.length }
+        { permissionIds, roleId, count: permissionIds.length },
       );
 
       if (transaction) {
         await transaction.commit();
       }
 
-      this.logger.log(`Bulk assigned ${permissionIds.length} permissions to role ${roleId}`);
+      this.logger.log(
+        `Bulk assigned ${permissionIds.length} permissions to role ${roleId}`,
+      );
     } catch (error) {
       if (transaction) {
         await transaction.rollback();
@@ -159,14 +177,14 @@ export class PermissionRepository
         'Failed to bulk assign permissions to role',
         'BULK_ASSIGN_ERROR',
         500,
-        { error: (error as Error).message }
+        { error: (error as Error).message },
       );
     }
   }
 
   protected async validateCreate(data: CreatePermissionDTO): Promise<void> {
     const existing = await this.model.findOne({
-      where: { resource: data.resource, action: data.action }
+      where: { resource: data.resource, action: data.action },
     });
 
     if (existing) {
@@ -174,33 +192,40 @@ export class PermissionRepository
         'Permission already exists for this resource and action',
         'DUPLICATE_PERMISSION',
         409,
-        { resource: data.resource, action: data.action }
+        { resource: data.resource, action: data.action },
       );
     }
   }
 
-  protected async validateUpdate(id: string, data: UpdatePermissionDTO): Promise<void> {
+  protected async validateUpdate(
+    id: string,
+    data: UpdatePermissionDTO,
+  ): Promise<void> {
     const permission = await this.model.findByPk(id);
     if (permission && permission.isSystemPermission) {
       throw new RepositoryError(
         'Cannot modify system permission',
         'SYSTEM_PERMISSION_IMMUTABLE',
         403,
-        { id }
+        { id },
       );
     }
   }
 
-  protected async invalidateCaches(permission: any): Promise<void> {
+  protected async invalidateCaches(permission: Permission): Promise<void> {
     try {
       const permissionData = permission.get();
       await this.cacheManager.delete(
-        this.cacheKeyBuilder.entity(this.entityName, permissionData.id)
+        this.cacheKeyBuilder.entity(this.entityName, permissionData.id),
       );
 
       if (permissionData.name) {
         await this.cacheManager.delete(
-          this.cacheKeyBuilder.summary(this.entityName, permissionData.name, 'by-name')
+          this.cacheKeyBuilder.summary(
+            this.entityName,
+            permissionData.name,
+            'by-name',
+          ),
         );
       }
 
@@ -210,9 +235,7 @@ export class PermissionRepository
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<PermissionAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }
-
-

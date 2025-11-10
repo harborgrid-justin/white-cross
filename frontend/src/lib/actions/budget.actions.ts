@@ -45,7 +45,7 @@ export type {
   TransactionFilters,
 } from './budget.types';
 
-export { BUDGET_CACHE_TAGS } from './budget.types';
+export { BUDGET_CACHE_TAGS } from './budget.constants';
 
 // ==========================================
 // RE-EXPORTS - CACHE OPERATIONS

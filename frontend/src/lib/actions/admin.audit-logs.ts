@@ -6,8 +6,6 @@
  */
 
 'use server'
-'use cache'
-
 import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache'
 import { CACHE_TTL } from '@/lib/cache/constants'
 
@@ -53,7 +51,6 @@ export async function getAuditLogs(params: AuditLogSearchParams = {}): Promise<{
   page: number
   totalPages: number
 }> {
-  'use cache'
   cacheLife({ revalidate: CACHE_TTL.PHI_STANDARD }) // 60s for audit data
   cacheTag('admin-audit-logs')
 
@@ -106,7 +103,6 @@ export async function getAuditLogStats(): Promise<{
   topActions: Array<{ action: string; count: number }>
   topUsers: Array<{ userName: string; count: number }>
 }> {
-  'use cache'
   cacheLife({ revalidate: CACHE_TTL.STATS }) // 120s for stats
   cacheTag('admin-audit-logs-stats')
 
@@ -147,7 +143,6 @@ export async function getAuditLogStats(): Promise<{
  * Get audit log details by ID
  */
 export async function getAuditLogById(id: string): Promise<AuditLog | null> {
-  'use cache'
   cacheLife({ revalidate: CACHE_TTL.PHI_STANDARD }) // 60s for specific log
   cacheTag(`admin-audit-log-${id}`)
 
@@ -224,7 +219,6 @@ export async function getAuditLogFilterOptions(): Promise<{
   resources: string[]
   users: Array<{ id: string; name: string }>
 }> {
-  'use cache'
   cacheLife({ revalidate: CACHE_TTL.STATIC }) // 300s for filter options
   cacheTag('admin-audit-logs-filters')
 

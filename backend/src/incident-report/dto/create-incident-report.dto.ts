@@ -1,21 +1,18 @@
 import {
-  IsString,
-  IsEnum,
-  IsUUID,
-  IsBoolean,
-  IsOptional,
   IsArray,
-  MinLength,
-  MaxLength,
+  IsBoolean,
   IsDateString,
-  ArrayMinSize,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IncidentType,
-  IncidentSeverity,
-  ComplianceStatus,
-} from '../enums';
+import { ComplianceStatus } from '../enums/compliance-status.enum';
+import { IncidentSeverity } from '../enums/incident-severity.enum';
+import { IncidentType } from '../enums/incident-type.enum';
 
 export class CreateIncidentReportDto {
   @ApiProperty({ description: 'Student ID', example: 'uuid' })
@@ -43,24 +40,32 @@ export class CreateIncidentReportDto {
   severity: IncidentSeverity;
 
   @ApiProperty({
-    description: 'Detailed description of incident (minimum 20 characters, maximum 5000 characters)',
+    description:
+      'Detailed description of incident (minimum 20 characters, maximum 5000 characters)',
     example: 'Student fell from playground equipment and injured knee',
     minLength: 20,
     maxLength: 5000,
   })
   @IsString()
-  @MinLength(20, { message: 'Description must be at least 20 characters for proper documentation' })
+  @MinLength(20, {
+    message:
+      'Description must be at least 20 characters for proper documentation',
+  })
   @MaxLength(5000, { message: 'Description cannot exceed 5000 characters' })
   description: string;
 
   @ApiProperty({
-    description: 'Location where incident occurred (minimum 3 characters, maximum 500 characters)',
+    description:
+      'Location where incident occurred (minimum 3 characters, maximum 500 characters)',
     example: 'Playground - Main area',
     minLength: 3,
     maxLength: 500,
   })
   @IsString()
-  @MinLength(3, { message: 'Location is required for safety documentation (minimum 3 characters)' })
+  @MinLength(3, {
+    message:
+      'Location is required for safety documentation (minimum 3 characters)',
+  })
   @MaxLength(500, { message: 'Location cannot exceed 500 characters' })
   location: string;
 
@@ -72,17 +77,24 @@ export class CreateIncidentReportDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(100, { each: true, message: 'Each witness name cannot exceed 100 characters' })
+  @MaxLength(100, {
+    each: true,
+    message: 'Each witness name cannot exceed 100 characters',
+  })
   witnesses?: string[];
 
   @ApiProperty({
-    description: 'Actions taken in response (minimum 10 characters, maximum 5000 characters)',
+    description:
+      'Actions taken in response (minimum 10 characters, maximum 5000 characters)',
     example: 'First aid applied, ice pack provided, parent notified',
     minLength: 10,
     maxLength: 5000,
   })
   @IsString()
-  @MinLength(10, { message: 'Actions taken must be documented for all incidents (minimum 10 characters)' })
+  @MinLength(10, {
+    message:
+      'Actions taken must be documented for all incidents (minimum 10 characters)',
+  })
   @MaxLength(5000, { message: 'Actions taken cannot exceed 5000 characters' })
   actionsTaken: string;
 
@@ -126,7 +138,10 @@ export class CreateIncidentReportDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(2048, { each: true, message: 'Each attachment URL cannot exceed 2048 characters' })
+  @MaxLength(2048, {
+    each: true,
+    message: 'Each attachment URL cannot exceed 2048 characters',
+  })
   attachments?: string[];
 
   @ApiPropertyOptional({
@@ -136,7 +151,10 @@ export class CreateIncidentReportDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(2048, { each: true, message: 'Each evidence photo URL cannot exceed 2048 characters' })
+  @MaxLength(2048, {
+    each: true,
+    message: 'Each evidence photo URL cannot exceed 2048 characters',
+  })
   evidencePhotos?: string[];
 
   @ApiPropertyOptional({
@@ -146,7 +164,10 @@ export class CreateIncidentReportDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(2048, { each: true, message: 'Each evidence video URL cannot exceed 2048 characters' })
+  @MaxLength(2048, {
+    each: true,
+    message: 'Each evidence video URL cannot exceed 2048 characters',
+  })
   evidenceVideos?: string[];
 
   @ApiPropertyOptional({
@@ -156,7 +177,9 @@ export class CreateIncidentReportDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(50, { message: 'Insurance claim number cannot exceed 50 characters' })
+  @MaxLength(50, {
+    message: 'Insurance claim number cannot exceed 50 characters',
+  })
   insuranceClaimNumber?: string;
 
   @ApiPropertyOptional({

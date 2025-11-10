@@ -101,7 +101,7 @@ const customJestConfig: Config = {
   ],
 
   // Coverage thresholds (80%+ for critical code)
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,

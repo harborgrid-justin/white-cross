@@ -1,18 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
-  } from 'sequelize-typescript';
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+} from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 import { VisitDisposition } from '../../clinical/enums/visit-disposition.enum';
@@ -38,64 +38,64 @@ export interface ClinicVisitAttributes {
   active: {
     where: {
       checkOutTime: null,
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['checkInTime', 'ASC']]
+    order: [['checkInTime', 'ASC']],
   },
   byStudent: (studentId: string) => ({
     where: { studentId },
-    order: [['checkInTime', 'DESC']]
+    order: [['checkInTime', 'DESC']],
   }),
   byNurse: (attendedBy: string) => ({
     where: { attendedBy },
-    order: [['checkInTime', 'DESC']]
+    order: [['checkInTime', 'DESC']],
   }),
   byDisposition: (disposition: VisitDisposition) => ({
     where: { disposition },
-    order: [['checkInTime', 'DESC']]
+    order: [['checkInTime', 'DESC']],
   }),
   today: {
     where: {
       checkInTime: {
-        [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0))
-      }
+        [Op.gte]: new Date(new Date().setHours(0, 0, 0, 0)),
+      },
     },
-    order: [['checkInTime', 'DESC']]
+    order: [['checkInTime', 'DESC']],
   },
   thisWeek: {
     where: {
       checkInTime: {
-        [Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-      }
+        [Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      },
     },
-    order: [['checkInTime', 'DESC']]
+    order: [['checkInTime', 'DESC']],
   },
   completed: {
     where: {
       checkOutTime: {
-        [Op.ne]: null
-      }
+        [Op.ne]: null,
+      },
     },
-    order: [['checkOutTime', 'DESC']]
+    order: [['checkOutTime', 'DESC']],
   },
   inProgress: {
     where: {
-      checkOutTime: null
+      checkOutTime: null,
     },
-    order: [['checkInTime', 'ASC']]
+    order: [['checkInTime', 'ASC']],
   },
   sentHome: {
     where: {
-      disposition: VisitDisposition.SENT_HOME
+      disposition: VisitDisposition.SENT_HOME,
     },
-    order: [['checkInTime', 'DESC']]
+    order: [['checkInTime', 'DESC']],
   },
   returnedToClass: {
     where: {
-      disposition: VisitDisposition.RETURN_TO_CLASS
+      disposition: VisitDisposition.RETURN_TO_CLASS,
     },
-    order: [['checkInTime', 'DESC']]
-  }
+    order: [['checkInTime', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'clinic_visits',
@@ -104,31 +104,34 @@ export interface ClinicVisitAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId']
-  },
+      fields: ['studentId'],
+    },
     {
-      fields: ['checkInTime']
-  },
+      fields: ['checkInTime'],
+    },
     {
-      fields: ['checkOutTime']
-  },
+      fields: ['checkOutTime'],
+    },
     {
-      fields: ['disposition']
-  },
+      fields: ['disposition'],
+    },
     {
-      fields: ['attendedBy']
-  },
+      fields: ['attendedBy'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_clinic_visit_created_at'
+      name: 'idx_clinic_visit_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_clinic_visit_updated_at'
-    }
-  ]
-  })
-export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicVisitAttributes {
+      name: 'idx_clinic_visit_updated_at',
+    },
+  ],
+})
+export class ClinicVisit
+  extends Model<ClinicVisitAttributes>
+  implements ClinicVisitAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -140,65 +143,65 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
     allowNull: false,
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @Index
   studentId: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   checkInTime: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   @Index
   checkOutTime?: Date;
 
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   reasonForVisit: string[];
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   symptoms?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   treatment?: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(VisitDisposition)]
+      isIn: [Object.values(VisitDisposition)],
     },
-    allowNull: false
+    allowNull: false,
   })
   @Index
   disposition: VisitDisposition;
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   classesMissed?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   minutesMissed?: number;
 
@@ -208,17 +211,17 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
     allowNull: false,
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   @Index
   attendedBy: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   notes?: string;
 
@@ -229,10 +232,16 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
   declare updatedAt?: Date;
 
   // Associations
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'attendedBy', as: 'attendingNurse' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'attendedBy',
+    as: 'attendingNurse',
+  })
   declare attendingNurse?: any;
 
   // Hooks for HIPAA compliance
@@ -241,8 +250,12 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
   static async auditPHIAccess(instance: ClinicVisit) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ClinicVisit ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}, Nurse: ${instance.attendedBy}`);
+      console.log(
+        `[AUDIT] ClinicVisit ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
+      );
+      console.log(
+        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Nurse: ${instance.attendedBy}`,
+      );
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
   }
@@ -262,7 +275,10 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
   @BeforeUpdate
   static async calculateMinutesMissed(instance: ClinicVisit) {
     if (instance.changed('checkOutTime') && instance.checkOutTime) {
-      const duration = Math.floor((instance.checkOutTime.getTime() - instance.checkInTime.getTime()) / 60000);
+      const duration = Math.floor(
+        (instance.checkOutTime.getTime() - instance.checkInTime.getTime()) /
+          60000,
+      );
       if (!instance.minutesMissed) {
         instance.minutesMissed = duration;
       }
@@ -275,7 +291,9 @@ export class ClinicVisit extends Model<ClinicVisitAttributes> implements ClinicV
    */
   getDuration(): number | null {
     if (!this.checkOutTime) return null;
-    return Math.floor((this.checkOutTime.getTime() - this.checkInTime.getTime()) / 60000);
+    return Math.floor(
+      (this.checkOutTime.getTime() - this.checkInTime.getTime()) / 60000,
+    );
   }
 
   /**

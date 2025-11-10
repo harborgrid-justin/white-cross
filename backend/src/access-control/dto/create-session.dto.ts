@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsDateString, IsOptional, IsString, IsUUID } from 'class-validator';
 
 /**
  * DTO for creating a new session

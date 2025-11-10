@@ -25,10 +25,13 @@ export interface RateLimiterStatus {
 @Injectable()
 export class RateLimiterService {
   private readonly logger = new Logger(RateLimiterService.name);
-  private readonly limiters = new Map<string, {
-    timestamps: number[];
-    config: RateLimiterConfig;
-  }>();
+  private readonly limiters = new Map<
+    string,
+    {
+      timestamps: number[];
+      config: RateLimiterConfig;
+    }
+  >();
 
   /**
    * Initialize a rate limiter for a specific service
@@ -56,7 +59,7 @@ export class RateLimiterService {
    * Check and record a request
    * Throws error if rate limit is exceeded
    */
-  async checkLimit(serviceName: string): Promise<void> {
+  checkLimit(serviceName: string): void {
     if (!this.limiters.has(serviceName)) {
       this.initialize(serviceName);
     }
@@ -66,22 +69,24 @@ export class RateLimiterService {
     const windowStart = now - limiter.config.windowMs;
 
     // Remove old timestamps
-    limiter.timestamps = limiter.timestamps.filter(ts => ts > windowStart);
+    limiter.timestamps = limiter.timestamps.filter((ts) => ts > windowStart);
 
     // Check if limit exceeded
     if (limiter.timestamps.length >= limiter.config.maxRequests) {
       const oldestTimestamp = limiter.timestamps[0];
-      const waitTime = oldestTimestamp + limiter.config.windowMs - now;
+      if (oldestTimestamp !== undefined) {
+        const waitTime = oldestTimestamp + limiter.config.windowMs - now;
 
-      this.logger.warn(
-        `Rate limit exceeded for ${serviceName}. Wait ${waitTime}ms`,
-      );
+        this.logger.warn(
+          `Rate limit exceeded for ${serviceName}. Wait ${waitTime}ms`,
+        );
 
-      throw new Error(
-        `Rate limit exceeded for ${serviceName}. ` +
-        `Max ${limiter.config.maxRequests} requests per ${limiter.config.windowMs}ms. ` +
-        `Retry after ${waitTime}ms`,
-      );
+        throw new Error(
+          `Rate limit exceeded for ${serviceName}. ` +
+            `Max ${limiter.config.maxRequests} requests per ${limiter.config.windowMs}ms. ` +
+            `Try again in ${Math.ceil(waitTime / 1000)}s.`,
+        );
+      }
     }
 
     // Record this request
@@ -97,7 +102,9 @@ export class RateLimiterService {
 
     const now = Date.now();
     const windowStart = now - limiter.config.windowMs;
-    const currentRequests = limiter.timestamps.filter(ts => ts > windowStart).length;
+    const currentRequests = limiter.timestamps.filter(
+      (ts) => ts > windowStart,
+    ).length;
 
     return {
       current: currentRequests,

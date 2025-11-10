@@ -1,4 +1,4 @@
-import { ChronicCondition } from '../entities/chronic-condition.entity';
+import { ChronicCondition } from '@/database';
 
 /**
  * Paginated search results with metadata.

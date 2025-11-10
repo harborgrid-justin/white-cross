@@ -18,30 +18,58 @@
  */
 const PHI_PATTERNS = [
   // Email addresses
-  { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, replacement: '[EMAIL]' },
+  {
+    pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+    replacement: '[EMAIL]',
+  },
 
   // Phone numbers (various formats)
   { pattern: /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, replacement: '[PHONE]' },
-  { pattern: /\b\+?1?\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})\b/g, replacement: '[PHONE]' },
+  {
+    pattern: /\b\+?1?\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})\b/g,
+    replacement: '[PHONE]',
+  },
 
   // Social Security Numbers
   { pattern: /\b\d{3}-\d{2}-\d{4}\b/g, replacement: '[SSN]' },
 
   // Dates (MM/DD/YYYY, MM-DD-YYYY, YYYY-MM-DD)
-  { pattern: /\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])[\/\-]\d{4}\b/g, replacement: '[DATE]' },
-  { pattern: /\b\d{4}[\/\-](0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])\b/g, replacement: '[DATE]' },
+  {
+    pattern: /\b(0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])[\/\-]\d{4}\b/g,
+    replacement: '[DATE]',
+  },
+  {
+    pattern: /\b\d{4}[\/\-](0?[1-9]|1[0-2])[\/\-](0?[1-9]|[12][0-9]|3[01])\b/g,
+    replacement: '[DATE]',
+  },
 
   // Medical Record Numbers (MRN prefix)
   { pattern: /\bMRN[:\s]*[A-Z0-9-]+/gi, replacement: '[MRN]' },
-  { pattern: /\bmedical[\s_-]?record[\s_-]?number[:\s]*[A-Z0-9-]+/gi, replacement: '[MRN]' },
+  {
+    pattern: /\bmedical[\s_-]?record[\s_-]?number[:\s]*[A-Z0-9-]+/gi,
+    replacement: '[MRN]',
+  },
 
   // Patient IDs and Student IDs
-  { pattern: /\bpatient[\s_-]?id[:\s]*[A-Z0-9-]+/gi, replacement: '[PATIENT_ID]' },
-  { pattern: /\bstudent[\s_-]?id[:\s]*[A-Z0-9-]+/gi, replacement: '[STUDENT_ID]' },
-  { pattern: /\bstudent[\s_-]?number[:\s]*[A-Z0-9-]+/gi, replacement: '[STUDENT_ID]' },
+  {
+    pattern: /\bpatient[\s_-]?id[:\s]*[A-Z0-9-]+/gi,
+    replacement: '[PATIENT_ID]',
+  },
+  {
+    pattern: /\bstudent[\s_-]?id[:\s]*[A-Z0-9-]+/gi,
+    replacement: '[STUDENT_ID]',
+  },
+  {
+    pattern: /\bstudent[\s_-]?number[:\s]*[A-Z0-9-]+/gi,
+    replacement: '[STUDENT_ID]',
+  },
 
   // Street addresses
-  { pattern: /\b\d+\s+[A-Za-z0-9\s,]+\s+(Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Circle|Cir)\b/gi, replacement: '[ADDRESS]' },
+  {
+    pattern:
+      /\b\d+\s+[A-Za-z0-9\s,]+\s+(Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Circle|Cir)\b/gi,
+    replacement: '[ADDRESS]',
+  },
 
   // ZIP codes
   { pattern: /\b\d{5}(-\d{4})?\b/g, replacement: '[ZIP]' },
@@ -55,7 +83,10 @@ const PHI_PATTERNS = [
   { pattern: /\bCPT[:\s]*\d{5}\b/gi, replacement: '[CPT_CODE]' },
 
   // Common medication names (generic pattern - capitalized words followed by dosage)
-  { pattern: /\b[A-Z][a-z]+\s+\d+\s*(mg|mcg|ml|g|units?)\b/gi, replacement: '[MEDICATION]' },
+  {
+    pattern: /\b[A-Z][a-z]+\s+\d+\s*(mg|mcg|ml|g|units?)\b/gi,
+    replacement: '[MEDICATION]',
+  },
 ];
 
 /**
@@ -103,7 +134,7 @@ export function sanitizePHI(text: string): string {
   for (const fieldName of SENSITIVE_FIELD_NAMES) {
     const fieldPattern = new RegExp(
       `${fieldName}[\\s]*[:=][\\s]*(['"]?)([^'"\\s,}]+)\\1`,
-      'gi'
+      'gi',
     );
     sanitized = sanitized.replace(fieldPattern, `${fieldName}: [REDACTED]`);
   }
@@ -124,19 +155,16 @@ function sanitizeSQL(text: string): string {
   // Redact values in WHERE clauses
   let sanitized = text.replace(
     /WHERE\s+[^=]+\s*=\s*['"]?([^'";\s]+)['"]?/gi,
-    'WHERE [FIELD] = [REDACTED]'
+    'WHERE [FIELD] = [REDACTED]',
   );
 
   // Redact INSERT VALUES
-  sanitized = sanitized.replace(
-    /VALUES\s*\([^)]+\)/gi,
-    'VALUES ([REDACTED])'
-  );
+  sanitized = sanitized.replace(/VALUES\s*\([^)]+\)/gi, 'VALUES ([REDACTED])');
 
   // Redact UPDATE SET values
   sanitized = sanitized.replace(
     /SET\s+([^=]+)\s*=\s*['"]?([^'";\s,]+)['"]?/gi,
-    'SET $1 = [REDACTED]'
+    'SET $1 = [REDACTED]',
   );
 
   return sanitized;
@@ -151,7 +179,7 @@ function sanitizeSQL(text: string): string {
  * @param error - GraphQL error object
  * @returns Sanitized error object
  */
-export function sanitizeGraphQLError(error: any): any {
+export function sanitizeGraphQLError(error: GraphQLError): SanitizedGraphQLError {
   const sanitizedError = { ...error };
 
   // Sanitize main error message
@@ -164,33 +192,35 @@ export function sanitizeGraphQLError(error: any): any {
     // Sanitize exception message
     if (sanitizedError.extensions.exception?.message) {
       sanitizedError.extensions.exception.message = sanitizePHI(
-        sanitizedError.extensions.exception.message
+        sanitizedError.extensions.exception.message,
       );
     }
 
     // Sanitize stack trace
     if (sanitizedError.extensions.exception?.stacktrace) {
-      sanitizedError.extensions.exception.stacktrace = sanitizedError.extensions.exception.stacktrace.map(
-        (line: string) => sanitizePHI(line)
-      );
+      sanitizedError.extensions.exception.stacktrace =
+        sanitizedError.extensions.exception.stacktrace.map((line: string) =>
+          sanitizePHI(line),
+        );
     }
 
     // Sanitize original error if present
     if (sanitizedError.extensions.originalError?.message) {
       sanitizedError.extensions.originalError.message = sanitizePHI(
-        sanitizedError.extensions.originalError.message
+        sanitizedError.extensions.originalError.message,
       );
     }
 
     // Remove validation errors that may contain PHI
     if (sanitizedError.extensions.validationErrors) {
-      sanitizedError.extensions.validationErrors = sanitizedError.extensions.validationErrors.map(
-        (validationError: any) => ({
-          ...validationError,
-          message: sanitizePHI(validationError.message || ''),
-          value: '[REDACTED]',
-        })
-      );
+      sanitizedError.extensions.validationErrors =
+        sanitizedError.extensions.validationErrors.map(
+          (validationError: ValidationError) => ({
+            ...validationError,
+            message: sanitizePHI(validationError.message || ''),
+            value: '[REDACTED]',
+          }),
+        );
     }
   }
 
@@ -219,7 +249,7 @@ export function containsPHI(text: string): boolean {
   for (const fieldName of SENSITIVE_FIELD_NAMES) {
     const fieldPattern = new RegExp(
       `${fieldName}[\\s]*[:=][\\s]*(['"]?)([^'"\\s,}]+)\\1`,
-      'i'
+      'i',
     );
     if (fieldPattern.test(text)) {
       return true;

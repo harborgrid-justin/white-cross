@@ -1,6 +1,5 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
 
 // Import Sequelize models
 import { Student } from '../database/models/student.model';
@@ -9,12 +8,7 @@ import { ChronicCondition } from '../database/models/chronic-condition.model';
 import { StudentMedication } from '../database/models/student-medication.model';
 import { IncidentReport } from '../database/models/incident-report.model';
 
-import {
-  HealthRiskScoreDto,
-  RiskFactorDto,
-  RiskLevel,
-  HighRiskStudentDto,
-} from './dto';
+import { HealthRiskScoreDto, HighRiskStudentDto, RiskFactorDto, RiskLevel } from './dto';
 
 /**
  * Health Risk Assessment Service

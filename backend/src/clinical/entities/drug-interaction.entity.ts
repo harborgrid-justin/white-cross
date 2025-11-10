@@ -5,6 +5,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  DrugInteraction
-} from '../../database/models/drug-interaction.model';
+export { DrugInteraction } from '../../database/models/drug-interaction.model';

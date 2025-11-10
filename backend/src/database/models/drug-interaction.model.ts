@@ -1,21 +1,18 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
   BeforeUpdate,
-  UpdatedAt,
-  CreatedAt
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { InteractionSeverity } from '../../clinical/enums/interaction-severity.enum';
@@ -39,10 +36,10 @@ export interface DrugInteractionAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'drug_interactions',
@@ -51,22 +48,25 @@ export interface DrugInteractionAttributes {
   indexes: [
     {
       fields: ['drug1Id', 'drug2Id'],
-      unique: true
-  },
+      unique: true,
+    },
     {
-      fields: ['severity']
-  },
+      fields: ['severity'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_drug_interaction_created_at'
+      name: 'idx_drug_interaction_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_drug_interaction_updated_at'
-    }
-  ]
-  })
-export class DrugInteraction extends Model<DrugInteractionAttributes> implements DrugInteractionAttributes {
+      name: 'idx_drug_interaction_updated_at',
+    },
+  ],
+})
+export class DrugInteraction
+  extends Model<DrugInteractionAttributes>
+  implements DrugInteractionAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -75,7 +75,7 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   drug1Id: string;
@@ -83,7 +83,7 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @ForeignKey(() => require('./drug-catalog.model').DrugCatalog)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   @Index
   drug2Id: string;
@@ -91,40 +91,40 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(InteractionSeverity)]
+      isIn: [Object.values(InteractionSeverity)],
     },
-    allowNull: false
+    allowNull: false,
   })
   @Index
   severity: InteractionSeverity;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   description: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   clinicalEffects?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   management?: string;
 
   @AllowNull
   @Column({
-    type: DataType.JSON
+    type: DataType.JSON,
   })
   references?: string[];
 
   @AllowNull
   @Column({
-    type: DataType.STRING(50)
+    type: DataType.STRING(50),
   })
   evidenceLevel?: string;
 
@@ -135,12 +135,17 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => require('./drug-catalog.model').DrugCatalog, { foreignKey: 'drug1Id', as: 'drug1' })
+  @BelongsTo(() => require('./drug-catalog.model').DrugCatalog, {
+    foreignKey: 'drug1Id',
+    as: 'drug1',
+  })
   drug1?: any;
 
-  @BelongsTo(() => require('./drug-catalog.model').DrugCatalog, { foreignKey: 'drug2Id', as: 'drug2' })
+  @BelongsTo(() => require('./drug-catalog.model').DrugCatalog, {
+    foreignKey: 'drug2Id',
+    as: 'drug2',
+  })
   drug2?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -148,7 +153,9 @@ export class DrugInteraction extends Model<DrugInteractionAttributes> implements
   static async auditPHIAccess(instance: DrugInteraction) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] DrugInteraction ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] DrugInteraction ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

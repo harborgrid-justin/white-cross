@@ -1,14 +1,5 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
-  CreatedAt,
-  UpdatedAt,
-} from 'sequelize-typescript';
-import { ReportType, OutputFormat } from '../constants/report.constants';
+import { Column, CreatedAt, DataType, Default, Model, PrimaryKey, Table, UpdatedAt } from 'sequelize-typescript';
+import { OutputFormat, ReportType } from '../constants/report.constants';
 
 /**
  * Report Template Model
@@ -28,7 +19,7 @@ export class ReportTemplate extends Model {
     type: DataType.STRING(255),
     allowNull: false,
   })
-  name: string;
+  name!: string;
 
   @Column({
     type: DataType.TEXT,
@@ -40,7 +31,7 @@ export class ReportTemplate extends Model {
     type: DataType.ENUM(...(Object.values(ReportType) as string[])),
     allowNull: false,
   })
-  reportType: ReportType;
+  reportType!: ReportType;
 
   @Column({
     type: DataType.JSONB,
@@ -53,7 +44,7 @@ export class ReportTemplate extends Model {
     type: DataType.ENUM(...(Object.values(OutputFormat) as string[])),
     allowNull: false,
   })
-  defaultOutputFormat: OutputFormat;
+  defaultOutputFormat!: OutputFormat;
 
   @Column({
     type: DataType.JSONB,
@@ -66,7 +57,7 @@ export class ReportTemplate extends Model {
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({
     type: DataType.STRING,

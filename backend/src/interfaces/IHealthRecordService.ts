@@ -4,13 +4,12 @@
  * Enables testability, mocking, and future service implementations
  */
 
-import { IHealthRecordRepository } from '../database/repositories/interfaces/health-record.repository.interface';
 import {
-  HealthRecord,
   CreateHealthRecordData,
-  UpdateHealthRecordData,
+  HealthRecord,
+  HealthRecordFilters,
   HealthSummary,
-  HealthRecordFilters
+  UpdateHealthRecordData,
 } from '../database/repositories/interfaces/health-record.repository.interface';
 
 /**
@@ -36,7 +35,11 @@ export interface IHealthRecordService {
    * @param filters - Optional filters
    * @returns Promise resolving to health record list result
    */
-  getHealthRecords(page?: number, limit?: number, filters?: HealthRecordFilters): Promise<HealthRecordListResult>;
+  getHealthRecords(
+    page?: number,
+    limit?: number,
+    filters?: HealthRecordFilters,
+  ): Promise<HealthRecordListResult>;
 
   /**
    * Get a single health record by ID
@@ -51,7 +54,10 @@ export interface IHealthRecordService {
    * @param limit - Maximum records to return
    * @returns Promise resolving to student's health records
    */
-  getStudentHealthRecords(studentId: string, limit?: number): Promise<HealthRecord[]>;
+  getStudentHealthRecords(
+    studentId: string,
+    limit?: number,
+  ): Promise<HealthRecord[]>;
 
   /**
    * Get health summary for a student
@@ -73,7 +79,10 @@ export interface IHealthRecordService {
    * @param data - Updated health record data
    * @returns Promise resolving to updated health record
    */
-  updateHealthRecord(id: string, data: UpdateHealthRecordData): Promise<HealthRecord>;
+  updateHealthRecord(
+    id: string,
+    data: UpdateHealthRecordData,
+  ): Promise<HealthRecord>;
 
   /**
    * Delete a health record
@@ -88,7 +97,10 @@ export interface IHealthRecordService {
    * @param studentId - Optional student ID filter
    * @returns Promise resolving to health records of specified type
    */
-  getHealthRecordsByType(type: HealthRecord['type'], studentId?: string): Promise<HealthRecord[]>;
+  getHealthRecordsByType(
+    type: HealthRecord['type'],
+    studentId?: string,
+  ): Promise<HealthRecord[]>;
 
   /**
    * Get health records requiring follow-up
@@ -104,7 +116,11 @@ export interface IHealthRecordService {
    * @param filters - Additional filters
    * @returns Promise resolving to health records in range
    */
-  getHealthRecordsByDateRange(startDate: Date, endDate: Date, filters?: HealthRecordFilters): Promise<HealthRecord[]>;
+  getHealthRecordsByDateRange(
+    startDate: Date,
+    endDate: Date,
+    filters?: HealthRecordFilters,
+  ): Promise<HealthRecord[]>;
 }
 
 /**
@@ -112,10 +128,17 @@ export interface IHealthRecordService {
  * Segregated interface for basic CRUD operations (ISP compliance)
  */
 export interface IHealthRecordCrudService {
-  getHealthRecords(page?: number, limit?: number, filters?: HealthRecordFilters): Promise<HealthRecordListResult>;
+  getHealthRecords(
+    page?: number,
+    limit?: number,
+    filters?: HealthRecordFilters,
+  ): Promise<HealthRecordListResult>;
   getHealthRecordById(id: string): Promise<HealthRecord | null>;
   createHealthRecord(data: CreateHealthRecordData): Promise<HealthRecord>;
-  updateHealthRecord(id: string, data: UpdateHealthRecordData): Promise<HealthRecord>;
+  updateHealthRecord(
+    id: string,
+    data: UpdateHealthRecordData,
+  ): Promise<HealthRecord>;
   deleteHealthRecord(id: string): Promise<void>;
 }
 
@@ -124,9 +147,19 @@ export interface IHealthRecordCrudService {
  * Segregated interface for query operations (ISP compliance)
  */
 export interface IHealthRecordQueryService {
-  getStudentHealthRecords(studentId: string, limit?: number): Promise<HealthRecord[]>;
+  getStudentHealthRecords(
+    studentId: string,
+    limit?: number,
+  ): Promise<HealthRecord[]>;
   getStudentHealthSummary(studentId: string): Promise<HealthSummary>;
-  getHealthRecordsByType(type: HealthRecord['type'], studentId?: string): Promise<HealthRecord[]>;
+  getHealthRecordsByType(
+    type: HealthRecord['type'],
+    studentId?: string,
+  ): Promise<HealthRecord[]>;
   getRecordsRequiringFollowUp(beforeDate?: Date): Promise<HealthRecord[]>;
-  getHealthRecordsByDateRange(startDate: Date, endDate: Date, filters?: HealthRecordFilters): Promise<HealthRecord[]>;
+  getHealthRecordsByDateRange(
+    startDate: Date,
+    endDate: Date,
+    filters?: HealthRecordFilters,
+  ): Promise<HealthRecord[]>;
 }

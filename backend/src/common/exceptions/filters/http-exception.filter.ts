@@ -4,23 +4,11 @@
  * @description Global exception filter for HTTP exceptions with HIPAA compliance, Winston logging, Sentry, and audit logging
  */
 
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-  Inject,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  ErrorResponse,
-  ErrorCategory,
-  ErrorSeverity,
-  ErrorLoggingContext,
-} from '../types/error-response.types';
-import { getErrorCodeCategory, getHttpStatusForErrorCode } from '../constants/error-codes';
+import { ErrorCategory, ErrorLoggingContext, ErrorResponse, ErrorSeverity } from '../types/error-response.types';
+import { getErrorCodeCategory } from '../constants/error-codes';
 import { LoggerService } from '../../../shared/logging/logger.service';
 import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
 import { AuditService } from '../../../audit/audit.service';
@@ -59,7 +47,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const status = exception.getStatus();
     const exceptionResponse = exception.getResponse();
-    const requestId = request.headers['x-request-id'] as string || uuidv4();
+    const requestId = (request.headers['x-request-id'] as string) || uuidv4();
 
     // Extract error information
     const errorInfo = this.extractErrorInfo(exceptionResponse, exception);
@@ -120,7 +108,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     return {
       error: response.error || exception.name || 'HttpException',
       message: response.message || 'An error occurred',
-      errorCode: response.errorCode || this.getDefaultErrorCode(exception.getStatus()),
+      errorCode:
+        response.errorCode || this.getDefaultErrorCode(exception.getStatus()),
       details: response.errors || response.context || response.details,
     };
   }
@@ -274,7 +263,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
   /**
    * Send error to audit log for security and compliance events
    */
-  private async sendToAuditLog(request: Request, errorResponse: ErrorResponse): Promise<void> {
+  private async sendToAuditLog(
+    request: Request,
+    errorResponse: ErrorResponse,
+  ): Promise<void> {
     const userId = (request as any).user?.id;
     const ipAddress = this.getClientIp(request);
     const userAgent = request.headers['user-agent'];
@@ -283,7 +275,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     try {
       await this.auditService.logAction({
         userId: userId || null,
-        action: this.getAuditAction(errorResponse.statusCode, errorResponse.errorCode),
+        action: this.getAuditAction(
+          errorResponse.statusCode,
+          errorResponse.errorCode,
+        ),
         entityType: 'error_event',
         entityId: errorResponse.requestId,
         changes: {
@@ -297,15 +292,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ipAddress,
         userAgent,
         success: false,
-        errorMessage: Array.isArray(errorResponse.message) ? errorResponse.message.join(', ') : errorResponse.message,
+        errorMessage: Array.isArray(errorResponse.message)
+          ? errorResponse.message.join(', ')
+          : errorResponse.message,
       });
 
-      this.logger.logWithMetadata('info', 'Audit log entry created for security event', {
-        requestId: errorResponse.requestId,
-        path: errorResponse.path,
-        errorCode: errorResponse.errorCode,
-        userId,
-      });
+      this.logger.logWithMetadata(
+        'info',
+        'Audit log entry created for security event',
+        {
+          requestId: errorResponse.requestId,
+          path: errorResponse.path,
+          errorCode: errorResponse.errorCode,
+          userId,
+        },
+      );
     } catch (error) {
       // Fail-safe: don't break on audit log failure
       this.logger.logWithMetadata('error', 'Failed to create audit log entry', {
@@ -352,7 +353,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // This is a basic implementation - production should use more sophisticated PHI detection
 
     // Remove email addresses
-    let sanitized = message.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]');
+    let sanitized = message.replace(
+      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+      '[EMAIL]',
+    );
 
     // Remove phone numbers
     sanitized = sanitized.replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[PHONE]');

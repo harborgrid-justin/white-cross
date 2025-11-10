@@ -30,7 +30,7 @@ export interface InventoryLocation {
  *
  * @returns Rendered locations management view
  */
-export default function InventoryLocationsContent() {
+function InventoryLocationsContent() {
   const [locations, setLocations] = useState<InventoryLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -292,3 +292,7 @@ export default function InventoryLocationsContent() {
     </div>
   );
 }
+
+// Export both named and default for flexibility
+export { InventoryLocationsContent }
+export default InventoryLocationsContent

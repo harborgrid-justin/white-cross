@@ -1,22 +1,39 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { DatabaseModule } from '../database/database.module';
+import {
+  AnalyticsReport,
+  Appointment,
+  AppointmentRepository,
+  DatabaseModule,
+  HealthMetricSnapshot,
+  HealthRecord,
+  IncidentReport,
+  MedicationLog,
+  Student,
+} from '@/database';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
-import { HealthTrendAnalyticsService } from './services/health-trend-analytics.service';
-import { ComplianceReportGeneratorService } from './services/compliance-report-generator.service';
-import { HealthMetricSnapshot } from '../database/models/health-metric-snapshot.model';
-import { AnalyticsReport } from '../database/models/analytics-report.model';
-import { Student } from '../database/models/student.model';
-import { HealthRecord } from '../database/models/health-record.model';
-import { Appointment } from '../database/models/appointment.model';
-import { MedicationLog } from '../database/models/medication-log.model';
-import { IncidentReport } from '../database/models/incident-report.model';
-import { AppointmentRepository } from '../database/repositories/impl/appointment.repository';
-import { HealthRecordRepository } from '../database/repositories/impl/health-record.repository';
-import { MedicationLogRepository } from '../database/repositories/impl/medication-log.repository';
-import { IncidentReportRepository } from '../database/repositories/impl/incident-report.repository';
+import {
+  ComplianceReportGeneratorService,
+  HealthTrendAnalyticsService,
+  DateRangeService,
+  TrendCalculationService,
+  ConditionAnalyticsService,
+  HealthMetricsAnalyzerService,
+  IncidentAnalyticsService,
+  PredictiveInsightsService,
+} from '@/analytics/services';
+import {
+  HealthRecordRepository,
+  IncidentReportRepository,
+  MedicationLogRepository,
+} from '@/database/repositories/impl';
+import { ComplianceDataCollectorService } from './services/compliance-data-collector.service';
+import { ComplianceMetricsCalculatorService } from './services/compliance-metrics-calculator.service';
+import { ComplianceReportBuilderService } from './services/compliance-report-builder.service';
+import { ComplianceReportExporterService } from './services/compliance-report-exporter.service';
+import { ComplianceReportPersistenceService } from './services/compliance-report-persistence.service';
 
 /**
  * Analytics Module
@@ -62,6 +79,19 @@ import { IncidentReportRepository } from '../database/repositories/impl/incident
     AnalyticsService, // Main orchestration service
     HealthTrendAnalyticsService, // Health trend analysis and population health
     ComplianceReportGeneratorService, // Report generation service with export capabilities
+    // Compliance report specialized services
+    ComplianceDataCollectorService, // Data collection for compliance reports
+    ComplianceMetricsCalculatorService, // Metrics calculation for compliance reports
+    ComplianceReportBuilderService, // Report structure building
+    ComplianceReportExporterService, // Format exports (PDF, CSV, Excel, JSON)
+    ComplianceReportPersistenceService, // Database and caching operations
+    // Supporting analytics services
+    DateRangeService, // Date and period calculations
+    TrendCalculationService, // Statistical analysis and trend detection
+    ConditionAnalyticsService, // Condition normalization and categorization
+    HealthMetricsAnalyzerService, // Population health metrics aggregation
+    IncidentAnalyticsService, // Incident analysis and reporting
+    PredictiveInsightsService, // Predictive analytics and outbreak detection
     // Repository providers
     AppointmentRepository,
     HealthRecordRepository,
@@ -72,6 +102,13 @@ import { IncidentReportRepository } from '../database/repositories/impl/incident
     AnalyticsService,
     HealthTrendAnalyticsService,
     ComplianceReportGeneratorService,
+    // Supporting analytics services
+    DateRangeService,
+    TrendCalculationService,
+    ConditionAnalyticsService,
+    HealthMetricsAnalyzerService,
+    IncidentAnalyticsService,
+    PredictiveInsightsService,
     // Export repositories for dependent modules
     AppointmentRepository,
     HealthRecordRepository,

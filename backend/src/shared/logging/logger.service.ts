@@ -17,8 +17,9 @@
  * DOWNSTREAM: All NestJS modules, services, controllers
  */
 
-import { Injectable, LoggerService as NestLoggerService, Scope } from '@nestjs/common';
+import { Injectable, LoggerService as NestLoggerService, Optional, Scope } from '@nestjs/common';
 import * as winston from 'winston';
+import { AppConfigService } from '../../config/app-config.service';
 
 /**
  * @class LoggerService
@@ -42,11 +43,12 @@ export class LoggerService implements NestLoggerService {
   private readonly winston: winston.Logger;
   private context?: string;
 
-  constructor() {
+  constructor(@Optional() private readonly config?: AppConfigService) {
+    // Config service is optional to prevent circular dependencies
     const logFormat = winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
-      winston.format.json()
+      winston.format.json(),
     );
 
     const consoleFormat = winston.format.combine(
@@ -67,28 +69,33 @@ export class LoggerService implements NestLoggerService {
         }
 
         return log;
-      })
+      }),
     );
 
+    const logLevel = this.config?.get<string>('app.logging.level', 'info') ?? 'info';
+    const isProduction = this.config?.isProduction ?? false;
+
     this.winston = winston.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
+      level: logLevel,
       format: logFormat,
       defaultMeta: { service: 'white-cross-api' },
       transports: [
         new winston.transports.File({
           filename: 'logs/error.log',
-          level: 'error'
+          level: 'error',
         }),
         new winston.transports.File({
-          filename: 'logs/combined.log'
+          filename: 'logs/combined.log',
         }),
       ],
     });
 
-    if (process.env.NODE_ENV !== 'production') {
-      this.winston.add(new winston.transports.Console({
-        format: consoleFormat
-      }));
+    if (!isProduction) {
+      this.winston.add(
+        new winston.transports.Console({
+          format: consoleFormat,
+        }),
+      );
     }
   }
 
@@ -132,12 +139,12 @@ export class LoggerService implements NestLoggerService {
       this.winston.error(message, {
         context: logContext,
         error: trace.message,
-        stack: trace.stack
+        stack: trace.stack,
       });
     } else if (trace && typeof trace === 'object') {
       this.winston.error(message, {
         context: logContext,
-        error: JSON.stringify(trace)
+        error: JSON.stringify(trace),
       });
     } else if (trace) {
       this.winston.error(`${message} ${trace}`, { context: logContext });
@@ -187,28 +194,12 @@ export class LoggerService implements NestLoggerService {
     level: 'info' | 'error' | 'warn' | 'debug',
     message: string,
     metadata: Record<string, any>,
-    context?: string
+    context?: string,
   ): void {
     const logContext = context || this.context || 'Application';
     this.winston.log(level, message, { ...metadata, context: logContext });
   }
 }
-
-/**
- * Create a logger instance with a specific context
- * @param context - Logger context (typically class name)
- * @returns LoggerService instance with context set
- */
-export function createLogger(context: string): LoggerService {
-  const logger = new LoggerService();
-  logger.setContext(context);
-  return logger;
-}
-
-/**
- * Singleton logger instance for convenience
- */
-export const logger = new LoggerService();
 
 /**
  * Default export for convenience

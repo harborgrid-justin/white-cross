@@ -4,34 +4,14 @@
  * @description HTTP endpoints for health screening management
  */
 
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  HttpCode,
-  HttpStatus,
-  ParseUUIDPipe,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ScreeningService } from './screening.service';
-import {
-  CreateScreeningDto,
-  BatchScreeningDto,
-  CreateReferralDto,
-  OverdueScreeningsQueryDto,
-  ScreeningScheduleQueryDto,
-  ScreeningStatisticsQueryDto,
-} from './dto';
+import { BatchScreeningDto } from './dto/screening.dto';
+import { CreateReferralDto } from './dto/screening.dto';
+import { OverdueScreeningsQueryDto } from './dto/screening.dto';
+import { ScreeningScheduleQueryDto } from './dto/screening.dto';
+import { ScreeningStatisticsQueryDto } from './dto/screening.dto';
 
 @ApiTags('health-records-screenings')
 @Controller('health-records/screenings')
@@ -45,7 +25,8 @@ export class ScreeningController {
   @Get('student/:studentId')
   @ApiOperation({
     summary: 'Get student screenings',
-    description: 'Retrieves all health screening records for a specific student.',
+    description:
+      'Retrieves all health screening records for a specific student.',
   })
   @ApiParam({
     name: 'studentId',
@@ -73,7 +54,8 @@ export class ScreeningController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Import screenings in batch',
-    description: 'Creates multiple screening records at once for mass screening events.',
+    description:
+      'Creates multiple screening records at once for mass screening events.',
   })
   @ApiResponse({
     status: 201,
@@ -133,7 +115,8 @@ export class ScreeningController {
   @Get('schedule')
   @ApiOperation({
     summary: 'Get screening schedule',
-    description: 'Retrieves required screening schedule by grade level and state.',
+    description:
+      'Retrieves required screening schedule by grade level and state.',
   })
   @ApiQuery({
     name: 'gradeLevel',
@@ -160,7 +143,8 @@ export class ScreeningController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create screening referral',
-    description: 'Creates a referral to a specialist based on screening results.',
+    description:
+      'Creates a referral to a specialist based on screening results.',
   })
   @ApiParam({
     name: 'id',

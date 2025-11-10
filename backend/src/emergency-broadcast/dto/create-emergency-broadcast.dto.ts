@@ -54,7 +54,8 @@ export class CreateEmergencyBroadcastDto {
 
   @ApiProperty({
     description: 'Detailed message content',
-    example: 'A medical emergency is in progress in Building A. Please avoid this area and follow staff instructions.',
+    example:
+      'A medical emergency is in progress in Building A. Please avoid this area and follow staff instructions.',
     maxLength: 2000,
   })
   @IsString()

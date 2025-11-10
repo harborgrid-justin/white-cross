@@ -22,10 +22,7 @@ import { ApiKeyEntity } from './entities/api-key.entity';
  * @module ApiKeyAuthModule
  */
 @Module({
-  imports: [
-    SequelizeModule.forFeature([ApiKeyEntity]),
-    ConfigModule,
-  ],
+  imports: [SequelizeModule.forFeature([ApiKeyEntity]), ConfigModule],
   controllers: [ApiKeyAuthController],
   providers: [ApiKeyAuthService, ApiKeyGuard],
   exports: [ApiKeyAuthService, ApiKeyGuard],

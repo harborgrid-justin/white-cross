@@ -8,5 +8,7 @@ export {
   ExpressMiddlewareUtils,
   ExpressRequestWrapper,
   ExpressResponseWrapper,
-  ExpressNextWrapper
+  ExpressNextWrapper,
 } from './express.adapter';
+
+export * from './express.adapter';

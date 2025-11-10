@@ -15,7 +15,7 @@ export { RbacGuard } from './guards/rbac.guard';
 export {
   HealthcareValidationPipe,
   createHealthcareValidationPipe,
-  createAdminValidationPipe
+  createAdminValidationPipe,
 } from './pipes/validation.pipe';
 
 // Middleware
@@ -23,7 +23,7 @@ export {
   SessionMiddleware,
   MemorySessionStore,
   createHealthcareSessionMiddleware,
-  createAdminSessionMiddleware
+  createAdminSessionMiddleware,
 } from './middleware/session.middleware';
 
 // Decorators
@@ -32,7 +32,7 @@ export {
   RequirePermission,
   PERMISSIONS_KEY,
   PERMISSIONS_MODE_KEY,
-  type PermissionsMode
+  type PermissionsMode,
 } from './decorators/permissions.decorator';
 
 // Types - RBAC
@@ -43,7 +43,7 @@ export {
   ROLE_PERMISSIONS,
   type AuthorizationResult,
   type RbacConfig,
-  type UserProfile
+  type UserProfile,
 } from './types/rbac.types';
 
 // Types - Validation
@@ -52,7 +52,7 @@ export {
   VALIDATION_CONFIGS,
   type ValidationErrorDetail,
   type ValidationResult,
-  type ValidationConfig
+  type ValidationConfig,
 } from './types/validation.types';
 
 // Types - Session
@@ -61,5 +61,5 @@ export {
   type SessionConfig,
   type SessionData,
   type SessionResult,
-  type SessionStore
+  type SessionStore,
 } from './types/session.types';

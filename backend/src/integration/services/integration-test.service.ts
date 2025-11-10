@@ -3,12 +3,13 @@ import { InjectModel } from '@nestjs/sequelize';
 import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
+import type { IntegrationTestDetails } from '../types/test-details.types';
 
 export interface IntegrationTestResult {
   success: boolean;
   message: string;
   responseTime?: number;
-  details?: any;
+  details?: IntegrationTestDetails;
 }
 
 /**
@@ -36,7 +37,10 @@ export class IntegrationTestService {
       const integration = await this.configService.findById(id, true);
 
       // Update status to TESTING
-      await this.configModel.update({ status: IntegrationStatus.TESTING }, { where: { id } });
+      await this.configModel.update(
+        { status: IntegrationStatus.TESTING },
+        { where: { id } },
+      );
 
       // Simulate connection test based on integration type
       const testResult = await this.performConnectionTest(integration);
@@ -44,10 +48,15 @@ export class IntegrationTestService {
       const responseTime = Date.now() - startTime;
 
       // Update status based on result
-      await this.configModel.update({
-        status: testResult.success ? IntegrationStatus.ACTIVE : IntegrationStatus.ERROR,
-        lastSyncStatus: testResult.success ? 'success' : 'failed',
-      }, { where: { id } });
+      await this.configModel.update(
+        {
+          status: testResult.success
+            ? IntegrationStatus.ACTIVE
+            : IntegrationStatus.ERROR,
+          lastSyncStatus: testResult.success ? 'success' : 'failed',
+        },
+        { where: { id } },
+      );
 
       // Log the test
       await this.logService.create({
@@ -57,10 +66,12 @@ export class IntegrationTestService {
         status: testResult.success ? 'success' : 'failed',
         duration: responseTime,
         errorMessage: testResult.success ? undefined : testResult.message,
-        details: testResult.details,
+        details: testResult.details as any,
       });
 
-      this.logger.log(`Connection test ${testResult.success ? 'succeeded' : 'failed'} for ${integration.name}`);
+      this.logger.log(
+        `Connection test ${testResult.success ? 'succeeded' : 'failed'} for ${integration.name}`,
+      );
 
       return {
         ...testResult,
@@ -69,10 +80,13 @@ export class IntegrationTestService {
     } catch (error) {
       const responseTime = Date.now() - startTime;
 
-      await this.configModel.update({
-        status: IntegrationStatus.ERROR,
-        lastSyncStatus: 'failed',
-      }, { where: { id } });
+      await this.configModel.update(
+        {
+          status: IntegrationStatus.ERROR,
+          lastSyncStatus: 'failed',
+        },
+        { where: { id } },
+      );
 
       this.logger.error('Error testing connection', error);
 
@@ -88,7 +102,9 @@ export class IntegrationTestService {
    * Perform actual connection test based on integration type
    * Mock implementation - in production, this would make real API calls
    */
-  private async performConnectionTest(integration: any): Promise<IntegrationTestResult> {
+  private async performConnectionTest(
+    integration: IntegrationConfig,
+  ): Promise<IntegrationTestResult> {
     // Validate required fields
     if (!integration.endpoint && integration.type !== 'GOVERNMENT_REPORTING') {
       return {

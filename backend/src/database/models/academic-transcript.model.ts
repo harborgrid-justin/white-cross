@@ -1,18 +1,16 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
-  Index,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -73,7 +71,8 @@ export interface AcademicTranscriptAttributes {
  * Academic Transcript Creation Attributes
  * Omits auto-generated fields (id, createdAt, updatedAt)
  */
-export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTranscriptAttributes, 'id' | 'createdAt' | 'updatedAt'> {
+export interface AcademicTranscriptCreationAttributes
+  extends Omit<AcademicTranscriptAttributes, 'id' | 'createdAt' | 'updatedAt'> {
   id?: string;
 }
 
@@ -98,10 +97,10 @@ export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTrans
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'academic_transcripts',
@@ -110,36 +109,42 @@ export interface AcademicTranscriptCreationAttributes extends Omit<AcademicTrans
   indexes: [
     {
       fields: ['studentId'],
-      name: 'academic_transcripts_student_id_idx'
+      name: 'academic_transcripts_student_id_idx',
     },
     {
       fields: ['academicYear'],
-      name: 'academic_transcripts_academic_year_idx'
+      name: 'academic_transcripts_academic_year_idx',
     },
     {
       fields: ['studentId', 'academicYear', 'semester'],
       unique: true,
-      name: 'academic_transcripts_student_year_semester_unique'
+      name: 'academic_transcripts_student_year_semester_unique',
     },
     {
       fields: ['gpa'],
-      name: 'academic_transcripts_gpa_idx'
+      name: 'academic_transcripts_gpa_idx',
     },
     {
       fields: ['importedBy'],
-      name: 'academic_transcripts_imported_by_idx'
+      name: 'academic_transcripts_imported_by_idx',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_academic_transcript_created_at'
+      name: 'idx_academic_transcript_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_academic_transcript_updated_at'
-    }
-  ]
-  })
-export class AcademicTranscript extends Model<AcademicTranscriptAttributes, AcademicTranscriptCreationAttributes> implements AcademicTranscriptAttributes {
+      name: 'idx_academic_transcript_updated_at',
+    },
+  ],
+})
+export class AcademicTranscript
+  extends Model<
+    AcademicTranscriptAttributes,
+    AcademicTranscriptCreationAttributes
+  >
+  implements AcademicTranscriptAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -151,7 +156,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
@@ -160,7 +165,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    */
   @Column({
     type: DataType.STRING(20),
-    allowNull: false
+    allowNull: false,
   })
   academicYear: string;
 
@@ -169,7 +174,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    */
   @Column({
     type: DataType.STRING(20),
-    allowNull: false
+    allowNull: false,
   })
   semester: string;
 
@@ -178,7 +183,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    */
   @Column({
     type: DataType.STRING(10),
-    allowNull: false
+    allowNull: false,
   })
   grade: string;
 
@@ -188,7 +193,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   @Column({
     type: DataType.DECIMAL(3, 2),
     allowNull: false,
-    defaultValue: 0.0
+    defaultValue: 0.0,
   })
   gpa: number;
 
@@ -198,7 +203,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   @Column({
     type: DataType.JSONB,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
   })
   subjects: SubjectGrade[];
 
@@ -213,8 +218,8 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
       presentDays: 0,
       absentDays: 0,
       tardyDays: 0,
-      attendanceRate: 0
-  }
+      attendanceRate: 0,
+    },
   })
   attendance: AttendanceRecord;
 
@@ -227,8 +232,8 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
     defaultValue: {
       conductGrade: 'N/A',
       incidents: 0,
-      commendations: 0
-  }
+      commendations: 0,
+    },
   })
   behavior: BehaviorRecord;
 
@@ -236,7 +241,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    * User who imported this record
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   importedBy?: string;
 
@@ -244,7 +249,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    * When this record was imported
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   importedAt?: Date;
 
@@ -252,7 +257,7 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    * Source system for import (e.g., "PowerSchool", "SIS", "Manual")
    */
   @Column({
-    type: DataType.STRING(100)
+    type: DataType.STRING(100),
   })
   importSource?: string;
 
@@ -263,12 +268,12 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   metadata?: Record<string, any>;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt?: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt?: Date;
 
@@ -303,9 +308,8 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
    * Get subject by subject code
    */
   getSubject(subjectCode: string): SubjectGrade | undefined {
-    return this.subjects.find(s => s.subjectCode === subjectCode);
+    return this.subjects.find((s) => s.subjectCode === subjectCode);
   }
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -313,7 +317,9 @@ export class AcademicTranscript extends Model<AcademicTranscriptAttributes, Acad
   static async auditPHIAccess(instance: AcademicTranscript) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] AcademicTranscript ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] AcademicTranscript ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

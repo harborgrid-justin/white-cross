@@ -1,13 +1,15 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { PDFDocument, rgb } from 'pdf-lib';
-import { GenerateStudentHealthSummaryDto } from './dto/generate-student-health-summary.dto';
-import { GenerateMedicationLogDto } from './dto/generate-medication-log.dto';
-import { GenerateImmunizationReportDto } from './dto/generate-immunization-report.dto';
-import { GenerateIncidentReportDto } from './dto/generate-incident-report.dto';
-import { PdfGenerateCustomReportDto } from './dto/generate-custom-report.dto';
-import { WatermarkPdfDto } from './dto/watermark-pdf.dto';
+import {
+  GenerateImmunizationReportDto,
+  GenerateIncidentReportDto,
+  GenerateMedicationLogDto,
+  GenerateStudentHealthSummaryDto,
+  PdfGenerateCustomReportDto,
+  WatermarkPdfDto,
+} from '@/pdf/dto';
 
 // Extend jsPDF with autoTable
 declare module 'jspdf' {
@@ -32,9 +34,7 @@ export class PdfService {
   /**
    * Generate student health summary PDF
    */
-  async generateStudentHealthSummary(
-    data: GenerateStudentHealthSummaryDto,
-  ): Promise<Buffer> {
+  async generateStudentHealthSummary(data: GenerateStudentHealthSummaryDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -45,11 +45,7 @@ export class PdfService {
       // Student information
       doc.setFontSize(12);
       doc.text(`Name: ${data.firstName} ${data.lastName}`, 20, 40);
-      doc.text(
-        `Date of Birth: ${new Date(data.dateOfBirth).toLocaleDateString()}`,
-        20,
-        50,
-      );
+      doc.text(`Date of Birth: ${new Date(data.dateOfBirth).toLocaleDateString()}`, 20, 50);
       doc.text(`Grade: ${data.grade || 'N/A'}`, 20, 60);
       doc.text(`Student ID: ${data.studentNumber || 'N/A'}`, 20, 70);
 
@@ -87,12 +83,7 @@ export class PdfService {
         doc.autoTable({
           startY: yPosition,
           head: [['Medication', 'Dosage', 'Frequency', 'Route']],
-          body: data.medications.map((med) => [
-            med.name,
-            med.dosage,
-            med.frequency,
-            med.route,
-          ]),
+          body: data.medications.map((med) => [med.name, med.dosage, med.frequency, med.route]),
           theme: 'striped',
           headStyles: { fillColor: [41, 128, 185] },
         });
@@ -144,9 +135,7 @@ export class PdfService {
   /**
    * Generate medication administration log PDF
    */
-  async generateMedicationLog(
-    data: GenerateMedicationLogDto,
-  ): Promise<Buffer> {
+  async generateMedicationLog(data: GenerateMedicationLogDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -198,9 +187,7 @@ export class PdfService {
   /**
    * Generate immunization compliance report PDF
    */
-  async generateImmunizationReport(
-    data: GenerateImmunizationReportDto,
-  ): Promise<Buffer> {
+  async generateImmunizationReport(data: GenerateImmunizationReportDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -213,17 +200,9 @@ export class PdfService {
       // Report metadata
       doc.setFontSize(12);
       doc.text(`Organization: ${data.organizationName}`, 20, 40);
-      doc.text(
-        `Report Date: ${new Date().toLocaleDateString()}`,
-        20,
-        50,
-      );
+      doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 20, 50);
       doc.text(`Total Students: ${data.totalStudents}`, 20, 60);
-      doc.text(
-        `Compliant: ${data.compliantStudents} (${data.complianceRate}%)`,
-        20,
-        70,
-      );
+      doc.text(`Compliant: ${data.compliantStudents} (${data.complianceRate}%)`, 20, 70);
 
       // Student immunization status
       if (data.students && data.students.length > 0) {
@@ -264,9 +243,7 @@ export class PdfService {
   /**
    * Generate incident report PDF
    */
-  async generateIncidentReport(
-    data: GenerateIncidentReportDto,
-  ): Promise<Buffer> {
+  async generateIncidentReport(data: GenerateIncidentReportDto): Promise<Buffer> {
     try {
       const doc = new jsPDF();
 
@@ -277,11 +254,7 @@ export class PdfService {
       // Incident details
       doc.setFontSize(12);
       doc.text(`Incident ID: ${data.id}`, 20, 40);
-      doc.text(
-        `Date/Time: ${new Date(data.incidentDateTime).toLocaleString()}`,
-        20,
-        50,
-      );
+      doc.text(`Date/Time: ${new Date(data.incidentDateTime).toLocaleString()}`, 20, 50);
       doc.text(`Location: ${data.location}`, 20, 60);
       doc.text(`Severity: ${data.severity}`, 20, 70);
 
@@ -301,10 +274,7 @@ export class PdfService {
       doc.setFontSize(14);
       doc.text('Actions Taken:', 20, yPosition);
       doc.setFontSize(10);
-      const splitActions = doc.splitTextToSize(
-        data.actionsTaken || 'None',
-        170,
-      );
+      const splitActions = doc.splitTextToSize(data.actionsTaken || 'None', 170);
       doc.text(splitActions, 20, yPosition + 10);
 
       // Footer
@@ -407,10 +377,7 @@ export class PdfService {
       for (const base64Buffer of pdfBuffers) {
         const buffer = Buffer.from(base64Buffer, 'base64');
         const pdf = await PDFDocument.load(buffer);
-        const copiedPages = await mergedPdf.copyPages(
-          pdf,
-          pdf.getPageIndices(),
-        );
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
         copiedPages.forEach((page) => mergedPdf.addPage(page));
       }
 
@@ -435,7 +402,7 @@ export class PdfService {
 
       for (const page of pages) {
         const { width, height } = page.getSize();
-        const degrees = await import('pdf-lib').then(m => m.degrees);
+        const degrees = await import('pdf-lib').then((m) => m.degrees);
         page.drawText(data.watermarkText, {
           x: data.x !== undefined ? data.x : width / 2 - 100,
           y: data.y !== undefined ? data.y : height / 2,
@@ -461,12 +428,7 @@ export class PdfService {
    * Note: This is a basic implementation. For production use,
    * implement proper certificate handling and signature validation.
    */
-  async signPdf(
-    pdfBuffer: string,
-    signatureName?: string,
-    signatureReason?: string,
-    signatureLocation?: string,
-  ): Promise<Buffer> {
+  async signPdf(pdfBuffer: string, signatureName?: string): Promise<Buffer> {
     try {
       const buffer = Buffer.from(pdfBuffer, 'base64');
       const pdfDoc = await PDFDocument.load(buffer);

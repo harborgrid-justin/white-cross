@@ -153,7 +153,7 @@ import type {
   BatchOperationResult,
   IntegrationHealthStatusResponse,
   SyncStatus,
-} from '../../types/integrations';
+} from '../../types/domain/integrations';
 
 // Re-export types for backward compatibility
 export type {

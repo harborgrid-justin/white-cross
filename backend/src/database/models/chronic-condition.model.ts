@@ -1,21 +1,19 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Index,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-
 
 // Re-export enums for convenience
 export { AccommodationType } from '../../chronic-condition/enums';
@@ -33,8 +31,8 @@ export enum ConditionStatus {
   ACTIVE = 'ACTIVE',
   MANAGED = 'MANAGED',
   RESOLVED = 'RESOLVED',
-  MONITORING = 'MONITORING'
-  }
+  MONITORING = 'MONITORING',
+}
 
 export interface ChronicConditionAttributes {
   id: string;
@@ -67,10 +65,10 @@ export interface ChronicConditionAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'chronic_conditions',
@@ -79,31 +77,34 @@ export interface ChronicConditionAttributes {
   paranoid: true,
   indexes: [
     {
-      fields: ['studentId', 'isActive']
-  },
+      fields: ['studentId', 'isActive'],
+    },
     {
-      fields: ['status', 'isActive']
-  },
+      fields: ['status', 'isActive'],
+    },
     {
-      fields: ['nextReviewDate']
-  },
+      fields: ['nextReviewDate'],
+    },
     {
-      fields: ['requiresIEP']
-  },
+      fields: ['requiresIEP'],
+    },
     {
-      fields: ['requires504']
-  },
+      fields: ['requires504'],
+    },
     {
       fields: ['createdAt'],
-      name: 'idx_chronic_condition_created_at'
+      name: 'idx_chronic_condition_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_chronic_condition_updated_at'
-    }
-  ]
-  })
-export class ChronicCondition extends Model<ChronicConditionAttributes> implements ChronicConditionAttributes {
+      name: 'idx_chronic_condition_updated_at',
+    },
+  ],
+})
+export class ChronicCondition
+  extends Model<ChronicConditionAttributes>
+  implements ChronicConditionAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -115,10 +116,10 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
     allowNull: false,
     references: {
       model: 'students',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   @Index
   studentId: string;
@@ -126,106 +127,152 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @AllowNull
   @ForeignKey(() => require('./health-record.model').HealthRecord)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   healthRecordId?: string;
 
   @Column({
     type: DataType.STRING(200),
-    allowNull: false
+    allowNull: false,
   })
   condition: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(20)
+    type: DataType.STRING(20),
+    validate: {
+      is: {
+        args: /^[A-Z]\d{2}(\.\d{1,4})?$/,
+        msg: 'ICD-10 code must be in format A00 or A00.0 or A00.00 (letter followed by 2 digits, optional decimal and 1-4 digits)',
+      },
+    },
   })
   icdCode?: string;
 
   @Column({
     type: DataType.DATEONLY,
-    allowNull: false
+    allowNull: false,
   })
   diagnosedDate: Date;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(200)
+    type: DataType.STRING(200),
   })
   diagnosedBy?: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ConditionStatus)]
+      isIn: [Object.values(ConditionStatus)],
     },
     allowNull: false,
-    defaultValue: ConditionStatus.ACTIVE
+    defaultValue: ConditionStatus.ACTIVE,
   })
   @Index
   status: ConditionStatus;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(50)
+    type: DataType.STRING(50),
   })
   severity?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   notes?: string;
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   carePlan?: string;
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Medications must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All medication entries must be strings');
+        }
+      },
+    },
   })
   medications: string[];
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Restrictions must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All restriction entries must be strings');
+        }
+      },
+    },
   })
   restrictions: string[];
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Triggers must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All trigger entries must be strings');
+        }
+      },
+    },
   })
   triggers: string[];
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.JSONB,
     allowNull: false,
-    defaultValue: []
+    defaultValue: [],
+    validate: {
+      isArrayOfStrings(value: any) {
+        if (!Array.isArray(value)) {
+          throw new Error('Accommodations must be an array');
+        }
+        if (!value.every((item) => typeof item === 'string')) {
+          throw new Error('All accommodation entries must be strings');
+        }
+      },
+    },
   })
   accommodations: string[];
 
   @AllowNull
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   emergencyProtocol?: string;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY
+    type: DataType.DATEONLY,
   })
   lastReviewDate?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATEONLY
+    type: DataType.DATEONLY,
   })
   @Index
   nextReviewDate?: Date;
@@ -233,7 +280,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   @Index
   requiresIEP: boolean;
@@ -241,7 +288,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: false
+    defaultValue: false,
   })
   @Index
   requires504: boolean;
@@ -249,7 +296,7 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   @Index
   isActive: boolean;
@@ -261,22 +308,35 @@ export class ChronicCondition extends Model<ChronicConditionAttributes> implemen
   declare updatedAt?: Date;
 
   // Relationships
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
-  @BelongsTo(() => require('./health-record.model').HealthRecord, { foreignKey: 'healthRecordId', as: 'healthRecord' })
+  @BelongsTo(() => require('./health-record.model').HealthRecord, {
+    foreignKey: 'healthRecordId',
+    as: 'healthRecord',
+  })
   declare healthRecord?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: ChronicCondition) {
+  static async auditPHIAccess(instance: ChronicCondition, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ChronicCondition ${instance.id} modified at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
+      );
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'ChronicCondition',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 }

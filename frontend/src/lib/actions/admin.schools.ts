@@ -9,7 +9,7 @@
 import { revalidateTag } from 'next/cache';
 import { serverGet } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
-import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
+import { CACHE_TAGS } from '@/lib/cache/constants';
 
 export interface School {
   id: string;
@@ -37,11 +37,8 @@ export interface SchoolSearchParams {
 
 /**
  * Fetch schools data with server-side caching
- * Uses 'use cache' directive for Next.js v16 server-side caching
  */
 async function fetchSchoolsData(searchParams: SchoolSearchParams = {}) {
-  'use cache';
-  
   const params = new URLSearchParams();
   if (searchParams.search) params.append('search', searchParams.search);
   if (searchParams.status && searchParams.status !== 'all') {
@@ -58,13 +55,7 @@ async function fetchSchoolsData(searchParams: SchoolSearchParams = {}) {
     total: number;
     page: number;
     totalPages: number;
-  }>(`${API_ENDPOINTS.ADMIN.SCHOOLS}?${params.toString()}`, {
-    cache: 'default',
-    next: {
-      revalidate: CACHE_TTL.STATIC,
-      tags: [CACHE_TAGS.ADMIN_SCHOOLS]
-    }
-  });
+  }>(`${API_ENDPOINTS.ADMIN.SCHOOLS}?${params.toString()}`);
 
   return response;
 }
@@ -100,16 +91,8 @@ export async function getAdminSchools(searchParams: SchoolSearchParams = {}) {
  * Get single school by ID
  */
 async function fetchSchoolById(id: string) {
-  'use cache';
-  
   const response = await serverGet<School>(
-    `${API_ENDPOINTS.ADMIN.SCHOOLS}/${id}`,
-    {
-      next: {
-        revalidate: CACHE_TTL.STATIC,
-        tags: [CACHE_TAGS.ADMIN_SCHOOLS, `admin-school-${id}`]
-      }
-    }
+    `${API_ENDPOINTS.ADMIN.SCHOOLS}/${id}`
   );
 
   return response;
@@ -140,16 +123,8 @@ export async function getAdminSchoolById(id: string) {
  * Get districts for school filtering
  */
 async function fetchDistrictsForFilter() {
-  'use cache';
-  
   const response = await serverGet<{ id: string; name: string }[]>(
-    `${API_ENDPOINTS.ADMIN.DISTRICTS}?limit=100&status=active`,
-    {
-      next: {
-        revalidate: CACHE_TTL.STATIC,
-        tags: [CACHE_TAGS.ADMIN_DISTRICTS]
-      }
-    }
+    `${API_ENDPOINTS.ADMIN.DISTRICTS}?limit=100&status=active`
   );
 
   return response;

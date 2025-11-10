@@ -1,22 +1,19 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  Index,
-  ForeignKey,
-  BelongsTo,
-  HasMany,
   BeforeCreate,
   BeforeUpdate,
-  Scopes
-  } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
-import { Op } from 'sequelize';
-import { v4 as uuidv4 } from 'uuid';
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  HasMany,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
+} from 'sequelize-typescript';
+import { Op, Optional } from 'sequelize';
 import type { User } from './user.model';
 import type { School } from './school.model';
 import type { District } from './district.model';
@@ -40,8 +37,8 @@ export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
-  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY'
-  }
+  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY',
+}
 
 export interface StudentAttributes {
   id: string;
@@ -87,31 +84,33 @@ export interface StudentCreationAttributes
   active: {
     where: {
       isActive: true,
-      deletedAt: null
-    }
+      deletedAt: null,
+    },
   },
   byGrade: (grade: string) => ({
-    where: { grade }
+    where: { grade },
   }),
   bySchool: (schoolId: string) => ({
-    where: { schoolId }
+    where: { schoolId },
   }),
   byDistrict: (districtId: string) => ({
-    where: { districtId }
+    where: { districtId },
   }),
   withHealthRecords: {
-    include: [{
-      association: 'healthRecords'
-    }]
+    include: [
+      {
+        association: 'healthRecords',
+      },
+    ],
   },
   recentlyEnrolled: {
     where: {
       enrollmentDate: {
-        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-      }
+        [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
     },
-    order: [['enrollmentDate', 'DESC']]
-  }
+    order: [['enrollmentDate', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'students',
@@ -121,58 +120,61 @@ export interface StudentCreationAttributes
   indexes: [
     {
       fields: ['studentNumber'],
-      unique: true
+      unique: true,
     },
     {
-      fields: ['nurseId']
+      fields: ['nurseId'],
     },
     {
-      fields: ['schoolId']
+      fields: ['schoolId'],
     },
     {
-      fields: ['districtId']
+      fields: ['districtId'],
     },
     {
-      fields: ['isActive']
+      fields: ['isActive'],
     },
     {
-      fields: ['grade']
+      fields: ['grade'],
     },
     {
-      fields: ['lastName', 'firstName']
+      fields: ['lastName', 'firstName'],
     },
     {
       fields: ['medicalRecordNum'],
       unique: true,
       where: {
         medicalRecordNum: {
-          [Op.ne]: null
-        }
-      }
+          [Op.ne]: null,
+        },
+      },
     },
     {
       fields: ['schoolId', 'grade', 'isActive'],
-      name: 'idx_students_school_grade_active'
+      name: 'idx_students_school_grade_active',
     },
     {
       fields: ['districtId', 'isActive'],
-      name: 'idx_students_district_active'
+      name: 'idx_students_district_active',
     },
     {
       fields: ['enrollmentDate'],
-      name: 'idx_students_enrollment_date'
+      name: 'idx_students_enrollment_date',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_students_created_at'
+      name: 'idx_students_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_students_updated_at'
-    }
-  ]
-  })
-export class Student extends Model<StudentAttributes, StudentCreationAttributes> implements StudentAttributes {
+      name: 'idx_students_updated_at',
+    },
+  ],
+})
+export class Student
+  extends Model<StudentAttributes, StudentCreationAttributes>
+  implements StudentAttributes
+{
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -185,7 +187,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
   @Column({
     type: DataType.STRING(50),
     allowNull: false,
-    unique: true
+    unique: true,
   })
   studentNumber: string;
 
@@ -195,7 +197,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
    */
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   firstName: string;
 
@@ -205,7 +207,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
    */
   @Column({
     type: DataType.STRING(100),
-    allowNull: false
+    allowNull: false,
   })
   lastName: string;
 
@@ -221,12 +223,13 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
       isBefore: new Date().toISOString(),
       isValidAge(value: string) {
         const dob = new Date(value);
-        const age = (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        const age =
+          (Date.now() - dob.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
         if (age < 3 || age > 22) {
           throw new Error('Student age must be between 3 and 22 years');
         }
-      }
-    }
+      },
+    },
   })
   dateOfBirth: Date;
 
@@ -235,7 +238,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
    */
   @Column({
     type: DataType.STRING(10),
-    allowNull: false
+    allowNull: false,
   })
   grade: string;
 
@@ -246,8 +249,8 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     type: DataType.STRING(20),
     allowNull: false,
     validate: {
-      isIn: [Object.values(Gender)]
-    }
+      isIn: [Object.values(Gender)],
+    },
   })
   gender: Gender;
 
@@ -257,7 +260,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
    */
   @AllowNull
   @Column({
-    type: DataType.STRING(500)
+    type: DataType.STRING(500),
   })
   photo?: string;
 
@@ -268,7 +271,17 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
   @AllowNull
   @Column({
     type: DataType.STRING(50),
-    unique: true
+    unique: true,
+    validate: {
+      is: {
+        args: /^[A-Z0-9]{2,4}-?[A-Z0-9]{4,8}$/i,
+        msg: 'Medical Record Number must be 6-12 alphanumeric characters, optionally separated by a hyphen (e.g., ABC-12345, 12345678)',
+      },
+      len: {
+        args: [6, 50],
+        msg: 'Medical Record Number must be between 6 and 50 characters',
+      },
+    },
   })
   medicalRecordNum?: string;
 
@@ -278,7 +291,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
-    defaultValue: true
+    defaultValue: true,
   })
   isActive: boolean;
 
@@ -288,7 +301,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   enrollmentDate: Date;
 
@@ -301,10 +314,10 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     type: DataType.UUID,
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'SET NULL'
+    onDelete: 'SET NULL',
   })
   nurseId?: string;
 
@@ -317,10 +330,10 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     type: DataType.UUID,
     references: {
       model: 'schools',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   schoolId?: string;
 
@@ -333,10 +346,10 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     type: DataType.UUID,
     references: {
       model: 'districts',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   districtId?: string;
 
@@ -345,7 +358,7 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
    */
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
@@ -354,22 +367,22 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
    */
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   updatedBy?: string;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare deletedAt?: Date;
 
@@ -402,10 +415,18 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     // Log PHI access for HIPAA compliance
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      const phiFields = ['firstName', 'lastName', 'dateOfBirth', 'medicalRecordNum', 'photo'];
+      const phiFields = [
+        'firstName',
+        'lastName',
+        'dateOfBirth',
+        'medicalRecordNum',
+        'photo',
+      ];
 
       // Import the helper function dynamically to avoid circular dependencies
-      const { logModelPHIFieldChanges } = await import('../services/model-audit-helper.service.js');
+      const { logModelPHIFieldChanges } = await import(
+        '../services/model-audit-helper.service.js'
+      );
 
       // Get the transaction if available
       const transaction = (instance as any).sequelize?.transaction || undefined;
@@ -422,50 +443,95 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
 
   // Relationships
   // Using lazy evaluation with require() to prevent circular dependencies
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'nurseId', as: 'nurse' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'nurseId',
+    as: 'nurse',
+  })
   declare nurse?: User;
 
-  @BelongsTo(() => require('./school.model').School, { foreignKey: 'schoolId', as: 'school' })
+  @BelongsTo(() => require('./school.model').School, {
+    foreignKey: 'schoolId',
+    as: 'school',
+  })
   declare school?: School;
 
-  @BelongsTo(() => require('./district.model').District, { foreignKey: 'districtId', as: 'district' })
+  @BelongsTo(() => require('./district.model').District, {
+    foreignKey: 'districtId',
+    as: 'district',
+  })
   declare district?: District;
 
   // One-to-many relationships
-  @HasMany(() => require('./health-record.model').HealthRecord, { foreignKey: 'studentId', as: 'healthRecords' })
+  @HasMany(() => require('./health-record.model').HealthRecord, {
+    foreignKey: 'studentId',
+    as: 'healthRecords',
+  })
   declare healthRecords?: HealthRecord[];
 
-  @HasMany(() => require('./academic-transcript.model').AcademicTranscript, { foreignKey: 'studentId', as: 'academicTranscripts' })
+  @HasMany(() => require('./academic-transcript.model').AcademicTranscript, {
+    foreignKey: 'studentId',
+    as: 'academicTranscripts',
+  })
   declare academicTranscripts?: AcademicTranscript[];
 
-  @HasMany(() => require('./mental-health-record.model').MentalHealthRecord, { foreignKey: 'studentId', as: 'mentalHealthRecords' })
+  @HasMany(() => require('./mental-health-record.model').MentalHealthRecord, {
+    foreignKey: 'studentId',
+    as: 'mentalHealthRecords',
+  })
   declare mentalHealthRecords?: MentalHealthRecord[];
 
-  @HasMany(() => require('./appointment.model').Appointment, { foreignKey: 'studentId', as: 'appointments' })
+  @HasMany(() => require('./appointment.model').Appointment, {
+    foreignKey: 'studentId',
+    as: 'appointments',
+  })
   declare appointments?: Appointment[];
 
-  @HasMany(() => require('./prescription.model').Prescription, { foreignKey: 'studentId', as: 'prescriptions' })
+  @HasMany(() => require('./prescription.model').Prescription, {
+    foreignKey: 'studentId',
+    as: 'prescriptions',
+  })
   declare prescriptions?: Prescription[];
 
-  @HasMany(() => require('./clinic-visit.model').ClinicVisit, { foreignKey: 'studentId', as: 'clinicVisits' })
+  @HasMany(() => require('./clinic-visit.model').ClinicVisit, {
+    foreignKey: 'studentId',
+    as: 'clinicVisits',
+  })
   declare clinicVisits?: ClinicVisit[];
 
-  @HasMany(() => require('./allergy.model').Allergy, { foreignKey: 'studentId', as: 'allergies' })
+  @HasMany(() => require('./allergy.model').Allergy, {
+    foreignKey: 'studentId',
+    as: 'allergies',
+  })
   declare allergies?: Allergy[];
 
-  @HasMany(() => require('./chronic-condition.model').ChronicCondition, { foreignKey: 'studentId', as: 'chronicConditions' })
+  @HasMany(() => require('./chronic-condition.model').ChronicCondition, {
+    foreignKey: 'studentId',
+    as: 'chronicConditions',
+  })
   declare chronicConditions?: ChronicCondition[];
 
-  @HasMany(() => require('./vaccination.model').Vaccination, { foreignKey: 'studentId', as: 'vaccinations' })
+  @HasMany(() => require('./vaccination.model').Vaccination, {
+    foreignKey: 'studentId',
+    as: 'vaccinations',
+  })
   declare vaccinations?: Vaccination[];
 
-  @HasMany(() => require('./vital-signs.model').VitalSigns, { foreignKey: 'studentId', as: 'vitalSigns' })
+  @HasMany(() => require('./vital-signs.model').VitalSigns, {
+    foreignKey: 'studentId',
+    as: 'vitalSigns',
+  })
   declare vitalSigns?: VitalSigns[];
 
-  @HasMany(() => require('./clinical-note.model').ClinicalNote, { foreignKey: 'studentId', as: 'clinicalNotes' })
+  @HasMany(() => require('./clinical-note.model').ClinicalNote, {
+    foreignKey: 'studentId',
+    as: 'clinicalNotes',
+  })
   declare clinicalNotes?: ClinicalNote[];
 
-  @HasMany(() => require('./incident-report.model').IncidentReport, { foreignKey: 'studentId', as: 'incidentReports' })
+  @HasMany(() => require('./incident-report.model').IncidentReport, {
+    foreignKey: 'studentId',
+    as: 'incidentReports',
+  })
   declare incidentReports?: IncidentReport[];
 
   /**
@@ -486,7 +552,10 @@ export class Student extends Model<StudentAttributes, StudentCreationAttributes>
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
 
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
 

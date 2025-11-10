@@ -2,14 +2,12 @@
  * Dashboard Config Repository Implementation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { BaseRepository, RepositoryError } from '../base/base.repository';
-import { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
+import { BaseRepository } from '../base/base.repository';
+import type { IAuditLogger } from '../../interfaces/audit/audit-logger.interface';
 import { sanitizeSensitiveData } from '../../interfaces/audit/audit-logger.interface';
-import { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
-import { ExecutionContext } from '../../types';
+import type { ICacheManager } from '../../interfaces/cache/cache-manager.interface';
 
 export interface DashboardConfigAttributes {
   id: string;
@@ -26,29 +24,42 @@ export interface UpdateDashboardConfigDTO {
 }
 
 @Injectable()
-export class DashboardConfigRepository extends BaseRepository<any, DashboardConfigAttributes, CreateDashboardConfigDTO> {
+export class DashboardConfigRepository extends BaseRepository<
+  any,
+  DashboardConfigAttributes,
+  CreateDashboardConfigDTO
+> {
   constructor(
-    @InjectModel(('' as any)) model: any,
-    @Inject('IAuditLogger') auditLogger,
-    @Inject('ICacheManager') cacheManager
+    @InjectModel('' as any) model: any,
+    @Inject('IAuditLogger') auditLogger: IAuditLogger,
+    @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
     super(model, auditLogger, cacheManager, 'DashboardConfig');
   }
 
-  protected async validateCreate(data: CreateDashboardConfigDTO): Promise<void> {}
-  protected async validateUpdate(id: string, data: UpdateDashboardConfigDTO): Promise<void> {}
+  protected async validateCreate(
+    data: CreateDashboardConfigDTO,
+  ): Promise<void> {}
+  protected async validateUpdate(
+    id: string,
+    data: UpdateDashboardConfigDTO,
+  ): Promise<void> {}
 
-  protected async invalidateCaches(entity: any): Promise<void> {
+  protected async invalidateCaches(entity: DashboardConfig): Promise<void> {
     try {
       const entityData = entity.get();
-      await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, entityData.id));
-      await this.cacheManager.deletePattern(`white-cross:${this.entityName.toLowerCase()}:*`);
+      await this.cacheManager.delete(
+        this.cacheKeyBuilder.entity(this.entityName, entityData.id),
+      );
+      await this.cacheManager.deletePattern(
+        `white-cross:${this.entityName.toLowerCase()}:*`,
+      );
     } catch (error) {
       this.logger.warn(`Error invalidating ${this.entityName} caches:`, error);
     }
   }
 
-  protected sanitizeForAudit(data: any): any {
+  protected sanitizeForAudit(data: Partial<DashboardConfigAttributes>): Record<string, unknown> {
     return sanitizeSensitiveData({ ...data });
   }
 }

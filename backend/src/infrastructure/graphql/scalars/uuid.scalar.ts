@@ -17,7 +17,7 @@
  * }
  * ```
  */
-import { Scalar, CustomScalar } from '@nestjs/graphql';
+import { CustomScalar, Scalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
 
 @Scalar('UUID')
@@ -66,7 +66,7 @@ export class UUIDScalar implements CustomScalar<string, string> {
    * @throws Error if UUID is invalid
    */
   private validateUUID(value: string): string {
-    if (!value || typeof value !== 'string') {
+    if (!value) {
       throw new Error('UUID must be a non-empty string');
     }
 
@@ -76,7 +76,7 @@ export class UUIDScalar implements CustomScalar<string, string> {
     // Validate format
     if (!this.uuidV4Regex.test(normalizedUUID)) {
       throw new Error(
-        `Invalid UUID v4 format: ${value}. Expected format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`
+        `Invalid UUID v4 format: ${value}. Expected format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`,
       );
     }
 

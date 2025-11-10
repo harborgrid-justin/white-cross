@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 /**
  * Record Medication Refusal DTO
@@ -101,7 +101,8 @@ export class RecordHeldMedicationDto {
 
   @ApiProperty({
     description: 'Detailed clinical rationale for holding medication',
-    example: 'BP 145/95, holding medication per protocol. Prescriber contacted.',
+    example:
+      'BP 145/95, holding medication per protocol. Prescriber contacted.',
   })
   @IsString()
   clinicalRationale: string;

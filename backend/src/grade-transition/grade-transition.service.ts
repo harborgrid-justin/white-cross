@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Student } from '../database/models/student.model';
-import { TransitionResultDto, BulkTransitionResultDto } from './dto';
+import { BulkTransitionResultDto, TransitionResultDto } from './dto';
 
 /**
  * Automated Grade Transition Workflow Service
@@ -19,7 +19,7 @@ export class GradeTransitionService {
    */
   private readonly GRADE_PROGRESSION: Record<string, string> = {
     'Pre-K': 'K',
-    'K': '1',
+    K: '1',
     '1': '2',
     '2': '3',
     '3': '4',

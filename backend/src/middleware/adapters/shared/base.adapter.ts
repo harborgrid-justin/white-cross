@@ -9,17 +9,14 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-  IMiddleware,
-  IRequest,
-  IResponse,
-  INextFunction,
-  MiddlewareContext,
-  HealthcareUser,
-  UserRole,
-  Permission,
   HealthcareContext,
+  HealthcareUser,
   IFrameworkAdapter,
-  MiddlewareFactory
+  IMiddleware,
+  MiddlewareContext,
+  MiddlewareFactory,
+  Permission,
+  UserRole,
 } from '../../utils/types/middleware.types';
 
 /**
@@ -35,7 +32,10 @@ export abstract class BaseFrameworkAdapter implements IFrameworkAdapter {
   }
 
   abstract adapt(middleware: IMiddleware): any;
-  abstract createHealthcareMiddleware(factory: MiddlewareFactory, config: any): any;
+  abstract createHealthcareMiddleware(
+    factory: MiddlewareFactory,
+    config: any,
+  ): any;
   abstract chain(...middlewares: IMiddleware[]): any[];
 
   /**
@@ -47,7 +47,7 @@ export abstract class BaseFrameworkAdapter implements IFrameworkAdapter {
       correlationId: correlationId || this.generateCorrelationId(),
       framework: this.frameworkName as any,
       environment: process.env.NODE_ENV || 'development',
-      metadata: {}
+      metadata: {},
     };
   }
 
@@ -97,11 +97,16 @@ export class HealthcareMiddlewareUtils {
   /**
    * Checks if user has any of the required permissions
    */
-  hasAnyPermission(user: HealthcareUser, requiredPermissions: Permission[]): boolean {
+  hasAnyPermission(
+    user: HealthcareUser,
+    requiredPermissions: Permission[],
+  ): boolean {
     if (!user.permissions) {
       return false;
     }
-    return requiredPermissions.some(permission => user.permissions!.includes(permission));
+    return requiredPermissions.some((permission) =>
+      user.permissions!.includes(permission),
+    );
   }
 
   /**
@@ -112,7 +117,7 @@ export class HealthcareMiddlewareUtils {
       [UserRole.STUDENT]: 1,
       [UserRole.SCHOOL_NURSE]: 2,
       [UserRole.ADMINISTRATOR]: 3,
-      [UserRole.SYSTEM_ADMIN]: 4
+      [UserRole.SYSTEM_ADMIN]: 4,
     };
     return levels[role] || 0;
   }
@@ -127,13 +132,15 @@ export class HealthcareMiddlewareUtils {
   /**
    * Sanitizes healthcare context for logging
    */
-  sanitizeHealthcareContext(context: HealthcareContext): Partial<HealthcareContext> {
+  sanitizeHealthcareContext(
+    context: HealthcareContext,
+  ): Partial<HealthcareContext> {
     return {
       facilityId: context.facilityId,
       accessType: context.accessType,
       auditRequired: context.auditRequired,
       phiAccess: context.phiAccess,
-      complianceFlags: context.complianceFlags
+      complianceFlags: context.complianceFlags,
       // Exclude patientId and providerId for privacy
     };
   }
@@ -148,16 +155,26 @@ export class HealthcareMiddlewareUtils {
 
     // Common PHI indicators
     const phiFields = [
-      'ssn', 'socialSecurityNumber', 'medicalRecordNumber', 'mrn',
-      'dateOfBirth', 'dob', 'diagnosis', 'medication', 'treatment',
-      'symptoms', 'allergies', 'immunizations', 'visitNotes'
+      'ssn',
+      'socialSecurityNumber',
+      'medicalRecordNumber',
+      'mrn',
+      'dateOfBirth',
+      'dob',
+      'diagnosis',
+      'medication',
+      'treatment',
+      'symptoms',
+      'allergies',
+      'immunizations',
+      'visitNotes',
     ];
 
     const dataString = JSON.stringify(data).toLowerCase();
 
     // Check for PHI field names
-    const hasPHIFields = phiFields.some(field =>
-      dataString.includes(field.toLowerCase())
+    const hasPHIFields = phiFields.some((field) =>
+      dataString.includes(field.toLowerCase()),
     );
 
     // Check for patterns that might indicate PHI
@@ -165,9 +182,10 @@ export class HealthcareMiddlewareUtils {
     const mrnPattern = /mrn[:\s]*[a-z0-9]+/i;
     const dobPattern = /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/;
 
-    const hasPatterns = ssnPattern.test(dataString) ||
-                      mrnPattern.test(dataString) ||
-                      dobPattern.test(dataString);
+    const hasPatterns =
+      ssnPattern.test(dataString) ||
+      mrnPattern.test(dataString) ||
+      dobPattern.test(dataString);
 
     return hasPHIFields || hasPatterns;
   }
@@ -178,7 +196,7 @@ export class HealthcareMiddlewareUtils {
   createEmergencyContext(
     providerId: string,
     reason: string,
-    patientId?: string
+    patientId?: string,
   ): Partial<HealthcareContext> {
     return {
       providerId,
@@ -186,7 +204,7 @@ export class HealthcareMiddlewareUtils {
       accessType: 'emergency',
       auditRequired: true,
       phiAccess: true,
-      complianceFlags: ['emergency_access', 'audit_required', reason]
+      complianceFlags: ['emergency_access', 'audit_required', reason],
     };
   }
 
@@ -197,7 +215,7 @@ export class HealthcareMiddlewareUtils {
     providerId: string,
     justification: string,
     patientId: string,
-    facilityId: string
+    facilityId: string,
   ): HealthcareContext {
     return {
       patientId,
@@ -210,8 +228,8 @@ export class HealthcareMiddlewareUtils {
         'break_glass_access',
         'audit_required',
         'high_priority_audit',
-        `justification:${justification}`
-      ]
+        `justification:${justification}`,
+      ],
     };
   }
 
@@ -235,7 +253,7 @@ export class HealthcareMiddlewareUtils {
     // Base permissions for each role
     const studentPermissions = [
       Permission.VIEW_OWN_HEALTH_RECORDS,
-      Permission.UPDATE_OWN_EMERGENCY_CONTACTS
+      Permission.UPDATE_OWN_EMERGENCY_CONTACTS,
     ];
 
     const nursePermissions = [
@@ -244,7 +262,7 @@ export class HealthcareMiddlewareUtils {
       Permission.UPDATE_HEALTH_RECORDS,
       Permission.ADMINISTER_MEDICATION,
       Permission.VIEW_IMMUNIZATION_RECORDS,
-      Permission.CREATE_INCIDENT_REPORTS
+      Permission.CREATE_INCIDENT_REPORTS,
     ];
 
     const adminPermissions = [
@@ -252,7 +270,7 @@ export class HealthcareMiddlewareUtils {
       Permission.VIEW_REPORTS,
       Permission.EXPORT_DATA,
       Permission.MANAGE_FACILITY_SETTINGS,
-      ...nursePermissions // Inherits nurse permissions
+      ...nursePermissions, // Inherits nurse permissions
     ];
 
     const systemAdminPermissions = [
@@ -260,14 +278,14 @@ export class HealthcareMiddlewareUtils {
       Permission.AUDIT_LOGS,
       Permission.EMERGENCY_ACCESS,
       Permission.BREAK_GLASS_ACCESS,
-      ...adminPermissions // Inherits admin permissions
+      ...adminPermissions, // Inherits admin permissions
     ];
 
     const rolePermissions: Record<UserRole, Permission[]> = {
       [UserRole.STUDENT]: studentPermissions,
       [UserRole.SCHOOL_NURSE]: nursePermissions,
       [UserRole.ADMINISTRATOR]: adminPermissions,
-      [UserRole.SYSTEM_ADMIN]: systemAdminPermissions
+      [UserRole.SYSTEM_ADMIN]: systemAdminPermissions,
     };
 
     return rolePermissions[role] || [];
@@ -286,13 +304,13 @@ export class ResponseUtils {
   createErrorResponse(
     error: Error,
     statusCode: number = 500,
-    includeStack: boolean = false
+    includeStack: boolean = false,
   ): any {
     const response: any = {
       error: true,
       message: error.message,
       statusCode,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     if (includeStack && process.env.NODE_ENV === 'development') {
@@ -308,14 +326,14 @@ export class ResponseUtils {
   createSuccessResponse(
     data: any,
     message: string = 'Success',
-    statusCode: number = 200
+    statusCode: number = 200,
   ): any {
     return {
       success: true,
       message,
       data,
       statusCode,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -328,24 +346,29 @@ export class ResponseUtils {
     }
 
     const sensitiveFields = [
-      'ssn', 'socialSecurityNumber', 'password', 'token',
-      'creditCard', 'bankAccount', 'medicalRecordNumber'
+      'ssn',
+      'socialSecurityNumber',
+      'password',
+      'token',
+      'creditCard',
+      'bankAccount',
+      'medicalRecordNumber',
     ];
 
     if (Array.isArray(data)) {
-      return data.map(item => this.sanitizeForHIPAA(item));
+      return data.map((item) => this.sanitizeForHIPAA(item));
     }
 
     const sanitized = { ...data };
 
-    sensitiveFields.forEach(field => {
+    sensitiveFields.forEach((field) => {
       if (sanitized[field]) {
         delete sanitized[field];
       }
     });
 
     // Recursively sanitize nested objects
-    Object.keys(sanitized).forEach(key => {
+    Object.keys(sanitized).forEach((key) => {
       if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
         sanitized[key] = this.sanitizeForHIPAA(sanitized[key]);
       }
@@ -379,13 +402,13 @@ export class RequestValidationUtils {
     missing: string[];
   } {
     const requiredHeaders = ['x-facility-id'];
-    const missing = requiredHeaders.filter(header =>
-      !headers[header] && !headers[header.toLowerCase()]
+    const missing = requiredHeaders.filter(
+      (header) => !headers[header] && !headers[header.toLowerCase()],
     );
 
     return {
       valid: missing.length === 0,
-      missing
+      missing,
     };
   }
 
@@ -394,7 +417,7 @@ export class RequestValidationUtils {
    */
   validateRequestSize(
     body: any,
-    maxSize: number = 10 * 1024 * 1024 // 10MB default
+    maxSize: number = 10 * 1024 * 1024, // 10MB default
   ): boolean {
     if (!body) return true;
 
@@ -408,7 +431,7 @@ export class RequestValidationUtils {
   validateFileUpload(
     file: any,
     allowedTypes: string[] = ['pdf', 'jpg', 'png', 'doc', 'docx'],
-    maxSize: number = 5 * 1024 * 1024 // 5MB default
+    maxSize: number = 5 * 1024 * 1024, // 5MB default
   ): { valid: boolean; error?: string } {
     if (!file) {
       return { valid: false, error: 'No file provided' };
@@ -420,7 +443,10 @@ export class RequestValidationUtils {
 
     const fileExtension = file.name?.split('.').pop()?.toLowerCase();
     if (!fileExtension || !allowedTypes.includes(fileExtension)) {
-      return { valid: false, error: `File type not allowed. Allowed: ${allowedTypes.join(', ')}` };
+      return {
+        valid: false,
+        error: `File type not allowed. Allowed: ${allowedTypes.join(', ')}`,
+      };
     }
 
     return { valid: true };

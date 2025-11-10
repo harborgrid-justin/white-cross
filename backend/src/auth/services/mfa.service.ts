@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
 import * as speakeasy from 'speakeasy';
@@ -46,7 +46,7 @@ export class MfaService {
     // Generate backup codes
     const backupCodes = this.generateBackupCodes(10);
     const hashedBackupCodes = await Promise.all(
-      backupCodes.map(code => this.hashBackupCode(code))
+      backupCodes.map((code) => this.hashBackupCode(code)),
     );
 
     // Store the secret and backup codes (not enabled yet)
@@ -57,7 +57,8 @@ export class MfaService {
     this.logger.log(`MFA setup initiated for user: ${user.email}`);
 
     // Format manual entry key with spaces for readability
-    const manualEntryKey = secret.base32.match(/.{1,4}/g)?.join(' ') || secret.base32;
+    const manualEntryKey =
+      secret.base32.match(/.{1,4}/g)?.join(' ') || secret.base32;
 
     return {
       secret: secret.base32,
@@ -70,7 +71,11 @@ export class MfaService {
   /**
    * Verify TOTP code and enable MFA
    */
-  async enableMfa(userId: string, code: string, secret: string): Promise<{ success: boolean; message: string }> {
+  async enableMfa(
+    userId: string,
+    code: string,
+    secret: string,
+  ): Promise<{ success: boolean; message: string }> {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -114,7 +119,11 @@ export class MfaService {
   /**
    * Verify TOTP code or backup code
    */
-  async verifyMfa(userId: string, code: string, isBackupCode: boolean = false): Promise<boolean> {
+  async verifyMfa(
+    userId: string,
+    code: string,
+    isBackupCode: boolean = false,
+  ): Promise<boolean> {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -138,7 +147,9 @@ export class MfaService {
     });
 
     if (!verified) {
-      this.logger.warn(`Failed MFA verification attempt for user: ${user.email}`);
+      this.logger.warn(
+        `Failed MFA verification attempt for user: ${user.email}`,
+      );
       throw new UnauthorizedException('Invalid verification code');
     }
 
@@ -149,7 +160,11 @@ export class MfaService {
   /**
    * Disable MFA for a user
    */
-  async disableMfa(userId: string, password: string, code?: string): Promise<{ success: boolean; message: string }> {
+  async disableMfa(
+    userId: string,
+    password: string,
+    code?: string,
+  ): Promise<{ success: boolean; message: string }> {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -202,7 +217,10 @@ export class MfaService {
         const codes = JSON.parse(user.mfaBackupCodes);
         backupCodesRemaining = Array.isArray(codes) ? codes.length : 0;
       } catch (error) {
-        this.logger.error(`Failed to parse backup codes for user ${user.email}:`, error);
+        this.logger.error(
+          `Failed to parse backup codes for user ${user.email}:`,
+          error,
+        );
       }
     }
 
@@ -217,7 +235,11 @@ export class MfaService {
   /**
    * Regenerate backup codes
    */
-  async regenerateBackupCodes(userId: string, password: string, code: string): Promise<{ backupCodes: string[] }> {
+  async regenerateBackupCodes(
+    userId: string,
+    password: string,
+    code: string,
+  ): Promise<{ backupCodes: string[] }> {
     const user = await this.userModel.findByPk(userId);
 
     if (!user) {
@@ -240,7 +262,7 @@ export class MfaService {
     // Generate new backup codes
     const backupCodes = this.generateBackupCodes(10);
     const hashedBackupCodes = await Promise.all(
-      backupCodes.map(code => this.hashBackupCode(code))
+      backupCodes.map((code) => this.hashBackupCode(code)),
     );
 
     // Store new backup codes
@@ -271,10 +293,12 @@ export class MfaService {
     const hashedCode = await this.hashBackupCode(code);
 
     // Find and remove the matching code
-    const codeIndex = backupCodes.findIndex(bc => bc === hashedCode);
+    const codeIndex = backupCodes.findIndex((bc) => bc === hashedCode);
 
     if (codeIndex === -1) {
-      this.logger.warn(`Failed backup code verification for user: ${user.email}`);
+      this.logger.warn(
+        `Failed backup code verification for user: ${user.email}`,
+      );
       throw new UnauthorizedException('Invalid backup code');
     }
 
@@ -283,7 +307,9 @@ export class MfaService {
     user.mfaBackupCodes = JSON.stringify(backupCodes);
     await user.save();
 
-    this.logger.log(`Backup code used successfully for user: ${user.email}. Remaining: ${backupCodes.length}`);
+    this.logger.log(
+      `Backup code used successfully for user: ${user.email}. Remaining: ${backupCodes.length}`,
+    );
 
     return true;
   }

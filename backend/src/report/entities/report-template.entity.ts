@@ -4,6 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  ReportTemplate
-} from '../../database/models/report-template.model';
+export { ReportTemplate } from '../../database/models/report-template.model';

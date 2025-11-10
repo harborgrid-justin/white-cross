@@ -6,8 +6,8 @@
  * Provides request correlation, performance monitoring, and audit trails.
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 
 /**
  * Trace span interface
@@ -56,7 +56,7 @@ export enum SpanStatus {
   UNIMPLEMENTED = 'UNIMPLEMENTED',
   INTERNAL = 'INTERNAL',
   UNAVAILABLE = 'UNAVAILABLE',
-  DATA_LOSS = 'DATA_LOSS'
+  DATA_LOSS = 'DATA_LOSS',
 }
 
 /**
@@ -108,15 +108,15 @@ export const DEFAULT_TRACING_CONFIG: ITracingConfig = {
   batchExport: {
     maxQueueSize: 2048,
     batchTimeout: 5000, // 5 seconds
-    maxExportBatchSize: 512
+    maxExportBatchSize: 512,
   },
   defaultTags: {
     service: 'white-cross-healthcare',
     environment: process.env.NODE_ENV || 'development',
-    version: '1.0.0'
+    version: '1.0.0',
   },
   excludeFields: ['password', 'ssn', 'creditCard', 'medicalRecord', 'token'],
-  hipaaCompliant: true
+  hipaaCompliant: true,
 };
 
 /**
@@ -144,7 +144,7 @@ class SpanStorage {
 
   constructor(
     config: ITracingConfig,
-    private onExport: (spans: TraceSpan[]) => Promise<void>
+    private onExport: (spans: TraceSpan[]) => Promise<void>,
   ) {
     this.config = config;
     this.startExportTimer();
@@ -177,7 +177,7 @@ class SpanStorage {
 
     const batchSize = Math.min(
       this.spans.length,
-      this.config.batchExport.maxExportBatchSize
+      this.config.batchExport.maxExportBatchSize,
     );
 
     const spansToExport = this.spans.splice(0, batchSize);
@@ -198,9 +198,9 @@ class SpanStorage {
     sanitized.tags = this.sanitizeObject(span.tags);
 
     // Sanitize logs
-    sanitized.logs = span.logs.map(log => ({
+    sanitized.logs = span.logs.map((log) => ({
       ...log,
-      fields: log.fields ? this.sanitizeObject(log.fields) : undefined
+      fields: log.fields ? this.sanitizeObject(log.fields) : undefined,
     }));
 
     return sanitized;
@@ -210,9 +210,11 @@ class SpanStorage {
     const sanitized: Record<string, any> = {};
 
     for (const [key, value] of Object.entries(obj)) {
-      if (this.config.excludeFields.some(field =>
-        key.toLowerCase().includes(field.toLowerCase())
-      )) {
+      if (
+        this.config.excludeFields.some((field) =>
+          key.toLowerCase().includes(field.toLowerCase()),
+        )
+      ) {
         sanitized[key] = '[REDACTED]';
       } else if (typeof value === 'object' && value !== null) {
         sanitized[key] = this.sanitizeObject(value);
@@ -264,7 +266,10 @@ class TraceIdGenerator {
  * Healthcare-specific trace utilities
  */
 class HealthcareTraceUtils {
-  public static extractHealthcareContext(req: any, user?: any): Record<string, any> {
+  public static extractHealthcareContext(
+    req: any,
+    user?: any,
+  ): Record<string, any> {
     const context: Record<string, any> = {};
 
     if (user) {
@@ -326,10 +331,10 @@ class HealthcareTraceUtils {
       '/api/medications',
       '/api/immunizations',
       '/api/allergies',
-      '/api/diagnoses'
+      '/api/diagnoses',
     ];
 
-    return phiPaths.some(phiPath => path.startsWith(phiPath));
+    return phiPaths.some((phiPath) => path.startsWith(phiPath));
   }
 
   private static getAccessType(path: string): string {
@@ -350,7 +355,7 @@ class HealthcareTraceUtils {
 export class TracingMiddleware implements NestMiddleware {
   private readonly logger = new Logger(TracingMiddleware.name);
   private config: ITracingConfig;
-  private spanStorage: SpanStorage;
+  private spanStorage?: SpanStorage;
   private activeSpans: Map<string, TracingContext> = new Map();
 
   constructor() {
@@ -359,7 +364,7 @@ export class TracingMiddleware implements NestMiddleware {
     if (this.config.enabled) {
       this.spanStorage = new SpanStorage(
         this.config,
-        this.onSpanExport.bind(this)
+        this.onSpanExport.bind(this),
       );
     }
   }
@@ -410,7 +415,7 @@ export class TracingMiddleware implements NestMiddleware {
       'http.path': req.path,
       'user.agent': req.headers['user-agent'] || 'unknown',
       'client.ip': this.getClientIP(req),
-      ...healthcareContext
+      ...healthcareContext,
     };
 
     // Add user context if available
@@ -428,7 +433,7 @@ export class TracingMiddleware implements NestMiddleware {
       operation,
       startTime: Date.now(),
       tags,
-      logs: []
+      logs: [],
     };
   }
 
@@ -437,9 +442,10 @@ export class TracingMiddleware implements NestMiddleware {
    */
   private extractOrGenerateTraceId(req: any): string {
     // Check for existing trace ID in headers
-    const traceHeader = req.headers['x-trace-id'] ||
-                       req.headers['traceparent'] ||
-                       req.headers['x-request-id'];
+    const traceHeader =
+      req.headers['x-trace-id'] ||
+      req.headers['traceparent'] ||
+      req.headers['x-request-id'];
 
     if (traceHeader) {
       const traceId = Array.isArray(traceHeader) ? traceHeader[0] : traceHeader;
@@ -462,7 +468,9 @@ export class TracingMiddleware implements NestMiddleware {
     const parentSpanHeader = req.headers['x-parent-span-id'];
 
     if (parentSpanHeader) {
-      return Array.isArray(parentSpanHeader) ? parentSpanHeader[0] : parentSpanHeader;
+      return Array.isArray(parentSpanHeader)
+        ? parentSpanHeader[0]
+        : parentSpanHeader;
     }
 
     // Parse from W3C trace context
@@ -527,7 +535,7 @@ export class TracingMiddleware implements NestMiddleware {
     this.addLog(context, 'INFO', 'Span started', {
       operation: context.operation,
       traceId: context.traceId,
-      spanId: context.spanId
+      spanId: context.spanId,
     });
   }
 
@@ -547,7 +555,7 @@ export class TracingMiddleware implements NestMiddleware {
   private instrumentResponse(res: Response, context: TracingContext): void {
     const originalEnd = res.end;
 
-    res.end = ((...args: any[]) => {
+    res.end = ((chunk?: any, encoding?: BufferEncoding, cb?: () => void) => {
       const endTime = Date.now();
       context.tags['http.status_code'] = res.statusCode;
 
@@ -557,7 +565,7 @@ export class TracingMiddleware implements NestMiddleware {
       // Complete the span
       this.completeSpan(context, endTime, status);
 
-      return originalEnd.apply(res, args);
+      return originalEnd.call(res, chunk, encoding || 'utf8', cb);
     }) as any;
   }
 
@@ -587,7 +595,11 @@ export class TracingMiddleware implements NestMiddleware {
   /**
    * Complete a span
    */
-  private completeSpan(context: TracingContext, endTime: number, status: SpanStatus): void {
+  private completeSpan(
+    context: TracingContext,
+    endTime: number,
+    status: SpanStatus,
+  ): void {
     const duration = endTime - context.startTime;
 
     // Add final tags
@@ -610,15 +622,15 @@ export class TracingMiddleware implements NestMiddleware {
         traceId: context.traceId,
         spanId: context.spanId,
         traceFlags: 1,
-        baggage: {}
-      }
+        baggage: {},
+      },
     };
 
     // Log span completion
     this.addLog(context, 'INFO', 'Span completed', {
       duration,
       status,
-      endTime
+      endTime,
     });
 
     // Store span for export
@@ -637,13 +649,13 @@ export class TracingMiddleware implements NestMiddleware {
     context: TracingContext,
     level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR',
     message: string,
-    fields?: Record<string, any>
+    fields?: Record<string, any>,
   ): void {
     context.logs.push({
       timestamp: Date.now(),
       level,
       message,
-      fields
+      fields,
     });
   }
 
@@ -659,14 +671,16 @@ export class TracingMiddleware implements NestMiddleware {
       const groupedSpans = this.groupSpansByTrace(spans);
 
       for (const [traceId, traceSpans] of Object.entries(groupedSpans)) {
-        this.logger.debug(`[TRACE][${traceId}] ${traceSpans.length} spans`, traceSpans);
+        this.logger.debug(
+          `[TRACE][${traceId}] ${traceSpans.length} spans`,
+          traceSpans,
+        );
       }
 
       // If exporter endpoint is configured, send spans there
       if (this.config.exporterEndpoint) {
         await this.exportToEndpoint(spans);
       }
-
     } catch (error) {
       this.logger.error('Error in span export', error);
       throw error;
@@ -677,14 +691,17 @@ export class TracingMiddleware implements NestMiddleware {
    * Group spans by trace ID
    */
   private groupSpansByTrace(spans: TraceSpan[]): Record<string, TraceSpan[]> {
-    return spans.reduce((groups, span) => {
-      const traceId = span.traceId;
-      if (!groups[traceId]) {
-        groups[traceId] = [];
-      }
-      groups[traceId].push(span);
-      return groups;
-    }, {} as Record<string, TraceSpan[]>);
+    return spans.reduce(
+      (groups, span) => {
+        const traceId = span.traceId;
+        if (!groups[traceId]) {
+          groups[traceId] = [];
+        }
+        groups[traceId].push(span);
+        return groups;
+      },
+      {} as Record<string, TraceSpan[]>,
+    );
   }
 
   /**
@@ -696,11 +713,14 @@ export class TracingMiddleware implements NestMiddleware {
     const exportData = {
       spans,
       service: this.config.serviceName,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     // In a real implementation, you'd use fetch or http client
-    this.logger.debug(`Would export to ${this.config.exporterEndpoint}`, exportData);
+    this.logger.debug(
+      `Would export to ${this.config.exporterEndpoint}`,
+      exportData,
+    );
   }
 
   /**
@@ -711,7 +731,7 @@ export class TracingMiddleware implements NestMiddleware {
       activeSpans: this.activeSpans.size,
       config: this.config,
       uptime: process.uptime(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -729,7 +749,9 @@ export class TracingMiddleware implements NestMiddleware {
 /**
  * Factory function to create tracing middleware with healthcare defaults
  */
-export function createTracingMiddleware(config: Partial<ITracingConfig> = {}): TracingMiddleware {
+export function createTracingMiddleware(
+  config: Partial<ITracingConfig> = {},
+): TracingMiddleware {
   const middleware = new TracingMiddleware();
   (middleware as any).config = { ...DEFAULT_TRACING_CONFIG, ...config };
   return middleware;

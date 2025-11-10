@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { ADMIN_ONLY_KEY } from '../decorators/admin-only.decorator';
@@ -15,10 +15,10 @@ export class AdminDiscoveryGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRole = this.reflector.getAllAndOverride<string>(ADMIN_ONLY_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRole = this.reflector.getAllAndOverride<string>(
+      ADMIN_ONLY_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!requiredRole) {
       return true; // No admin requirement, allow access
@@ -28,18 +28,12 @@ export class AdminDiscoveryGuard implements CanActivate {
     const user = request.user as User;
 
     if (!user) {
-      throw new UnauthorizedDiscoveryAccessException(
-        request.url,
-        requiredRole
-      );
+      throw new UnauthorizedDiscoveryAccessException(request.url, requiredRole);
     }
 
     // Check if user has the required role
     if (!this.hasRequiredRole(user, requiredRole)) {
-      throw new UnauthorizedDiscoveryAccessException(
-        request.url,
-        requiredRole
-      );
+      throw new UnauthorizedDiscoveryAccessException(request.url, requiredRole);
     }
 
     return true;
@@ -48,10 +42,10 @@ export class AdminDiscoveryGuard implements CanActivate {
   private hasRequiredRole(user: User, requiredRole: string): boolean {
     // Define role hierarchy
     const roleHierarchy: Record<string, number> = {
-      'user': 1,
-      'moderator': 2,
-      'admin': 3,
-      'super_admin': 4,
+      user: 1,
+      moderator: 2,
+      admin: 3,
+      super_admin: 4,
     };
 
     const userRoleLevel = roleHierarchy[user.role] || 0;
@@ -70,8 +64,8 @@ export class AdminDiscoveryGuard implements CanActivate {
         'system:admin',
       ];
 
-      return discoveryPermissions.some(permission => 
-        user.permissions!.includes(permission)
+      return discoveryPermissions.some((permission) =>
+        user.permissions!.includes(permission),
       );
     }
 

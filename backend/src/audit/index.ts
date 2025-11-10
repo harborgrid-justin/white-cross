@@ -16,11 +16,7 @@ export { AuditController } from './audit.controller';
 export * from './dto';
 
 // Entities (excluding conflicting enums)
-export {
-  AuditLog,
-  ComplianceType,
-  AuditSeverity
-} from './entities';
+export { AuditLog, ComplianceType, AuditSeverity } from './entities';
 
 // Enums
 export { AuditAction } from './entities';

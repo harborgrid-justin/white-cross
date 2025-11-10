@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsUUID, IsNumber, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsUUID, Min } from 'class-validator';
 import { BackupType } from '../enums/administration.enums';
 
 /**

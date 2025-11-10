@@ -1,34 +1,33 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
   Index,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { AppointmentType } from './appointment.model';
 
 export enum WaitlistPriority {
   LOW = 'LOW',
   NORMAL = 'NORMAL',
   HIGH = 'HIGH',
-  URGENT = 'URGENT'
-  }
+  URGENT = 'URGENT',
+}
 
 export enum WaitlistStatus {
   WAITING = 'WAITING',
   NOTIFIED = 'NOTIFIED',
   SCHEDULED = 'SCHEDULED',
   EXPIRED = 'EXPIRED',
-  CANCELLED = 'CANCELLED'
-  }
+  CANCELLED = 'CANCELLED',
+}
 
 export interface AppointmentWaitlistAttributes {
   id?: string;
@@ -50,26 +49,26 @@ export interface AppointmentWaitlistAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'appointment_waitlist',
   timestamps: true,
-  underscored: false
-  ,
+  underscored: false,
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_appointment_waitlist_created_at'
+      name: 'idx_appointment_waitlist_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_appointment_waitlist_updated_at'
-    }
-  ]})
+      name: 'idx_appointment_waitlist_updated_at',
+    },
+  ],
+})
 export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
@@ -79,7 +78,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @Index
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
@@ -87,7 +86,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @ForeignKey(() => require('./user.model').User)
   @Column({
     type: DataType.UUID,
-    allowNull: true
+    allowNull: true,
   })
   nurseId?: string;
 
@@ -97,15 +96,15 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(AppointmentType)]
+      isIn: [Object.values(AppointmentType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   type: AppointmentType;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   preferredDate?: Date;
 
@@ -113,7 +112,7 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 30,
-    comment: 'Duration in minutes'
+    comment: 'Duration in minutes',
   })
   duration: number;
 
@@ -121,22 +120,22 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(WaitlistPriority)]
+      isIn: [Object.values(WaitlistPriority)],
     },
     allowNull: false,
-    defaultValue: WaitlistPriority.NORMAL
+    defaultValue: WaitlistPriority.NORMAL,
   })
   priority: WaitlistPriority;
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: false
+    allowNull: false,
   })
   reason: string;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   notes?: string;
 
@@ -144,41 +143,40 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(WaitlistStatus)]
+      isIn: [Object.values(WaitlistStatus)],
     },
     allowNull: false,
-    defaultValue: WaitlistStatus.WAITING
+    defaultValue: WaitlistStatus.WAITING,
   })
   status: WaitlistStatus;
 
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   notifiedAt?: Date;
 
   @Index
   @Column({
     type: DataType.DATE,
-    allowNull: true
+    allowNull: true,
   })
   expiresAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare createdAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare updatedAt?: Date;
 
   // Computed property for student relation (will be populated via raw queries)
   student?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -186,7 +184,9 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   static async auditPHIAccess(instance: AppointmentWaitlist) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] AppointmentWaitlist ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] AppointmentWaitlist ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

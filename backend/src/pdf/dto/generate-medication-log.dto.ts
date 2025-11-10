@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsArray,
-  ValidateNested,
-  IsDateString,
-} from 'class-validator';
+import { IsArray, IsDateString, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -13,12 +6,12 @@ export class MedicationAdministrationDto {
   @ApiProperty({ description: 'Administration date and time' })
   @IsDateString()
   @IsNotEmpty()
-  administeredAt: string;
+  administeredAt!: string;
 
   @ApiProperty({ description: 'Name of person who administered' })
   @IsString()
   @IsNotEmpty()
-  administeredBy: string;
+  administeredBy!: string;
 
   @ApiPropertyOptional({ description: 'Name of person who verified' })
   @IsString()
@@ -35,32 +28,32 @@ export class GenerateMedicationLogDto {
   @ApiProperty({ description: 'Medication ID' })
   @IsString()
   @IsNotEmpty()
-  id: string;
+  id!: string;
 
   @ApiProperty({ description: 'Medication name' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @ApiProperty({ description: 'Student name' })
   @IsString()
   @IsNotEmpty()
-  studentName: string;
+  studentName!: string;
 
   @ApiProperty({ description: 'Dosage' })
   @IsString()
   @IsNotEmpty()
-  dosage: string;
+  dosage!: string;
 
   @ApiProperty({ description: 'Route of administration' })
   @IsString()
   @IsNotEmpty()
-  route: string;
+  route!: string;
 
   @ApiProperty({ description: 'Frequency of administration' })
   @IsString()
   @IsNotEmpty()
-  frequency: string;
+  frequency!: string;
 
   @ApiPropertyOptional({
     description: 'Administration records',

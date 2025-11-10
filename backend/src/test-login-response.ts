@@ -5,20 +5,22 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { AuthService } from './auth/auth.service';
+import { AuthService } from '@/auth';
 
 async function testLoginResponse() {
   console.log('🔍 Testing login response structure...\n');
-  
+
   try {
-    const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
+    const app = await NestFactory.create(AppModule, {
+      logger: ['error', 'warn'],
+    });
     const authService = app.get(AuthService);
-    
+
     const result = await authService.login({
       email: 'admin@whitecross.health',
-      password: 'admin123'
+      password: 'admin123',
     });
-    
+
     console.log('✅ Login Response Structure:');
     console.log(JSON.stringify(result, null, 2));
     console.log('');
@@ -30,12 +32,12 @@ async function testLoginResponse() {
     console.log('Has tokenType?', !!result.tokenType);
     console.log('Has expiresIn?', !!result.expiresIn);
     console.log('');
-    
+
     if (result.user) {
       console.log('User object keys:', Object.keys(result.user));
       console.log('User structure:', JSON.stringify(result.user, null, 2));
     }
-    
+
     await app.close();
   } catch (error) {
     console.error('❌ Error:', error.message);

@@ -1,16 +1,16 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
   Index,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate
+  Table,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Conversation } from './conversation.model';
@@ -23,7 +23,7 @@ export enum ParticipantRole {
   OWNER = 'OWNER',
   ADMIN = 'ADMIN',
   MEMBER = 'MEMBER',
-  VIEWER = 'VIEWER'
+  VIEWER = 'VIEWER',
 }
 
 /**
@@ -49,7 +49,15 @@ export interface ConversationParticipantAttributes {
 export interface ConversationParticipantCreationAttributes
   extends Optional<
     ConversationParticipantAttributes,
-    'id' | 'lastReadAt' | 'isMuted' | 'isPinned' | 'customName' | 'notificationPreference' | 'metadata' | 'createdAt' | 'updatedAt'
+    | 'id'
+    | 'lastReadAt'
+    | 'isMuted'
+    | 'isPinned'
+    | 'customName'
+    | 'notificationPreference'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
   > {}
 
 /**
@@ -73,10 +81,10 @@ export interface ConversationParticipantCreationAttributes
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'conversation_participants',
@@ -86,17 +94,17 @@ export interface ConversationParticipantCreationAttributes
     {
       unique: true,
       fields: ['conversationId', 'userId'],
-      name: 'conversation_participants_conversation_user_unique'
+      name: 'conversation_participants_conversation_user_unique',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_conversation_participant_created_at'
+      name: 'idx_conversation_participant_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_conversation_participant_updated_at'
-    }
-  ]
+      name: 'idx_conversation_participant_updated_at',
+    },
+  ],
 })
 export class ConversationParticipant extends Model<
   ConversationParticipantAttributes,
@@ -111,7 +119,7 @@ export class ConversationParticipant extends Model<
   @ForeignKey(() => Conversation)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   declare conversationId: string;
 
@@ -123,21 +131,21 @@ export class ConversationParticipant extends Model<
     comment: 'User ID who is a participant',
     references: {
       model: 'users',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE'
+    onDelete: 'CASCADE',
   })
   declare userId: string;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ParticipantRole)]
+      isIn: [Object.values(ParticipantRole)],
     },
     allowNull: false,
     defaultValue: ParticipantRole.MEMBER,
-    comment: 'Role determining permissions in conversation'
+    comment: 'Role determining permissions in conversation',
   })
   declare role: ParticipantRole;
 
@@ -145,7 +153,7 @@ export class ConversationParticipant extends Model<
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Timestamp when user joined the conversation'
+    comment: 'Timestamp when user joined the conversation',
   })
   declare joinedAt: Date;
 
@@ -153,7 +161,7 @@ export class ConversationParticipant extends Model<
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Timestamp of last message read by this participant'
+    comment: 'Timestamp of last message read by this participant',
   })
   declare lastReadAt?: Date;
 
@@ -161,7 +169,7 @@ export class ConversationParticipant extends Model<
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether notifications are muted for this conversation'
+    comment: 'Whether notifications are muted for this conversation',
   })
   declare isMuted: boolean;
 
@@ -169,14 +177,14 @@ export class ConversationParticipant extends Model<
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment: 'Whether conversation is pinned to top of list'
+    comment: 'Whether conversation is pinned to top of list',
   })
   declare isPinned: boolean;
 
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
-    comment: 'Custom display name for this participant in the conversation'
+    comment: 'Custom display name for this participant in the conversation',
   })
   declare customName?: string;
 
@@ -184,7 +192,7 @@ export class ConversationParticipant extends Model<
     type: DataType.ENUM('ALL', 'MENTIONS', 'NONE'),
     allowNull: false,
     defaultValue: 'ALL',
-    comment: 'Notification preference for this conversation'
+    comment: 'Notification preference for this conversation',
   })
   declare notificationPreference: 'ALL' | 'MENTIONS' | 'NONE';
 
@@ -192,30 +200,35 @@ export class ConversationParticipant extends Model<
     type: DataType.JSONB,
     allowNull: true,
     defaultValue: {},
-    comment: 'Extensible metadata field'
+    comment: 'Extensible metadata field',
   })
   declare metadata?: Record<string, any>;
 
-  @BelongsTo(() => Conversation, { foreignKey: 'conversationId', as: 'conversation' })
+  @BelongsTo(() => Conversation, {
+    foreignKey: 'conversationId',
+    as: 'conversation',
+  })
   declare conversation?: Conversation;
 
-  @BelongsTo(() => require('./user.model').User, { foreignKey: 'userId', as: 'user' })
+  @BelongsTo(() => require('./user.model').User, {
+    foreignKey: 'userId',
+    as: 'user',
+  })
   declare user?: any;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare createdAt: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    defaultValue: DataType.NOW
+    defaultValue: DataType.NOW,
   })
   declare updatedAt: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -223,7 +236,9 @@ export class ConversationParticipant extends Model<
   static async auditPHIAccess(instance: ConversationParticipant) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ConversationParticipant ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ConversationParticipant ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

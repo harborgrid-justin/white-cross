@@ -1,7 +1,7 @@
-import { IsString, IsEnum, IsOptional, IsDate, IsArray, IsObject } from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ReportFormat } from '../enums';
+import { ReportFormat } from '../enums/report-format.enum';
 
 /**
  * Generate Custom Report DTO
@@ -56,13 +56,18 @@ export class AnalyticsGenerateCustomReportDto {
     [key: string]: any;
   };
 
-  @ApiPropertyOptional({ type: [String], description: 'Email recipients for report distribution' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Email recipients for report distribution',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   recipients?: string[];
 
-  @ApiPropertyOptional({ description: 'Schedule configuration for recurring reports' })
+  @ApiPropertyOptional({
+    description: 'Schedule configuration for recurring reports',
+  })
   @IsOptional()
   @IsObject()
   schedule?: {
@@ -86,7 +91,10 @@ export class GetReportParamDto {
  * Get Report Query DTO
  */
 export class GetReportQueryDto {
-  @ApiPropertyOptional({ description: 'Include full report data', default: true })
+  @ApiPropertyOptional({
+    description: 'Include full report data',
+    default: true,
+  })
   @IsOptional()
   @Type(() => Boolean)
   includeData?: boolean;

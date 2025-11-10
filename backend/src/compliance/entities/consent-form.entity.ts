@@ -4,6 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export {
-  ConsentForm
-} from '../../database/models/consent-form.model';
+export { ConsentForm } from '../../database/models/consent-form.model';

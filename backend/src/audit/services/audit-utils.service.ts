@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PHIAccessType, PHIDataCategory, AuditAction } from '../enums';
+import { AuditAction } from '../enums/audit-action.enum';
+import { PHIAccessType } from '../enums/phi-access-type.enum';
+import { PHIDataCategory } from '../enums/phi-data-category.enum';
+import { ValidationResult, AuditRequest, SanitizableData } from '../types/audit.types';
+import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
+import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
 
 /**
  * AuditUtilsService - Utility functions and helpers for audit operations
@@ -15,7 +20,7 @@ export class AuditUtilsService {
    * @param entry - Audit log entry to validate
    * @returns Validation result with errors if any
    */
-  validateAuditEntry(entry: any): { isValid: boolean; errors: string[] } {
+  validateAuditEntry(entry: Partial<IAuditLogEntry>): ValidationResult {
     const errors: string[] = [];
 
     if (!entry.action) {
@@ -42,7 +47,7 @@ export class AuditUtilsService {
    * @param entry - PHI access log entry to validate
    * @returns Validation result with errors if any
    */
-  validatePHIEntry(entry: any): { isValid: boolean; errors: string[] } {
+  validatePHIEntry(entry: Partial<IPHIAccessLog>): ValidationResult {
     const errors: string[] = [];
 
     const baseValidation = this.validateAuditEntry(entry);
@@ -78,7 +83,8 @@ export class AuditUtilsService {
    */
   isValidIPAddress(ip: string): boolean {
     // IPv4 regex
-    const ipv4Regex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    const ipv4Regex =
+      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
     // IPv6 regex (simplified)
     const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
@@ -89,10 +95,10 @@ export class AuditUtilsService {
   /**
    * Extract IP address from request object
    *
-   * @param req - Request object
+   * @param req - Request object or string
    * @returns IP address string
    */
-  extractIPAddress(req: any): string | undefined {
+  extractIPAddress(req: AuditRequest | string): string | undefined {
     if (typeof req === 'string') {
       return req;
     }
@@ -110,10 +116,10 @@ export class AuditUtilsService {
   /**
    * Extract user agent from request object
    *
-   * @param req - Request object
+   * @param req - Request object or string
    * @returns User agent string
    */
-  extractUserAgent(req: any): string | undefined {
+  extractUserAgent(req: AuditRequest | string): string | undefined {
     if (typeof req === 'string') {
       return req;
     }
@@ -127,18 +133,18 @@ export class AuditUtilsService {
    * @param data - Raw audit data
    * @returns Sanitized audit data
    */
-  sanitizeAuditData(data: any): any {
-    const sanitized = { ...data };
+  sanitizeAuditData(data: SanitizableData): SanitizableData {
+    const sanitized: SanitizableData = { ...data };
 
-    if (sanitized.password) {
+    if ('password' in sanitized) {
       delete sanitized.password;
     }
 
-    if (sanitized.token) {
+    if ('token' in sanitized && typeof sanitized.token === 'string') {
       sanitized.token = '***REDACTED***';
     }
 
-    if (sanitized.apiKey) {
+    if ('apiKey' in sanitized && typeof sanitized.apiKey === 'string') {
       sanitized.apiKey = '***REDACTED***';
     }
 

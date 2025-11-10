@@ -1,28 +1,27 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
+  CreatedAt,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
   Index,
-  CreatedAt,
-  UpdatedAt,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 export enum MedicationLogStatus {
   PENDING = 'PENDING',
   ADMINISTERED = 'ADMINISTERED',
   MISSED = 'MISSED',
   CANCELLED = 'CANCELLED',
-  REFUSED = 'REFUSED'
-  }
+  REFUSED = 'REFUSED',
+}
 
 export interface MedicationLogAttributes {
   id?: string;
@@ -36,7 +35,6 @@ export interface MedicationLogAttributes {
   administeredBy: string;
   status?: MedicationLogStatus;
   notes?: string;
-  wasGiven: boolean;
   reasonNotGiven?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -45,10 +43,10 @@ export interface MedicationLogAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'medication_logs',
@@ -61,15 +59,28 @@ export interface MedicationLogAttributes {
     { fields: ['administeredBy'] },
     {
       fields: ['createdAt'],
-      name: 'idx_medication_log_created_at'
+      name: 'idx_medication_log_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_medication_log_updated_at'
-    }
-  ]
-  })
-export class MedicationLog extends Model<MedicationLogAttributes> implements MedicationLogAttributes {
+      name: 'idx_medication_log_updated_at',
+    },
+    // Composite index for medication administration history queries
+    {
+      fields: ['medicationId', 'administeredAt', 'status'],
+      name: 'idx_medication_log_med_time_status',
+    },
+    // Composite index for student medication logs with status filtering
+    {
+      fields: ['studentId', 'administeredAt', 'status'],
+      name: 'idx_medication_log_student_time_status',
+    },
+  ],
+})
+export class MedicationLog
+  extends Model<MedicationLogAttributes>
+  implements MedicationLogAttributes
+{
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
@@ -79,7 +90,7 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   @Index
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
@@ -90,47 +101,47 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
     allowNull: false,
     references: {
       model: 'medications',
-      key: 'id'
+      key: 'id',
     },
     onUpdate: 'CASCADE',
-    onDelete: 'RESTRICT'
+    onDelete: 'RESTRICT',
   })
   medicationId: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
-    allowNull: false
+    allowNull: false,
   })
   dosage: number;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   dosageUnit: string;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   route: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
-    comment: 'Scheduled time for medication administration'
+    comment: 'Scheduled time for medication administration',
   })
   scheduledAt?: Date;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   administeredAt: Date;
 
   @Column({
     type: DataType.STRING(255),
-    allowNull: false
+    allowNull: false,
   })
   administeredBy: string;
 
@@ -138,64 +149,71 @@ export class MedicationLog extends Model<MedicationLogAttributes> implements Med
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(MedicationLogStatus)]
+      isIn: [Object.values(MedicationLogStatus)],
     },
     allowNull: true,
     defaultValue: MedicationLogStatus.ADMINISTERED,
-    comment: 'Status of medication administration'
+    comment: 'Status of medication administration',
   })
   status?: MedicationLogStatus;
 
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
   })
   notes?: string;
 
-  @Default(false)
-  @Column({
-    type: DataType.BOOLEAN,
-    allowNull: false
-  })
-  wasGiven: boolean;
-
   @Column({
     type: DataType.TEXT,
-    allowNull: true
+    allowNull: true,
+    comment: 'Reason when status is MISSED, CANCELLED, or REFUSED',
   })
   reasonNotGiven?: string;
 
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   declare updatedAt: Date;
 
   // Relations
-  @BelongsTo(() => require('./student.model').Student, { foreignKey: 'studentId', as: 'student' })
+  @BelongsTo(() => require('./student.model').Student, {
+    foreignKey: 'studentId',
+    as: 'student',
+  })
   declare student?: any;
 
-  @BelongsTo(() => require('./medication.model').Medication, { foreignKey: 'medicationId', as: 'medication' })
+  @BelongsTo(() => require('./medication.model').Medication, {
+    foreignKey: 'medicationId',
+    as: 'medication',
+  })
   declare medication?: any;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
-  static async auditPHIAccess(instance: MedicationLog) {
+  static async auditPHIAccess(instance: MedicationLog, options: any) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] MedicationLog ${instance.id} modified at ${new Date().toISOString()}`);
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
+      const { logModelPHIAccess } = await import(
+        '../services/model-audit-helper.service.js'
+      );
+      const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
+      await logModelPHIAccess(
+        'MedicationLog',
+        instance.id,
+        action,
+        changedFields,
+        options?.transaction,
+      );
     }
   }
 }

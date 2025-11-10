@@ -1,4 +1,4 @@
-import { IsString, IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -13,7 +13,10 @@ export class ImportConfigurationsDto {
   @IsString()
   changedBy: string;
 
-  @ApiPropertyOptional({ description: 'Whether to overwrite existing configurations', default: false })
+  @ApiPropertyOptional({
+    description: 'Whether to overwrite existing configurations',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   overwrite?: boolean;

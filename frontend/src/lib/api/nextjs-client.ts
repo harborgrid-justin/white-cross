@@ -236,13 +236,20 @@ function getApiBaseUrl(): string {
 }
 
 /**
- * Get authentication token from cookies (server-side only)
+ * Get authentication token from production-ready httpOnly cookies
+ * Uses the existing JWT-based authentication system
  */
 async function getAuthToken(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
-    // Use centralized cookie name configuration (environment-aware)
-    return cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value || null;
+    
+    // Try multiple cookie names that might be used for the auth token
+    const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value ||
+                  cookieStore.get('auth.token')?.value ||
+                  cookieStore.get('auth_token')?.value ||
+                  cookieStore.get('accessToken')?.value;
+    
+    return token || null;
   } catch (error) {
     console.error('[Next API Client] Failed to get auth token:', error);
     return null;

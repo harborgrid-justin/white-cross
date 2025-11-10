@@ -2,9 +2,6 @@ module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   testRegex: '.*\\.spec\\.ts$',
-  transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
-  },
   collectCoverageFrom: [
     'src/**/*.{ts,js}',
     '!src/**/*.spec.ts',
@@ -24,10 +21,12 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src/', '<rootDir>/test/'],
   moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/test/(.*)$': '<rootDir>/test/$1',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^test/(.*)$': '<rootDir>/test/$1',
   },
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 60,
       functions: 60,
@@ -66,14 +65,17 @@ module.exports = {
     '.e2e-spec.ts$', // E2E tests run separately
   ],
 
-  // Global setup
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-      tsconfig: {
-        esModuleInterop: true,
-        allowSyntheticDefaultImports: true,
+  // Transform configuration for ts-jest
+  transform: {
+    '^.+\\.(t|j)s$': [
+      'ts-jest',
+      {
+        isolatedModules: true,
+        tsconfig: {
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true,
+        },
       },
-    },
+    ],
   },
 };

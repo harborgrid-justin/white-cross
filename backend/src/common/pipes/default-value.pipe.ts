@@ -4,7 +4,8 @@
  * @description Provides default values for undefined/null parameters
  */
 
-import { PipeTransform, Injectable } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
+import { DefaultValue } from '../types/utility-types';
 
 /**
  * Default Value Pipe
@@ -31,15 +32,23 @@ import { PipeTransform, Injectable } from '@nestjs/common';
  * }
  */
 @Injectable()
-export class DefaultValuePipe implements PipeTransform {
-  constructor(private readonly defaultValue: any) {}
+export class DefaultValuePipe<T extends DefaultValue = DefaultValue> implements PipeTransform {
+  /**
+   * @param defaultValue - The default value to use when input is null/undefined/empty
+   */
+  constructor(private readonly defaultValue: T) {}
 
-  transform(value: any): any {
-    // Return default if value is undefined or null
+  /**
+   * Transform the value, replacing null/undefined/empty with default
+   * @param value - Input value
+   * @returns Input value or default value
+   */
+  transform(value: T | null | undefined | ''): T {
+    // Return default if value is undefined, null, or empty string
     if (value === undefined || value === null || value === '') {
       return this.defaultValue;
     }
 
-    return value;
+    return value as T;
   }
 }

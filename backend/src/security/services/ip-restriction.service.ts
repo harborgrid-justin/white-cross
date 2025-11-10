@@ -1,14 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model } from 'sequelize-typescript';
-import { Op } from 'sequelize';
-import { IpRestrictionEntity } from '../entities';
-import { IpRestrictionType } from '../enums';
-import {
-  IPCheckResult,
-  IPRestrictionRule,
-} from '../interfaces';
-import { SecurityCreateIpRestrictionDto, UpdateIpRestrictionDto } from '../dto';
+import { IpRestrictionEntity } from '../entities/ip-restriction.entity';
+import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
+import { IPCheckResult } from '../interfaces/ip-check-result.interface';
+import { IPRestrictionRule } from '../interfaces/ip-restriction-rule.interface';
+import { SecurityCreateIpRestrictionDto } from '../dto/ip-restriction.dto';
+import { UpdateIpRestrictionDto } from '../dto/ip-restriction.dto';
 
 /**
  * IP Restriction Service
@@ -26,10 +23,7 @@ export class IpRestrictionService {
   /**
    * Check if an IP address is allowed to access the system
    */
-  async checkIPAccess(
-    ipAddress: string,
-    userId?: string,
-  ): Promise<IPCheckResult> {
+  async checkIPAccess(ipAddress: string, userId?: string): Promise<IPCheckResult> {
     try {
       // 1. Check if IP is blacklisted
       const isBlacklisted = await this.isIPBlacklisted(ipAddress);
@@ -174,9 +168,7 @@ export class IpRestrictionService {
   /**
    * Check geo-location restrictions
    */
-  private async checkGeoRestrictions(
-    ipAddress: string,
-  ): Promise<IPCheckResult> {
+  private async checkGeoRestrictions(ipAddress: string): Promise<IPCheckResult> {
     try {
       // Get geolocation for IP
       const location = await this.getIPGeolocation(ipAddress);
@@ -241,10 +233,7 @@ export class IpRestrictionService {
   /**
    * Check user-specific IP restrictions
    */
-  private async checkUserIPRestrictions(
-    userId: string,
-    ipAddress: string,
-  ): Promise<IPCheckResult> {
+  private async checkUserIPRestrictions(userId: string, ipAddress: string): Promise<IPCheckResult> {
     try {
       // In production, check if user has specific IP restrictions
       // Some users (admins) might be restricted to specific IPs
@@ -262,10 +251,7 @@ export class IpRestrictionService {
   /**
    * Check if IP matches a restriction rule
    */
-  private matchesRestriction(
-    ipAddress: string,
-    rule: IpRestrictionEntity,
-  ): boolean {
+  private matchesRestriction(ipAddress: string, rule: IpRestrictionEntity): boolean {
     if (rule.ipAddress) {
       return this.matchesIPPattern(ipAddress, rule.ipAddress);
     }
@@ -306,7 +292,9 @@ export class IpRestrictionService {
   private matchesCIDR(ipAddress: string, cidr: string): boolean {
     try {
       const [subnet, maskBits] = cidr.split('/');
-      const mask = ~((1 << (32 - parseInt(maskBits))) - 1);
+      if (!maskBits || !subnet) return false;
+
+      const mask = ~((1 << (32 - parseInt(maskBits, 10))) - 1);
 
       const ipNum = this.ipToNumber(ipAddress);
       const subnetNum = this.ipToNumber(subnet);
@@ -321,11 +309,7 @@ export class IpRestrictionService {
   /**
    * Check if IP is within a range
    */
-  private matchesIPRange(
-    ipAddress: string,
-    startIP: string,
-    endIP: string,
-  ): boolean {
+  private matchesIPRange(ipAddress: string, startIP: string, endIP: string): boolean {
     try {
       const ipNum = this.ipToNumber(ipAddress);
       const startNum = this.ipToNumber(startIP);
@@ -342,11 +326,7 @@ export class IpRestrictionService {
    * Convert IP address to number
    */
   private ipToNumber(ip: string): number {
-    return (
-      ip
-        .split('.')
-        .reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>> 0
-    );
+    return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet), 0) >>> 0;
   }
 
   /**
@@ -360,17 +340,13 @@ export class IpRestrictionService {
       '192.168.0.0/16', // Private
     ];
 
-    return privateRanges.some((range) =>
-      this.matchesIPPattern(ipAddress, range),
-    );
+    return privateRanges.some((range) => this.matchesIPPattern(ipAddress, range));
   }
 
   /**
    * Add IP to blacklist
    */
-  async addToBlacklist(
-    dto: SecurityCreateIpRestrictionDto,
-  ): Promise<IpRestrictionEntity> {
+  async addToBlacklist(dto: SecurityCreateIpRestrictionDto): Promise<IpRestrictionEntity> {
     try {
       const restriction = await this.ipRestrictionModel.create({
         ...dto,
@@ -391,9 +367,7 @@ export class IpRestrictionService {
   /**
    * Add IP to whitelist
    */
-  async addToWhitelist(
-    dto: SecurityCreateIpRestrictionDto,
-  ): Promise<IpRestrictionEntity> {
+  async addToWhitelist(dto: SecurityCreateIpRestrictionDto): Promise<IpRestrictionEntity> {
     try {
       const restriction = await this.ipRestrictionModel.create({
         ...dto,
@@ -416,10 +390,7 @@ export class IpRestrictionService {
    */
   async removeRestriction(ruleId: string): Promise<boolean> {
     try {
-      await this.ipRestrictionModel.update(
-        { isActive: false },
-        { where: { id: ruleId } }
-      );
+      await this.ipRestrictionModel.update({ isActive: false }, { where: { id: ruleId } });
       this.logger.log('IP restriction removed', { ruleId });
       return true;
     } catch (error) {
@@ -431,9 +402,7 @@ export class IpRestrictionService {
   /**
    * Get all active IP restrictions
    */
-  async getAllRestrictions(
-    type?: IpRestrictionType,
-  ): Promise<IpRestrictionEntity[]> {
+  async getAllRestrictions(type?: IpRestrictionType): Promise<IpRestrictionEntity[]> {
     try {
       const where: any = { isActive: true };
       if (type) {
@@ -450,10 +419,7 @@ export class IpRestrictionService {
   /**
    * Update IP restriction
    */
-  async updateRestriction(
-    id: string,
-    dto: UpdateIpRestrictionDto,
-  ): Promise<IpRestrictionEntity> {
+  async updateRestriction(id: string, dto: UpdateIpRestrictionDto): Promise<IpRestrictionEntity> {
     const restriction = await this.ipRestrictionModel.findByPk(id);
 
     if (!restriction) {

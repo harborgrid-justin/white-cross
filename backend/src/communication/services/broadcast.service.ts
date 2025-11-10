@@ -42,7 +42,14 @@ export class BroadcastService {
     return {
       report: {
         messageId: id,
-        summary: { total: 0, pending: 0, sent: 0, delivered: 0, failed: 0, bounced: 0 },
+        summary: {
+          total: 0,
+          pending: 0,
+          sent: 0,
+          delivered: 0,
+          failed: 0,
+          bounced: 0,
+        },
         byChannel: {},
         byRecipientType: {},
       },

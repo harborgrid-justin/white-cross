@@ -6,8 +6,8 @@
 
 import {
   registerDecorator,
-  ValidationOptions,
   ValidationArguments,
+  ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
@@ -35,18 +35,18 @@ export interface DosageValidationOptions {
 export class IsDosageConstraint implements ValidatorConstraintInterface {
   // Standard medication units
   private readonly STANDARD_UNITS = [
-    'mg',    // milligrams
-    'mcg',   // micrograms
-    'g',     // grams
-    'ml',    // milliliters
-    'L',     // liters
-    'IU',    // international units
+    'mg', // milligrams
+    'mcg', // micrograms
+    'g', // grams
+    'ml', // milliliters
+    'L', // liters
+    'IU', // international units
     'units', // units (for insulin, etc.)
-    'unit',  // singular unit
-    'mEq',   // milliequivalents
-    'gtt',   // drops
-    '%',     // percentage
-    'puff',  // inhalations
+    'unit', // singular unit
+    'mEq', // milliequivalents
+    'gtt', // drops
+    '%', // percentage
+    'puff', // inhalations
     'puffs', // plural inhalations
     'spray', // nasal sprays
     'sprays',
@@ -76,13 +76,15 @@ export class IsDosageConstraint implements ValidatorConstraintInterface {
     // Validate unit
     const allowedUnits = options.allowedUnits || this.STANDARD_UNITS;
     const unitLower = unit.toLowerCase();
-    const isValidUnit = allowedUnits.some(u => u.toLowerCase() === unitLower);
+    const isValidUnit = allowedUnits.some((u) => u.toLowerCase() === unitLower);
 
     if (!isValidUnit) return false;
 
     // Validate value range if specified
-    if (options.minValue !== undefined && amount < options.minValue) return false;
-    if (options.maxValue !== undefined && amount > options.maxValue) return false;
+    if (options.minValue !== undefined && amount < options.minValue)
+      return false;
+    if (options.maxValue !== undefined && amount > options.maxValue)
+      return false;
 
     return true;
   }
@@ -118,7 +120,7 @@ export function IsDosage(
   options?: DosageValidationOptions,
   validationOptions?: ValidationOptions,
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isDosage',
       target: object.constructor,

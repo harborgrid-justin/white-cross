@@ -27,6 +27,38 @@ enum AlertType {
   WARNING
 }
 
+type ChronicCondition {
+  """Special care instructions"""
+  careInstructions: String
+
+  """Date when the record was created"""
+  createdAt: DateTime!
+
+  """Detailed description of the condition"""
+  description: String
+
+  """Healthcare provider who diagnosed the condition"""
+  diagnosedBy: String
+
+  """Date when the condition was diagnosed"""
+  diagnosisDate: DateTime
+
+  """Name of the diagnosis"""
+  diagnosisName: String!
+
+  """Unique identifier for the chronic condition"""
+  id: ID!
+
+  """Whether this condition is currently active"""
+  isActive: Boolean!
+
+  """Current status of the condition"""
+  status: String!
+
+  """Date when the record was last updated"""
+  updatedAt: DateTime!
+}
+
 type ContactDto {
   address: String
   city: String
@@ -46,6 +78,7 @@ type ContactDto {
   relationTo: ID
   relationshipType: String
   state: String
+  student: StudentDto
   title: String
   type: ContactType!
   updatedAt: DateTime!
@@ -129,6 +162,38 @@ type DeleteResponseDto {
 """Valid email address (RFC 5322 compliant)"""
 scalar EmailAddress
 
+type EmergencyContact {
+  """Date when the contact was created"""
+  createdAt: DateTime!
+
+  """Email address of the emergency contact"""
+  email: String
+
+  """First name of the emergency contact"""
+  firstName: String!
+
+  """Unique identifier for the emergency contact"""
+  id: ID!
+
+  """Whether this contact is currently active"""
+  isActive: Boolean!
+
+  """Last name of the emergency contact"""
+  lastName: String!
+
+  """Phone number of the emergency contact"""
+  phone: String!
+
+  """Priority level (1=primary, 2=secondary, etc.)"""
+  priority: Float!
+
+  """Relationship to the student"""
+  relationshipType: String!
+
+  """Date when the contact was last updated"""
+  updatedAt: DateTime!
+}
+
 """Student gender"""
 enum Gender {
   FEMALE
@@ -139,6 +204,7 @@ enum Gender {
 
 type HealthRecordDto {
   attachments: [String!]!
+  chronicConditions: [ChronicCondition]!
   createdAt: DateTime!
   createdBy: ID
   description: String!
@@ -157,6 +223,7 @@ type HealthRecordDto {
   providerNpi: String
   recordDate: DateTime!
   recordType: String!
+  student: StudentDto
   studentId: ID!
   title: String!
   treatment: String
@@ -222,6 +289,47 @@ input HealthRecordUpdateInputDto {
   treatment: String
 }
 
+type IncidentReport {
+  """Actions taken in response to the incident"""
+  actionsTaken: String
+
+  """Date when the report was created"""
+  createdAt: DateTime!
+
+  """Detailed description of the incident"""
+  description: String!
+
+  """Date when follow-up was completed"""
+  followUpDate: DateTime
+
+  """Follow-up actions required"""
+  followUpRequired: Boolean
+
+  """Unique identifier for the incident report"""
+  id: ID!
+
+  """Date and time when the incident occurred"""
+  incidentDateTime: DateTime!
+
+  """Type of incident"""
+  incidentType: String!
+
+  """Location where the incident occurred"""
+  location: String!
+
+  """Staff member who reported the incident"""
+  reportedBy: String
+
+  """Severity level of the incident"""
+  severity: String
+
+  """Current status of the incident"""
+  status: String!
+
+  """Date when the report was last updated"""
+  updatedAt: DateTime!
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -278,23 +386,39 @@ type Query {
 }
 
 type StudentDto {
+  """Chronic conditions for the student"""
+  chronicConditions: [ChronicCondition]!
+
+  """Count of contacts"""
   contactCount: Float!
+
+  """Guardian contacts for the student"""
   contacts: [ContactDto]!
   createdAt: DateTime!
   dateOfBirth: DateTime!
+
+  """Emergency contacts for the student"""
+  emergencyContacts: [EmergencyContact]!
   enrollmentDate: DateTime!
   firstName: String!
   fullName: String!
   gender: Gender!
   grade: String!
+
+  """Health record for the student"""
   healthRecord: HealthRecordDto
   id: ID!
   isActive: Boolean!
   lastName: String!
   medicalRecordNum: String
+
+  """Medications assigned to the student"""
   medications: [MedicationDto]!
   nurseId: ID
   photo: String
+
+  """Recent incident reports for the student"""
+  recentIncidents: [IncidentReport]!
   studentNumber: String!
   updatedAt: DateTime!
 }

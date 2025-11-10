@@ -1,10 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-  scryptSync,
-} from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -51,10 +46,10 @@ export class IntegrationEncryptionService {
   /**
    * Encrypt sensitive data before storage
    */
-  encryptSensitiveData(data: {
+  encryptSensitiveData(data: { apiKey?: string; password?: string }): {
     apiKey?: string;
     password?: string;
-  }): { apiKey?: string; password?: string } {
+  } {
     return {
       apiKey: data.apiKey ? this.encryptCredential(data.apiKey) : undefined,
       password: data.password
@@ -94,7 +89,7 @@ export class IntegrationEncryptionService {
     try {
       const parts = encryptedCredential.split(':');
 
-      if (parts.length !== 4) {
+      if (parts.length !== 4 || !parts[0] || !parts[2] || !parts[3]) {
         throw new Error('Invalid encrypted credential format');
       }
 

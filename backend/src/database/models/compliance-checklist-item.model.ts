@@ -1,18 +1,17 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 export enum ComplianceCategory {
@@ -22,7 +21,7 @@ export enum ComplianceCategory {
   MEDICATION = 'MEDICATION',
   SAFETY = 'SAFETY',
   TRAINING = 'TRAINING',
-  DOCUMENTATION = 'DOCUMENTATION'
+  DOCUMENTATION = 'DOCUMENTATION',
 }
 
 export enum ChecklistItemStatus {
@@ -30,7 +29,7 @@ export enum ChecklistItemStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   NOT_APPLICABLE = 'NOT_APPLICABLE',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
 
 export interface ComplianceChecklistItemAttributes {
@@ -52,10 +51,10 @@ export interface ComplianceChecklistItemAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'compliance_checklist_items',
@@ -63,31 +62,34 @@ export interface ComplianceChecklistItemAttributes {
   underscored: false,
   indexes: [
     {
-      fields: ['category']
+      fields: ['category'],
     },
     {
-      fields: ['status']
+      fields: ['status'],
     },
     {
-      fields: ['dueDate']
+      fields: ['dueDate'],
     },
     {
-      fields: ['completedAt']
+      fields: ['completedAt'],
     },
     {
-      fields: ['reportId']
+      fields: ['reportId'],
     },
     {
       fields: ['createdAt'],
-      name: 'idx_compliance_checklist_item_created_at'
+      name: 'idx_compliance_checklist_item_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_compliance_checklist_item_updated_at'
-    }
-  ]
+      name: 'idx_compliance_checklist_item_updated_at',
+    },
+  ],
 })
-export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttributes> implements ComplianceChecklistItemAttributes {
+export class ComplianceChecklistItem
+  extends Model<ComplianceChecklistItemAttributes>
+  implements ComplianceChecklistItemAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -95,7 +97,7 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
 
   @Column({
     type: DataType.STRING(500),
-    allowNull: false
+    allowNull: false,
   })
   requirement: string;
 
@@ -106,19 +108,19 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ComplianceCategory)]
+      isIn: [Object.values(ComplianceCategory)],
     },
-    allowNull: false
+    allowNull: false,
   })
   category: ComplianceCategory;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ChecklistItemStatus)]
+      isIn: [Object.values(ChecklistItemStatus)],
     },
     allowNull: false,
-    defaultValue: ChecklistItemStatus.PENDING
+    defaultValue: ChecklistItemStatus.PENDING,
   })
   status: ChecklistItemStatus;
 
@@ -156,14 +158,15 @@ export class ComplianceChecklistItem extends Model<ComplianceChecklistItemAttrib
   @Column(DataType.DATE)
   declare updatedAt?: Date;
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ComplianceChecklistItem) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ComplianceChecklistItem ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ComplianceChecklistItem ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

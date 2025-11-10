@@ -18,6 +18,9 @@
  *
  * @class MessageEventDto
  */
+
+import type { JsonValue } from './broadcast-message.dto';
+
 export class MessageEventDto {
   /**
    * Unique identifier for the message
@@ -85,9 +88,9 @@ export class MessageEventDto {
     replyToMessageId?: string;
 
     /**
-     * Custom metadata
+     * Custom metadata fields (JSON-serializable values only)
      */
-    [key: string]: any;
+    [key: string]: JsonValue;
   };
 
   /**
@@ -189,7 +192,7 @@ export class MessageEventDto {
    *
    * @returns Sanitized message object for client consumption
    */
-  toPayload(): Record<string, any> {
+  toPayload(): Record<string, JsonValue | undefined> {
     return {
       messageId: this.messageId,
       conversationId: this.conversationId,

@@ -2,33 +2,37 @@
  * @fileoverview Database Cache Entry Model for L3 Cache
  * @module database/models
  * @description Sequelize model for storing L3 cache entries with query results
- * 
+ *
  * HIPAA CRITICAL - This model stores cached PHI data with compliance controls
- * 
+ *
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
 import {
-  Table,
+  AutoIncrement,
+  BeforeCreate,
+  BeforeUpdate,
   Column,
-  Model,
+  CreatedAt,
   DataType,
   Index,
-  CreatedAt,
-  UpdatedAt,
+  Model,
   PrimaryKey,
-  AutoIncrement,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate
+  Table,
+  UpdatedAt,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 
 export interface CacheEntryAttributes {
   id?: number;
   cacheKey: string;
   data: string; // JSON serialized data
-  complianceLevel: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'PHI' | 'SENSITIVE_PHI';
+  complianceLevel:
+    | 'PUBLIC'
+    | 'INTERNAL'
+    | 'CONFIDENTIAL'
+    | 'PHI'
+    | 'SENSITIVE_PHI';
   tags: string; // JSON array of tags
   expiresAt: Date;
   accessCount: number;
@@ -39,11 +43,12 @@ export interface CacheEntryAttributes {
   updatedAt?: Date;
 }
 
-export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+export interface CacheEntryCreationAttributes
+  extends Omit<CacheEntryAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
 /**
  * Database Cache Entry Model
- * 
+ *
  * Stores L3 cache entries with the following features:
  * - HIPAA-compliant PHI storage with encryption at rest
  * - TTL support through expiresAt timestamp
@@ -55,10 +60,10 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'cache_entries',
@@ -68,23 +73,23 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
     {
       name: 'idx_cache_key',
       fields: ['cacheKey'],
-      unique: true
+      unique: true,
     },
     {
       name: 'idx_expires_at',
-      fields: ['expiresAt']
+      fields: ['expiresAt'],
     },
     {
       name: 'idx_compliance_level',
-      fields: ['complianceLevel']
+      fields: ['complianceLevel'],
     },
     {
       name: 'idx_query_hash',
-      fields: ['queryHash']
+      fields: ['queryHash'],
     },
     {
       name: 'idx_last_accessed',
-      fields: ['lastAccessed']
+      fields: ['lastAccessed'],
     },
     {
       name: 'idx_tags',
@@ -93,50 +98,63 @@ export interface CacheEntryCreationAttributes extends Omit<CacheEntryAttributes,
     },
     {
       fields: ['createdAt'],
-      name: 'idx_cache_entry_created_at'
+      name: 'idx_cache_entry_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_cache_entry_updated_at'
-    }
-  ]
+      name: 'idx_cache_entry_updated_at',
+    },
+  ],
 })
-export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAttributes> {
+export class CacheEntry extends Model<
+  CacheEntryAttributes,
+  CacheEntryCreationAttributes
+> {
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.INTEGER)
   declare id: number;
 
-
   @Column({
     type: DataType.STRING(500),
     allowNull: false,
     unique: true,
-    comment: 'Unique cache key identifier'
+    comment: 'Unique cache key identifier',
   })
   cacheKey!: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
-    comment: 'JSON serialized cached data - encrypted at rest for PHI'
+    comment: 'JSON serialized cached data - encrypted at rest for PHI',
   })
   data!: string;
 
   @Index
   @Column({
-    type: DataType.ENUM('PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'PHI', 'SENSITIVE_PHI'),
+    type: DataType.ENUM(
+      'PUBLIC',
+      'INTERNAL',
+      'CONFIDENTIAL',
+      'PHI',
+      'SENSITIVE_PHI',
+    ),
     allowNull: false,
     defaultValue: 'INTERNAL',
-    comment: 'HIPAA compliance level for audit and security'
+    comment: 'HIPAA compliance level for audit and security',
   })
-  complianceLevel!: 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'PHI' | 'SENSITIVE_PHI';
+  complianceLevel!:
+    | 'PUBLIC'
+    | 'INTERNAL'
+    | 'CONFIDENTIAL'
+    | 'PHI'
+    | 'SENSITIVE_PHI';
 
   @Column({
     type: DataType.JSONB,
     allowNull: false,
     defaultValue: '[]',
-    comment: 'Cache invalidation tags for bulk operations'
+    comment: 'Cache invalidation tags for bulk operations',
   })
   tags!: string;
 
@@ -144,7 +162,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
   @Column({
     type: DataType.DATE,
     allowNull: false,
-    comment: 'Cache entry expiration timestamp for TTL enforcement'
+    comment: 'Cache entry expiration timestamp for TTL enforcement',
   })
   expiresAt!: Date;
 
@@ -152,7 +170,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Number of times this cache entry has been accessed'
+    comment: 'Number of times this cache entry has been accessed',
   })
   accessCount!: number;
 
@@ -161,7 +179,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.DATE,
     allowNull: false,
     defaultValue: DataType.NOW,
-    comment: 'Last access timestamp for LRU eviction'
+    comment: 'Last access timestamp for LRU eviction',
   })
   lastAccessed!: Date;
 
@@ -169,7 +187,7 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
-    comment: 'Size of cached data in bytes for memory management'
+    comment: 'Size of cached data in bytes for memory management',
   })
   dataSize!: number;
 
@@ -177,21 +195,21 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
   @Column({
     type: DataType.STRING(64),
     allowNull: true,
-    comment: 'Hash of original query for deduplication and optimization'
+    comment: 'Hash of original query for deduplication and optimization',
   })
   queryHash!: string;
 
   @CreatedAt
   @Column({
     type: DataType.DATE,
-    comment: 'Cache entry creation timestamp'
+    comment: 'Cache entry creation timestamp',
   })
   declare createdAt: Date;
 
   @UpdatedAt
   @Column({
     type: DataType.DATE,
-    comment: 'Cache entry last update timestamp'
+    comment: 'Cache entry last update timestamp',
   })
   declare updatedAt: Date;
 
@@ -238,16 +256,17 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
    */
   matchesTags(targetTags: string[]): boolean {
     const entryTags = this.getParsedTags();
-    return targetTags.some(tag => entryTags.includes(tag));
+    return targetTags.some((tag) => entryTags.includes(tag));
   }
 
   /**
    * Check if entry is PHI data requiring special handling
    */
   isPHI(): boolean {
-    return this.complianceLevel === 'PHI' || this.complianceLevel === 'SENSITIVE_PHI';
+    return (
+      this.complianceLevel === 'PHI' || this.complianceLevel === 'SENSITIVE_PHI'
+    );
   }
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -255,7 +274,9 @@ export class CacheEntry extends Model<CacheEntryAttributes, CacheEntryCreationAt
   static async auditPHIAccess(instance: CacheEntry) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] CacheEntry ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] CacheEntry ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

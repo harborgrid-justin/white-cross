@@ -1,13 +1,5 @@
-import { 
-  ExceptionFilter, 
-  Catch, 
-  ArgumentsHost, 
-  HttpException, 
-  HttpStatus, 
-  Logger 
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ValidationError } from 'class-validator';
 
 interface ErrorResponse {
   statusCode: number;
@@ -37,16 +29,28 @@ export class DiscoveryExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       // Handle validation errors specially
-      if (status === HttpStatus.BAD_REQUEST && this.isValidationError(exceptionResponse)) {
-        errorResponse = this.createValidationErrorResponse(exceptionResponse, request);
+      if (
+        status === HttpStatus.BAD_REQUEST &&
+        this.isValidationError(exceptionResponse)
+      ) {
+        errorResponse = this.createValidationErrorResponse(
+          exceptionResponse,
+          request,
+        );
       } else {
-        errorResponse = this.createHttpExceptionResponse(exceptionResponse, request);
+        errorResponse = this.createHttpExceptionResponse(
+          exceptionResponse,
+          request,
+        );
       }
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
-      errorResponse = this.createInternalServerErrorResponse(exception, request);
+      errorResponse = this.createInternalServerErrorResponse(
+        exception,
+        request,
+      );
     }
 
     // Log the error for monitoring and debugging
@@ -54,8 +58,14 @@ export class DiscoveryExceptionFilter implements ExceptionFilter {
 
     // Set rate limit headers if applicable
     if (status === HttpStatus.TOO_MANY_REQUESTS && errorResponse.retryAfter) {
-      response.setHeader('Retry-After', Math.ceil(errorResponse.retryAfter / 1000));
-      response.setHeader('X-RateLimit-Reset', Date.now() + errorResponse.retryAfter);
+      response.setHeader(
+        'Retry-After',
+        Math.ceil(errorResponse.retryAfter / 1000),
+      );
+      response.setHeader(
+        'X-RateLimit-Reset',
+        Date.now() + errorResponse.retryAfter,
+      );
     }
 
     response.status(status).json(errorResponse);
@@ -69,7 +79,10 @@ export class DiscoveryExceptionFilter implements ExceptionFilter {
     );
   }
 
-  private createValidationErrorResponse(exceptionResponse: any, request: Request): ErrorResponse {
+  private createValidationErrorResponse(
+    exceptionResponse: any,
+    request: Request,
+  ): ErrorResponse {
     return {
       statusCode: HttpStatus.BAD_REQUEST,
       error: 'Validation Failed',
@@ -79,13 +92,16 @@ export class DiscoveryExceptionFilter implements ExceptionFilter {
       path: request.url,
       correlationId: this.getCorrelationId(request),
       errorCode: 'VALIDATION_FAILED',
-      validationErrors: Array.isArray(exceptionResponse.message) 
-        ? exceptionResponse.message 
+      validationErrors: Array.isArray(exceptionResponse.message)
+        ? exceptionResponse.message
         : [exceptionResponse.message],
     };
   }
 
-  private createHttpExceptionResponse(exceptionResponse: any, request: Request): ErrorResponse {
+  private createHttpExceptionResponse(
+    exceptionResponse: any,
+    request: Request,
+  ): ErrorResponse {
     if (typeof exceptionResponse === 'object') {
       return {
         ...exceptionResponse,
@@ -106,7 +122,10 @@ export class DiscoveryExceptionFilter implements ExceptionFilter {
     };
   }
 
-  private createInternalServerErrorResponse(exception: unknown, request: Request): ErrorResponse {
+  private createInternalServerErrorResponse(
+    exception: unknown,
+    request: Request,
+  ): ErrorResponse {
     return {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       error: 'Internal Server Error',

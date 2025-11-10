@@ -9,7 +9,7 @@
 import { revalidateTag } from 'next/cache';
 import { serverGet } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
-import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
+import { CACHE_TAGS } from '@/lib/cache/constants';
 
 export interface District {
   id: string;
@@ -33,11 +33,8 @@ export interface DistrictSearchParams {
 
 /**
  * Fetch districts data with server-side caching
- * Uses 'use cache' directive for Next.js v16 server-side caching
  */
 async function fetchDistrictsData(searchParams: DistrictSearchParams = {}) {
-  'use cache';
-  
   const params = new URLSearchParams();
   if (searchParams.search) params.append('search', searchParams.search);
   if (searchParams.status && searchParams.status !== 'all') {
@@ -51,13 +48,7 @@ async function fetchDistrictsData(searchParams: DistrictSearchParams = {}) {
     total: number;
     page: number;
     totalPages: number;
-  }>(`${API_ENDPOINTS.ADMIN.DISTRICTS}?${params.toString()}`, {
-    cache: 'default',
-    next: {
-      revalidate: CACHE_TTL.STATIC,
-      tags: [CACHE_TAGS.ADMIN_DISTRICTS]
-    }
-  });
+  }>(`${API_ENDPOINTS.ADMIN.DISTRICTS}?${params.toString()}`);
 
   return response;
 }
@@ -93,16 +84,8 @@ export async function getAdminDistricts(searchParams: DistrictSearchParams = {})
  * Get single district by ID
  */
 async function fetchDistrictById(id: string) {
-  'use cache';
-  
   const response = await serverGet<District>(
-    `${API_ENDPOINTS.ADMIN.DISTRICTS}/${id}`,
-    {
-      next: {
-        revalidate: CACHE_TTL.STATIC,
-        tags: [CACHE_TAGS.ADMIN_DISTRICTS, `admin-district-${id}`]
-      }
-    }
+    `${API_ENDPOINTS.ADMIN.DISTRICTS}/${id}`
   );
 
   return response;

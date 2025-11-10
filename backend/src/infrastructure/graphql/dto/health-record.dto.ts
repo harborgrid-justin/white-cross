@@ -9,19 +9,10 @@
  * - Access must be restricted to authorized users only
  * - All operations must be audited
  */
-import { ObjectType, Field, ID, InputType } from '@nestjs/graphql';
+import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { PaginationDto } from './pagination.dto';
-import {
-  IsString,
-  IsOptional,
-  IsBoolean,
-  IsDateString,
-  IsUUID,
-  MinLength,
-  MaxLength,
-  IsArray,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 /**
  * HealthRecord GraphQL Object Type
@@ -80,7 +71,7 @@ export class HealthRecordDto {
   attachments: string[];
 
   @Field(() => GraphQLJSON, { nullable: true })
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 
   @Field()
   isConfidential: boolean;
@@ -203,7 +194,7 @@ export class HealthRecordInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 
   @Field({ defaultValue: false })
   @IsOptional()
@@ -312,7 +303,7 @@ export class HealthRecordUpdateInputDto {
 
   @Field(() => GraphQLJSON, { nullable: true })
   @IsOptional()
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 
   @Field({ nullable: true })
   @IsOptional()

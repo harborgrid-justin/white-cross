@@ -1,18 +1,16 @@
 import {
-  Table,
+  BeforeCreate,
+  BeforeUpdate,
+  BelongsTo,
   Column,
-  Model,
   DataType,
-  PrimaryKey,
   Default,
   ForeignKey,
-  BelongsTo,
-  Index,
+  Model,
+  PrimaryKey,
   Scopes,
-  BeforeCreate,
-  BeforeUpdate
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -27,8 +25,8 @@ export enum MentalHealthRecordType {
   SCREENING = 'SCREENING',
   FOLLOW_UP = 'FOLLOW_UP',
   REFERRAL = 'REFERRAL',
-  PROGRESS_NOTE = 'PROGRESS_NOTE'
-  }
+  PROGRESS_NOTE = 'PROGRESS_NOTE',
+}
 
 /**
  * Risk Level Assessment
@@ -38,8 +36,8 @@ export enum RiskLevel {
   LOW = 'LOW',
   MODERATE = 'MODERATE',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL'
-  }
+  CRITICAL = 'CRITICAL',
+}
 
 /**
  * Mental Health Record Attributes
@@ -120,10 +118,10 @@ export interface MentalHealthRecordAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'mental_health_records',
@@ -133,43 +131,46 @@ export interface MentalHealthRecordAttributes {
   indexes: [
     {
       fields: ['studentId'],
-      name: 'mental_health_records_student_id_idx'
-  },
+      name: 'mental_health_records_student_id_idx',
+    },
     {
       fields: ['recordType'],
-      name: 'mental_health_records_record_type_idx'
-  },
+      name: 'mental_health_records_record_type_idx',
+    },
     {
       fields: ['riskLevel'],
-      name: 'mental_health_records_risk_level_idx'
-  },
+      name: 'mental_health_records_risk_level_idx',
+    },
     {
       fields: ['counselorId'],
-      name: 'mental_health_records_counselor_id_idx'
-  },
+      name: 'mental_health_records_counselor_id_idx',
+    },
     {
       fields: ['recordDate'],
-      name: 'mental_health_records_record_date_idx'
-  },
+      name: 'mental_health_records_record_date_idx',
+    },
     {
       fields: ['followUpRequired', 'followUpDate'],
-      name: 'mental_health_records_follow_up_idx'
-  },
+      name: 'mental_health_records_follow_up_idx',
+    },
     {
       fields: ['studentId', 'recordDate'],
-      name: 'mental_health_records_student_date_idx'
+      name: 'mental_health_records_student_date_idx',
     },
     {
       fields: ['createdAt'],
-      name: 'idx_mental_health_record_created_at'
+      name: 'idx_mental_health_record_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_mental_health_record_updated_at'
-    }
-  ]
-  })
-export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> implements MentalHealthRecordAttributes {
+      name: 'idx_mental_health_record_updated_at',
+    },
+  ],
+})
+export class MentalHealthRecord
+  extends Model<MentalHealthRecordAttributes>
+  implements MentalHealthRecordAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -182,7 +183,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   @ForeignKey(() => require('./student.model').Student)
   @Column({
     type: DataType.UUID,
-    allowNull: false
+    allowNull: false,
   })
   studentId: string;
 
@@ -192,9 +193,9 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(MentalHealthRecordType)]
+      isIn: [Object.values(MentalHealthRecordType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   recordType: MentalHealthRecordType;
 
@@ -203,7 +204,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    */
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   recordDate: Date;
 
@@ -211,7 +212,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * School counselor ID
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   counselorId?: string;
 
@@ -219,7 +220,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * External therapist ID (if applicable)
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   therapistId?: string;
 
@@ -227,7 +228,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Psychiatrist ID (if applicable)
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   psychiatristId?: string;
 
@@ -237,7 +238,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    */
   @Column({
     type: DataType.STRING(200),
-    allowNull: false
+    allowNull: false,
   })
   title: string;
 
@@ -247,7 +248,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    */
   @Column({
     type: DataType.TEXT,
-    allowNull: false
+    allowNull: false,
   })
   sessionNotes: string;
 
@@ -269,7 +270,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * ICD-10 or DSM-5 diagnosis code
    */
   @Column({
-    type: DataType.STRING(20)
+    type: DataType.STRING(20),
   })
   diagnosisCode?: string;
 
@@ -278,7 +279,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * @PHI - Enhanced Protection Required
    */
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   treatmentPlan?: string;
 
@@ -288,10 +289,10 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(RiskLevel)]
+      isIn: [Object.values(RiskLevel)],
     },
     allowNull: false,
-    defaultValue: RiskLevel.NONE
+    defaultValue: RiskLevel.NONE,
   })
   riskLevel: RiskLevel;
 
@@ -299,7 +300,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Identified risk factors
    */
   @Column({
-    type: DataType.ARRAY(DataType.TEXT)
+    type: DataType.ARRAY(DataType.TEXT),
   })
   riskFactors?: string[];
 
@@ -307,7 +308,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Protective factors
    */
   @Column({
-    type: DataType.ARRAY(DataType.TEXT)
+    type: DataType.ARRAY(DataType.TEXT),
   })
   protectiveFactors?: string[];
 
@@ -315,7 +316,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Interventions applied
    */
   @Column({
-    type: DataType.ARRAY(DataType.TEXT)
+    type: DataType.ARRAY(DataType.TEXT),
   })
   interventions?: string[];
 
@@ -324,7 +325,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    */
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   followUpRequired: boolean;
 
@@ -332,7 +333,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Follow-up scheduled date
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   followUpDate?: Date;
 
@@ -341,7 +342,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    */
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   followUpCompleted: boolean;
 
@@ -349,7 +350,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Referral to external provider/specialist
    */
   @Column({
-    type: DataType.STRING(200)
+    type: DataType.STRING(200),
   })
   referralTo?: string;
 
@@ -357,7 +358,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Reason for referral
    */
   @Column({
-    type: DataType.TEXT
+    type: DataType.TEXT,
   })
   referralReason?: string;
 
@@ -370,7 +371,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   @Column({
     type: DataType.ENUM('STANDARD', 'ENHANCED', 'MAXIMUM'),
     allowNull: false,
-    defaultValue: 'STANDARD'
+    defaultValue: 'STANDARD',
   })
   confidentialityLevel: 'STANDARD' | 'ENHANCED' | 'MAXIMUM';
 
@@ -379,7 +380,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    */
   @Default(false)
   @Column({
-    type: DataType.BOOLEAN
+    type: DataType.BOOLEAN,
   })
   parentNotified: boolean;
 
@@ -387,7 +388,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Date parent/guardian was notified
    */
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   parentNotificationDate?: Date;
 
@@ -397,7 +398,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   @Default([])
   @Column({
     type: DataType.JSON,
-    allowNull: false
+    allowNull: false,
   })
   attachments: string[];
 
@@ -411,7 +412,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * User who created this record
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   createdBy?: string;
 
@@ -419,7 +420,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * User who last updated this record
    */
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   updatedBy?: string;
 
@@ -429,7 +430,7 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    */
   @Default([])
   @Column({
-    type: DataType.JSONB
+    type: DataType.JSONB,
   })
   accessLog?: Array<{
     userId: string;
@@ -438,12 +439,12 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
   }>;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare createdAt?: Date;
 
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   declare updatedAt?: Date;
 
@@ -462,15 +463,19 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
     this.accessLog.push({
       userId,
       accessDate: new Date(),
-      action
-  });
+      action,
+    });
   }
 
   /**
    * Check if follow-up is overdue
    */
   isFollowUpOverdue(): boolean {
-    if (!this.followUpRequired || !this.followUpDate || this.followUpCompleted) {
+    if (
+      !this.followUpRequired ||
+      !this.followUpDate ||
+      this.followUpCompleted
+    ) {
       return false;
     }
     return new Date() > this.followUpDate;
@@ -480,14 +485,20 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
    * Check if this is a high-risk record
    */
   isHighRisk(): boolean {
-    return this.riskLevel === RiskLevel.HIGH || this.riskLevel === RiskLevel.CRITICAL;
+    return (
+      this.riskLevel === RiskLevel.HIGH || this.riskLevel === RiskLevel.CRITICAL
+    );
   }
 
   /**
    * Get days until follow-up (negative if overdue)
    */
   getDaysUntilFollowUp(): number | null {
-    if (!this.followUpRequired || !this.followUpDate || this.followUpCompleted) {
+    if (
+      !this.followUpRequired ||
+      !this.followUpDate ||
+      this.followUpCompleted
+    ) {
       return null;
     }
     const diff = this.followUpDate.getTime() - new Date().getTime();
@@ -502,14 +513,15 @@ export class MentalHealthRecord extends Model<MentalHealthRecordAttributes> impl
     return this.isHighRisk() && !this.parentNotified;
   }
 
-
   // Hooks for HIPAA compliance
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: MentalHealthRecord) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] MentalHealthRecord ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] MentalHealthRecord ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }

@@ -17,8 +17,8 @@
  * @compliance HIPAA - Access Control (164.312(a)(1)), Transmission Security (164.312(e)(1))
  */
 
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
-import type { Request, Response, NextFunction } from 'express';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import type { NextFunction, Request, Response } from 'express';
 
 export enum CorsMethod {
   GET = 'GET',
@@ -40,7 +40,10 @@ export interface ICorsConfig {
   maxAge: number;
   enableHealthcareCors: boolean;
   strictMode: boolean;
-  originValidator?: (origin: string, request: Request) => Promise<boolean> | boolean;
+  originValidator?: (
+    origin: string,
+    request: Request,
+  ) => Promise<boolean> | boolean;
   enableDynamicOrigins: boolean;
   trustedDomains: string[];
   enableAuditLogging: boolean;
@@ -59,7 +62,13 @@ export interface ICorsConfig {
 export const DEFAULT_CORS_CONFIG: ICorsConfig = {
   enabled: true,
   allowedOrigins: ['http://localhost:3000', 'http://127.0.0.1:3000'],
-  allowedMethods: [CorsMethod.GET, CorsMethod.POST, CorsMethod.PUT, CorsMethod.DELETE, CorsMethod.OPTIONS],
+  allowedMethods: [
+    CorsMethod.GET,
+    CorsMethod.POST,
+    CorsMethod.PUT,
+    CorsMethod.DELETE,
+    CorsMethod.OPTIONS,
+  ],
   allowedHeaders: [
     'Content-Type',
     'Authorization',
@@ -68,7 +77,12 @@ export const DEFAULT_CORS_CONFIG: ICorsConfig = {
     'X-Correlation-ID',
     'X-Healthcare-Context',
   ],
-  exposedHeaders: ['X-Total-Count', 'X-Request-ID', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
+  exposedHeaders: [
+    'X-Total-Count',
+    'X-Request-ID',
+    'X-RateLimit-Limit',
+    'X-RateLimit-Remaining',
+  ],
   allowCredentials: true,
   maxAge: 86400, // 24 hours
   enableHealthcareCors: true,
@@ -92,7 +106,10 @@ export const DEFAULT_CORS_CONFIG: ICorsConfig = {
  * Preflight request cache for performance
  */
 class PreflightCache {
-  private cache = new Map<string, { timestamp: number; headers: Record<string, string> }>();
+  private cache = new Map<
+    string,
+    { timestamp: number; headers: Record<string, string> }
+  >();
   private maxAge: number;
 
   constructor(maxAge: number) {
@@ -151,7 +168,10 @@ class HealthcareCorsValidators {
     }
   }
 
-  static isTrustedEnvironment(origin: string, trustedDomains: string[]): boolean {
+  static isTrustedEnvironment(
+    origin: string,
+    trustedDomains: string[],
+  ): boolean {
     try {
       const url = new URL(origin);
       const domain = url.hostname;
@@ -200,8 +220,10 @@ export class CorsMiddleware implements NestMiddleware {
     }
 
     try {
-      const origin = req.headers['origin'] as string | undefined || null;
-      const isPreflight = req.method === 'OPTIONS' && req.headers['access-control-request-method'] !== undefined;
+      const origin = req.headers['origin'] || null;
+      const isPreflight =
+        req.method === 'OPTIONS' &&
+        req.headers['access-control-request-method'] !== undefined;
 
       // Validate origin
       const isAllowedOrigin = await this.validateOrigin(origin, req);
@@ -212,7 +234,7 @@ export class CorsMiddleware implements NestMiddleware {
       }
 
       // Set CORS headers
-      await this.setCorsHeaders(res, origin, req);
+      await this.setCorsHeaders(res, origin);
 
       // Handle preflight requests
       if (isPreflight) {
@@ -232,7 +254,10 @@ export class CorsMiddleware implements NestMiddleware {
     }
   }
 
-  private async validateOrigin(origin: string | null, request: Request): Promise<boolean> {
+  private async validateOrigin(
+    origin: string | null,
+    request: Request,
+  ): Promise<boolean> {
     if (!origin) return true; // Same-origin request
 
     // Custom origin validator
@@ -247,12 +272,20 @@ export class CorsMiddleware implements NestMiddleware {
 
     // Healthcare-specific validation
     if (this.config.enableHealthcareCors) {
-      if (this.config.strictMode && !HealthcareCorsValidators.isSecureOrigin(origin)) {
+      if (
+        this.config.strictMode &&
+        !HealthcareCorsValidators.isSecureOrigin(origin)
+      ) {
         return false;
       }
 
       if (this.config.trustedDomains.length > 0) {
-        if (HealthcareCorsValidators.isTrustedEnvironment(origin, this.config.trustedDomains)) {
+        if (
+          HealthcareCorsValidators.isTrustedEnvironment(
+            origin,
+            this.config.trustedDomains,
+          )
+        ) {
           return true;
         }
       }
@@ -271,7 +304,10 @@ export class CorsMiddleware implements NestMiddleware {
     return false;
   }
 
-  private async setCorsHeaders(res: Response, origin: string | null, request: Request): Promise<void> {
+  private async setCorsHeaders(
+    res: Response,
+    origin: string | null,
+  ): Promise<void> {
     if (origin) {
       res.setHeader('Access-Control-Allow-Origin', origin);
     }
@@ -281,7 +317,10 @@ export class CorsMiddleware implements NestMiddleware {
     }
 
     if (this.config.exposedHeaders.length > 0) {
-      res.setHeader('Access-Control-Expose-Headers', this.config.exposedHeaders.join(', '));
+      res.setHeader(
+        'Access-Control-Expose-Headers',
+        this.config.exposedHeaders.join(', '),
+      );
     }
 
     const varyHeaders = ['Origin'];
@@ -292,11 +331,17 @@ export class CorsMiddleware implements NestMiddleware {
 
     if (this.config.enableHealthcareCors) {
       res.setHeader('X-Healthcare-CORS', 'enabled');
-      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+      res.setHeader(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains',
+      );
     }
   }
 
-  private async handlePreflightRequest(res: Response, origin: string | null): Promise<void> {
+  private async handlePreflightRequest(
+    res: Response,
+    origin: string | null,
+  ): Promise<void> {
     const cacheKey = `${origin}:${res.req.method}`;
 
     const cachedHeaders = this.preflightCache.get(cacheKey);
@@ -309,10 +354,12 @@ export class CorsMiddleware implements NestMiddleware {
     }
 
     const preflightHeaders: Record<string, string> = {};
-    preflightHeaders['Access-Control-Allow-Methods'] = this.config.allowedMethods.join(', ');
+    preflightHeaders['Access-Control-Allow-Methods'] =
+      this.config.allowedMethods.join(', ');
 
     if (this.config.allowedHeaders.length > 0) {
-      preflightHeaders['Access-Control-Allow-Headers'] = this.config.allowedHeaders.join(', ');
+      preflightHeaders['Access-Control-Allow-Headers'] =
+        this.config.allowedHeaders.join(', ');
     }
 
     preflightHeaders['Access-Control-Max-Age'] = this.config.maxAge.toString();
@@ -330,9 +377,15 @@ export class CorsMiddleware implements NestMiddleware {
     res.status(204).send();
   }
 
-  private async handleCorsRejection(res: Response, origin: string, reason: string): Promise<void> {
+  private async handleCorsRejection(
+    res: Response,
+    origin: string,
+    reason: string,
+  ): Promise<void> {
     if (this.config.errorHandling.logRejections) {
-      this.logger.warn(`[SECURITY] CORS Request Rejected: ${origin} - ${reason}`);
+      this.logger.warn(
+        `[SECURITY] CORS Request Rejected: ${origin} - ${reason}`,
+      );
     }
 
     if (this.config.errorHandling.customErrorResponse) {

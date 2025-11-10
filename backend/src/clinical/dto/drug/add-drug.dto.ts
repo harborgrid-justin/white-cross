@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsArray, IsObject, IsBoolean, MinLength, MaxLength } from 'class-validator';
+import { IsArray, IsBoolean, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -23,7 +23,10 @@ export class AddDrugDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(100, { each: true, message: 'Each brand name cannot exceed 100 characters' })
+  @MaxLength(100, {
+    each: true,
+    message: 'Each brand name cannot exceed 100 characters',
+  })
   brandNames?: string[];
 
   @ApiPropertyOptional({
@@ -52,7 +55,10 @@ export class AddDrugDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(50, { each: true, message: 'Each NDC code cannot exceed 50 characters' })
+  @MaxLength(50, {
+    each: true,
+    message: 'Each NDC code cannot exceed 50 characters',
+  })
   ndcCodes?: string[];
 
   @ApiPropertyOptional({
@@ -81,7 +87,9 @@ export class AddDrugDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(100, { message: 'Administration route cannot exceed 100 characters' })
+  @MaxLength(100, {
+    message: 'Administration route cannot exceed 100 characters',
+  })
   administrationRoute?: string;
 
   @ApiPropertyOptional({
@@ -91,12 +99,17 @@ export class AddDrugDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(10, { message: 'Controlled substance schedule cannot exceed 10 characters' })
+  @MaxLength(10, {
+    message: 'Controlled substance schedule cannot exceed 10 characters',
+  })
   controlledSubstanceSchedule?: string;
 
   @ApiPropertyOptional({
     description: 'Common dosing information',
-    example: { adult: '200-400mg every 4-6 hours', pediatric: '10mg/kg every 6-8 hours' },
+    example: {
+      adult: '200-400mg every 4-6 hours',
+      pediatric: '10mg/kg every 6-8 hours',
+    },
   })
   @IsOptional()
   @IsObject()
@@ -110,7 +123,10 @@ export class AddDrugDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(200, { each: true, message: 'Each side effect cannot exceed 200 characters' })
+  @MaxLength(200, {
+    each: true,
+    message: 'Each side effect cannot exceed 200 characters',
+  })
   sideEffects?: string[];
 
   @ApiPropertyOptional({
@@ -121,7 +137,10 @@ export class AddDrugDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(200, { each: true, message: 'Each contraindication cannot exceed 200 characters' })
+  @MaxLength(200, {
+    each: true,
+    message: 'Each contraindication cannot exceed 200 characters',
+  })
   contraindications?: string[];
 
   @ApiPropertyOptional({
@@ -132,7 +151,10 @@ export class AddDrugDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  @MaxLength(200, { each: true, message: 'Each warning cannot exceed 200 characters' })
+  @MaxLength(200, {
+    each: true,
+    message: 'Each warning cannot exceed 200 characters',
+  })
   warnings?: string[];
 
   @ApiPropertyOptional({

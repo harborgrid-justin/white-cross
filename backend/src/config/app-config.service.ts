@@ -54,12 +54,15 @@ export class AppConfigService {
       return this.cache.get(cacheKey);
     }
 
-    const value = defaultValue !== undefined
-      ? this.configService.get<T>(key, defaultValue)
-      : this.configService.get<T>(key);
+    const value =
+      defaultValue !== undefined
+        ? this.configService.get<T>(key, defaultValue)
+        : this.configService.get<T>(key);
 
     if (value === undefined) {
-      throw new Error(`Configuration key '${key}' not found and no default value provided`);
+      throw new Error(
+        `Configuration key '${key}' not found and no default value provided`,
+      );
     }
 
     this.cache.set(cacheKey, value);
@@ -296,7 +299,10 @@ export class AppConfigService {
     if (Array.isArray(origin)) {
       return origin;
     }
-    return origin.split(',').map(o => o.trim()).filter(Boolean);
+    return origin
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean);
   }
 
   /**
@@ -486,6 +492,48 @@ export class AppConfigService {
   }
 
   /**
+   * Check if reporting is enabled
+   */
+  get isReportingEnabled(): boolean {
+    return this.app.features.reporting;
+  }
+
+  /**
+   * Check if dashboard is enabled
+   */
+  get isDashboardEnabled(): boolean {
+    return this.app.features.dashboard;
+  }
+
+  /**
+   * Check if advanced features are enabled
+   */
+  get isAdvancedFeaturesEnabled(): boolean {
+    return this.app.features.advancedFeatures;
+  }
+
+  /**
+   * Check if enterprise features are enabled
+   */
+  get isEnterpriseEnabled(): boolean {
+    return this.app.features.enterprise;
+  }
+
+  /**
+   * Check if discovery mode is enabled
+   */
+  get isDiscoveryEnabled(): boolean {
+    return this.app.features.discovery;
+  }
+
+  /**
+   * Check if CLI mode is enabled
+   */
+  get isCliMode(): boolean {
+    return this.app.features.cliMode;
+  }
+
+  /**
    * Check if a specific feature is enabled
    *
    * @param feature - Feature name
@@ -493,6 +541,38 @@ export class AppConfigService {
    */
   isFeatureEnabled(feature: string): boolean {
     return this.get<boolean>(`features.${feature}`, false);
+  }
+
+  // ============================================================================
+  // THROTTLE CONFIG
+  // ============================================================================
+
+  /**
+   * Get throttle configuration
+   */
+  get throttle() {
+    return this.app.throttle;
+  }
+
+  /**
+   * Get short throttle config
+   */
+  get throttleShort() {
+    return this.app.throttle.short;
+  }
+
+  /**
+   * Get medium throttle config
+   */
+  get throttleMedium() {
+    return this.app.throttle.medium;
+  }
+
+  /**
+   * Get long throttle config
+   */
+  get throttleLong() {
+    return this.app.throttle.long;
   }
 
   // ============================================================================
@@ -548,7 +628,9 @@ export class AppConfigService {
    */
   getAll(): Record<string, any> {
     if (this.isProduction) {
-      this.logger.warn('Attempted to get all configuration in production - blocked');
+      this.logger.warn(
+        'Attempted to get all configuration in production - blocked',
+      );
       return {};
     }
 
@@ -626,7 +708,9 @@ export class AppConfigService {
       }
 
       if (this.isDatabaseSyncEnabled) {
-        errors.push('Database sync must be disabled in production (data loss risk)');
+        errors.push(
+          'Database sync must be disabled in production (data loss risk)',
+        );
       }
 
       if (!this.isCsrfEnabled) {
@@ -636,11 +720,16 @@ export class AppConfigService {
 
     if (errors.length > 0) {
       const errorMessage =
-        '\n' + '='.repeat(80) + '\n' +
+        '\n' +
+        '='.repeat(80) +
+        '\n' +
         'CRITICAL CONFIGURATION ERRORS\n' +
-        '='.repeat(80) + '\n' +
-        errors.map(e => `  - ${e}`).join('\n') + '\n' +
-        '='.repeat(80) + '\n' +
+        '='.repeat(80) +
+        '\n' +
+        errors.map((e) => `  - ${e}`).join('\n') +
+        '\n' +
+        '='.repeat(80) +
+        '\n' +
         'Application cannot start with invalid configuration.\n' +
         'Please check your .env file and ensure all required variables are set.\n' +
         '='.repeat(80);

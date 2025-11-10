@@ -13,9 +13,8 @@
  */
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue, Job } from 'bullmq';
-import { JobType } from '../enums/job-type.enum';
+import { Job, Queue } from 'bullmq';
+import { JobType } from '@/infrastructure/jobs';
 
 export interface JobOptions {
   delay?: number;
@@ -44,12 +43,15 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit() {
     try {
-      const redisHost = this.configService.get<string>('REDIS_HOST', 'localhost');
+      const redisHost = this.configService.get<string>(
+        'REDIS_HOST',
+        'localhost',
+      );
       const redisPort = this.configService.get<number>('REDIS_PORT', 6379);
       const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
       this.logger.log(
-        `Queue manager initialized with Redis at ${redisHost}:${redisPort}`
+        `Queue manager initialized with Redis at ${redisHost}:${redisPort}`,
       );
 
       // Initialize scheduled jobs
@@ -70,7 +72,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
         JobType.MEDICATION_REMINDER,
         {},
         '0 0,6 * * *',
-        'medication-reminder-scheduled'
+        'medication-reminder-scheduled',
       );
       this.logger.log('Medication reminders job scheduled (0 0,6 * * *)');
 
@@ -79,7 +81,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
         JobType.INVENTORY_MAINTENANCE,
         {},
         '*/15 * * * *',
-        'inventory-maintenance-scheduled'
+        'inventory-maintenance-scheduled',
       );
       this.logger.log('Inventory maintenance job scheduled (*/15 * * * *)');
 
@@ -105,7 +107,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
       password: this.configService.get<string>('REDIS_PASSWORD'),
-      maxRetriesPerRequest: null
+      maxRetriesPerRequest: null,
     };
 
     const queue = new Queue(jobType, {
@@ -114,17 +116,17 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
         attempts: 3,
         backoff: {
           type: 'exponential',
-          delay: 2000
+          delay: 2000,
         },
         removeOnComplete: {
           count: 100,
-          age: 24 * 3600 // 24 hours
+          age: 24 * 3600, // 24 hours
         },
         removeOnFail: {
           count: 1000,
-          age: 7 * 24 * 3600 // 7 days
-        }
-      }
+          age: 7 * 24 * 3600, // 7 days
+        },
+      },
     });
 
     this.queues.set(jobType, queue);
@@ -139,7 +141,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
   async addJob<T = any>(
     jobType: JobType,
     data: T,
-    options?: JobOptions
+    options?: JobOptions,
   ): Promise<Job<T>> {
     const queue = this.getQueue(jobType);
 
@@ -147,12 +149,12 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
       delay: options?.delay,
       priority: options?.priority,
       repeat: options?.repeat,
-      jobId: options?.jobId
+      jobId: options?.jobId,
     });
 
     this.logger.log(`Job added to ${jobType} queue`, {
       jobId: job.id,
-      options
+      options,
     });
 
     return job;
@@ -165,13 +167,13 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
     jobType: JobType,
     data: T,
     cronPattern: string,
-    jobId?: string
+    jobId?: string,
   ): Promise<Job<T>> {
     return this.addJob(jobType, data, {
       repeat: {
-        pattern: cronPattern
+        pattern: cronPattern,
       },
-      jobId: jobId || `${jobType}-scheduled`
+      jobId: jobId || `${jobType}-scheduled`,
     });
   }
 
@@ -199,7 +201,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
         active: 0,
         completed: 0,
         failed: 0,
-        delayed: 0
+        delayed: 0,
       };
     }
 
@@ -208,7 +210,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
       queue.getActiveCount(),
       queue.getCompletedCount(),
       queue.getFailedCount(),
-      queue.getDelayedCount()
+      queue.getDelayedCount(),
     ]);
 
     return {
@@ -216,7 +218,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
       active,
       completed,
       failed,
-      delayed
+      delayed,
     };
   }
 
@@ -258,7 +260,10 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
   /**
    * Clean old jobs from queue
    */
-  async cleanQueue(jobType: JobType, grace: number = 24 * 3600 * 1000): Promise<void> {
+  async cleanQueue(
+    jobType: JobType,
+    grace: number = 24 * 3600 * 1000,
+  ): Promise<void> {
     const queue = this.queues.get(jobType);
     if (queue) {
       await queue.clean(grace, 100, 'completed');

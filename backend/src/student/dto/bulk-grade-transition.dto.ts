@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsDateString, IsBoolean, IsOptional, IsObject } from 'class-validator';
+import { IsBoolean, IsDateString, IsNotEmpty, IsObject, IsOptional } from 'class-validator';
 
 /**
  * Bulk Grade Transition DTO
@@ -26,7 +26,7 @@ export class BulkGradeTransitionDto {
   })
   @IsNotEmpty()
   @IsDateString()
-  effectiveDate: string;
+  effectiveDate!: string;
 
   @ApiPropertyOptional({
     description: 'Dry-run mode: preview results without making changes (default: false)',

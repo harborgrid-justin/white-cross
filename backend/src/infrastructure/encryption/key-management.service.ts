@@ -24,15 +24,15 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { CacheService } from '../cache/cache.service';
 import {
+  EncryptedKeyStorage,
   IKeyManagementService,
-  KeyPair,
   KeyGenerationOptions,
   KeyGenerationResult,
   KeyMetadata,
-  KeyType,
-  KeyStatus,
+  KeyPair,
   KeyRotationOptions,
-  EncryptedKeyStorage,
+  KeyStatus,
+  KeyType,
 } from './interfaces';
 
 /**
@@ -186,9 +186,8 @@ export class KeyManagementService implements IKeyManagementService {
   ): Promise<string | null> {
     try {
       const cacheKey = this.buildCacheKey('private', userId);
-      const encryptedStorage = await this.cacheService.get<EncryptedKeyStorage>(
-        cacheKey,
-      );
+      const encryptedStorage =
+        await this.cacheService.get<EncryptedKeyStorage>(cacheKey);
 
       if (!encryptedStorage) {
         this.logger.debug(
@@ -277,12 +276,9 @@ export class KeyManagementService implements IKeyManagementService {
     userId: string,
     options?: KeyRotationOptions,
   ): Promise<KeyGenerationResult> {
-    this.logger.log(
-      `Rotating keys for user: ${this.sanitizeUserId(userId)}`,
-      {
-        reason: options?.reason || 'scheduled_rotation',
-      },
-    );
+    this.logger.log(`Rotating keys for user: ${this.sanitizeUserId(userId)}`, {
+      reason: options?.reason || 'scheduled_rotation',
+    });
 
     try {
       // Get current key ID
@@ -402,10 +398,7 @@ export class KeyManagementService implements IKeyManagementService {
    * @param publicKey - Public key in PEM format
    * @returns Encrypted data in base64
    */
-  async encryptWithPublicKey(
-    data: string,
-    publicKey: string,
-  ): Promise<string> {
+  async encryptWithPublicKey(data: string, publicKey: string): Promise<string> {
     try {
       const buffer = Buffer.from(data, 'utf8');
       const encrypted = crypto.publicEncrypt(

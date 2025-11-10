@@ -21,6 +21,6 @@ import { IncidentReport } from '../database/models/incident-report.model';
     ]),
   ],
   controllers: [HealthRiskAssessmentController],
-  providers: [HealthRiskAssessmentService]
+  providers: [HealthRiskAssessmentService],
 })
 export class HealthRiskAssessmentModule {}

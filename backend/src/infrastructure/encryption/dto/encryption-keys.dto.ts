@@ -4,14 +4,7 @@
  * @description Data transfer objects for session key management
  */
 
-import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsBoolean,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**

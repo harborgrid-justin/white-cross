@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class GetDepartmentQueryDto {

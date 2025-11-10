@@ -5,7 +5,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsBoolean, IsNumber, Min, Max } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, Max, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 export class AlertFilterDto {

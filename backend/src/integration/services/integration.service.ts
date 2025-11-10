@@ -4,8 +4,8 @@ import { IntegrationTestService } from './integration-test.service';
 import { IntegrationSyncService } from './integration-sync.service';
 import { IntegrationLogService } from './integration-log.service';
 import { IntegrationStatisticsService } from './integration-statistics.service';
-import { IntegrationValidationService } from './integration-validation.service';
-import { IntegrationEncryptionService } from './integration-encryption.service';
+import { CreateIntegrationDto } from '../dto/create-integration.dto';
+import { UpdateIntegrationDto } from '../dto/update-integration.dto';
 
 /**
  * Main Integration Service (Facade Pattern)
@@ -19,8 +19,6 @@ export class IntegrationService {
     private readonly syncService: IntegrationSyncService,
     private readonly logService: IntegrationLogService,
     private readonly statisticsService: IntegrationStatisticsService,
-    private readonly validationService: IntegrationValidationService,
-    private readonly encryptionService: IntegrationEncryptionService,
   ) {}
 
   // Configuration Management
@@ -32,11 +30,11 @@ export class IntegrationService {
     return this.configService.findById(id, includeSensitive);
   }
 
-  createIntegration(data: any) {
+  createIntegration(data: CreateIntegrationDto) {
     return this.configService.create(data);
   }
 
-  updateIntegration(id: string, data: any) {
+  updateIntegration(id: string, data: UpdateIntegrationDto) {
     return this.configService.update(id, data);
   }
 
@@ -54,7 +52,12 @@ export class IntegrationService {
   }
 
   // Logs
-  getIntegrationLogs(integrationId?: string, type?: string, page?: number, limit?: number) {
+  getIntegrationLogs(
+    integrationId?: string,
+    type?: string,
+    page?: number,
+    limit?: number,
+  ) {
     return this.logService.findAll(integrationId, type, page, limit);
   }
 

@@ -1,41 +1,28 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
-  Param,
-  Query,
+  Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  Param,
   ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-} from '@nestjs/swagger';
-import {
-  IncidentCoreService,
-  IncidentFollowUpService,
-  IncidentWitnessService,
-  IncidentStatisticsService,
-  IncidentNotificationService,
-} from './services';
-import {
-  CreateIncidentReportDto,
-  UpdateIncidentReportDto,
-  CreateFollowUpActionDto,
-  UpdateFollowUpActionDto,
-  CreateWitnessStatementDto,
-  IncidentFiltersDto,
-} from './dto';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { IncidentCoreService } from './services/incident-core.service';
+import { IncidentFollowUpService } from './services/incident-follow-up.service';
+import { IncidentNotificationService } from './services/incident-notification.service';
+import { IncidentStatisticsService } from './services/incident-statistics.service';
+import { IncidentWitnessService } from './services/incident-witness.service';
+import { CreateFollowUpActionDto } from './dto/create-follow-up-action.dto';
+import { CreateIncidentReportDto } from './dto/create-incident-report.dto';
+import { CreateWitnessStatementDto } from './dto/create-witness-statement.dto';
+import { IncidentFiltersDto } from './dto/incident-filters.dto';
+import { UpdateFollowUpActionDto } from './dto/update-follow-up-action.dto';
+import { UpdateIncidentReportDto } from './dto/update-incident-report.dto';
 
 @ApiTags('incident-report')
 @Controller('incident-report')
@@ -53,21 +40,63 @@ export class IncidentReportController {
   // ==================== INCIDENT REPORTS ====================
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all incident reports with filters',
-    description: 'Retrieves paginated incident reports with comprehensive filtering by type, severity, status, date range, student, and location. Includes summary statistics and trends.'
+    description:
+      'Retrieves paginated incident reports with comprehensive filtering by type, severity, status, date range, student, and location. Includes summary statistics and trends.',
   })
-  @ApiQuery({ name: 'page', required: false, type: 'number', example: 1, description: 'Page number for pagination' })
-  @ApiQuery({ name: 'limit', required: false, type: 'number', example: 20, description: 'Items per page' })
-  @ApiQuery({ name: 'type', required: false, description: 'Filter by incident type (injury, illness, behavioral, etc.)' })
-  @ApiQuery({ name: 'severity', required: false, enum: ['low', 'medium', 'high', 'critical'], description: 'Filter by severity level' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by incident status' })
-  @ApiQuery({ name: 'studentId', required: false, format: 'uuid', description: 'Filter by student UUID' })
-  @ApiQuery({ name: 'dateFrom', required: false, format: 'date', description: 'Filter incidents from this date' })
-  @ApiQuery({ name: 'dateTo', required: false, format: 'date', description: 'Filter incidents up to this date' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Incident reports retrieved successfully with pagination and filters applied',
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: 'number',
+    example: 1,
+    description: 'Page number for pagination',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: 'number',
+    example: 20,
+    description: 'Items per page',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'Filter by incident type (injury, illness, behavioral, etc.)',
+  })
+  @ApiQuery({
+    name: 'severity',
+    required: false,
+    enum: ['low', 'medium', 'high', 'critical'],
+    description: 'Filter by severity level',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filter by incident status',
+  })
+  @ApiQuery({
+    name: 'studentId',
+    required: false,
+    format: 'uuid',
+    description: 'Filter by student UUID',
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    format: 'date',
+    description: 'Filter incidents from this date',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    format: 'date',
+    description: 'Filter incidents up to this date',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Incident reports retrieved successfully with pagination and filters applied',
     schema: {
       type: 'object',
       properties: {
@@ -85,9 +114,9 @@ export class IncidentReportController {
               location: { type: 'string' },
               incidentDate: { type: 'string', format: 'date-time' },
               reportedBy: { type: 'string' },
-              requiresFollowUp: { type: 'boolean' }
-            }
-          }
+              requiresFollowUp: { type: 'boolean' },
+            },
+          },
         },
         pagination: {
           type: 'object',
@@ -95,22 +124,28 @@ export class IncidentReportController {
             page: { type: 'number' },
             limit: { type: 'number' },
             total: { type: 'number' },
-            pages: { type: 'number' }
-          }
+            pages: { type: 'number' },
+          },
         },
         summary: {
           type: 'object',
           properties: {
             totalIncidents: { type: 'number' },
             criticalCount: { type: 'number' },
-            pendingFollowUp: { type: 'number' }
-          }
-        }
-      }
-    }
+            pendingFollowUp: { type: 'number' },
+          },
+        },
+      },
+    },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   async getIncidentReports(@Query() filters: IncidentFiltersDto) {
     return this.coreService.getIncidentReports(filters);
@@ -118,7 +153,10 @@ export class IncidentReportController {
 
   @Get('follow-up/required')
   @ApiOperation({ summary: 'Get incidents requiring follow-up' })
-  @ApiResponse({ status: 200, description: 'Returns incidents requiring follow-up' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns incidents requiring follow-up',
+  })
   async getIncidentsRequiringFollowUp() {
     return this.coreService.getIncidentsRequiringFollowUp();
   }
@@ -211,14 +249,16 @@ export class IncidentReportController {
   }
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create new incident report',
-    description: 'Creates a comprehensive incident report with detailed information including student involvement, injuries, treatments, witnesses, and immediate actions taken. Triggers notification workflows based on severity.'
+    description:
+      'Creates a comprehensive incident report with detailed information including student involvement, injuries, treatments, witnesses, and immediate actions taken. Triggers notification workflows based on severity.',
   })
   @ApiBody({ type: CreateIncidentReportDto })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'Incident report created successfully with auto-generated incident number',
+  @ApiResponse({
+    status: 201,
+    description:
+      'Incident report created successfully with auto-generated incident number',
     schema: {
       type: 'object',
       properties: {
@@ -235,15 +275,28 @@ export class IncidentReportController {
         requiresFollowUp: { type: 'boolean' },
         notificationsTriggered: {
           type: 'array',
-          items: { type: 'string' }
-        }
-      }
-    }
+          items: { type: 'string' },
+        },
+      },
+    },
   })
-  @ApiResponse({ status: 400, description: 'Invalid input data or validation errors' })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Authentication required' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions to create incident reports' })
-  @ApiResponse({ status: 404, description: 'Referenced student or user not found' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input data or validation errors',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Authentication required',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Forbidden - Insufficient permissions to create incident reports',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Referenced student or user not found',
+  })
   @ApiResponse({ status: 500, description: 'Internal server error' })
   @HttpCode(HttpStatus.CREATED)
   async createIncidentReport(@Body() dto: CreateIncidentReportDto) {
@@ -253,7 +306,10 @@ export class IncidentReportController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update incident report' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Incident report updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Incident report updated successfully',
+  })
   @ApiResponse({ status: 404, description: 'Incident report not found' })
   async updateIncidentReport(
     @Param('id', ParseUUIDPipe) id: string,
@@ -265,7 +321,10 @@ export class IncidentReportController {
   @Post(':id/follow-up-notes')
   @ApiOperation({ summary: 'Add follow-up notes to incident' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Follow-up notes added successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Follow-up notes added successfully',
+  })
   async addFollowUpNotes(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('notes') notes: string,
@@ -301,7 +360,10 @@ export class IncidentReportController {
   @Patch(':id/insurance')
   @ApiOperation({ summary: 'Update insurance claim information' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Insurance claim updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Insurance claim updated successfully',
+  })
   async updateInsuranceClaim(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('claimNumber') claimNumber: string,
@@ -313,7 +375,10 @@ export class IncidentReportController {
   @Patch(':id/compliance')
   @ApiOperation({ summary: 'Update compliance status' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Compliance status updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Compliance status updated successfully',
+  })
   async updateComplianceStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('status') status: string,
@@ -354,7 +419,10 @@ export class IncidentReportController {
   @Post(':id/follow-up-action')
   @ApiOperation({ summary: 'Add follow-up action to incident' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 201, description: 'Follow-up action created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Follow-up action created successfully',
+  })
   @HttpCode(HttpStatus.CREATED)
   async addFollowUpAction(
     @Param('id', ParseUUIDPipe) id: string,
@@ -366,7 +434,10 @@ export class IncidentReportController {
   @Patch('follow-up-action/:actionId')
   @ApiOperation({ summary: 'Update follow-up action' })
   @ApiParam({ name: 'actionId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Follow-up action updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Follow-up action updated successfully',
+  })
   async updateFollowUpAction(
     @Param('actionId', ParseUUIDPipe) actionId: string,
     @Body() dto: UpdateFollowUpActionDto,
@@ -377,21 +448,31 @@ export class IncidentReportController {
   @Delete('follow-up-action/:actionId')
   @ApiOperation({ summary: 'Delete follow-up action' })
   @ApiParam({ name: 'actionId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Follow-up action deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Follow-up action deleted successfully',
+  })
   @HttpCode(HttpStatus.OK)
-  async deleteFollowUpAction(@Param('actionId', ParseUUIDPipe) actionId: string) {
+  async deleteFollowUpAction(
+    @Param('actionId', ParseUUIDPipe) actionId: string,
+  ) {
     return this.followUpService.deleteFollowUpAction(actionId);
   }
 
   @Get('follow-up-actions/overdue')
   @ApiOperation({ summary: 'Get overdue follow-up actions' })
-  @ApiResponse({ status: 200, description: 'Returns overdue follow-up actions' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns overdue follow-up actions',
+  })
   async getOverdueActions() {
     return this.followUpService.getOverdueActions();
   }
 
   @Get('follow-up-actions/urgent')
-  @ApiOperation({ summary: 'Get urgent follow-up actions (due within 24 hours)' })
+  @ApiOperation({
+    summary: 'Get urgent follow-up actions (due within 24 hours)',
+  })
   @ApiResponse({ status: 200, description: 'Returns urgent follow-up actions' })
   async getUrgentActions() {
     return this.followUpService.getUrgentActions();
@@ -433,7 +514,10 @@ export class IncidentReportController {
   @Post(':id/witness-statement')
   @ApiOperation({ summary: 'Add witness statement to incident' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 201, description: 'Witness statement created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Witness statement created successfully',
+  })
   @HttpCode(HttpStatus.CREATED)
   async addWitnessStatement(
     @Param('id', ParseUUIDPipe) id: string,
@@ -445,7 +529,10 @@ export class IncidentReportController {
   @Patch('witness-statement/:statementId')
   @ApiOperation({ summary: 'Update witness statement' })
   @ApiParam({ name: 'statementId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Witness statement updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Witness statement updated successfully',
+  })
   async updateWitnessStatement(
     @Param('statementId', ParseUUIDPipe) statementId: string,
     @Body() data: Partial<CreateWitnessStatementDto>,
@@ -456,7 +543,10 @@ export class IncidentReportController {
   @Post('witness-statement/:statementId/verify')
   @ApiOperation({ summary: 'Verify witness statement' })
   @ApiParam({ name: 'statementId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Witness statement verified successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Witness statement verified successfully',
+  })
   async verifyWitnessStatement(
     @Param('statementId', ParseUUIDPipe) statementId: string,
     @Body('verifiedBy') verifiedBy: string,
@@ -467,7 +557,10 @@ export class IncidentReportController {
   @Delete('witness-statement/:statementId')
   @ApiOperation({ summary: 'Delete witness statement' })
   @ApiParam({ name: 'statementId', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Witness statement deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Witness statement deleted successfully',
+  })
   @HttpCode(HttpStatus.OK)
   async deleteWitnessStatement(
     @Param('statementId', ParseUUIDPipe) statementId: string,
@@ -477,7 +570,10 @@ export class IncidentReportController {
 
   @Get('witness-statements/unverified')
   @ApiOperation({ summary: 'Get unverified witness statements' })
-  @ApiResponse({ status: 200, description: 'Returns unverified witness statements' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns unverified witness statements',
+  })
   async getUnverifiedStatements() {
     return this.witnessService.getUnverifiedStatements();
   }

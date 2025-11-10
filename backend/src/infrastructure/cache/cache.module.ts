@@ -11,12 +11,17 @@
  * - Statistics and monitoring
  */
 
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheService } from './cache.service';
 import { CacheConfigService } from './cache.config';
+import { CacheConnectionService } from './cache-connection.service';
+import { CacheStorageService } from './cache-storage.service';
+import { CacheSerializationService } from './cache-serialization.service';
+import { CacheInvalidationService } from './cache-invalidation.service';
+import { CacheOperationsService } from './cache-operations.service';
 import { CacheWarmingService } from './cache-warming.service';
 import { RateLimiterService } from './rate-limiter.service';
 import { CacheStatisticsService } from './cache-statistics.service';
@@ -33,8 +38,20 @@ import { CacheStatisticsService } from './cache-statistics.service';
     ScheduleModule.forRoot(),
   ],
   providers: [
+    // Core configuration
     CacheConfigService,
+
+    // Core cache services (order matters for dependency injection)
+    CacheSerializationService,
+    CacheConnectionService,
+    CacheStorageService,
+    CacheInvalidationService,
+    CacheOperationsService,
+
+    // Main cache service (orchestrator)
     CacheService,
+
+    // Additional services
     CacheWarmingService,
     RateLimiterService,
     CacheStatisticsService,

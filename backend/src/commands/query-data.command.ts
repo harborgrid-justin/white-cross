@@ -1,9 +1,6 @@
 import { Command, CommandRunner } from 'nest-commander';
 import { InjectModel } from '@nestjs/sequelize';
-import { Student } from '../database/models/student.model';
-import { HealthRecord } from '../database/models/health-record.model';
-import { School } from '../database/models/school.model';
-import { District } from '../database/models/district.model';
+import { District, HealthRecord, School, Student } from '@/database';
 
 @Command({
   name: 'query:data',
@@ -43,10 +40,12 @@ export class QueryDataCommand extends CommandRunner {
           limit: 3,
           attributes: ['id', 'studentNumber', 'firstName', 'lastName', 'grade'],
         });
-        
+
         console.log('Sample Students:');
         sampleStudents.forEach((student) => {
-          console.log(`  - ${student.studentNumber}: ${student.firstName} ${student.lastName} (Grade ${student.grade})`);
+          console.log(
+            `  - ${student.studentNumber}: ${student.firstName} ${student.lastName} (Grade ${student.grade})`,
+          );
         });
         console.log('');
       }
@@ -56,14 +55,15 @@ export class QueryDataCommand extends CommandRunner {
           limit: 3,
           attributes: ['id', 'recordType', 'title', 'recordDate'],
         });
-        
+
         console.log('Sample Health Records:');
         sampleRecords.forEach((record) => {
-          console.log(`  - ${record.recordType}: ${record.title} (${new Date(record.recordDate).toLocaleDateString()})`);
+          console.log(
+            `  - ${record.recordType}: ${record.title} (${new Date(record.recordDate).toLocaleDateString()})`,
+          );
         });
         console.log('');
       }
-
     } catch (error) {
       console.error('❌ Error querying database:', error.message);
       throw error;

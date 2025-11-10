@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { LoginAttemptEntity } from '../entities';
-import { SecurityIncidentType, IncidentSeverity } from '../enums';
+import { LoginAttemptEntity } from '../entities/login-attempt.entity';
 
 /**
  * Threat Detection Service
@@ -18,11 +17,6 @@ export class ThreatDetectionService {
     @InjectModel(LoginAttemptEntity)
     private readonly loginAttemptModel: typeof LoginAttemptEntity,
   ) {}
-
-  // Alias for backward compatibility
-  private get loginAttemptRepo() {
-    return this.loginAttemptModel;
-  }
 
   /**
    * Detect brute force attacks
@@ -59,7 +53,11 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting brute force', { error, userId, ipAddress });
+      this.logger.error('Error detecting brute force', {
+        error,
+        userId,
+        ipAddress,
+      });
       return { detected: false };
     }
   }
@@ -67,18 +65,24 @@ export class ThreatDetectionService {
   /**
    * Detect SQL injection attempts
    */
-  async detectSQLInjection(
+  detectSQLInjection(
     input: string,
     context?: { userId?: string; ipAddress?: string },
-  ): Promise<{ detected: boolean; patterns?: string[] }> {
+  ): { detected: boolean; patterns?: string[] } {
     try {
       const sqlPatterns = [
         { pattern: /(\bunion\b.*\bselect\b)/i, name: 'UNION SELECT' },
         { pattern: /(\bor\b.*=.*)/i, name: 'OR condition' },
-        { pattern: /(';|";|--|\/\*|\*\/)/,name: 'SQL comment/terminator' },
-        { pattern: /(\bdrop\b|\bdelete\b|\btruncate\b).*\btable\b/i, name: 'DROP/DELETE TABLE' },
+        { pattern: /(';|";|--|\/\*|\*\/)/, name: 'SQL comment/terminator' },
+        {
+          pattern: /(\bdrop\b|\bdelete\b|\btruncate\b).*\btable\b/i,
+          name: 'DROP/DELETE TABLE',
+        },
         { pattern: /(\bexec\b|\bexecute\b).*\(/i, name: 'EXEC statement' },
-        { pattern: /(\bselect\b.*\bfrom\b.*\bwhere\b)/i, name: 'SELECT statement' },
+        {
+          pattern: /(\bselect\b.*\bfrom\b.*\bwhere\b)/i,
+          name: 'SELECT statement',
+        },
       ];
 
       const matchedPatterns: string[] = [];
@@ -112,10 +116,10 @@ export class ThreatDetectionService {
   /**
    * Detect XSS attempts
    */
-  async detectXSS(
+  detectXSS(
     input: string,
     context?: { userId?: string; ipAddress?: string },
-  ): Promise<{ detected: boolean; patterns?: string[] }> {
+  ): { detected: boolean; patterns?: string[] } {
     try {
       const xssPatterns = [
         { pattern: /<script\b[^>]*>/i, name: 'Script tag' },
@@ -157,12 +161,12 @@ export class ThreatDetectionService {
   /**
    * Detect privilege escalation attempts
    */
-  async detectPrivilegeEscalation(
+  detectPrivilegeEscalation(
     userId: string,
     attemptedAction: string,
     requiredRole: string,
     userRoles: string[],
-  ): Promise<{ detected: boolean; reason?: string }> {
+  ): { detected: boolean; reason?: string } {
     try {
       const hasRequiredRole = userRoles.includes(requiredRole);
 
@@ -182,7 +186,10 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting privilege escalation', { error, userId });
+      this.logger.error('Error detecting privilege escalation', {
+        error,
+        userId,
+      });
       return { detected: false };
     }
   }
@@ -190,12 +197,12 @@ export class ThreatDetectionService {
   /**
    * Detect data breach attempts (unusual data access volume)
    */
-  async detectDataBreachAttempt(
+  detectDataBreachAttempt(
     userId: string,
     dataType: string,
     volume: number,
     ipAddress?: string,
-  ): Promise<{ detected: boolean; threshold?: number }> {
+  ): { detected: boolean; threshold?: number } {
     try {
       // Configurable thresholds by data type
       const thresholds: Record<string, number> = {
@@ -205,7 +212,7 @@ export class ThreatDetectionService {
         default: 1000,
       };
 
-      const threshold = thresholds[dataType] || thresholds.default;
+      const threshold = thresholds[dataType] ?? thresholds.default;
 
       if (volume > threshold) {
         this.logger.warn('Potential data breach attempt detected', {
@@ -224,7 +231,10 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting data breach attempt', { error, userId });
+      this.logger.error('Error detecting data breach attempt', {
+        error,
+        userId,
+      });
       return { detected: false };
     }
   }
@@ -232,21 +242,14 @@ export class ThreatDetectionService {
   /**
    * Detect path traversal attempts
    */
-  async detectPathTraversal(
+  detectPathTraversal(
     input: string,
     context?: { userId?: string; ipAddress?: string },
-  ): Promise<{ detected: boolean }> {
+  ): { detected: boolean } {
     try {
-      const pathTraversalPatterns = [
-        /\.\.\//,
-        /\.\.\\/,
-        /%2e%2e%2f/i,
-        /%2e%2e\\/i,
-      ];
+      const pathTraversalPatterns = [/\.\.\//, /\.\.\\/, /%2e%2e%2f/i, /%2e%2e\\/i];
 
-      const detected = pathTraversalPatterns.some((pattern) =>
-        pattern.test(input),
-      );
+      const detected = pathTraversalPatterns.some((pattern) => pattern.test(input));
 
       if (detected) {
         this.logger.warn('Path traversal attempt detected', {
@@ -267,17 +270,20 @@ export class ThreatDetectionService {
   /**
    * Detect command injection attempts
    */
-  async detectCommandInjection(
+  detectCommandInjection(
     input: string,
     context?: { userId?: string; ipAddress?: string },
-  ): Promise<{ detected: boolean; patterns?: string[] }> {
+  ): { detected: boolean; patterns?: string[] } {
     try {
       const commandPatterns = [
-        { pattern: /;.*\b(rm|del|format|shutdown)\b/i, name: 'Dangerous command' },
+        {
+          pattern: /;.*\b(rm|del|format|shutdown)\b/i,
+          name: 'Dangerous command',
+        },
         { pattern: /\|.*\b(cat|type|more|less)\b/i, name: 'Command piping' },
         { pattern: /`.*`/, name: 'Command substitution' },
         { pattern: /\$\(.*\)/, name: 'Command substitution' },
-        { pattern: /&&|;;\|/,name: 'Command chaining' },
+        { pattern: /&&|;;\|/, name: 'Command chaining' },
       ];
 
       const matchedPatterns: string[] = [];
@@ -311,17 +317,17 @@ export class ThreatDetectionService {
   /**
    * Comprehensive threat scan on input
    */
-  async scanInput(
+  scanInput(
     input: string,
     context?: { userId?: string; ipAddress?: string },
-  ): Promise<{
+  ): {
     threats: Array<{ type: string; detected: boolean; details?: any }>;
     safe: boolean;
-  }> {
+  } {
     const threats: Array<{ type: string; detected: boolean; details?: any }> = [];
 
     // SQL Injection
-    const sqlResult = await this.detectSQLInjection(input, context);
+    const sqlResult = this.detectSQLInjection(input, context);
     threats.push({
       type: 'sql_injection',
       detected: sqlResult.detected,
@@ -329,7 +335,7 @@ export class ThreatDetectionService {
     });
 
     // XSS
-    const xssResult = await this.detectXSS(input, context);
+    const xssResult = this.detectXSS(input, context);
     threats.push({
       type: 'xss',
       detected: xssResult.detected,
@@ -337,14 +343,14 @@ export class ThreatDetectionService {
     });
 
     // Path Traversal
-    const pathResult = await this.detectPathTraversal(input, context);
+    const pathResult = this.detectPathTraversal(input, context);
     threats.push({
       type: 'path_traversal',
       detected: pathResult.detected,
     });
 
     // Command Injection
-    const cmdResult = await this.detectCommandInjection(input, context);
+    const cmdResult = this.detectCommandInjection(input, context);
     threats.push({
       type: 'command_injection',
       detected: cmdResult.detected,

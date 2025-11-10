@@ -1,22 +1,18 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Model, Op, Transaction } from 'sequelize';
-import { BudgetCategory } from '../database/models/budget-category.model';
-import { BudgetTransaction } from '../database/models/budget-transaction.model';
-import { CreateBudgetCategoryDto } from './dto/create-budget-category.dto';
-import { UpdateBudgetCategoryDto } from './dto/update-budget-category.dto';
-import { CreateBudgetTransactionDto } from './dto/create-budget-transaction.dto';
-import { UpdateBudgetTransactionDto } from './dto/update-budget-transaction.dto';
-import { BudgetTransactionFiltersDto } from './dto/budget-transaction-filters.dto';
-import { BudgetSummaryDto } from './dto/budget-summary.dto';
-import { SpendingTrendDto } from './dto/spending-trend.dto';
-import { BudgetRecommendationDto, BudgetRecommendationType } from './dto/budget-recommendation.dto';
+import { Op } from 'sequelize';
+import { BudgetCategory, BudgetTransaction } from '@/database';
+import {
+  BudgetRecommendationDto,
+  BudgetRecommendationType,
+  BudgetSummaryDto,
+  BudgetTransactionFiltersDto,
+  CreateBudgetCategoryDto,
+  CreateBudgetTransactionDto,
+  SpendingTrendDto,
+  UpdateBudgetCategoryDto,
+  UpdateBudgetTransactionDto,
+} from '@/budget/dto';
 
 /**
  * Budget Service
@@ -58,16 +54,18 @@ export class BudgetService {
 
     const categories = await this.budgetCategoryModel.findAll({
       where,
-      include: [{
-        model: this.budgetTransactionModel,
-        as: 'transactions',
-        order: [['transactionDate', 'DESC']],
-      }],
+      include: [
+        {
+          model: this.budgetTransactionModel,
+          as: 'transactions',
+          order: [['transactionDate', 'DESC']],
+        },
+      ],
       order: [['name', 'ASC']],
     });
 
     // Limit transactions to last 5 for each category
-    categories.forEach(category => {
+    categories.forEach((category) => {
       if (category.transactions) {
         category.transactions = category.transactions.slice(0, 5) as any;
       }
@@ -82,11 +80,13 @@ export class BudgetService {
   async getBudgetCategoryById(id: string): Promise<BudgetCategory> {
     const category = await this.budgetCategoryModel.findOne({
       where: { id },
-      include: [{
-        model: this.budgetTransactionModel,
-        as: 'transactions',
-        order: [['transactionDate', 'DESC']],
-      }],
+      include: [
+        {
+          model: this.budgetTransactionModel,
+          as: 'transactions',
+          order: [['transactionDate', 'DESC']],
+        },
+      ],
     });
 
     if (!category) {
@@ -219,15 +219,18 @@ export class BudgetService {
       }
 
       // Create transaction
-      const transactionRecord = await this.budgetTransactionModel.create({
-        categoryId: createDto.categoryId,
-        amount: createDto.amount,
-        description: createDto.description,
-        transactionDate: new Date(),
-        referenceId: createDto.referenceId || null,
-        referenceType: createDto.referenceType || null,
-        notes: createDto.notes || null,
-      } as any, { transaction });
+      const transactionRecord = await this.budgetTransactionModel.create(
+        {
+          categoryId: createDto.categoryId,
+          amount: createDto.amount,
+          description: createDto.description,
+          transactionDate: new Date(),
+          referenceId: createDto.referenceId || null,
+          referenceType: createDto.referenceType || null,
+          notes: createDto.notes || null,
+        } as any,
+        { transaction },
+      );
 
       // Update category spent amount
       category.spentAmount = Number(category.spentAmount) + createDto.amount;
@@ -240,10 +243,12 @@ export class BudgetService {
       // Reload with category relation
       const result = await this.budgetTransactionModel.findOne({
         where: { id: transactionRecord.id },
-        include: [{
-          model: this.budgetCategoryModel,
-          as: 'category',
-        }],
+        include: [
+          {
+            model: this.budgetCategoryModel,
+            as: 'category',
+          },
+        ],
         transaction,
       });
 
@@ -266,19 +271,24 @@ export class BudgetService {
     return await sequelize.transaction(async (transaction) => {
       const transactionRecord = await this.budgetTransactionModel.findOne({
         where: { id },
-        include: [{
-          model: this.budgetCategoryModel,
-          as: 'category',
-        }],
+        include: [
+          {
+            model: this.budgetCategoryModel,
+            as: 'category',
+          },
+        ],
         transaction,
       });
 
       if (!transactionRecord) {
-        throw new NotFoundException(`Budget transaction with ID ${id} not found`);
+        throw new NotFoundException(
+          `Budget transaction with ID ${id} not found`,
+        );
       }
 
       const oldAmount = Number(transactionRecord.amount);
-      const newAmount = updateDto.amount !== undefined ? updateDto.amount : oldAmount;
+      const newAmount =
+        updateDto.amount !== undefined ? updateDto.amount : oldAmount;
       const amountDifference = newAmount - oldAmount;
 
       // Update category spent amount if amount changed
@@ -289,7 +299,8 @@ export class BudgetService {
         });
 
         if (category) {
-          category.spentAmount = Number(category.spentAmount) + amountDifference;
+          category.spentAmount =
+            Number(category.spentAmount) + amountDifference;
           await category.save({ transaction });
         }
       }
@@ -301,10 +312,12 @@ export class BudgetService {
 
       const result = await this.budgetTransactionModel.findOne({
         where: { id: transactionRecord.id },
-        include: [{
-          model: this.budgetCategoryModel,
-          as: 'category',
-        }],
+        include: [
+          {
+            model: this.budgetCategoryModel,
+            as: 'category',
+          },
+        ],
         transaction,
       });
 
@@ -328,7 +341,9 @@ export class BudgetService {
       });
 
       if (!transactionRecord) {
-        throw new NotFoundException(`Budget transaction with ID ${id} not found`);
+        throw new NotFoundException(
+          `Budget transaction with ID ${id} not found`,
+        );
       }
 
       const amount = Number(transactionRecord.amount);
@@ -383,16 +398,19 @@ export class BudgetService {
       };
     }
 
-    const { rows: transactions, count: total } = await this.budgetTransactionModel.findAndCountAll({
-      where,
-      include: [{
-        model: this.budgetCategoryModel,
-        as: 'category',
-      }],
-      order: [['transactionDate', 'DESC']],
-      offset,
-      limit,
-    });
+    const { rows: transactions, count: total } =
+      await this.budgetTransactionModel.findAndCountAll({
+        where,
+        include: [
+          {
+            model: this.budgetCategoryModel,
+            as: 'category',
+          },
+        ],
+        order: [['transactionDate', 'DESC']],
+        offset,
+        limit,
+      });
 
     return {
       transactions,
@@ -417,9 +435,27 @@ export class BudgetService {
         isActive: true,
       },
       attributes: [
-        [this.budgetCategoryModel.sequelize!.fn('SUM', this.budgetCategoryModel.sequelize!.col('allocatedAmount')), 'totalAllocated'],
-        [this.budgetCategoryModel.sequelize!.fn('SUM', this.budgetCategoryModel.sequelize!.col('spentAmount')), 'totalSpent'],
-        [this.budgetCategoryModel.sequelize!.fn('COUNT', this.budgetCategoryModel.sequelize!.col('id')), 'categoryCount'],
+        [
+          this.budgetCategoryModel.sequelize!.fn(
+            'SUM',
+            this.budgetCategoryModel.sequelize!.col('allocatedAmount'),
+          ),
+          'totalAllocated',
+        ],
+        [
+          this.budgetCategoryModel.sequelize!.fn(
+            'SUM',
+            this.budgetCategoryModel.sequelize!.col('spentAmount'),
+          ),
+          'totalSpent',
+        ],
+        [
+          this.budgetCategoryModel.sequelize!.fn(
+            'COUNT',
+            this.budgetCategoryModel.sequelize!.col('id'),
+          ),
+          'categoryCount',
+        ],
       ],
       raw: true,
     });
@@ -468,18 +504,54 @@ export class BudgetService {
 
     const results = await this.budgetTransactionModel.findAll({
       where,
-      include: [{
-        model: this.budgetCategoryModel,
-        as: 'category',
-        attributes: [],
-      }],
-      attributes: [
-        [this.budgetTransactionModel.sequelize!.fn('DATE_TRUNC', 'month', this.budgetTransactionModel.sequelize!.col('transactionDate')), 'month'],
-        [this.budgetTransactionModel.sequelize!.fn('SUM', this.budgetTransactionModel.sequelize!.col('amount')), 'totalSpent'],
-        [this.budgetTransactionModel.sequelize!.fn('COUNT', this.budgetTransactionModel.sequelize!.col('id')), 'transactionCount'],
+      include: [
+        {
+          model: this.budgetCategoryModel,
+          as: 'category',
+          attributes: [],
+        },
       ],
-      group: [this.budgetTransactionModel.sequelize!.fn('DATE_TRUNC', 'month', this.budgetTransactionModel.sequelize!.col('transactionDate'))],
-      order: [[this.budgetTransactionModel.sequelize!.fn('DATE_TRUNC', 'month', this.budgetTransactionModel.sequelize!.col('transactionDate')), 'ASC']],
+      attributes: [
+        [
+          this.budgetTransactionModel.sequelize!.fn(
+            'DATE_TRUNC',
+            'month',
+            this.budgetTransactionModel.sequelize!.col('transactionDate'),
+          ),
+          'month',
+        ],
+        [
+          this.budgetTransactionModel.sequelize!.fn(
+            'SUM',
+            this.budgetTransactionModel.sequelize!.col('amount'),
+          ),
+          'totalSpent',
+        ],
+        [
+          this.budgetTransactionModel.sequelize!.fn(
+            'COUNT',
+            this.budgetTransactionModel.sequelize!.col('id'),
+          ),
+          'transactionCount',
+        ],
+      ],
+      group: [
+        this.budgetTransactionModel.sequelize!.fn(
+          'DATE_TRUNC',
+          'month',
+          this.budgetTransactionModel.sequelize!.col('transactionDate'),
+        ),
+      ],
+      order: [
+        [
+          this.budgetTransactionModel.sequelize!.fn(
+            'DATE_TRUNC',
+            'month',
+            this.budgetTransactionModel.sequelize!.col('transactionDate'),
+          ),
+          'ASC',
+        ],
+      ],
       raw: true,
     });
 
@@ -498,11 +570,13 @@ export class BudgetService {
 
     const categories = await this.budgetCategoryModel.findAll({
       where: { fiscalYear: currentYear, isActive: true },
-      include: [{
-        model: this.budgetTransactionModel,
-        as: 'transactions',
-        order: [['transactionDate', 'DESC']],
-      }],
+      include: [
+        {
+          model: this.budgetTransactionModel,
+          as: 'transactions',
+          order: [['transactionDate', 'DESC']],
+        },
+      ],
     });
 
     const overBudget = categories
@@ -571,16 +645,19 @@ export class BudgetService {
       }),
     ]);
 
-    const recommendations: BudgetRecommendationDto[] = currentCategories.map(
+    return currentCategories.map(
       (current) => {
-        const previous = previousCategories.find((p) => p.name === current.name);
+        const previous = previousCategories.find(
+          (p) => p.name === current.name,
+        );
 
         const currentAllocated = Number(current.allocatedAmount);
         const currentSpent = Number(current.spentAmount);
         const currentUtilization =
           currentAllocated > 0 ? (currentSpent / currentAllocated) * 100 : 0;
 
-        let recommendation: BudgetRecommendationType = BudgetRecommendationType.MAINTAIN;
+        let recommendation: BudgetRecommendationType =
+          BudgetRecommendationType.MAINTAIN;
         let suggestedAmount = currentAllocated;
         let reason = 'Current allocation is appropriate';
 
@@ -588,7 +665,9 @@ export class BudgetService {
           const previousSpent = Number(previous.spentAmount);
           const previousAllocated = Number(previous.allocatedAmount);
           const previousUtilization =
-            previousAllocated > 0 ? (previousSpent / previousAllocated) * 100 : 0;
+            previousAllocated > 0
+              ? (previousSpent / previousAllocated) * 100
+              : 0;
 
           // Over 90% utilization suggests need for increase
           if (currentUtilization > 90) {
@@ -599,7 +678,9 @@ export class BudgetService {
           // Under 60% utilization suggests potential decrease
           else if (currentUtilization < 60 && previousUtilization < 60) {
             recommendation = BudgetRecommendationType.DECREASE;
-            suggestedAmount = Math.ceil(((currentSpent + previousSpent) / 2) * 1.05);
+            suggestedAmount = Math.ceil(
+              ((currentSpent + previousSpent) / 2) * 1.05,
+            );
             reason = `Consistent low utilization (${Math.round(currentUtilization)}%) across years`;
           }
           // Trending upward spending
@@ -621,8 +702,6 @@ export class BudgetService {
         };
       },
     );
-
-    return recommendations;
   }
 
   /**

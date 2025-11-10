@@ -5,15 +5,39 @@
  */
 
 export const accessControlQueryKeys = {
+  all: ['access-control'] as const,
   domain: ['access-control'] as const,
+
+  // User permissions
+  userPermissions: (userId: string) =>
+    [...accessControlQueryKeys.domain, 'user', userId, 'permissions'] as const,
+
+  // Roles
+  roles: ['access-control', 'roles'] as const,
+  role: (roleId: string) =>
+    [...accessControlQueryKeys.domain, 'role', roleId] as const,
+
+  // Permission checks
+  permissionCheck: (permission: string, resourceId?: string) =>
+    resourceId
+      ? ([...accessControlQueryKeys.domain, 'check', permission, resourceId] as const)
+      : ([...accessControlQueryKeys.domain, 'check', permission] as const),
+
+  multiplePermissionChecks: (permissions: string[]) =>
+    [...accessControlQueryKeys.domain, 'check-multiple', ...permissions.sort()] as const,
+
+  hasAnyPermission: (permissions: string[]) =>
+    [...accessControlQueryKeys.domain, 'has-any', ...permissions.sort()] as const,
+
+  hasAllPermissions: (permissions: string[]) =>
+    [...accessControlQueryKeys.domain, 'has-all', ...permissions.sort()] as const,
+
+  // Legacy support
   permissions: {
     all: () => [...accessControlQueryKeys.domain, 'permissions'] as const,
     byUser: (userId: string) =>
-      [...accessControlQueryKeys.permissions.all(), 'user', userId] as const,
+      [...accessControlQueryKeys.domain, 'permissions', 'user', userId] as const,
     byRole: (roleId: string) =>
-      [...accessControlQueryKeys.permissions.all(), 'role', roleId] as const,
-  },
-  roles: {
-    all: () => [...accessControlQueryKeys.domain, 'roles'] as const,
+      [...accessControlQueryKeys.domain, 'permissions', 'role', roleId] as const,
   },
 } as const;

@@ -1,23 +1,16 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsNumber,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class WatermarkPdfDto {
   @ApiProperty({ description: 'Base64-encoded PDF buffer' })
   @IsString()
   @IsNotEmpty()
-  pdfBuffer: string;
+  pdfBuffer!: string;
 
   @ApiProperty({ description: 'Watermark text' })
   @IsString()
   @IsNotEmpty()
-  watermarkText: string;
+  watermarkText!: string;
 
   @ApiPropertyOptional({ description: 'X position', default: 'center' })
   @IsNumber()

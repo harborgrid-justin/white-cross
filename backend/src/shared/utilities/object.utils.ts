@@ -13,12 +13,12 @@
  * File: /backend/src/shared/utils/object.ts
  * Locator: WC-UTL-OBJ-076
  * Purpose: Healthcare Object Utilities - Medical data manipulation and HIPAA-safe operations
- * 
+ *
  * Upstream: lodash library, independent utility module
  * Downstream: ../services/*, data transformation, API response formatting, PHI handling
  * Dependencies: lodash, TypeScript generics, object manipulation functions
  * Exports: cloneDeep, merge, pick, omit, get, set, healthcare data transformation
- * 
+ *
  * LLM Context: Object manipulation utilities for White Cross healthcare system.
  * Handles PHI-safe object operations, medical record merging, data sanitization.
  * Critical for HIPAA compliance when manipulating patient data objects.
@@ -78,7 +78,8 @@ export const cloneDeep = <T>(obj: T) => _.cloneDeep(obj);
  * @remarks
  * Warning: This function mutates the target object. Use cloneDeep first if immutability is required.
  */
-export const merge = <T>(target: T, ...sources: Partial<T>[]) => _.merge(target, ...sources);
+export const merge = <T>(target: T, ...sources: Partial<T>[]) =>
+  _.merge(target, ...sources);
 
 /**
  * Creates new object with only specified properties from source object.
@@ -108,7 +109,8 @@ export const merge = <T>(target: T, ...sources: Partial<T>[]) => _.merge(target,
  * // Result: { id: 'S1', name: 'John Doe' } - PHI excluded
  * ```
  */
-export const pick = <T, K extends keyof T>(obj: T, keys: K[]) => _.pick(obj, keys);
+export const pick = <T, K extends keyof T>(obj: T, keys: K[]) =>
+  _.pick(obj, keys);
 
 /**
  * Creates new object excluding specified properties from source object.
@@ -138,7 +140,8 @@ export const pick = <T, K extends keyof T>(obj: T, keys: K[]) => _.pick(obj, key
  * // Result: { id: 'U1', email: 'user@example.com' }
  * ```
  */
-export const omit = <T extends object, K extends keyof T>(obj: T, keys: K[]) => _.omit(obj, keys);
+export const omit = <T extends object, K extends keyof T>(obj: T, keys: K[]) =>
+  _.omit(obj, keys);
 
 /**
  * Checks if object has all specified keys.
@@ -180,7 +183,8 @@ export const has = <T>(obj: T, keys: string[]) => _.has(obj, keys);
  * get(patient, 'contact.primary.phone', null);    // null
  * ```
  */
-export const get = <T>(obj: T, path: string, defaultValue?: any) => _.get(obj, path, defaultValue);
+export const get = <T>(obj: T, path: string, defaultValue?: any) =>
+  _.get(obj, path, defaultValue);
 
 /**
  * Safely sets value at nested object path, creating intermediate objects as needed.
@@ -204,7 +208,8 @@ export const get = <T>(obj: T, path: string, defaultValue?: any) => _.get(obj, p
  * @remarks
  * Warning: This function mutates the object. Use cloneDeep first if immutability is required.
  */
-export const set = <T extends object>(obj: T, path: string, value: unknown) => _.set(obj, path, value);
+export const set = <T extends object>(obj: T, path: string, value: unknown) =>
+  _.set(obj, path, value);
 
 /**
  * Checks if path exists in object (including inherited properties).
@@ -233,5 +238,5 @@ export default {
   has,
   get,
   set,
-  hasIn
+  hasIn,
 };

@@ -1,6 +1,8 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsDateString, ValidateNested, ArrayMinSize } from 'class-validator';
+import { ArrayMinSize, IsArray, IsDateString, IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { MessageType, MessagePriority, MessageCategory } from '../enums';
+import { MessageCategory } from '../enums/message-category.enum';
+import { MessagePriority } from '../enums/message-priority.enum';
+import { MessageType } from '../enums/message-type.enum';
 import { RecipientDto } from './recipient.dto';
 
 export class CreateMessageDto {

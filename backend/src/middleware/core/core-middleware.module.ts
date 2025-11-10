@@ -14,10 +14,11 @@
  * @compliance HIPAA - Healthcare data protection and access control
  */
 
-import { Module, Global, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { Global, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { SessionMiddleware } from './middleware/session.middleware';
 import { RbacGuard } from './guards/rbac.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
+import { RequestContextMiddleware } from '../../common/middleware/request-context.middleware';
 
 /**
  * Core Middleware Module - FIXED VERSION
@@ -64,6 +65,9 @@ import { PermissionsGuard } from './guards/permissions.guard';
 @Global()
 @Module({
   providers: [
+    // Request context middleware (for request ID propagation)
+    RequestContextMiddleware,
+
     // Session management middleware
     SessionMiddleware,
 
@@ -73,6 +77,7 @@ import { PermissionsGuard } from './guards/permissions.guard';
   ],
   exports: [
     // Export for use in other modules
+    RequestContextMiddleware,
     SessionMiddleware,
     RbacGuard,
     PermissionsGuard,
@@ -82,18 +87,23 @@ export class CoreMiddlewareModule implements NestModule {
   /**
    * Configure middleware pipeline
    *
-   * Applies SessionMiddleware to all routes except:
-   * - Authentication routes (login, register, logout)
-   * - Health check routes
-   * - Public API documentation
-   * - Webhook endpoints
+   * Applies middleware in order:
+   * 1. RequestContextMiddleware - Request ID generation and propagation (all routes)
+   * 2. SessionMiddleware - Session management (protected routes only)
    *
-   * This ensures session management is enforced for protected routes
-   * while allowing public routes to function without sessions.
+   * Request context middleware runs first to ensure request IDs are available
+   * for all subsequent middleware, guards, and interceptors.
    *
    * @param consumer - Middleware consumer for route configuration
    */
   configure(consumer: MiddlewareConsumer) {
+    // Apply request context middleware to all routes (no exceptions)
+    // This ensures request IDs are available for logging and error correlation
+    consumer
+      .apply(RequestContextMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+
+    // Apply session middleware to protected routes only
     consumer
       .apply(SessionMiddleware)
       .exclude(
@@ -112,10 +122,10 @@ export class CoreMiddlewareModule implements NestModule {
         { path: 'api/docs-json', method: RequestMethod.GET },
 
         // Webhook endpoints (use API key auth instead)
-        { path: 'webhook/(.*)', method: RequestMethod.ALL },
+        { path: 'webhook/*path', method: RequestMethod.ALL },
 
         // Public endpoints (if any)
-        { path: 'public/(.*)', method: RequestMethod.ALL },
+        { path: 'public/*path', method: RequestMethod.ALL },
       )
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }

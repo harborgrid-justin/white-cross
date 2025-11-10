@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsIn } from 'class-validator';
+import { IsIn, IsString } from 'class-validator';
 
 /**
  * Trend data with percentage change and direction

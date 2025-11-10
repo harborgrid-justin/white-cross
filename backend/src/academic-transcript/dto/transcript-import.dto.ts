@@ -1,4 +1,4 @@
-import { IsString, IsArray, ValidateNested, IsOptional, IsNumber } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SubjectGradeDto {

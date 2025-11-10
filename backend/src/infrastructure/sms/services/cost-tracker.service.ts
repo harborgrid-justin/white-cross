@@ -5,11 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  SmsCostEntryDto,
-  SmsCostAnalyticsDto,
-  CostAnalyticsQueryDto,
-} from '../dto/cost-tracking.dto';
+import { CostAnalyticsQueryDto, SmsCostAnalyticsDto, SmsCostEntryDto } from '../dto/cost-tracking.dto';
 
 /**
  * Cost entry with internal tracking
@@ -94,7 +90,9 @@ export class CostTrackerService {
    * console.log(`Total cost: $${analytics.totalCost}`);
    * ```
    */
-  async getAnalytics(query: CostAnalyticsQueryDto): Promise<SmsCostAnalyticsDto> {
+  async getAnalytics(
+    query: CostAnalyticsQueryDto,
+  ): Promise<SmsCostAnalyticsDto> {
     const startDate = new Date(query.startDate);
     const endDate = new Date(query.endDate);
 
@@ -112,11 +110,16 @@ export class CostTrackerService {
 
     // Calculate totals
     const totalMessages = filteredEntries.length;
-    const totalCost = filteredEntries.reduce((sum, entry) => sum + entry.totalCost, 0);
-    const averageCostPerMessage = totalMessages > 0 ? totalCost / totalMessages : 0;
+    const totalCost = filteredEntries.reduce(
+      (sum, entry) => sum + entry.totalCost,
+      0,
+    );
+    const averageCostPerMessage =
+      totalMessages > 0 ? totalCost / totalMessages : 0;
 
     // Calculate cost breakdown by country
-    const costByCountry: Record<string, { messages: number; cost: number }> = {};
+    const costByCountry: Record<string, { messages: number; cost: number }> =
+      {};
 
     filteredEntries.forEach((entry) => {
       if (!costByCountry[entry.countryCode]) {
@@ -129,7 +132,9 @@ export class CostTrackerService {
 
     // Round cost values for display
     Object.keys(costByCountry).forEach((country) => {
-      costByCountry[country].cost = parseFloat(costByCountry[country].cost.toFixed(4));
+      costByCountry[country].cost = parseFloat(
+        costByCountry[country].cost.toFixed(4),
+      );
     });
 
     return {
@@ -161,7 +166,10 @@ export class CostTrackerService {
    * @param limit - Maximum number of entries to return
    * @returns Array of cost entries
    */
-  async getCostsByPhoneNumber(phoneNumber: string, limit = 100): Promise<CostEntry[]> {
+  async getCostsByPhoneNumber(
+    phoneNumber: string,
+    limit = 100,
+  ): Promise<CostEntry[]> {
     return this.costEntries
       .filter((entry) => entry.to === phoneNumber)
       .sort((a, b) => b.date.getTime() - a.date.getTime())

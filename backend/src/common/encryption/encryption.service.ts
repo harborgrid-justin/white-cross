@@ -48,11 +48,14 @@ export class EncryptionService {
 
       if (!masterKey) {
         this.logger.warn(
-          'ENCRYPTION_MASTER_KEY not set. Using default key (NOT FOR PRODUCTION!)'
+          'ENCRYPTION_MASTER_KEY not set. Using default key (NOT FOR PRODUCTION!)',
         );
         // Default key for development only - MUST be changed in production
         this.encryptionKey = Buffer.from(
-          'dev-encryption-key-change-this-in-production-32bytes'.padEnd(32, '0')
+          'dev-encryption-key-change-this-in-production-32bytes'.padEnd(
+            32,
+            '0',
+          ),
         );
         return;
       }
@@ -60,14 +63,14 @@ export class EncryptionService {
       // Derive key from master key using scrypt
       const salt = Buffer.from(
         this.configService.get<string>('ENCRYPTION_SALT') ||
-        'white-cross-encryption-salt-32b'.padEnd(32, '0')
+          'white-cross-encryption-salt-32b'.padEnd(32, '0'),
       );
 
       const scryptAsync = promisify(scrypt);
       this.encryptionKey = (await scryptAsync(
         masterKey,
         salt,
-        this.keyLength
+        this.keyLength,
       )) as Buffer;
 
       this.logger.log('Encryption service initialized successfully');
@@ -175,7 +178,9 @@ export class EncryptionService {
       return plaintext;
     } catch (error) {
       this.logger.error('Decryption failed:', error);
-      throw new Error('Failed to decrypt data - data may be corrupted or tampered');
+      throw new Error(
+        'Failed to decrypt data - data may be corrupted or tampered',
+      );
     }
   }
 
@@ -193,7 +198,7 @@ export class EncryptionService {
    */
   async encryptFields(
     data: Record<string, any>,
-    fields: string[]
+    fields: string[],
   ): Promise<Record<string, any>> {
     const result = { ...data };
 
@@ -220,7 +225,7 @@ export class EncryptionService {
    */
   async decryptFields(
     data: Record<string, any>,
-    fields: string[]
+    fields: string[],
   ): Promise<Record<string, any>> {
     const result = { ...data };
 
@@ -229,7 +234,9 @@ export class EncryptionService {
         try {
           result[field] = await this.decrypt(result[field]);
         } catch (error) {
-          this.logger.warn(`Failed to decrypt field ${field}, keeping encrypted`);
+          this.logger.warn(
+            `Failed to decrypt field ${field}, keeping encrypted`,
+          );
           // Keep encrypted value if decryption fails
         }
       }
@@ -247,7 +254,7 @@ export class EncryptionService {
   isEncrypted(data: string): boolean {
     if (!data) return false;
     const parts = data.split(':');
-    return parts.length === 3 && parts.every(part => part.length > 0);
+    return parts.length === 3 && parts.every((part) => part.length > 0);
   }
 
   /**
@@ -274,7 +281,7 @@ export class EncryptionService {
   async reEncrypt(
     encrypted: string,
     oldKey: string,
-    newKey: string
+    newKey: string,
   ): Promise<string> {
     // Temporarily use old key to decrypt
     const originalKey = this.encryptionKey;

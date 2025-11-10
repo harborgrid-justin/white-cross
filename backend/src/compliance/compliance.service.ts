@@ -24,18 +24,20 @@ export class ComplianceService {
     userId: string,
     userRole: string,
     dataType: 'full_record' | 'summary' | 'specific_field',
-    purpose: string
+    purpose: string,
   ): Promise<{ allowed: boolean; reason?: string }> {
-    this.logger.log(`Validating minimum necessary access for user ${userId}, dataType: ${dataType}`);
+    this.logger.log(
+      `Validating minimum necessary access for user ${userId}, dataType: ${dataType}`,
+    );
 
     // Define role-based access levels
     const roleAccessLevels: Record<string, string[]> = {
-      'doctor': ['full_record', 'summary', 'specific_field'],
-      'nurse': ['full_record', 'summary', 'specific_field'],
-      'counselor': ['summary', 'specific_field'],
-      'administrator': ['summary', 'specific_field'],
-      'parent': ['summary'],
-      'student': ['summary']
+      doctor: ['full_record', 'summary', 'specific_field'],
+      nurse: ['full_record', 'summary', 'specific_field'],
+      counselor: ['summary', 'specific_field'],
+      administrator: ['summary', 'specific_field'],
+      parent: ['summary'],
+      student: ['summary'],
     };
 
     const allowedDataTypes = roleAccessLevels[userRole] || [];
@@ -43,12 +45,14 @@ export class ComplianceService {
     if (!allowedDataTypes.includes(dataType)) {
       return {
         allowed: false,
-        reason: `Role '${userRole}' does not have access to '${dataType}' level data`
+        reason: `Role '${userRole}' does not have access to '${dataType}' level data`,
       };
     }
 
     // Log compliance check
-    this.logger.log(`Minimum necessary check passed for user ${userId} accessing ${dataType}`);
+    this.logger.log(
+      `Minimum necessary check passed for user ${userId} accessing ${dataType}`,
+    );
 
     return { allowed: true };
   }
@@ -59,20 +63,21 @@ export class ComplianceService {
    */
   async validateDataRetention(
     recordType: string,
-    recordDate: Date
+    recordDate: Date,
   ): Promise<{ compliant: boolean; retentionYears: number; message?: string }> {
     const now = new Date();
-    const ageInYears = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
+    const ageInYears =
+      (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
 
     // HIPAA minimum retention periods
     const retentionPolicies: Record<string, number> = {
-      'medical_record': 6,
-      'billing_record': 6,
-      'audit_log': 6,
-      'consent_form': 6,
-      'immunization_record': 10, // Longer for immunizations
-      'incident_report': 7,
-      'chronic_condition': 10
+      medical_record: 6,
+      billing_record: 6,
+      audit_log: 6,
+      consent_form: 6,
+      immunization_record: 10, // Longer for immunizations
+      incident_report: 7,
+      chronic_condition: 10,
     };
 
     const requiredYears = retentionPolicies[recordType] || 6;
@@ -81,14 +86,14 @@ export class ComplianceService {
       return {
         compliant: true,
         retentionYears: requiredYears,
-        message: `Record has met retention requirement of ${requiredYears} years`
+        message: `Record has met retention requirement of ${requiredYears} years`,
       };
     }
 
     return {
       compliant: false,
       retentionYears: requiredYears,
-      message: `Record must be retained for ${requiredYears} years (currently ${Math.floor(ageInYears)} years old)`
+      message: `Record must be retained for ${requiredYears} years (currently ${Math.floor(ageInYears)} years old)`,
     };
   }
 
@@ -98,7 +103,7 @@ export class ComplianceService {
    */
   async validateAuditLogCompleteness(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     compliant: boolean;
     issues: string[];
@@ -113,18 +118,30 @@ export class ComplianceService {
     // 3. Verify no gaps in logging
     // 4. Check for suspicious patterns
 
-    this.logger.log(`Validating audit log completeness from ${startDate} to ${endDate}`);
+    this.logger.log(
+      `Validating audit log completeness from ${startDate} to ${endDate}`,
+    );
 
     // Example validation checks
-    const requiredFields = ['userId', 'action', 'entity', 'entityId', 'timestamp', 'ipAddress'];
+    const requiredFields = [
+      'userId',
+      'action',
+      'entity',
+      'entityId',
+      'timestamp',
+      'ipAddress',
+    ];
 
     return {
       compliant: issues.length === 0,
       issues,
-      recommendations: recommendations.length > 0 ? recommendations : [
-        'Continue maintaining comprehensive audit logs',
-        'Regular audit log reviews recommended'
-      ]
+      recommendations:
+        recommendations.length > 0
+          ? recommendations
+          : [
+              'Continue maintaining comprehensive audit logs',
+              'Regular audit log reviews recommended',
+            ],
     };
   }
 
@@ -136,18 +153,20 @@ export class ComplianceService {
     userId: string,
     userRole: string,
     studentId: string,
-    accessType: 'read' | 'write' | 'delete'
+    accessType: 'read' | 'write' | 'delete',
   ): Promise<{ authorized: boolean; reason?: string }> {
-    this.logger.log(`Validating PHI access: user ${userId} (${userRole}) attempting ${accessType} on student ${studentId}`);
+    this.logger.log(
+      `Validating PHI access: user ${userId} (${userRole}) attempting ${accessType} on student ${studentId}`,
+    );
 
     // Define role-based permissions
     const rolePermissions: Record<string, string[]> = {
-      'doctor': ['read', 'write'],
-      'nurse': ['read', 'write'],
-      'counselor': ['read'],
-      'administrator': ['read', 'write', 'delete'],
-      'parent': ['read'], // Limited to own child
-      'student': ['read'] // Limited to self
+      doctor: ['read', 'write'],
+      nurse: ['read', 'write'],
+      counselor: ['read'],
+      administrator: ['read', 'write', 'delete'],
+      parent: ['read'], // Limited to own child
+      student: ['read'], // Limited to self
     };
 
     const allowedActions = rolePermissions[userRole] || [];
@@ -155,7 +174,7 @@ export class ComplianceService {
     if (!allowedActions.includes(accessType)) {
       return {
         authorized: false,
-        reason: `Role '${userRole}' is not authorized for '${accessType}' access to PHI`
+        reason: `Role '${userRole}' is not authorized for '${accessType}' access to PHI`,
       };
     }
 
@@ -167,7 +186,7 @@ export class ComplianceService {
    */
   async generateComplianceReport(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<{
     period: { start: Date; end: Date };
     overallCompliance: 'compliant' | 'issues_found' | 'non_compliant';
@@ -177,38 +196,48 @@ export class ComplianceService {
       details: string;
     }>;
   }> {
-    this.logger.log(`Generating compliance report from ${startDate} to ${endDate}`);
+    this.logger.log(
+      `Generating compliance report from ${startDate} to ${endDate}`,
+    );
 
     const checks = [
       {
         checkName: 'Audit Log Completeness',
         status: 'pass' as const,
-        details: 'All PHI access properly logged'
+        details: 'All PHI access properly logged',
       },
       {
         checkName: 'Data Retention Policy',
         status: 'pass' as const,
-        details: 'All records meet retention requirements'
+        details: 'All records meet retention requirements',
       },
       {
         checkName: 'Access Control Validation',
         status: 'pass' as const,
-        details: 'Role-based access controls properly enforced'
+        details: 'Role-based access controls properly enforced',
       },
       {
         checkName: 'Encryption Compliance',
         status: 'pass' as const,
-        details: 'PHI encrypted at rest and in transit'
-      }
+        details: 'PHI encrypted at rest and in transit',
+      },
     ];
 
-    const hasFailures = checks.some(c => c.status === 'fail' as 'fail' | 'pass' | 'warning');
-    const hasWarnings = checks.some(c => c.status === 'warning' as 'fail' | 'pass' | 'warning');
+    const hasFailures = checks.some(
+      (c) => c.status === ('fail' as 'fail' | 'pass' | 'warning'),
+    );
+    const hasWarnings = checks.some(
+      (c) => c.status === ('warning' as 'fail' | 'pass' | 'warning'),
+    );
 
     return {
       period: { start: startDate, end: endDate },
-      overallCompliance: hasFailures ? 'non_compliant' : hasWarnings ? 'issues_found' : 'compliant',
-      checks
+      overallCompliance: hasFailures
+        ? 'non_compliant'
+        : hasWarnings
+          ? 'issues_found'
+          : 'compliant',
+      checks,
     };
   }
 
@@ -216,20 +245,24 @@ export class ComplianceService {
    * Validate breach notification requirements
    * HIPAA Breach Notification Rule: 45 CFR 164.400-414
    */
-  async assessBreachNotificationRequirement(
-    incidentDetails: {
-      affectedRecords: number;
-      phiTypes: string[];
-      exposureType: 'unauthorized_access' | 'data_loss' | 'theft' | 'improper_disposal';
-      mitigationActions: string[];
-    }
-  ): Promise<{
+  async assessBreachNotificationRequirement(incidentDetails: {
+    affectedRecords: number;
+    phiTypes: string[];
+    exposureType:
+      | 'unauthorized_access'
+      | 'data_loss'
+      | 'theft'
+      | 'improper_disposal';
+    mitigationActions: string[];
+  }): Promise<{
     notificationRequired: boolean;
     timeframe: string;
     recipients: string[];
     reasoning: string;
   }> {
-    this.logger.warn('Assessing potential HIPAA breach notification requirement');
+    this.logger.warn(
+      'Assessing potential HIPAA breach notification requirement',
+    );
 
     // HIPAA requires notification if breach affects 500+ individuals
     const largeBreach = incidentDetails.affectedRecords >= 500;
@@ -239,13 +272,16 @@ export class ComplianceService {
 
     return {
       notificationRequired,
-      timeframe: largeBreach ? '60 days and immediate HHS notification' : '60 days',
+      timeframe: largeBreach
+        ? '60 days and immediate HHS notification'
+        : '60 days',
       recipients: largeBreach
         ? ['affected_individuals', 'hhs_secretary', 'media']
         : ['affected_individuals', 'hhs_secretary'],
-      reasoning: `Breach affects ${incidentDetails.affectedRecords} individual(s). ` +
+      reasoning:
+        `Breach affects ${incidentDetails.affectedRecords} individual(s). ` +
         `HIPAA requires notification within 60 days. ` +
-        (largeBreach ? 'Large breach (500+) requires media notification.' : '')
+        (largeBreach ? 'Large breach (500+) requires media notification.' : ''),
     };
   }
 }

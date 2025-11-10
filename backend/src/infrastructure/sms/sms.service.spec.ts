@@ -6,7 +6,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { BadRequestException, HttpException } from '@nestjs/common';
 import { getQueueToken } from '@nestjs/bull';
 import { SmsService } from './sms.service';
 import { TwilioProvider } from './providers/twilio.provider';
@@ -18,12 +18,11 @@ import { SMS_QUEUE_NAME } from './processors/sms-queue.processor';
 import { AlertSeverity } from '../../alerts/dto/create-alert.dto';
 import {
   AlertSmsDto,
+  BulkSmsDto,
   GenericSmsDto,
   SendSmsDto,
   SendTemplatedSmsDto,
-  BulkSmsDto,
   SmsPriority,
-  PhoneNumberType,
   SmsTemplateType,
 } from './dto';
 

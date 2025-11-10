@@ -9,7 +9,7 @@
  * @since 1.0.0
  */
 
-import { Request, ReqRefDefaults } from '@hapi/hapi';
+import { ReqRefDefaults, Request } from '@hapi/hapi';
 
 /**
  * User credentials extra properties for JWT authentication.

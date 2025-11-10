@@ -4,7 +4,7 @@
  * audit logging, and caching
  */
 
-import { ExecutionContext, QueryOptions, QueryCriteria, PaginatedResult } from '../../types';
+import { ExecutionContext, PaginatedResult, QueryCriteria, QueryOptions } from '../../types';
 
 /**
  * Base repository interface for data access operations
@@ -22,7 +22,10 @@ export interface IRepository<T, CreateDTO, UpdateDTO> {
   /**
    * Finds multiple entities matching query criteria with pagination
    */
-  findMany(criteria: QueryCriteria<T>, options?: QueryOptions): Promise<PaginatedResult<T>>;
+  findMany(
+    criteria: QueryCriteria<T>,
+    options?: QueryOptions,
+  ): Promise<PaginatedResult<T>>;
 
   /**
    * Creates new entity with validation and audit logging
@@ -53,7 +56,7 @@ export class RepositoryError extends Error {
     message: string,
     public code: string,
     public statusCode: number = 400,
-    public details?: any
+    public details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'RepositoryError';

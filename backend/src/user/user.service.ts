@@ -7,26 +7,17 @@
  * @security Account lockout after 5 failed attempts
  */
 
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-  UnauthorizedException,
-  Logger,
-  BadRequestException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { User } from './entities/user.entity';
-import {
-  CreateUserDto,
-  UpdateUserDto,
-  UserChangePasswordDto,
-  UserFiltersDto,
-  UserStatisticsDto,
-} from './dto';
-import { UserRole } from './enums/user-role.enum';
-import { QueryCacheService } from '../database/services/query-cache.service';
+import { User } from '@/user/entities';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserChangePasswordDto } from './dto/change-password.dto';
+import { UserFiltersDto } from './dto/user-filters.dto';
+import { UserStatisticsDto } from './dto/user-statistics.dto';
+import { UserRole } from '@/user/enums';
+import { QueryCacheService } from '@/database/services';
 
 @Injectable()
 export class UserService {
@@ -66,22 +57,23 @@ export class UserService {
         whereClause.isActive = isActive;
       }
 
-      const { rows: users, count: total } = await this.userModel.findAndCountAll({
-        where: whereClause,
-        offset,
-        limit,
-        attributes: {
-          exclude: [
-            'password',
-            'passwordResetToken',
-            'passwordResetExpires',
-            'emailVerificationToken',
-            'emailVerificationExpires',
-            'twoFactorSecret',
-          ],
-        },
-        order: [['createdAt', 'DESC']],
-      });
+      const { rows: users, count: total } =
+        await this.userModel.findAndCountAll({
+          where: whereClause,
+          offset,
+          limit,
+          attributes: {
+            exclude: [
+              'password',
+              'passwordResetToken',
+              'passwordResetExpires',
+              'emailVerificationToken',
+              'emailVerificationExpires',
+              'twoFactorSecret',
+            ],
+          },
+          order: [['createdAt', 'DESC']],
+        });
 
       // Convert to safe objects
       const safeUsers = users.map((user) => user.toSafeObject());
@@ -119,14 +111,14 @@ export class UserService {
           ttl: 300, // 5 minutes - user data changes moderately
           keyPrefix: 'user_id',
           invalidateOn: ['update', 'destroy'],
-        }
+        },
       );
 
       if (!users || users.length === 0) {
         throw new NotFoundException('User not found');
       }
 
-      return users[0].toSafeObject();
+      return users[0]!.toSafeObject();
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -402,7 +394,7 @@ export class UserService {
           ttl: 600, // 10 minutes - role lists are relatively stable
           keyPrefix: 'user_role',
           invalidateOn: ['create', 'update', 'destroy'],
-        }
+        },
       );
 
       return users.map((user) => user.toSafeObject());

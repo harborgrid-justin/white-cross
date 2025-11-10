@@ -16,6 +16,16 @@ import { CacheService } from './cache.service';
 import { RateLimitConfig, RateLimitStatus } from './cache.interfaces';
 
 /**
+ * Rate limit context
+ */
+interface RateLimitContext {
+  userId?: string;
+  ip?: string;
+  organizationId?: string;
+  [key: string]: unknown;
+}
+
+/**
  * Rate limiter service using token bucket algorithm
  */
 @Injectable()
@@ -48,10 +58,7 @@ export class RateLimiterService {
    * @param context - Context object (e.g., request, user)
    * @returns Rate limit status
    */
-  async checkLimit(
-    configName: string,
-    context: any,
-  ): Promise<RateLimitStatus> {
+  async checkLimit(configName: string, context: RateLimitContext): Promise<RateLimitStatus> {
     const config = this.configs.get(configName);
     if (!config) {
       this.logger.warn(`Rate limit config not found: ${configName}`);
@@ -112,11 +119,7 @@ export class RateLimiterService {
    * @param tokens - Number of tokens to consume (default: 1)
    * @returns Whether tokens were successfully consumed
    */
-  async consumeTokens(
-    configName: string,
-    identifier: string,
-    tokens = 1,
-  ): Promise<boolean> {
+  async consumeTokens(configName: string, identifier: string, tokens = 1): Promise<boolean> {
     const config = this.configs.get(configName);
     if (!config) {
       return true; // Allow if config not found
@@ -139,10 +142,7 @@ export class RateLimiterService {
    * @param identifier - Request identifier
    * @returns Number of remaining tokens
    */
-  async getRemainingTokens(
-    configName: string,
-    identifier: string,
-  ): Promise<number> {
+  async getRemainingTokens(configName: string, identifier: string): Promise<number> {
     const config = this.configs.get(configName);
     if (!config) {
       return Number.MAX_SAFE_INTEGER;
@@ -242,11 +242,7 @@ export class RateLimiterService {
    * @param amount - Amount to increment (default: 1)
    * @private
    */
-  private async incrementCounter(
-    key: string,
-    config: RateLimitConfig,
-    amount = 1,
-  ): Promise<void> {
+  private async incrementCounter(key: string, config: RateLimitConfig, amount = 1): Promise<void> {
     const now = Date.now();
     const windowKey = `${key}:${Math.floor(now / config.windowMs)}`;
     const ttl = Math.ceil(config.windowMs / 1000) + 1; // Add 1 second buffer

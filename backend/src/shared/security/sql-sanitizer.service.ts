@@ -166,13 +166,20 @@ import { logger } from '../logging/logger';
  * @see {@link validateSortField} for whitelist validation function
  */
 export const ALLOWED_SORT_FIELDS: Record<string, string[]> = {
-  inventory: ['name', 'quantity', 'category', 'createdAt', 'updatedAt', 'expirationDate'],
+  inventory: [
+    'name',
+    'quantity',
+    'category',
+    'createdAt',
+    'updatedAt',
+    'expirationDate',
+  ],
   healthRecords: ['date', 'type', 'createdAt', 'title', 'provider'],
   students: ['firstName', 'lastName', 'grade', 'studentNumber', 'createdAt'],
   medications: ['name', 'category', 'stockQuantity', 'expirationDate'],
   appointments: ['scheduledAt', 'status', 'type', 'createdAt'],
   users: ['firstName', 'lastName', 'email', 'role', 'createdAt'],
-  reports: ['createdAt', 'type', 'status']
+  reports: ['createdAt', 'type', 'status'],
 };
 
 /**
@@ -203,7 +210,7 @@ export const ALLOWED_SORT_ORDERS = ['ASC', 'DESC', 'asc', 'desc'] as const;
  * @typedef {('ASC' | 'DESC' | 'asc' | 'desc')} SortOrder
  * @description TypeScript type for compile-time sort order validation.
  */
-export type SortOrder = typeof ALLOWED_SORT_ORDERS[number];
+export type SortOrder = (typeof ALLOWED_SORT_ORDERS)[number];
 
 /**
  * SQL Injection Error - Thrown when injection attempt detected
@@ -266,7 +273,10 @@ export class SqlInjectionError extends Error {
    * @param {string} message - Error message describing the violation
    * @param {string} attemptedValue - The malicious input that was rejected
    */
-  constructor(message: string, public attemptedValue: string) {
+  constructor(
+    message: string,
+    public attemptedValue: string,
+  ) {
     super(message);
     this.name = 'SqlInjectionError';
   }
@@ -346,7 +356,7 @@ export function validateSortField(field: string, entityType: string): string {
     logger.error('Invalid entity type for sort validation', { entityType });
     throw new SqlInjectionError(
       `Invalid entity type: ${entityType}`,
-      entityType
+      entityType,
     );
   }
 
@@ -354,11 +364,11 @@ export function validateSortField(field: string, entityType: string): string {
     logger.warn('SQL injection attempt detected - invalid sort field', {
       field,
       entityType,
-      allowedFields
+      allowedFields,
     });
     throw new SqlInjectionError(
       `Invalid sort field: ${field}. Allowed fields: ${allowedFields.join(', ')}`,
-      field
+      field,
     );
   }
 
@@ -427,11 +437,13 @@ export function validateSortField(field: string, entityType: string): string {
 export function validateSortOrder(order: string): 'ASC' | 'DESC' {
   const upperOrder = order.toUpperCase();
 
-  if (!ALLOWED_SORT_ORDERS.map(o => o.toUpperCase()).includes(upperOrder)) {
-    logger.warn('SQL injection attempt detected - invalid sort order', { order });
+  if (!ALLOWED_SORT_ORDERS.map((o) => o.toUpperCase()).includes(upperOrder)) {
+    logger.warn('SQL injection attempt detected - invalid sort order', {
+      order,
+    });
     throw new SqlInjectionError(
       `Invalid sort order: ${order}. Allowed: ASC, DESC`,
-      order
+      order,
     );
   }
 
@@ -548,7 +560,7 @@ export interface PaginationParams {
 export function validatePagination(
   page?: number | string,
   limit?: number | string,
-  maxLimit: number = 1000
+  maxLimit: number = 1000,
 ): PaginationParams {
   const validatedPage = parseInt(String(page || 1), 10);
   const requestedLimit = parseInt(String(limit || 50), 10);
@@ -567,14 +579,14 @@ export function validatePagination(
   if (requestedLimit > maxLimit) {
     logger.warn('Pagination limit exceeded maximum', {
       requested: requestedLimit,
-      enforced: maxLimit
+      enforced: maxLimit,
     });
   }
 
   return {
     page: validatedPage,
     limit: validatedLimit,
-    offset: (validatedPage - 1) * validatedLimit
+    offset: (validatedPage - 1) * validatedLimit,
   };
 }
 
@@ -670,15 +682,15 @@ export function validatePagination(
  */
 export function buildSafeLikePattern(
   searchTerm: string,
-  matchType: 'starts' | 'ends' | 'contains' = 'contains'
+  matchType: 'starts' | 'ends' | 'contains' = 'contains',
 ): string {
   if (!searchTerm) return '%';
 
   // Escape special LIKE characters
   const escaped = searchTerm
-    .replace(/\\/g, '\\\\')  // Escape backslash first
-    .replace(/%/g, '\\%')    // Escape percent
-    .replace(/_/g, '\\_');   // Escape underscore
+    .replace(/\\/g, '\\\\') // Escape backslash first
+    .replace(/%/g, '\\%') // Escape percent
+    .replace(/_/g, '\\_'); // Escape underscore
 
   switch (matchType) {
     case 'starts':
@@ -712,5 +724,5 @@ export default {
   validateSortOrder,
   validatePagination,
   buildSafeLikePattern,
-  SqlInjectionError
+  SqlInjectionError,
 };

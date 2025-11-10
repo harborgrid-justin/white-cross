@@ -1,42 +1,40 @@
 import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  PrimaryKey,
-  Default,
   AllowNull,
-  ForeignKey,
-  BelongsTo,
-  Scopes,
   BeforeCreate,
-  BeforeUpdate
+  BeforeUpdate,
+  BelongsTo,
+  Column,
+  DataType,
+  Default,
+  ForeignKey,
+  Model,
+  PrimaryKey,
+  Scopes,
+  Table,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { ReportTemplate } from './report-template.model';
 
 export enum ReportType {
   HEALTH_REPORT = 'HEALTH_REPORT',
   MEDICATION_REPORT = 'MEDICATION_REPORT',
   INCIDENT_REPORT = 'INCIDENT_REPORT',
   COMPLIANCE_REPORT = 'COMPLIANCE_REPORT',
-  ANALYTICS_REPORT = 'ANALYTICS_REPORT'
-  }
+  ANALYTICS_REPORT = 'ANALYTICS_REPORT',
+}
 
 export enum OutputFormat {
   PDF = 'PDF',
   CSV = 'CSV',
   XLSX = 'XLSX',
-  JSON = 'JSON'
-  }
+  JSON = 'JSON',
+}
 
 export enum ReportStatus {
   PENDING = 'pending',
   GENERATING = 'generating',
   COMPLETED = 'completed',
-  FAILED = 'failed'
-  }
+  FAILED = 'failed',
+}
 
 export interface ReportExecutionAttributes {
   id: string;
@@ -61,26 +59,29 @@ export interface ReportExecutionAttributes {
 @Scopes(() => ({
   active: {
     where: {
-      deletedAt: null
+      deletedAt: null,
     },
-    order: [['createdAt', 'DESC']]
-  }
+    order: [['createdAt', 'DESC']],
+  },
 }))
 @Table({
   tableName: 'report_executions',
-  timestamps: false
-  ,
+  timestamps: false,
   indexes: [
     {
       fields: ['createdAt'],
-      name: 'idx_report_execution_created_at'
+      name: 'idx_report_execution_created_at',
     },
     {
       fields: ['updatedAt'],
-      name: 'idx_report_execution_updated_at'
-    }
-  ]})
-export class ReportExecution extends Model<ReportExecutionAttributes> implements ReportExecutionAttributes {
+      name: 'idx_report_execution_updated_at',
+    },
+  ],
+})
+export class ReportExecution
+  extends Model<ReportExecutionAttributes>
+  implements ReportExecutionAttributes
+{
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)
@@ -89,28 +90,31 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   @AllowNull
   @ForeignKey(() => require('./report-schedule.model').ReportSchedule)
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   scheduleId?: string;
 
-  @BelongsTo(() => require('./report-schedule.model').ReportSchedule, { foreignKey: 'scheduleId', as: 'schedule' })
+  @BelongsTo(() => require('./report-schedule.model').ReportSchedule, {
+    foreignKey: 'scheduleId',
+    as: 'schedule',
+  })
   declare schedule?: any;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ReportType)]
+      isIn: [Object.values(ReportType)],
     },
-    allowNull: false
+    allowNull: false,
   })
   reportType: ReportType;
 
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(OutputFormat)]
+      isIn: [Object.values(OutputFormat)],
     },
-    allowNull: false
+    allowNull: false,
   })
   outputFormat: OutputFormat;
 
@@ -121,40 +125,40 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   @Column({
     type: DataType.STRING(50),
     validate: {
-      isIn: [Object.values(ReportStatus)]
+      isIn: [Object.values(ReportStatus)],
     },
     allowNull: false,
-    defaultValue: ReportStatus.PENDING
+    defaultValue: ReportStatus.PENDING,
   })
   status: ReportStatus;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(500)
+    type: DataType.STRING(500),
   })
   filePath?: string;
 
   @AllowNull
   @Column({
-    type: DataType.STRING(500)
+    type: DataType.STRING(500),
   })
   downloadUrl?: string;
 
   @AllowNull
   @Column({
-    type: DataType.BIGINT
+    type: DataType.BIGINT,
   })
   fileSize?: number;
 
   @AllowNull
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   recordCount?: number;
 
   @AllowNull
   @Column({
-    type: DataType.INTEGER
+    type: DataType.INTEGER,
   })
   executionTimeMs?: number;
 
@@ -164,28 +168,27 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
 
   @AllowNull
   @Column({
-    type: DataType.UUID
+    type: DataType.UUID,
   })
   executedBy?: string;
 
   @Column({
     type: DataType.DATE,
-    allowNull: false
+    allowNull: false,
   })
   startedAt: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   completedAt?: Date;
 
   @AllowNull
   @Column({
-    type: DataType.DATE
+    type: DataType.DATE,
   })
   expiresAt?: Date;
-
 
   // Hooks for HIPAA compliance
   @BeforeCreate
@@ -193,7 +196,9 @@ export class ReportExecution extends Model<ReportExecutionAttributes> implements
   static async auditPHIAccess(instance: ReportExecution) {
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
-      console.log(`[AUDIT] ReportExecution ${instance.id} modified at ${new Date().toISOString()}`);
+      console.log(
+        `[AUDIT] ReportExecution ${instance.id} modified at ${new Date().toISOString()}`,
+      );
       console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
       // TODO: Integrate with AuditLog service for persistent audit trail
     }
