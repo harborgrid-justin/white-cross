@@ -14,7 +14,7 @@ export class ContractProcessingServicesService {
   private readonly logger = new Logger(ContractProcessingServicesService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async initiateContract(contractData: any): Promise<any> { return { contractId: `CTR-${Date.now()}` }; }
+  async initiateContract(contractData: any): Promise<any> { return { contractId: `CTR-${crypto.randomUUID()}` }; }
   async draftContractTerms(contractId: string, terms: any): Promise<any> { return {}; }
   async reviewContractLegalCompliance(contractId: string): Promise<any> { return { compliant: true }; }
   async negotiateContractTerms(contractId: string, party: string): Promise<any> { return {}; }
