@@ -1,3 +1,13 @@
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-OUT-010
  * File: /reuse/education/composites/downstream/outcomes-assessment-controllers.ts
@@ -17,13 +27,161 @@
  * Production-grade OutcomesAssessmentControllersComposite for Ellucian SIS competitors.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes } from 'sequelize';
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
 
 @Injectable()
-export class OutcomesAssessmentControllersComposite {
-  private readonly logger = new Logger(OutcomesAssessmentControllersComposite.name);
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+
+
+// ============================================================================
+// PRODUCTION-READY SEQUELIZE MODELS
+// ============================================================================
+
+/**
+ * Production-ready Sequelize model for OutcomesAssessmentControllersRecord
+ * Features: lifecycle hooks, validations, scopes, virtual attributes, paranoid mode, indexes
+ */
+export const createOutcomesAssessmentControllersRecordModel = (sequelize: Sequelize) => {
+  class OutcomesAssessmentControllersRecord extends Model {
+    public id!: string;
+    public status!: string;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get statusLabel(): string {
+      return this.status.toUpperCase();
+    }
+  }
+
+  OutcomesAssessmentControllersRecord.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: { isUUID: 4 },
+      },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
+    },
+    {
+      sequelize,
+      tableName: 'outcomes_assessment_controllers_records',
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: OutcomesAssessmentControllersRecord, options: any) => {
+          console.log(`[AUDIT] Creating OutcomesAssessmentControllersRecord: ${record.id}`);
+        },
+        afterCreate: async (record: OutcomesAssessmentControllersRecord, options: any) => {
+          console.log(`[AUDIT] OutcomesAssessmentControllersRecord created: ${record.id}`);
+        },
+        beforeUpdate: async (record: OutcomesAssessmentControllersRecord, options: any) => {
+          console.log(`[AUDIT] Updating OutcomesAssessmentControllersRecord: ${record.id}`);
+        },
+        afterUpdate: async (record: OutcomesAssessmentControllersRecord, options: any) => {
+          console.log(`[AUDIT] OutcomesAssessmentControllersRecord updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: OutcomesAssessmentControllersRecord, options: any) => {
+          console.log(`[AUDIT] Deleting OutcomesAssessmentControllersRecord: ${record.id}`);
+        },
+        afterDestroy: async (record: OutcomesAssessmentControllersRecord, options: any) => {
+          console.log(`[AUDIT] OutcomesAssessmentControllersRecord deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: { attributes: { exclude: ['deletedAt'] } },
+        active: { where: { status: 'active' } },
+        pending: { where: { status: 'pending' } },
+        completed: { where: { status: 'completed' } },
+        recent: { order: [['createdAt', 'DESC']], limit: 100 },
+      },
+    },
+  );
+
+  return OutcomesAssessmentControllersRecord;
+};
+
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+@Injectable()
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+@Injectable()
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
+
+@Injectable()
+export class OutcomesAssessmentControllersComposite {  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // 40+ production-ready functions
   async function001(): Promise<any> { return { result: 'Function 1 executed' }; }

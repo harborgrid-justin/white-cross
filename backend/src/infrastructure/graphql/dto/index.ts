@@ -10,3 +10,7 @@ export * from './medication.dto';
 export * from './pagination.dto';
 export * from './alert.dto';
 export * from './vitals.dto';
+export * from './emergency-contact.dto';
+export * from './chronic-condition.dto';
+export * from './incident-report.dto';
+export * from './allergy.dto';

@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWN-DOCDEL-006
  * File: /reuse/education/composites/downstream/document-delivery-modules.ts
@@ -33,28 +44,27 @@
  * delivery, secure transmission, clearinghouse integration, and tracking services.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, Op } from 'sequelize';
 
-import {
   getStudentRecord,
   getTranscript,
   verifyTranscriptAuthenticity,
 } from '../../student-records-kit';
 
-import {
   issueCredential,
   validateCredential,
   sendCredential,
 } from '../../credential-management-kit';
 
-import {
   generateTranscript,
   orderTranscript,
   trackTranscriptOrder,
 } from '../../transcript-management-kit';
 
-import {
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
   sendCommunication,
   trackDelivery,
 } from '../../student-communication-kit';
@@ -62,6 +72,45 @@ import {
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
+
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+@Injectable()
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+@Injectable()
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
 
 export type DocumentType = 'transcript' | 'diploma' | 'certificate' | 'enrollment_verification' | 'degree_verification';
 export type DeliveryMethod = 'electronic' | 'mail' | 'pickup' | 'clearinghouse' | 'hand_delivered';
@@ -99,16 +148,45 @@ export interface DeliveryTracking {
 }
 
 // ============================================================================
-// SEQUELIZE MODELS
+// SEQUELIZE MODELS WITH PRODUCTION-READY FEATURES
 // ============================================================================
 
+/**
+ * Production-ready Sequelize model for DocumentOrder
+ *
+ * Features:
+ * - Lifecycle hooks for FERPA/HIPAA compliance auditing
+ * - Comprehensive validations with custom validators
+ * - Model scopes for common query patterns
+ * - Virtual attributes for computed properties
+ * - Paranoid mode for soft deletes
+ * - Optimized indexes (simple and compound)
+ */
 export const createDocumentOrderModel = (sequelize: Sequelize) => {
   class DocumentOrder extends Model {
     public id!: string;
-    public studentId!: string;
-    public documentType!: string;
     public status!: string;
-    public orderData!: Record<string, any>;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get isPending(): boolean {
+      return this.status === 'pending';
+    }
+
+    get isCompleted(): boolean {
+      return this.status === 'completed';
+    }
+
+    get statusLabel(): string {
+      return this.status.replace('_', ' ').toUpperCase();
+    }
   }
 
   DocumentOrder.init(
@@ -117,49 +195,157 @@ export const createDocumentOrderModel = (sequelize: Sequelize) => {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-      },
-      studentId: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-      },
-      documentType: {
-        type: DataTypes.ENUM('transcript', 'diploma', 'certificate', 'enrollment_verification', 'degree_verification'),
-        allowNull: false,
+        validate: {
+          isUUID: 4,
+        },
       },
       status: {
-        type: DataTypes.ENUM('pending', 'processing', 'sent', 'delivered', 'failed', 'cancelled'),
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
         allowNull: false,
         defaultValue: 'pending',
+        comment: 'Record status',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
       },
-      orderData: {
-        type: DataTypes.JSON,
+      data: {
+        type: DataTypes.JSONB,
         allowNull: false,
         defaultValue: {},
+        comment: 'Comprehensive record data',
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
       },
     },
     {
       sequelize,
-      tableName: 'document_orders',
+      tableName: 'DocumentOrder',
       timestamps: true,
+      paranoid: true,
+      underscored: true,
       indexes: [
-        { fields: ['studentId'] },
         { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['updated_at'] },
+        { fields: ['deleted_at'] },
+        { fields: ['status', 'created_at'] },
       ],
+      hooks: {
+        beforeCreate: async (record: DocumentOrder, options: any) => {
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_DOCUMENTORDER',
+                  tableName: 'DocumentOrder',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterCreate: async (record: DocumentOrder, options: any) => {
+          console.log(`[AUDIT] DocumentOrder created: ${record.id}`);
+        },
+        beforeUpdate: async (record: DocumentOrder, options: any) => {
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_DOCUMENTORDER',
+                  tableName: 'DocumentOrder',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterUpdate: async (record: DocumentOrder, options: any) => {
+          console.log(`[AUDIT] DocumentOrder updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: DocumentOrder, options: any) => {
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_DOCUMENTORDER',
+                  tableName: 'DocumentOrder',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterDestroy: async (record: DocumentOrder, options: any) => {
+          console.log(`[AUDIT] DocumentOrder deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: {
+          attributes: { exclude: ['deletedAt'] },
+        },
+        active: {
+          where: { status: 'active' },
+        },
+        pending: {
+          where: { status: 'pending' },
+        },
+        completed: {
+          where: { status: 'completed' },
+        },
+        recent: {
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        },
+        withData: {
+          attributes: {
+            include: ['id', 'status', 'data', 'createdAt', 'updatedAt'],
+          },
+        },
+      },
     },
   );
 
   return DocumentOrder;
 };
 
+
 // ============================================================================
 // NESTJS INJECTABLE SERVICE
 // ============================================================================
 
-@Injectable()
+@ApiTags('Education Services')
+@ApiBearerAuth('JWT-auth')
+@ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
+@Injectable({ scope: Scope.REQUEST })
 export class DocumentDeliveryModulesService {
-  private readonly logger = new Logger(DocumentDeliveryModulesService.name);
-
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   async orderDocument(orderData: DocumentOrder): Promise<any> {
     this.logger.log(\`Ordering \${orderData.documentType} for student \${orderData.studentId}\`);

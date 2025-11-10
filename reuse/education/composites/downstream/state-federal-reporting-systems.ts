@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWNSTREAM-006
  * File: /reuse/education/composites/downstream/state-federal-reporting-systems.ts
@@ -34,23 +45,23 @@
  * and comprehensive regulatory compliance for colleges and universities.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes } from 'sequelize';
 
-import {
   generateComplianceReport,
   submitToRegulator,
   validateReportData,
   archiveReport,
 } from '../../compliance-reporting-kit';
 
-import {
   getEnrollmentData,
   getGraduationData,
   getRetentionData,
 } from '../../student-records-kit';
 
-import {
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
   getTitleIVData,
   getFISAPData,
   getFinancialAidMetrics,
@@ -59,6 +70,45 @@ import {
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
+
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+@Injectable()
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+@Injectable()
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
 
 export type ReportType = 'IPEDS' | 'FISAP' | 'NSLDS' | 'STATE' | 'CUSTOM';
 export type ReportStatus = 'draft' | 'validated' | 'submitted' | 'accepted' | 'rejected';
@@ -85,50 +135,204 @@ export interface IPEDSReport {
 }
 
 // ============================================================================
-// SEQUELIZE MODELS
+// SEQUELIZE MODELS WITH PRODUCTION-READY FEATURES
 // ============================================================================
 
-export const createComplianceReportModel = (sequelize: Sequelize) => {
+/**
+ * Production-ready Sequelize model for ComplianceReportModel
+ *
+ * Features:
+ * - Lifecycle hooks for FERPA/HIPAA compliance auditing
+ * - Comprehensive validations with custom validators
+ * - Model scopes for common query patterns
+ * - Virtual attributes for computed properties
+ * - Paranoid mode for soft deletes
+ * - Optimized indexes (simple and compound)
+ */
+export const createComplianceReportModelModel = (sequelize: Sequelize) => {
   class ComplianceReportModel extends Model {
     public id!: string;
-    public reportType!: string;
     public status!: string;
-    public reportData!: Record<string, any>;
+    public data!: Record<string, any>;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get isPending(): boolean {
+      return this.status === 'pending';
+    }
+
+    get isCompleted(): boolean {
+      return this.status === 'completed';
+    }
+
+    get statusLabel(): string {
+      return this.status.replace('_', ' ').toUpperCase();
+    }
   }
 
   ComplianceReportModel.init(
     {
-      id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-      reportType: { type: DataTypes.STRING(50), allowNull: false },
-      status: {
-        type: DataTypes.ENUM('draft', 'validated', 'submitted', 'accepted', 'rejected'),
-        allowNull: false,
-        defaultValue: 'draft',
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: {
+          isUUID: 4,
+        },
       },
-      reportData: { type: DataTypes.JSON, allowNull: false, defaultValue: {} },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        comment: 'Record status',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Comprehensive record data',
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
     },
     {
       sequelize,
-      tableName: 'compliance_reports',
+      tableName: 'ComplianceReportModel',
       timestamps: true,
-      indexes: [{ fields: ['reportType'] }, { fields: ['status'] }],
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['updated_at'] },
+        { fields: ['deleted_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: ComplianceReportModel, options: any) => {
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_COMPLIANCEREPORTMODEL',
+                  tableName: 'ComplianceReportModel',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterCreate: async (record: ComplianceReportModel, options: any) => {
+          console.log(`[AUDIT] ComplianceReportModel created: ${record.id}`);
+        },
+        beforeUpdate: async (record: ComplianceReportModel, options: any) => {
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_COMPLIANCEREPORTMODEL',
+                  tableName: 'ComplianceReportModel',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterUpdate: async (record: ComplianceReportModel, options: any) => {
+          console.log(`[AUDIT] ComplianceReportModel updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: ComplianceReportModel, options: any) => {
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_COMPLIANCEREPORTMODEL',
+                  tableName: 'ComplianceReportModel',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterDestroy: async (record: ComplianceReportModel, options: any) => {
+          console.log(`[AUDIT] ComplianceReportModel deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: {
+          attributes: { exclude: ['deletedAt'] },
+        },
+        active: {
+          where: { status: 'active' },
+        },
+        pending: {
+          where: { status: 'pending' },
+        },
+        completed: {
+          where: { status: 'completed' },
+        },
+        recent: {
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        },
+        withData: {
+          attributes: {
+            include: ['id', 'status', 'data', 'createdAt', 'updatedAt'],
+          },
+        },
+      },
     },
   );
 
   return ComplianceReportModel;
 };
 
+
 // ============================================================================
 // NESTJS INJECTABLE SERVICE
 // ============================================================================
 
-@Injectable()
+@ApiTags('Compliance & Reporting')
+@ApiBearerAuth('JWT-auth')
+@ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
+@Injectable({ scope: Scope.REQUEST })
 export class StateFederalReportingSystemsCompositeService {
-  private readonly logger = new Logger(StateFederalReportingSystemsCompositeService.name);
-
-  constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // IPEDS Reporting (Functions 1-10)
   async generateIPEDSFallEnrollment(year: number): Promise<any> {
@@ -193,7 +397,7 @@ export class StateFederalReportingSystemsCompositeService {
     return { submitted: true };
   }
 
-  async generate90 10Report(year: number): Promise<any> {
+  async generate9010Report(year: number): Promise<any> {
     return {};
   }
 

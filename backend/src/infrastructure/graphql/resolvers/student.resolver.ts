@@ -23,6 +23,10 @@ import {
   StudentDto,
   StudentFilterInputDto,
   StudentListResponseDto,
+  EmergencyContactDto,
+  ChronicConditionDto,
+  IncidentReportDto,
+  AllergyDto,
 } from '../dto';
 import { StudentService } from '@/student';
 import type { GraphQLContext } from '../types/context.interface';
@@ -344,7 +348,7 @@ export class StudentResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of emergency contacts for the student
    */
-  @ResolveField(() => [Object], {
+  @ResolveField(() => [EmergencyContactDto], {
     name: 'emergencyContacts',
     nullable: 'items',
   })
@@ -352,7 +356,7 @@ export class StudentResolver {
   async emergencyContacts(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,
-  ): Promise<any[]> {
+  ): Promise<EmergencyContactDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
       const emergencyContacts =
@@ -380,7 +384,7 @@ export class StudentResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of chronic conditions for the student
    */
-  @ResolveField(() => [Object], {
+  @ResolveField(() => [ChronicConditionDto], {
     name: 'chronicConditions',
     nullable: 'items',
   })
@@ -388,7 +392,7 @@ export class StudentResolver {
   async chronicConditions(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,
-  ): Promise<any[]> {
+  ): Promise<ChronicConditionDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
       const chronicConditions =
@@ -416,7 +420,7 @@ export class StudentResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of recent incident reports for the student
    */
-  @ResolveField(() => [Object], {
+  @ResolveField(() => [IncidentReportDto], {
     name: 'recentIncidents',
     nullable: 'items',
   })
@@ -424,7 +428,7 @@ export class StudentResolver {
   async recentIncidents(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,
-  ): Promise<any[]> {
+  ): Promise<IncidentReportDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
       const incidents = await context.loaders.incidentsByStudentLoader.load(
@@ -442,6 +446,8 @@ export class StudentResolver {
     }
   }
 
+  // Temporarily commented out to isolate GraphQL schema generation issue
+  /*
   /**
    * Field Resolver: Load allergies for a student
    *
@@ -454,12 +460,13 @@ export class StudentResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of allergies for the student
    */
-  @ResolveField(() => [Object], { name: 'allergies', nullable: 'items' })
+  /*
+  @ResolveField(() => [AllergyDto], { name: 'allergies', nullable: 'items' })
   @PHIField() // Field-level authorization for PHI
   async allergies(
     @Parent() student: StudentDto,
     @Context() context: GraphQLContext,
-  ): Promise<any[]> {
+  ): Promise<AllergyDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
       const allergies = await context.loaders.allergiesByStudentLoader.load(
@@ -472,4 +479,5 @@ export class StudentResolver {
       return [];
     }
   }
+  */
 }

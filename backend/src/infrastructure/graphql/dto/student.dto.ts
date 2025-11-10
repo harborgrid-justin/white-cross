@@ -7,6 +7,13 @@
 import { Field, ID, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { PaginationDto } from './pagination.dto';
 import { IsBoolean, IsDateString, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { ContactDto } from './contact.dto';
+import { MedicationDto } from './medication.dto';
+import { HealthRecordDto } from './health-record.dto';
+import { EmergencyContactDto } from './emergency-contact.dto';
+import { ChronicConditionDto } from './chronic-condition.dto';
+import { IncidentReportDto } from './incident-report.dto';
+import { AllergyDto } from './allergy.dto';
 
 /**
  * Gender Enum for GraphQL
@@ -73,6 +80,32 @@ export class StudentDto {
 
   @Field()
   updatedAt: Date;
+
+  // Field resolvers - these fields are populated by @ResolveField decorators
+  @Field(() => [ContactDto], { nullable: 'items', description: 'Guardian contacts for the student' })
+  contacts?: ContactDto[];
+
+  @Field(() => [MedicationDto], { nullable: 'items', description: 'Medications assigned to the student' })
+  medications?: MedicationDto[];
+
+  @Field(() => HealthRecordDto, { nullable: true, description: 'Health record for the student' })
+  healthRecord?: HealthRecordDto;
+
+  @Field(() => Number, { description: 'Count of contacts' })
+  contactCount?: number;
+
+  @Field(() => [EmergencyContactDto], { nullable: 'items', description: 'Emergency contacts for the student' })
+  emergencyContacts?: EmergencyContactDto[];
+
+  @Field(() => [ChronicConditionDto], { nullable: 'items', description: 'Chronic conditions for the student' })
+  chronicConditions?: ChronicConditionDto[];
+
+  @Field(() => [IncidentReportDto], { nullable: 'items', description: 'Recent incident reports for the student' })
+  recentIncidents?: IncidentReportDto[];
+
+  // Temporarily commented out to isolate GraphQL schema generation issue
+  // @Field(() => [AllergyDto], { nullable: 'items', description: 'Allergies for the student' })
+  // allergies?: AllergyDto[];
 }
 
 /**

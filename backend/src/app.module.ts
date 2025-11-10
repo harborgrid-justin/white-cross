@@ -106,10 +106,7 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
       isGlobal: true,
       cache: true,
       expandVariables: true,
-      envFilePath: ((): string[] => {
-        const env = process.env.NODE_ENV || 'development';
-        return [`.env.${env}.local`, `.env.${env}`, '.env.local', '.env'];
-      })(),
+      envFilePath: [`.env.local`, `.env`],
       load: [
         appConfig,
         databaseConfig,

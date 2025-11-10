@@ -21,6 +21,7 @@ import { GqlAuthGuard, GqlRolesGuard } from '../guards';
 import { Roles } from '@/auth';
 import { UserRole } from '@/database';
 import {
+  ChronicConditionDto,
   DeleteResponseDto,
   HealthRecordDto,
   HealthRecordFilterInputDto,
@@ -391,6 +392,7 @@ export class HealthRecordResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of allergies for the student
    */
+  /*
   @ResolveField(() => [Object], { name: 'allergies', nullable: 'items' })
   @PHIField() // Field-level authorization for PHI
   async allergies(
@@ -412,6 +414,7 @@ export class HealthRecordResolver {
       return [];
     }
   }
+  */
 
   /**
    * Field Resolver: Load chronic conditions for a health record's student
@@ -425,7 +428,7 @@ export class HealthRecordResolver {
    * @param context - GraphQL context containing DataLoaders
    * @returns Array of chronic conditions for the student
    */
-  @ResolveField(() => [Object], {
+  @ResolveField(() => [ChronicConditionDto], {
     name: 'chronicConditions',
     nullable: 'items',
   })
@@ -433,7 +436,7 @@ export class HealthRecordResolver {
   async chronicConditions(
     @Parent() healthRecord: HealthRecordDto,
     @Context() context: GraphQLContext,
-  ): Promise<any[]> {
+  ): Promise<ChronicConditionDto[]> {
     try {
       // Use the shared DataLoader from context for optimal batching
       const chronicConditions =

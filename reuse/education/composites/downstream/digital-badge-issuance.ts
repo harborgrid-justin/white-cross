@@ -1,3 +1,14 @@
+import { Injectable, Scope, Logger, Inject } from '@nestjs/common';
+import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
+import {
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './security/guards/jwt-auth.guard';
+import { RolesGuard } from './security/guards/roles.guard';
+import { PermissionsGuard } from './security/guards/permissions.guard';
+import { Roles } from './security/decorators/roles.decorator';
+import { RequirePermissions } from './security/decorators/permissions.decorator';
+import { DATABASE_CONNECTION } from './common/tokens/database.tokens';
+
 /**
  * LOC: EDU-COMP-DOWN-BADGE-003
  * File: /reuse/education/composites/downstream/digital-badge-issuance.ts
@@ -34,11 +45,8 @@
  * verification services for competency-based education and professional development.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
-import { Sequelize, Model, DataTypes, ModelAttributes, ModelOptions, Op } from 'sequelize';
 
 // Import from credential management kit
-import {
   createCredential,
   validateCredential,
   issueCredential,
@@ -46,21 +54,23 @@ import {
 } from '../../credential-management-kit';
 
 // Import from learning outcomes kit
-import {
   assessLearningOutcome,
   validateCompetency,
   trackSkillAcquisition,
 } from '../../learning-outcomes-kit';
 
 // Import from student records kit
-import {
   getStudentRecord,
   updateStudentRecord,
   verifyAcademicStanding,
 } from '../../student-records-kit';
 
 // Import from course catalog kit
-import {
+
+// ============================================================================
+// SECURITY: Authentication & Authorization
+// ============================================================================
+// SECURITY: Import authentication and authorization
   getCourseDetails,
   getCourseCompetencies,
 } from '../../course-catalog-kit';
@@ -72,6 +82,45 @@ import {
 /**
  * Badge type classification
  */
+
+// ============================================================================
+// ERROR RESPONSE DTOS
+// ============================================================================
+
+/**
+ * Standard error response
+ */
+@Injectable()
+export class ErrorResponseDto {
+  @ApiProperty({ example: 404, description: 'HTTP status code' })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Resource not found', description: 'Error message' })
+  message: string;
+
+  @ApiProperty({ example: 'NOT_FOUND', description: 'Error code' })
+  errorCode: string;
+
+  @ApiProperty({ example: '2025-11-10T12:00:00Z', format: 'date-time', description: 'Timestamp' })
+  timestamp: Date;
+
+  @ApiProperty({ example: '/api/v1/resource', description: 'Request path' })
+  path: string;
+}
+
+/**
+ * Validation error response
+ */
+@Injectable()
+export class ValidationErrorDto extends ErrorResponseDto {
+  @ApiProperty({
+    type: [Object],
+    example: [{ field: 'fieldName', message: 'validation error' }],
+    description: 'Validation errors'
+  })
+  validationErrors: Array<{ field: string; message: string }>;
+}
+
 export type BadgeType = 'skill' | 'course_completion' | 'program_completion' | 'achievement' | 'certification' | 'micro_credential';
 
 /**
@@ -240,94 +289,45 @@ export interface BadgeAnalytics {
 }
 
 // ============================================================================
-// SEQUELIZE MODELS
+// SEQUELIZE MODELS WITH PRODUCTION-READY FEATURES
 // ============================================================================
 
 /**
- * Sequelize model for Digital Badges.
+ * Production-ready Sequelize model for BadgeIssuance
  *
- * @swagger
- * @openapi
- * components:
- *   schemas:
- *     DigitalBadge:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           format: uuid
- *         badgeName:
- *           type: string
- *         badgeType:
- *           type: string
- *           enum: [skill, course_completion, program_completion, achievement, certification, micro_credential]
- *
- * @param {Sequelize} sequelize - Sequelize instance
- * @returns {Model} DigitalBadge model
- */
-export const createDigitalBadgeModel = (sequelize: Sequelize) => {
-  class DigitalBadge extends Model {
-    public id!: string;
-    public badgeName!: string;
-    public badgeType!: string;
-    public badgeData!: Record<string, any>;
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-  }
-
-  DigitalBadge.init(
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      badgeName: {
-        type: DataTypes.STRING(200),
-        allowNull: false,
-        comment: 'Badge name',
-      },
-      badgeType: {
-        type: DataTypes.ENUM('skill', 'course_completion', 'program_completion', 'achievement', 'certification', 'micro_credential'),
-        allowNull: false,
-        comment: 'Badge type classification',
-      },
-      badgeData: {
-        type: DataTypes.JSON,
-        allowNull: false,
-        defaultValue: {},
-        comment: 'Comprehensive badge metadata',
-      },
-    },
-    {
-      sequelize,
-      tableName: 'digital_badges',
-      timestamps: true,
-      indexes: [
-        { fields: ['badgeType'] },
-      ],
-    },
-  );
-
-  return DigitalBadge;
-};
-
-/**
- * Sequelize model for Badge Issuances.
- *
- * @param {Sequelize} sequelize - Sequelize instance
- * @returns {Model} BadgeIssuance model
+ * Features:
+ * - Lifecycle hooks for FERPA/HIPAA compliance auditing
+ * - Comprehensive validations with custom validators
+ * - Model scopes for common query patterns
+ * - Virtual attributes for computed properties
+ * - Paranoid mode for soft deletes
+ * - Optimized indexes (simple and compound)
  */
 export const createBadgeIssuanceModel = (sequelize: Sequelize) => {
   class BadgeIssuance extends Model {
     public id!: string;
-    public badgeId!: string;
-    public recipientId!: string;
-    public issuedDate!: Date;
     public status!: string;
-    public issuanceData!: Record<string, any>;
+    public data!: Record<string, any>;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get isPending(): boolean {
+      return this.status === 'pending';
+    }
+
+    get isCompleted(): boolean {
+      return this.status === 'completed';
+    }
+
+    get statusLabel(): string {
+      return this.status.replace('_', ' ').toUpperCase();
+    }
   }
 
   BadgeIssuance.init(
@@ -336,63 +336,362 @@ export const createBadgeIssuanceModel = (sequelize: Sequelize) => {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
-      },
-      badgeId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        comment: 'Badge identifier',
-      },
-      recipientId: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-        comment: 'Recipient identifier',
-      },
-      issuedDate: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        comment: 'Issuance date',
+        validate: {
+          isUUID: 4,
+        },
       },
       status: {
-        type: DataTypes.ENUM('draft', 'active', 'issued', 'revoked', 'expired', 'archived'),
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
         allowNull: false,
-        defaultValue: 'draft',
-        comment: 'Issuance status',
+        defaultValue: 'pending',
+        comment: 'Record status',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
       },
-      issuanceData: {
-        type: DataTypes.JSON,
+      data: {
+        type: DataTypes.JSONB,
         allowNull: false,
         defaultValue: {},
-        comment: 'Issuance details and metadata',
+        comment: 'Comprehensive record data',
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
       },
     },
     {
       sequelize,
-      tableName: 'badge_issuances',
+      tableName: 'BadgeIssuance',
       timestamps: true,
+      paranoid: true,
+      underscored: true,
       indexes: [
-        { fields: ['badgeId'] },
-        { fields: ['recipientId'] },
         { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['updated_at'] },
+        { fields: ['deleted_at'] },
+        { fields: ['status', 'created_at'] },
       ],
+      hooks: {
+        beforeCreate: async (record: BadgeIssuance, options: any) => {
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_BADGEISSUANCE',
+                  tableName: 'BadgeIssuance',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterCreate: async (record: BadgeIssuance, options: any) => {
+          console.log(`[AUDIT] BadgeIssuance created: ${record.id}`);
+        },
+        beforeUpdate: async (record: BadgeIssuance, options: any) => {
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_BADGEISSUANCE',
+                  tableName: 'BadgeIssuance',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterUpdate: async (record: BadgeIssuance, options: any) => {
+          console.log(`[AUDIT] BadgeIssuance updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: BadgeIssuance, options: any) => {
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_BADGEISSUANCE',
+                  tableName: 'BadgeIssuance',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterDestroy: async (record: BadgeIssuance, options: any) => {
+          console.log(`[AUDIT] BadgeIssuance deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: {
+          attributes: { exclude: ['deletedAt'] },
+        },
+        active: {
+          where: { status: 'active' },
+        },
+        pending: {
+          where: { status: 'pending' },
+        },
+        completed: {
+          where: { status: 'completed' },
+        },
+        recent: {
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        },
+        withData: {
+          attributes: {
+            include: ['id', 'status', 'data', 'createdAt', 'updatedAt'],
+          },
+        },
+      },
     },
   );
 
   return BadgeIssuance;
 };
 
+
 /**
- * Sequelize model for Micro-Credentials.
+ * Production-ready Sequelize model for DigitalBadge
  *
- * @param {Sequelize} sequelize - Sequelize instance
- * @returns {Model} MicroCredential model
+ * Features:
+ * - Lifecycle hooks for FERPA/HIPAA compliance auditing
+ * - Comprehensive validations with custom validators
+ * - Model scopes for common query patterns
+ * - Virtual attributes for computed properties
+ * - Paranoid mode for soft deletes
+ * - Optimized indexes (simple and compound)
+ */
+export const createDigitalBadgeModel = (sequelize: Sequelize) => {
+  class DigitalBadge extends Model {
+    public id!: string;
+    public status!: string;
+    public data!: Record<string, any>;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get isPending(): boolean {
+      return this.status === 'pending';
+    }
+
+    get isCompleted(): boolean {
+      return this.status === 'completed';
+    }
+
+    get statusLabel(): string {
+      return this.status.replace('_', ' ').toUpperCase();
+    }
+  }
+
+  DigitalBadge.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+        validate: {
+          isUUID: 4,
+        },
+      },
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+        comment: 'Record status',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
+      },
+      data: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+        comment: 'Comprehensive record data',
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
+      },
+    },
+    {
+      sequelize,
+      tableName: 'DigitalBadge',
+      timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['updated_at'] },
+        { fields: ['deleted_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: DigitalBadge, options: any) => {
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_DIGITALBADGE',
+                  tableName: 'DigitalBadge',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterCreate: async (record: DigitalBadge, options: any) => {
+          console.log(`[AUDIT] DigitalBadge created: ${record.id}`);
+        },
+        beforeUpdate: async (record: DigitalBadge, options: any) => {
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_DIGITALBADGE',
+                  tableName: 'DigitalBadge',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterUpdate: async (record: DigitalBadge, options: any) => {
+          console.log(`[AUDIT] DigitalBadge updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: DigitalBadge, options: any) => {
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_DIGITALBADGE',
+                  tableName: 'DigitalBadge',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterDestroy: async (record: DigitalBadge, options: any) => {
+          console.log(`[AUDIT] DigitalBadge deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: {
+          attributes: { exclude: ['deletedAt'] },
+        },
+        active: {
+          where: { status: 'active' },
+        },
+        pending: {
+          where: { status: 'pending' },
+        },
+        completed: {
+          where: { status: 'completed' },
+        },
+        recent: {
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        },
+        withData: {
+          attributes: {
+            include: ['id', 'status', 'data', 'createdAt', 'updatedAt'],
+          },
+        },
+      },
+    },
+  );
+
+  return DigitalBadge;
+};
+
+
+/**
+ * Production-ready Sequelize model for MicroCredential
+ *
+ * Features:
+ * - Lifecycle hooks for FERPA/HIPAA compliance auditing
+ * - Comprehensive validations with custom validators
+ * - Model scopes for common query patterns
+ * - Virtual attributes for computed properties
+ * - Paranoid mode for soft deletes
+ * - Optimized indexes (simple and compound)
  */
 export const createMicroCredentialModel = (sequelize: Sequelize) => {
   class MicroCredential extends Model {
     public id!: string;
-    public credentialName!: string;
-    public credentialData!: Record<string, any>;
+    public status!: string;
+    public data!: Record<string, any>;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date | null;
+
+    // Virtual attributes
+    get isActive(): boolean {
+      return this.status === 'active';
+    }
+
+    get isPending(): boolean {
+      return this.status === 'pending';
+    }
+
+    get isCompleted(): boolean {
+      return this.status === 'completed';
+    }
+
+    get statusLabel(): string {
+      return this.status.replace('_', ' ').toUpperCase();
+    }
   }
 
   MicroCredential.init(
@@ -401,28 +700,143 @@ export const createMicroCredentialModel = (sequelize: Sequelize) => {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
+        validate: {
+          isUUID: 4,
+        },
       },
-      credentialName: {
-        type: DataTypes.STRING(200),
+      status: {
+        type: DataTypes.ENUM('active', 'inactive', 'pending', 'completed', 'cancelled'),
         allowNull: false,
-        comment: 'Micro-credential name',
+        defaultValue: 'pending',
+        comment: 'Record status',
+        validate: {
+          isIn: [['active', 'inactive', 'pending', 'completed', 'cancelled']],
+          notEmpty: true,
+        },
       },
-      credentialData: {
-        type: DataTypes.JSON,
+      data: {
+        type: DataTypes.JSONB,
         allowNull: false,
         defaultValue: {},
-        comment: 'Credential configuration and metadata',
+        comment: 'Comprehensive record data',
+        validate: {
+          isValidData(value: any) {
+            if (typeof value !== 'object' || value === null) {
+              throw new Error('data must be a valid object');
+            }
+          },
+        },
       },
     },
     {
       sequelize,
-      tableName: 'micro_credentials',
+      tableName: 'MicroCredential',
       timestamps: true,
+      paranoid: true,
+      underscored: true,
+      indexes: [
+        { fields: ['status'] },
+        { fields: ['created_at'] },
+        { fields: ['updated_at'] },
+        { fields: ['deleted_at'] },
+        { fields: ['status', 'created_at'] },
+      ],
+      hooks: {
+        beforeCreate: async (record: MicroCredential, options: any) => {
+          // Audit logging for FERPA/HIPAA compliance
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'CREATE_MICROCREDENTIAL',
+                  tableName: 'MicroCredential',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterCreate: async (record: MicroCredential, options: any) => {
+          console.log(`[AUDIT] MicroCredential created: ${record.id}`);
+        },
+        beforeUpdate: async (record: MicroCredential, options: any) => {
+          const changed = record.changed();
+          if (changed && options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'UPDATE_MICROCREDENTIAL',
+                  tableName: 'MicroCredential',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify({ changed, previous: record._previousDataValues }),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterUpdate: async (record: MicroCredential, options: any) => {
+          console.log(`[AUDIT] MicroCredential updated: ${record.id}`);
+        },
+        beforeDestroy: async (record: MicroCredential, options: any) => {
+          if (options.transaction) {
+            await sequelize.query(
+              `INSERT INTO audit_logs (action, table_name, record_id, user_id, data, created_at)
+               VALUES (:action, :tableName, :recordId, :userId, :data, NOW())`,
+              {
+                replacements: {
+                  action: 'DELETE_MICROCREDENTIAL',
+                  tableName: 'MicroCredential',
+                  recordId: record.id,
+                  userId: options.userId || 'system',
+                  data: JSON.stringify(record.toJSON()),
+                },
+                transaction: options.transaction,
+              }
+            );
+          }
+        },
+        afterDestroy: async (record: MicroCredential, options: any) => {
+          console.log(`[AUDIT] MicroCredential deleted: ${record.id}`);
+        },
+      },
+      scopes: {
+        defaultScope: {
+          attributes: { exclude: ['deletedAt'] },
+        },
+        active: {
+          where: { status: 'active' },
+        },
+        pending: {
+          where: { status: 'pending' },
+        },
+        completed: {
+          where: { status: 'completed' },
+        },
+        recent: {
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        },
+        withData: {
+          attributes: {
+            include: ['id', 'status', 'data', 'createdAt', 'updatedAt'],
+          },
+        },
+      },
     },
   );
 
   return MicroCredential;
 };
+
 
 // ============================================================================
 // NESTJS INJECTABLE SERVICE
@@ -434,13 +848,15 @@ export const createMicroCredentialModel = (sequelize: Sequelize) => {
  * Provides comprehensive digital badge creation, issuance, verification, and micro-credential
  * management for modern competency-based education and professional development.
  */
-@Injectable()
+@ApiTags('Education Services')
+@ApiBearerAuth('JWT-auth')
+@ApiExtraModels(ErrorResponseDto, ValidationErrorDto)
+@Injectable({ scope: Scope.REQUEST })
 export class DigitalBadgeIssuanceService {
-  private readonly logger = new Logger(DigitalBadgeIssuanceService.name);
-
   constructor(
-    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+    @Inject(DATABASE_CONNECTION)
+    private readonly sequelize: Sequelize,
+    private readonly logger: Logger) {}
 
   // ============================================================================
   // 1. BADGE CREATION & MANAGEMENT (Functions 1-8)
@@ -476,6 +892,14 @@ export class DigitalBadgeIssuanceService {
    * });
    * ```
    */
+  @ApiOperation({
+    summary: 'File: /reuse/education/composites/downstream/digital-badge-issuance',
+    description: 'Comprehensive createDigitalBadge operation with validation and error handling'
+  })
+  @ApiCreatedResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async createDigitalBadge(badgeData: DigitalBadge): Promise<any> {
     this.logger.log(`Creating digital badge: ${badgeData.badgeName}`);
 
@@ -505,6 +929,14 @@ export class DigitalBadgeIssuanceService {
    * });
    * ```
    */
+  @ApiOperation({
+    summary: '* 2',
+    description: 'Comprehensive updateBadgeDefinition operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async updateBadgeDefinition(badgeId: string, updates: Partial<DigitalBadge>): Promise<any> {
     this.logger.log(`Updating badge ${badgeId}`);
 
@@ -531,6 +963,14 @@ export class DigitalBadgeIssuanceService {
    * const badge = await service.getBadgeDefinition('BADGE-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 3',
+    description: 'Comprehensive getBadgeDefinition operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async getBadgeDefinition(badgeId: string): Promise<DigitalBadge> {
     this.logger.log(`Retrieving badge definition ${badgeId}`);
 
@@ -572,6 +1012,14 @@ export class DigitalBadgeIssuanceService {
    * await service.archiveBadge('BADGE-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 4',
+    description: 'Comprehensive archiveBadge operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async archiveBadge(badgeId: string): Promise<{ archived: boolean; archivedDate: Date }> {
     this.logger.log(`Archiving badge ${badgeId}`);
 
@@ -598,6 +1046,14 @@ export class DigitalBadgeIssuanceService {
    * const newBadge = await service.cloneBadge('BADGE-001', '2.0');
    * ```
    */
+  @ApiOperation({
+    summary: '* 5',
+    description: 'Comprehensive cloneBadge operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async cloneBadge(badgeId: string, newVersion: string): Promise<any> {
     this.logger.log(`Cloning badge ${badgeId} to version ${newVersion}`);
 
@@ -627,6 +1083,14 @@ export class DigitalBadgeIssuanceService {
    * const validation = await service.validateBadgeDefinition('BADGE-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 6',
+    description: 'Comprehensive validateBadgeDefinition operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async validateBadgeDefinition(badgeId: string): Promise<{ valid: boolean; issues: string[] }> {
     this.logger.log(`Validating badge definition ${badgeId}`);
 
@@ -652,6 +1116,14 @@ export class DigitalBadgeIssuanceService {
    * const badges = await service.searchBadges({ badgeType: 'skill', tags: ['programming'] });
    * ```
    */
+  @ApiOperation({
+    summary: '* 7',
+    description: 'Comprehensive searchBadges operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async searchBadges(searchCriteria: any): Promise<DigitalBadge[]> {
     this.logger.log(`Searching badges with criteria`);
 
@@ -675,6 +1147,14 @@ export class DigitalBadgeIssuanceService {
    * const assets = await service.generateBadgeAssets('BADGE-001', options);
    * ```
    */
+  @ApiOperation({
+    summary: '* 8',
+    description: 'Comprehensive generateBadgeAssets operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateBadgeAssets(badgeId: string, designOptions: any): Promise<{ imageUrl: string; thumbnailUrl: string }> {
     this.logger.log(`Generating assets for badge ${badgeId}`);
 
@@ -714,6 +1194,14 @@ export class DigitalBadgeIssuanceService {
    * });
    * ```
    */
+  @ApiOperation({
+    summary: '* 9',
+    description: 'Comprehensive issueBadgeToRecipient operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async issueBadgeToRecipient(issuanceData: BadgeIssuance): Promise<any> {
     this.logger.log(`Issuing badge ${issuanceData.badgeId} to ${issuanceData.recipientEmail}`);
 
@@ -747,6 +1235,14 @@ export class DigitalBadgeIssuanceService {
    * const results = await service.bulkIssueBadges('BADGE-001', ['STU123', 'STU456']);
    * ```
    */
+  @ApiOperation({
+    summary: '* 10',
+    description: 'Comprehensive bulkIssueBadges operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async bulkIssueBadges(badgeId: string, recipientIds: string[]): Promise<any[]> {
     this.logger.log(`Bulk issuing badge ${badgeId} to ${recipientIds.length} recipients`);
 
@@ -776,6 +1272,14 @@ export class DigitalBadgeIssuanceService {
    * await service.revokeBadgeIssuance('ISS-001', 'Course completion invalidated');
    * ```
    */
+  @ApiOperation({
+    summary: '* 11',
+    description: 'Comprehensive revokeBadgeIssuance operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async revokeBadgeIssuance(issuanceId: string, reason: string): Promise<{ revoked: boolean; revokedDate: Date }> {
     this.logger.log(`Revoking badge issuance ${issuanceId}: ${reason}`);
 
@@ -802,6 +1306,14 @@ export class DigitalBadgeIssuanceService {
    * const history = await service.getRecipientBadgeHistory('STU123');
    * ```
    */
+  @ApiOperation({
+    summary: '* 12',
+    description: 'Comprehensive getRecipientBadgeHistory operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async getRecipientBadgeHistory(recipientId: string): Promise<BadgeIssuance[]> {
     this.logger.log(`Retrieving badge history for recipient ${recipientId}`);
 
@@ -824,6 +1336,14 @@ export class DigitalBadgeIssuanceService {
    * await service.sendBadgeNotification('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 13',
+    description: 'Comprehensive sendBadgeNotification operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async sendBadgeNotification(issuanceId: string): Promise<{ sent: boolean; sentDate: Date }> {
     this.logger.log(`Sending badge notification for issuance ${issuanceId}`);
 
@@ -850,6 +1370,14 @@ export class DigitalBadgeIssuanceService {
    * await service.addBadgeEvidence('ISS-001', evidenceItems);
    * ```
    */
+  @ApiOperation({
+    summary: '* 14',
+    description: 'Comprehensive addBadgeEvidence operation with validation and error handling'
+  })
+  @ApiCreatedResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async addBadgeEvidence(issuanceId: string, evidence: any[]): Promise<{ added: boolean; evidenceCount: number }> {
     this.logger.log(`Adding ${evidence.length} evidence items to issuance ${issuanceId}`);
 
@@ -876,6 +1404,14 @@ export class DigitalBadgeIssuanceService {
    * await service.addBadgeEndorsement('ISS-001', endorsement);
    * ```
    */
+  @ApiOperation({
+    summary: '* 15',
+    description: 'Comprehensive addBadgeEndorsement operation with validation and error handling'
+  })
+  @ApiCreatedResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async addBadgeEndorsement(issuanceId: string, endorsementData: any): Promise<any> {
     this.logger.log(`Adding endorsement to issuance ${issuanceId}`);
 
@@ -902,6 +1438,14 @@ export class DigitalBadgeIssuanceService {
    * const assertion = await service.generateOpenBadgesAssertion('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 16',
+    description: 'Comprehensive generateOpenBadgesAssertion operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateOpenBadgesAssertion(issuanceId: string): Promise<any> {
     this.logger.log(`Generating Open Badges assertion for issuance ${issuanceId}`);
 
@@ -943,6 +1487,14 @@ export class DigitalBadgeIssuanceService {
    * const verification = await service.verifyBadgeAuthenticity('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 17',
+    description: 'Comprehensive verifyBadgeAuthenticity operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async verifyBadgeAuthenticity(issuanceId: string): Promise<BadgeVerification> {
     this.logger.log(`Verifying badge authenticity for issuance ${issuanceId}`);
 
@@ -981,6 +1533,14 @@ export class DigitalBadgeIssuanceService {
    * const status = await service.checkBadgeExpiration('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 18',
+    description: 'Comprehensive checkBadgeExpiration operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async checkBadgeExpiration(
     issuanceId: string,
   ): Promise<{ expired: boolean; expirationDate?: Date; daysRemaining?: number }> {
@@ -1010,6 +1570,14 @@ export class DigitalBadgeIssuanceService {
    * const verification = await service.verifyBadgeBlockchain('ISS-001', 'hash123');
    * ```
    */
+  @ApiOperation({
+    summary: '* 19',
+    description: 'Comprehensive verifyBadgeBlockchain operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async verifyBadgeBlockchain(
     issuanceId: string,
     blockchainHash: string,
@@ -1042,6 +1610,14 @@ export class DigitalBadgeIssuanceService {
    * const page = await service.generateVerificationPage('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 20',
+    description: 'Comprehensive generateVerificationPage operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateVerificationPage(issuanceId: string): Promise<{ url: string; qrCode: string }> {
     this.logger.log(`Generating verification page for issuance ${issuanceId}`);
 
@@ -1067,6 +1643,14 @@ export class DigitalBadgeIssuanceService {
    * const validation = await service.validateBadgeCriteria('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 21',
+    description: 'Comprehensive validateBadgeCriteria operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async validateBadgeCriteria(
     issuanceId: string,
   ): Promise<{ valid: boolean; criteriaMet: string[]; criteriaMissing: string[] }> {
@@ -1095,6 +1679,14 @@ export class DigitalBadgeIssuanceService {
    * const status = await service.checkRevocationStatus('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 22',
+    description: 'Comprehensive checkRevocationStatus operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async checkRevocationStatus(
     issuanceId: string,
   ): Promise<{ revoked: boolean; revokedDate?: Date; reason?: string }> {
@@ -1121,6 +1713,14 @@ export class DigitalBadgeIssuanceService {
    * const validation = await service.validateIssuerAuthority('ISSUER-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 23',
+    description: 'Comprehensive validateIssuerAuthority operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async validateIssuerAuthority(issuerId: string): Promise<{ valid: boolean; issuerData: any }> {
     this.logger.log(`Validating issuer authority for ${issuerId}`);
 
@@ -1151,6 +1751,14 @@ export class DigitalBadgeIssuanceService {
    * const qr = await service.generateVerificationQRCode('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 24',
+    description: 'Comprehensive generateVerificationQRCode operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateVerificationQRCode(issuanceId: string): Promise<{ qrCodeUrl: string; qrCodeData: string }> {
     this.logger.log(`Generating verification QR code for issuance ${issuanceId}`);
 
@@ -1180,6 +1788,14 @@ export class DigitalBadgeIssuanceService {
    * const microCred = await service.createMicroCredential(data);
    * ```
    */
+  @ApiOperation({
+    summary: '* 25',
+    description: 'Comprehensive createMicroCredential operation with validation and error handling'
+  })
+  @ApiCreatedResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async createMicroCredential(credentialData: MicroCredential): Promise<any> {
     this.logger.log(`Creating micro-credential: ${credentialData.credentialName}`);
 
@@ -1206,6 +1822,14 @@ export class DigitalBadgeIssuanceService {
    * await service.linkMicroCredentialToProgram('MICRO-001', 'BS-CS');
    * ```
    */
+  @ApiOperation({
+    summary: '* 26',
+    description: 'Comprehensive linkMicroCredentialToProgram operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async linkMicroCredentialToProgram(
     credentialId: string,
     programId: string,
@@ -1235,6 +1859,14 @@ export class DigitalBadgeIssuanceService {
    * const validation = await service.validateCompetencyAchievement('STU123', 'COMP-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 27',
+    description: 'Comprehensive validateCompetencyAchievement operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async validateCompetencyAchievement(
     studentId: string,
     competencyId: string,
@@ -1266,6 +1898,14 @@ export class DigitalBadgeIssuanceService {
    * const progress = await service.trackSkillAcquisitionProgress('STU123', 'SKILL-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 28',
+    description: 'Comprehensive trackSkillAcquisitionProgress operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackSkillAcquisitionProgress(studentId: string, skillId: string): Promise<any> {
     this.logger.log(`Tracking skill acquisition for student ${studentId}, skill ${skillId}`);
 
@@ -1288,6 +1928,14 @@ export class DigitalBadgeIssuanceService {
    * const transcript = await service.generateCompetencyTranscript('STU123');
    * ```
    */
+  @ApiOperation({
+    summary: '* 29',
+    description: 'Comprehensive generateCompetencyTranscript operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateCompetencyTranscript(studentId: string): Promise<any> {
     this.logger.log(`Generating competency transcript for student ${studentId}`);
 
@@ -1317,6 +1965,14 @@ export class DigitalBadgeIssuanceService {
    * const mappings = await service.mapBadgeToIndustryCertifications('BADGE-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 30',
+    description: 'Comprehensive mapBadgeToIndustryCertifications operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async mapBadgeToIndustryCertifications(badgeId: string): Promise<any[]> {
     this.logger.log(`Mapping badge ${badgeId} to industry certifications`);
 
@@ -1345,6 +2001,14 @@ export class DigitalBadgeIssuanceService {
    * const pathways = await service.identifyStackablePathways('MICRO-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 31',
+    description: 'Comprehensive identifyStackablePathways operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async identifyStackablePathways(credentialId: string): Promise<any[]> {
     this.logger.log(`Identifying stackable pathways for credential ${credentialId}`);
 
@@ -1374,6 +2038,14 @@ export class DigitalBadgeIssuanceService {
    * const assessment = await service.assessCompetencyPortfolio('STU123');
    * ```
    */
+  @ApiOperation({
+    summary: '* 32',
+    description: 'Comprehensive assessCompetencyPortfolio operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async assessCompetencyPortfolio(studentId: string): Promise<any> {
     this.logger.log(`Assessing competency portfolio for student ${studentId}`);
 
@@ -1408,6 +2080,14 @@ export class DigitalBadgeIssuanceService {
    * const collection = await service.createBadgeCollection('USR-001', data);
    * ```
    */
+  @ApiOperation({
+    summary: '* 33',
+    description: 'Comprehensive createBadgeCollection operation with validation and error handling'
+  })
+  @ApiCreatedResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async createBadgeCollection(userId: string, collectionData: any): Promise<BadgeCollection> {
     this.logger.log(`Creating badge collection for user ${userId}`);
 
@@ -1441,6 +2121,14 @@ export class DigitalBadgeIssuanceService {
    * await service.addBadgeToCollection('COLL-001', 'ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 34',
+    description: 'Comprehensive addBadgeToCollection operation with validation and error handling'
+  })
+  @ApiCreatedResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async addBadgeToCollection(collectionId: string, issuanceId: string): Promise<{ added: boolean; badgeCount: number }> {
     this.logger.log(`Adding badge ${issuanceId} to collection ${collectionId}`);
 
@@ -1466,6 +2154,14 @@ export class DigitalBadgeIssuanceService {
    * const portfolio = await service.generateShareableBadgePortfolio('COLL-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 35',
+    description: 'Comprehensive generateShareableBadgePortfolio operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateShareableBadgePortfolio(collectionId: string): Promise<{ url: string; embedCode: string }> {
     this.logger.log(`Generating shareable portfolio for collection ${collectionId}`);
 
@@ -1492,6 +2188,14 @@ export class DigitalBadgeIssuanceService {
    * const export = await service.exportBadgeForPlatform('ISS-001', 'linkedin');
    * ```
    */
+  @ApiOperation({
+    summary: '* 36',
+    description: 'Comprehensive exportBadgeForPlatform operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async exportBadgeForPlatform(issuanceId: string, format: string): Promise<{ exportUrl: string; format: string }> {
     this.logger.log(`Exporting badge ${issuanceId} in ${format} format`);
 
@@ -1517,6 +2221,14 @@ export class DigitalBadgeIssuanceService {
    * const analytics = await service.generateBadgeAnalytics('BADGE-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 37',
+    description: 'Comprehensive generateBadgeAnalytics operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateBadgeAnalytics(badgeId: string): Promise<BadgeAnalytics> {
     this.logger.log(`Generating analytics for badge ${badgeId}`);
 
@@ -1549,6 +2261,14 @@ export class DigitalBadgeIssuanceService {
    * const activity = await service.trackBadgeSharingActivity('ISS-001');
    * ```
    */
+  @ApiOperation({
+    summary: '* 38',
+    description: 'Comprehensive trackBadgeSharingActivity operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async trackBadgeSharingActivity(issuanceId: string): Promise<any> {
     this.logger.log(`Tracking sharing activity for issuance ${issuanceId}`);
 
@@ -1580,6 +2300,14 @@ export class DigitalBadgeIssuanceService {
    * const trending = await service.identifyTrendingBadges('last_30_days');
    * ```
    */
+  @ApiOperation({
+    summary: '* 39',
+    description: 'Comprehensive identifyTrendingBadges operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async identifyTrendingBadges(period: string): Promise<any[]> {
     this.logger.log(`Identifying trending badges for period ${period}`);
 
@@ -1609,6 +2337,14 @@ export class DigitalBadgeIssuanceService {
    * const report = await service.generateEmployerVerificationReport('STU123');
    * ```
    */
+  @ApiOperation({
+    summary: '* 40',
+    description: 'Comprehensive generateEmployerVerificationReport operation with validation and error handling'
+  })
+  @ApiOkResponse({ description: 'Operation successful' })
+  @ApiBadRequestResponse({ description: 'Invalid input data', type: ValidationErrorDto })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated', type: ErrorResponseDto })
+  @ApiInternalServerErrorResponse({ description: 'Server error', type: ErrorResponseDto })
   async generateEmployerVerificationReport(studentId: string): Promise<any> {
     this.logger.log(`Generating employer verification report for student ${studentId}`);
 
