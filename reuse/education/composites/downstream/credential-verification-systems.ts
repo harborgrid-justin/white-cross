@@ -14,7 +14,7 @@ export class CredentialVerificationSystemsService {
   private readonly logger = new Logger(CredentialVerificationSystemsService.name);
   constructor(@Inject('SEQUELIZE') private readonly sequelize: Sequelize) {}
 
-  async initiateVerificationRequest(credentialId: string, requesterId: string): Promise<any> { return { verificationId: `VER-${Date.now()}` }; }
+  async initiateVerificationRequest(credentialId: string, requesterId: string): Promise<any> { return { verificationId: `VER-${crypto.randomUUID()}` }; }
   async validateRequesterAuthorization(requesterId: string): Promise<any> { return { authorized: true }; }
   async processStudentConsent(studentId: string, verificationId: string): Promise<any> { return { consented: true }; }
   async verifyCredentialAuthenticity(credentialId: string): Promise<any> { return { authentic: true }; }
