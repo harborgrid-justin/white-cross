@@ -26,7 +26,7 @@ export class DashboardRenderingServicesService {
   async renderProgressWidget(widgetId: string, progress: any): Promise<any> { return {}; }
   async fetchDashboardData(dashboardId: string): Promise<any> { return {}; }
   async refreshDashboardData(dashboardId: string): Promise<any> { return {}; }
-  async cacheD ashboardData(dashboardId: string, data: any): Promise<any> { return {}; }
+  async cacheDashboardData(dashboardId: string, data: any): Promise<any> { return {}; }
   async invalidateCache(dashboardId: string): Promise<any> { return {}; }
   async applyDashboardFilters(dashboardId: string, filters: any): Promise<any> { return {}; }
   async setTimeRange(dashboardId: string, start: Date, end: Date): Promise<any> { return {}; }
