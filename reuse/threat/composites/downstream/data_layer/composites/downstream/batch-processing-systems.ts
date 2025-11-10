@@ -1161,4 +1161,236 @@ export class BatchProcessingSystemsService {
       performance: result.performance,
     };
   }
+
+  // ============================================================================
+  // STREAMING BATCH OPERATIONS (Memory-Efficient for Large Datasets)
+  // ============================================================================
+
+  /**
+   * Execute streaming batch operation to prevent OOM on large datasets.
+   * Uses cursor-based pagination and processes records in chunks without
+   * loading entire dataset into memory.
+   *
+   * SECURITY FIX: Prevents out-of-memory crashes on datasets >100k records.
+   * Uses streaming pattern from streaming-query-operations.ts.
+   *
+   * @param config - Job configuration
+   * @param processor - Function to process each batch
+   * @returns Streaming metrics and result
+   */
+  async executeStreamingBatchJob(
+    config: IBatchJobConfig,
+    processor: (batch: any[], batchIndex: number) => Promise<void>,
+  ): Promise<{
+    totalRecords: number;
+    totalBatches: number;
+    successCount: number;
+    failureCount: number;
+    averageBatchTime: number;
+    memoryPeakMB: number;
+  }> {
+    const endLog = logOperation(this.logger, 'executeStreamingBatchJob', config.name);
+    const startTime = Date.now();
+
+    const metrics = {
+      totalRecords: 0,
+      totalBatches: 0,
+      successCount: 0,
+      failureCount: 0,
+      averageBatchTime: 0,
+      memoryPeakMB: 0,
+    };
+
+    const batchTimes: number[] = [];
+
+    try {
+      const model = this.getModel(config.metadata.model);
+      const where = config.metadata.where || {};
+      const batchSize = config.batchSize;
+
+      let offset = 0;
+      let hasMore = true;
+      let batchIndex = 0;
+
+      this.logger.log(`Starting streaming batch job: ${config.name} with batch size ${batchSize}`);
+
+      while (hasMore) {
+        const batchStartTime = Date.now();
+
+        // Fetch batch using cursor-based pagination
+        const batch = await model.findAll({
+          where,
+          limit: batchSize,
+          offset,
+          raw: true, // Return plain objects to reduce memory
+        });
+
+        if (batch.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        // Process batch
+        try {
+          await processor(batch, batchIndex);
+          metrics.successCount += batch.length;
+        } catch (error) {
+          this.logger.error(`Batch ${batchIndex} processing failed: ${(error as Error).message}`);
+          metrics.failureCount += batch.length;
+        }
+
+        // Update metrics
+        metrics.totalRecords += batch.length;
+        metrics.totalBatches++;
+        batchIndex++;
+
+        const batchTime = Date.now() - batchStartTime;
+        batchTimes.push(batchTime);
+
+        // Track memory usage
+        const memUsage = process.memoryUsage();
+        const memMB = memUsage.heapUsed / 1024 / 1024;
+        if (memMB > metrics.memoryPeakMB) {
+          metrics.memoryPeakMB = memMB;
+        }
+
+        // Log progress
+        if (batchIndex % 10 === 0) {
+          this.logger.log(
+            `Streaming progress: ${metrics.totalRecords} records processed in ${batchIndex} batches ` +
+            `(Success: ${metrics.successCount}, Failed: ${metrics.failureCount}, ` +
+            `Memory: ${memMB.toFixed(2)} MB)`,
+          );
+        }
+
+        // Move to next batch
+        offset += batchSize;
+        hasMore = batch.length === batchSize;
+
+        // Backpressure: Pause if memory usage too high
+        if (memMB > 1024) { // 1GB threshold
+          this.logger.warn(`High memory usage (${memMB.toFixed(2)} MB), pausing for GC...`);
+          await this.delay(100);
+          if (global.gc) {
+            global.gc();
+          }
+        }
+      }
+
+      // Calculate average batch time
+      metrics.averageBatchTime = batchTimes.reduce((sum, time) => sum + time, 0) / batchTimes.length;
+
+      const duration = Date.now() - startTime;
+      const throughput = metrics.totalRecords / (duration / 1000);
+
+      this.logger.log(
+        `Streaming batch job completed: ${config.name}\n` +
+        `  Total Records: ${metrics.totalRecords}\n` +
+        `  Total Batches: ${metrics.totalBatches}\n` +
+        `  Success: ${metrics.successCount}\n` +
+        `  Failed: ${metrics.failureCount}\n` +
+        `  Duration: ${duration}ms\n` +
+        `  Throughput: ${throughput.toFixed(2)} records/sec\n` +
+        `  Peak Memory: ${metrics.memoryPeakMB.toFixed(2)} MB\n` +
+        `  Avg Batch Time: ${metrics.averageBatchTime.toFixed(2)}ms`,
+      );
+
+      endLog();
+      return metrics;
+    } catch (error) {
+      logError(this.logger, 'executeStreamingBatchJob', error as Error);
+      throw new InternalServerError('Streaming batch job failed');
+    }
+  }
+
+  /**
+   * Execute streaming batch update with cursor-based iteration
+   * Prevents OOM by processing records in chunks
+   */
+  async executeStreamingBatchUpdate(
+    model: typeof Model,
+    where: any,
+    updates: any,
+    config: {
+      batchSize?: number;
+      maxConcurrency?: number;
+      onProgress?: (processed: number, total: number) => void;
+    } = {},
+  ): Promise<{
+    totalRecords: number;
+    successCount: number;
+    failureCount: number;
+  }> {
+    const endLog = logOperation(this.logger, 'executeStreamingBatchUpdate');
+    const batchSize = config.batchSize || 1000;
+
+    const metrics = {
+      totalRecords: 0,
+      successCount: 0,
+      failureCount: 0,
+    };
+
+    try {
+      let offset = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        // Fetch IDs in batches
+        const records = await model.findAll({
+          where,
+          attributes: ['id'],
+          limit: batchSize,
+          offset,
+          raw: true,
+        });
+
+        if (records.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        const ids = records.map((r: any) => r.id);
+
+        // Update batch
+        try {
+          const [affectedCount] = await model.update(updates, {
+            where: { id: { [Op.in]: ids } },
+          });
+
+          metrics.successCount += affectedCount;
+        } catch (error) {
+          this.logger.error(`Batch update failed at offset ${offset}: ${(error as Error).message}`);
+          metrics.failureCount += records.length;
+        }
+
+        metrics.totalRecords += records.length;
+
+        // Progress callback
+        if (config.onProgress) {
+          config.onProgress(metrics.totalRecords, metrics.totalRecords);
+        }
+
+        offset += batchSize;
+        hasMore = records.length === batchSize;
+      }
+
+      this.logger.log(
+        `Streaming batch update completed: ` +
+        `Total: ${metrics.totalRecords}, Success: ${metrics.successCount}, Failed: ${metrics.failureCount}`,
+      );
+
+      endLog();
+      return metrics;
+    } catch (error) {
+      logError(this.logger, 'executeStreamingBatchUpdate', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delay helper for backpressure management
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 }
