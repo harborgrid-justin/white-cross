@@ -91,7 +91,7 @@ async function loginHandler(request: NextRequest) {
   try {
     // Proxy login request to backend API
     // Note: forwardAuth is false because this is the authentication endpoint
-    const response = await proxyToBackend(request, '/auth/login', {
+    const response = await proxyToBackend(request, '/api/auth/login', {
       forwardAuth: false
     });
 

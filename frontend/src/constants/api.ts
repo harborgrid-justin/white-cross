@@ -81,15 +81,15 @@ export const API_ENDPOINTS = {
   // AUTHENTICATION & AUTHORIZATION
   // ==========================================
   AUTH: {
-    LOGIN: `/auth/login`,
-    LOGOUT: `/auth/logout`,
-    REFRESH: `/auth/refresh`,
-    VERIFY: `/auth/verify`,
-    REGISTER: `/auth/register`,
-    PROFILE: `/auth/me`,
-    CHANGE_PASSWORD: `/auth/change-password`,
-    FORGOT_PASSWORD: `/auth/forgot-password`,
-    RESET_PASSWORD: `/auth/reset-password`,
+    LOGIN: `/api/auth/login`,
+    LOGOUT: `/api/auth/logout`,
+    REFRESH: `/api/auth/refresh`,
+    VERIFY: `/api/auth/verify`,
+    REGISTER: `/api/auth/register`,
+    PROFILE: `/api/auth/me`,
+    CHANGE_PASSWORD: `/api/auth/change-password`,
+    FORGOT_PASSWORD: `/api/auth/forgot-password`,
+    RESET_PASSWORD: `/api/auth/reset-password`,
   },
 
   // ==========================================
