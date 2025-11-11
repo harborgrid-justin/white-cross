@@ -25,7 +25,7 @@ export async function getDashboardStats(filters: DashboardFilters = {}): Promise
   try {
     console.log('[Dashboard] Loading dashboard statistics from backend with filters:', filters);
 
-    const wrappedResponse = await serverGet<ApiResponse<any>>('/dashboard/stats', undefined, {
+    const wrappedResponse = await serverGet<ApiResponse<any>>('/api/v1/dashboard/stats', undefined, {
       cache: 'no-store', // Fresh data for dashboard
     });
 
