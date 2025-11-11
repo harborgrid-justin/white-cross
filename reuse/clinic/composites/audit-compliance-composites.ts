@@ -413,9 +413,14 @@ export interface RegulatoryReport {
  */
 @Injectable()
 export class AuditLogger extends EventEmitter {
-  private readonly logger = new Logger(AuditLogger.name);
+  private readonly logger: Logger;
   private logs: AuditLogEntry[] = [];
   private lastHash: string | undefined;
+
+  constructor() {
+    super();
+    this.logger = new Logger(AuditLogger.name);
+  }
 
   /**
    * Log audit event
@@ -603,9 +608,13 @@ export function createAuditContext(
  */
 @Injectable()
 export class FERPAComplianceManager {
-  private readonly logger = new Logger(FERPAComplianceManager.name);
+  private readonly logger: Logger;
   private records: FERPAComplianceRecord[] = [];
   private consents = new Map<string, ConsentRecord>();
+
+  constructor() {
+    this.logger = new Logger(FERPAComplianceManager.name);
+  }
 
   /**
    * Record FERPA access
@@ -749,9 +758,14 @@ export function createFERPAConsent(
  */
 @Injectable()
 export class HIPAAComplianceManager extends EventEmitter {
-  private readonly logger = new Logger(HIPAAComplianceManager.name);
+  private readonly logger: Logger;
   private records: HIPAAComplianceRecord[] = [];
   private authorizations = new Map<string, ConsentRecord>();
+
+  constructor() {
+    super();
+    this.logger = new Logger(HIPAAComplianceManager.name);
+  }
 
   /**
    * Record PHI access
@@ -912,8 +926,12 @@ export class HIPAAComplianceManager extends EventEmitter {
  */
 @Injectable()
 export class DataLineageTracker {
-  private readonly logger = new Logger(DataLineageTracker.name);
+  private readonly logger: Logger;
   private graphs = new Map<string, DataProvenanceGraph>();
+
+  constructor() {
+    this.logger = new Logger(DataLineageTracker.name);
+  }
 
   /**
    * Create lineage graph
@@ -1111,8 +1129,12 @@ export function createLineageEdge(
  */
 @Injectable()
 export class ForensicInvestigator {
-  private readonly logger = new Logger(ForensicInvestigator.name);
+  private readonly logger: Logger;
   private investigations = new Map<string, ForensicInvestigation>();
+
+  constructor() {
+    this.logger = new Logger(ForensicInvestigator.name);
+  }
 
   /**
    * Start investigation
@@ -1262,8 +1284,12 @@ export class ForensicInvestigator {
  */
 @Injectable()
 export class ChainOfCustodyManager {
-  private readonly logger = new Logger(ChainOfCustodyManager.name);
+  private readonly logger: Logger;
   private chains = new Map<string, ChainOfCustodyEntry[]>();
+
+  constructor() {
+    this.logger = new Logger(ChainOfCustodyManager.name);
+  }
 
   /**
    * Create chain of custody
@@ -1404,8 +1430,12 @@ export class ChainOfCustodyManager {
  */
 @Injectable()
 export class ComplianceRuleEngine {
-  private readonly logger = new Logger(ComplianceRuleEngine.name);
+  private readonly logger: Logger;
   private rules = new Map<string, ComplianceRule>();
+
+  constructor() {
+    this.logger = new Logger(ComplianceRuleEngine.name);
+  }
 
   /**
    * Register compliance rule

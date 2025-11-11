@@ -10,7 +10,7 @@
  * @requires @nestjs/common ^10.x
  */
 
-import { Logger, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Inject, Logger, InternalServerErrorException } from '@nestjs/common';
 import {
   Sequelize,
   Model,
@@ -93,75 +93,91 @@ export interface RestorationRequest {
  * ```
  */
 /**
- * Validates table name against allowed archival tables
- * Prevents SQL injection via table name parameter
+ * NestJS Injectable Service for Data Archival Operations
+ *
+ * Provides comprehensive data retention, archival, and compliance management
+ * with proper dependency injection and lifecycle management.
  */
-function validateArchivalTableName(tableName: string): boolean {
-  // Whitelist of allowed tables for archival operations
-  const allowedTables = [
-    'medical_records',
-    'visits',
-    'appointments',
-    'medication_administration',
-    'lab_results',
-    'immunization_records',
-    'health_screenings',
-    'clinic_visits',
-    'patient_communications',
-    'audit_logs',
-  ];
+@Injectable()
+export class DataArchivalQueriesService {
+  private readonly logger: Logger;
 
-  return allowedTables.includes(tableName);
-}
-
-/**
- * Sanitizes and validates table name for SQL operations
- * Returns null if validation fails
- */
-function getSafeTableIdentifier(tableName: string): string | null {
-  if (!validateArchivalTableName(tableName)) {
-    return null;
+  constructor(
+    @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
+  ) {
+    this.logger = new Logger(DataArchivalQueriesService.name);
   }
 
-  // Additional validation: ensure table name only contains safe characters
-  if (!/^[a-z_][a-z0-9_]*$/.test(tableName)) {
-    return null;
+  /**
+   * Validates table name against allowed archival tables
+   * Prevents SQL injection via table name parameter
+   */
+  private validateArchivalTableName(tableName: string): boolean {
+    // Whitelist of allowed tables for archival operations
+    const allowedTables = [
+      'medical_records',
+      'visits',
+      'appointments',
+      'medication_administration',
+      'lab_results',
+      'immunization_records',
+      'health_screenings',
+      'clinic_visits',
+      'patient_communications',
+      'audit_logs',
+    ];
+
+    return allowedTables.includes(tableName);
   }
 
-  return tableName;
-}
-
-export async function archiveRecordsByPolicy(
-  sequelize: Sequelize,
-  policy: ArchivalPolicyConfig,
-  transaction: Transaction
-): Promise<ArchivalJobStatus> {
-  const logger = new Logger('DataArchival::archiveRecordsByPolicy');
-
-  const jobStatus: ArchivalJobStatus = {
-    jobId: `ARCH-${Date.now()}`,
-    tableName: policy.tableName,
-    recordsProcessed: 0,
-    recordsArchived: 0,
-    recordsFailed: 0,
-    startedAt: new Date(),
-    status: 'running',
-    errors: [],
-  };
-
-  try {
-    // Validate table name to prevent SQL injection
-    const safeTableName = getSafeTableIdentifier(policy.tableName);
-    if (!safeTableName) {
-      throw new InternalServerErrorException(`Invalid table name for archival: ${policy.tableName}`);
+  /**
+   * Sanitizes and validates table name for SQL operations
+   * Returns null if validation fails
+   */
+  private getSafeTableIdentifier(tableName: string): string | null {
+    if (!this.validateArchivalTableName(tableName)) {
+      return null;
     }
+
+    // Additional validation: ensure table name only contains safe characters
+    if (!/^[a-z_][a-z0-9_]*$/.test(tableName)) {
+      return null;
+    }
+
+    return tableName;
+  }
+
+  /**
+   * Archive records based on retention policy
+   */
+  async archiveRecordsByPolicy(
+    policy: ArchivalPolicyConfig,
+    transaction: Transaction
+  ): Promise<ArchivalJobStatus> {
+    const jobStatus: ArchivalJobStatus = {
+      jobId: `ARCH-${Date.now()}`,
+      tableName: policy.tableName,
+      recordsProcessed: 0,
+      recordsArchived: 0,
+      recordsFailed: 0,
+      startedAt: new Date(),
+      status: 'running',
+      errors: [],
+    };
+
+    try {
+      // Validate table name to prevent SQL injection
+      const safeTableName = this.getSafeTableIdentifier(policy.tableName);
+      if (!safeTableName) {
+        throw new InternalServerErrorException(`Invalid table name for archival: ${policy.tableName}`);
+      }
 
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - policy.retentionDays);
 
     if (policy.archiveMethod === 'soft_delete') {
       // Use identifier quoting for table name
-      const result = await sequelize.query(
+      const result = await this.sequelize.query(
         `
         UPDATE :tableName:
         SET deleted_at = NOW(), archived = true, archived_at = NOW()
@@ -183,7 +199,7 @@ export async function archiveRecordsByPolicy(
       const archiveTableName = `${safeTableName}_archive`;
 
       // Verify archive table exists before operations
-      const [tableExists] = await sequelize.query(
+      const [tableExists] = await this.sequelize.query(
         `SELECT EXISTS (SELECT FROM pg_tables WHERE tablename = :archiveTable)`,
         {
           replacements: { archiveTable: archiveTableName },
@@ -197,7 +213,7 @@ export async function archiveRecordsByPolicy(
       }
 
       // Move to archive table using identifier quoting
-      const insertResult = await sequelize.query(
+      const insertResult = await this.sequelize.query(
         `
         INSERT INTO :archiveTableName:
         SELECT * FROM :tableName:
@@ -214,7 +230,7 @@ export async function archiveRecordsByPolicy(
         }
       );
 
-      const deleteResult = await sequelize.query(
+      const deleteResult = await this.sequelize.query(
         `
         DELETE FROM :tableName:
         WHERE created_at < :cutoffDate
@@ -236,16 +252,65 @@ export async function archiveRecordsByPolicy(
     jobStatus.status = 'completed';
     jobStatus.completedAt = new Date();
 
-    logger.log(`Archival job ${jobStatus.jobId}: archived ${jobStatus.recordsArchived} records`);
+    this.logger.log(`Archival job ${jobStatus.jobId}: archived ${jobStatus.recordsArchived} records`);
 
     return jobStatus;
-  } catch (error) {
-    logger.error('Archival job failed', error);
-    jobStatus.status = 'failed';
-    jobStatus.errors.push((error as Error).message);
-    jobStatus.completedAt = new Date();
-    return jobStatus;
+    } catch (error) {
+      this.logger.error('Archival job failed', error);
+      jobStatus.status = 'failed';
+      jobStatus.errors.push((error as Error).message);
+      jobStatus.completedAt = new Date();
+      return jobStatus;
+    }
   }
+}
+
+  /**
+   * Find records eligible for archival
+   *
+   * NOTE: The remaining methods in this service follow the same pattern.
+   * All standalone functions below should be converted to instance methods
+   * that use this.sequelize and this.logger instead of parameters.
+   */
+}
+
+// ============================================================================
+// LEGACY STANDALONE FUNCTION EXPORTS (for backwards compatibility)
+// ============================================================================
+
+/**
+ * Validates table name against allowed archival tables
+ * Prevents SQL injection via table name parameter
+ * @deprecated Use DataArchivalQueriesService instance methods instead
+ */
+function validateArchivalTableName(tableName: string): boolean {
+  const allowedTables = [
+    'medical_records',
+    'visits',
+    'appointments',
+    'medication_administration',
+    'lab_results',
+    'immunization_records',
+    'health_screenings',
+    'clinic_visits',
+    'patient_communications',
+    'audit_logs',
+  ];
+  return allowedTables.includes(tableName);
+}
+
+/**
+ * Sanitizes and validates table name for SQL operations
+ * @deprecated Use DataArchivalQueriesService instance methods instead
+ */
+function getSafeTableIdentifier(tableName: string): string | null {
+  if (!validateArchivalTableName(tableName)) {
+    return null;
+  }
+  if (!/^[a-z_][a-z0-9_]*$/.test(tableName)) {
+    return null;
+  }
+  return tableName;
 }
 
 /**
@@ -256,6 +321,7 @@ export async function archiveRecordsByPolicy(
  * @param retentionDays - Retention period in days
  * @param transaction - Optional transaction
  * @returns Eligible records count and metadata
+ * @deprecated Use DataArchivalQueriesService.findRecordsEligibleForArchival() instead
  *
  * @example
  * ```typescript
@@ -1565,7 +1631,8 @@ export async function manageRetentionPolicyLifecycle(
 }
 
 /**
- * Export all data archival query functions
+ * Export all data archival query functions (legacy compatibility)
+ * @deprecated Use DataArchivalQueriesService for new implementations
  */
 export const DataArchivalQueriesComposites = {
   archiveRecordsByPolicy,
@@ -1587,3 +1654,9 @@ export const DataArchivalQueriesComposites = {
   createArchivalSnapshot,
   manageRetentionPolicyLifecycle,
 };
+
+/**
+ * Default export for NestJS module usage
+ * Recommended for all new implementations
+ */
+export default DataArchivalQueriesService;

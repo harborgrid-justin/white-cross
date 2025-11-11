@@ -58,6 +58,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  InternalServerErrorException,
   Logger,
   UseGuards,
   UseInterceptors,
@@ -348,11 +349,13 @@ export interface ParentAppointmentNotification {
  */
 @Injectable()
 export class AppointmentSchedulingService {
-  private readonly logger = new Logger(AppointmentSchedulingService.name);
+  private readonly logger: Logger;
 
   constructor(
     @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    this.logger = new Logger(AppointmentSchedulingService.name);
+  }
 
   /**
    * 1. Create student clinic appointment with parent notification
@@ -422,8 +425,14 @@ export class AppointmentSchedulingService {
         nextSteps: this.generateNextSteps(request.appointmentType),
       };
     } catch (error) {
-      this.logger.error(`Failed to create clinic appointment: ${error.message}`, error.stack);
-      throw error;
+      // HIPAA-compliant logging: Never log PHI or stack traces
+      this.logger.error(`Failed to create clinic appointment - Error: ${error.name}`);
+
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException('Failed to create clinic appointment');
     }
   }
 

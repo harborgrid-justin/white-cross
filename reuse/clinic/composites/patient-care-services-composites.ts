@@ -594,11 +594,13 @@ export const createStudentCarePlanModel = (sequelize: Sequelize) => {
  */
 @Injectable()
 export class PatientCareServicesCompositeService {
-  private readonly logger = new Logger(PatientCareServicesCompositeService.name);
+  private readonly logger: Logger;
 
   constructor(
     @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    this.logger = new Logger(PatientCareServicesCompositeService.name);
+  }
 
   // ============================================================================
   // 1. STUDENT HEALTH VISIT WORKFLOWS (Functions 1-10)

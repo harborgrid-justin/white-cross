@@ -555,11 +555,13 @@ export const createStudentMedicationAllergyModel = (sequelize: Sequelize) => {
  */
 @Injectable()
 export class MedicationAdministrationCompositeService {
-  private readonly logger = new Logger(MedicationAdministrationCompositeService.name);
+  private readonly logger: Logger;
 
   constructor(
     @Inject('SEQUELIZE') private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    this.logger = new Logger(MedicationAdministrationCompositeService.name);
+  }
 
   // ============================================================================
   // 1. MEDICATION ORDERS & AUTHORIZATION (Functions 1-8)
