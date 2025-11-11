@@ -1,6 +1,6 @@
 import { IsEnum, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { CreateAuditLogDto } from './create-audit-log.dto';
+import { CreateBasicAuditLogDto } from './create-audit-log.dto';
 import { PHIAccessType } from '../enums/phi-access-type.enum';
 import { PHIDataCategory } from '../enums/phi-data-category.enum';
 
@@ -8,7 +8,7 @@ import { PHIDataCategory } from '../enums/phi-data-category.enum';
  * DTO for logging PHI (Protected Health Information) access
  * HIPAA Compliance: Required for tracking all PHI access
  */
-export class CreatePHIAccessLogDto extends CreateAuditLogDto {
+export class CreatePHIAccessLogDto extends CreateBasicAuditLogDto {
   @ApiProperty({ description: 'Student ID whose PHI is being accessed' })
   @IsString()
   studentId: string;

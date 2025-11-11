@@ -89,6 +89,7 @@ import { DiscoveryExampleModule } from './discovery';
 import { CommandsModule } from './commands';
 import { CoreModule } from './core';
 import { SentryModule } from './infrastructure/monitoring/sentry.module';
+import { VaccinationsModule } from './vaccinations/vaccinations.module';
 
 @Module({
   imports: [
@@ -261,6 +262,7 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     MedicationModule,
     StudentModule,
     AppointmentModule,
+    VaccinationsModule,
 
     // Conditionally loaded modules based on feature flags
     // Uses centralized FeatureFlags helper to avoid direct process.env access

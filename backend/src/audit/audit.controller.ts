@@ -6,7 +6,7 @@ import { AuditLogSearchDto } from './dto/audit-log-search.dto';
 import { DateRangeDto } from './dto/date-range.dto';
 import { PaginatedAuditLogsDto } from './dto/paginated-audit-logs.dto';
 import { PHIAccessFilterDto } from './dto/phi-access-filter.dto';
-import { CreateAuditLogDto } from './dto/create-audit-log.dto';
+import { CreateBasicAuditLogDto } from './dto/create-audit-log.dto';
 import { CreatePHIAccessLogDto } from './dto/create-phi-access-log.dto';
 
 /**
@@ -31,7 +31,7 @@ export class AuditController {
     summary: 'Create audit log entry',
     description: 'Log a general system action for audit trail compliance'
   })
-  @ApiBody({ type: CreateAuditLogDto })
+  @ApiBody({ type: CreateBasicAuditLogDto })
   @ApiResponse({
     status: 201,
     description: 'Audit log created successfully',
@@ -40,7 +40,7 @@ export class AuditController {
     status: 400,
     description: 'Invalid audit log data',
   })
-  async createAuditLog(@Body() createAuditLogDto: CreateAuditLogDto) {
+  async createAuditLog(@Body() createAuditLogDto: CreateBasicAuditLogDto) {
     await this.auditService.logAction({
       userId: createAuditLogDto.userId,
       action: createAuditLogDto.action,
