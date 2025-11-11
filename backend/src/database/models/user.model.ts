@@ -230,7 +230,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column({
     type: DataType.STRING(20),
     allowNull: false,
-    defaultValue: UserRole.NURSE,
+    defaultValue: UserRole.ADMIN,
     validate: {
       isIn: [Object.values(UserRole)],
     },

@@ -83,7 +83,13 @@ export class AuthService {
         password,
         firstName,
         lastName,
-        role: role || UserRole.NURSE,
+        role: role || UserRole.ADMIN,
+        // Set email as verified by default (no verification required)
+        emailVerified: true,
+        isEmailVerified: true,
+        emailVerifiedAt: new Date(),
+        // Ensure user is active by default
+        isActive: true,
       } as UserCreationAttributes);
 
       this.logger.log(`User registered successfully: ${email}`);

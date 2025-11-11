@@ -398,6 +398,19 @@ export default function LoginPage() {
           </div>
         </form>
 
+        {/* Registration Link */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/register"
+              className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create one
+            </Link>
+          </p>
+        </div>
+
         {/* Help Text */}
         <div className="text-center">
           <p className="text-sm text-gray-600">

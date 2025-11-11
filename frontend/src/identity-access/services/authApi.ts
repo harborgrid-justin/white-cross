@@ -364,6 +364,9 @@ export class AuthApi {
     try {
       registerSchema.parse(userData);
 
+      console.log('Register API endpoint:', API_ENDPOINTS.AUTH.REGISTER);
+      console.log('API client base URL:', this.client);
+
       const response = await this.client.post<{
         accessToken: string;
         refreshToken: string;

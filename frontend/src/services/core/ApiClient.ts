@@ -422,6 +422,10 @@ export class ApiClient {
       }
 
       // Execute the HTTP request based on method type
+      console.log(`[ApiClient] Making ${methodUpper} request to:`, url);
+      console.log('[ApiClient] Base URL:', this.instance.defaults.baseURL);
+      console.log('[ApiClient] Full URL will be:', this.instance.defaults.baseURL + url);
+
       let response: AxiosResponse<ApiResponse<T>>;
       switch (method) {
         case 'get':

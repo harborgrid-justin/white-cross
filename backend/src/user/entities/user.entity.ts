@@ -103,7 +103,7 @@ export class User extends Model<UserAttributes> {
   @Column({
     type: DataType.ENUM(...(Object.values(UserRole) as string[])),
     allowNull: false,
-    defaultValue: UserRole.NURSE,
+    defaultValue: UserRole.ADMIN,
   })
   role!: UserRole;
 

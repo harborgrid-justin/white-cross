@@ -263,7 +263,7 @@ module.exports = {
         role: {
           type: Sequelize.ENUM('ADMIN', 'NURSE', 'SCHOOL_ADMIN', 'DISTRICT_ADMIN', 'VIEWER', 'COUNSELOR'),
           allowNull: false,
-          defaultValue: 'NURSE',
+          defaultValue: 'ADMIN',
           comment: 'User role for authorization'
         },
         isActive: {

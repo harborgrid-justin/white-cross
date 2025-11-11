@@ -199,15 +199,15 @@ describe('AuthService (CRITICAL SECURITY)', () => {
         .rejects.toThrow(BadRequestException);
     });
 
-    it('should default role to NURSE if not specified', async () => {
+    it('should default role to ADMIN if not specified', async () => {
       const { role, ...dtoWithoutRole } = validRegisterDto;
       mockUserModel.findOne.mockResolvedValue(null);
       const createdUser = {
         ...mockUser,
-        role: UserRole.NURSE,
+        role: UserRole.ADMIN,
         toSafeObject: jest.fn().mockReturnValue({
           ...mockUser.toSafeObject(),
-          role: UserRole.NURSE,
+          role: UserRole.ADMIN,
         }),
       };
       mockUserModel.create.mockResolvedValue(createdUser);

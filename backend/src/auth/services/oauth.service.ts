@@ -150,7 +150,7 @@ export class OAuthService {
         profile.lastName ||
         profile.displayName?.split(' ').slice(1).join(' ') ||
         '',
-      role: UserRole.NURSE, // Default role, can be changed by admin
+      role: UserRole.ADMIN, // Default role, can be changed by admin
       isEmailVerified: true, // OAuth emails are pre-verified
       oauthProvider: profile.provider,
       oauthProviderId: profile.id,

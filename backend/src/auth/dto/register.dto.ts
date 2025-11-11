@@ -1,4 +1,12 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../database/models/user.model';
 
@@ -47,9 +55,9 @@ export class RegisterDto {
   lastName: string;
 
   @ApiProperty({
-    example: UserRole.NURSE,
+    example: UserRole.ADMIN,
     enum: UserRole,
-    description: 'User role',
+    description: 'User role (defaults to ADMIN if not specified)',
     required: false,
   })
   @IsEnum(UserRole, { message: 'Invalid user role' })
