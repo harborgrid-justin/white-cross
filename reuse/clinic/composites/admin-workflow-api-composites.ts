@@ -228,7 +228,7 @@ export function createAdminLoginEndpoint() {
       description: 'Admin credentials',
       schema: createAdminCredentialsSchema(),
     }),
-    createSuccessResponse(Object as any, 'Authentication successful'),
+    createSuccessResponse(createAdminSessionSchema(), 'Authentication successful'),
     createBadRequestError('Invalid credentials or MFA code'),
     createUnauthorizedError('Authentication failed'),
   );
@@ -389,7 +389,13 @@ export function createReportGenerationEndpoint() {
         parameters: generateObjectSchema('Report parameters', {}, []),
       }, ['reportType', 'parameters']),
     }),
-    createCreatedResponse(Object as any, 'Report generation initiated'),
+    createCreatedResponse(
+      generateObjectSchema('Report generation response', {
+        reportId: generateStringSchema('Report ID', { format: 'uuid' }),
+        status: generateEnumSchema(['generating'], 'Status', 'string'),
+        estimatedCompletion: generateFormatValidationSchema('date-time', 'Estimated completion time'),
+      }, ['reportId', 'status'])
+    , 'Report generation initiated'),
   );
 }
 
@@ -413,7 +419,14 @@ export function createReportRetrievalEndpoint() {
       reportType: { type: 'string' },
       status: { type: 'string', enum: ['generating', 'completed', 'failed'] },
     }),
-    createOffsetPaginatedResponse(Object as any, 'Paginated reports'),
+    createOffsetPaginatedResponse(
+      generateObjectSchema('Report summary', {
+        reportId: generateStringSchema('Report ID', { format: 'uuid' }),
+        reportType: generateStringSchema('Report type'),
+        status: generateEnumSchema(['generating', 'completed', 'failed'], 'Status', 'string'),
+        createdAt: generateFormatValidationSchema('date-time', 'Creation timestamp'),
+      }, ['reportId', 'reportType', 'status', 'createdAt'])
+    , 'Paginated reports'),
   );
 }
 
@@ -438,7 +451,14 @@ export function createReportDownloadEndpoint() {
       enum: ['pdf', 'csv', 'excel'],
       description: 'Download format',
     }),
-    createSuccessResponse(Object as any, 'Report file'),
+    createSuccessResponse(
+      generateObjectSchema('Report file', {
+        fileName: generateStringSchema('File name'),
+        fileSize: generateNumericSchema('File size in bytes', { type: 'integer', minimum: 0 }),
+        contentType: generateStringSchema('Content type', { example: 'application/pdf' }),
+        downloadUrl: generateStringSchema('Download URL', { format: 'uri' }),
+      }, ['fileName', 'fileSize', 'contentType', 'downloadUrl'])
+    , 'Report file'),
     createNotFoundError('Report not found'),
   );
 }
@@ -541,7 +561,7 @@ export function createConfigurationUpdateEndpoint() {
       description: 'Configuration updates',
       schema: createSystemConfigurationSchema(),
     }),
-    createSuccessResponse(Object as any, 'Configuration updated'),
+    createSuccessResponse(createSystemConfigurationSchema(), 'Configuration updated'),
     createBadRequestError('Invalid configuration values'),
   );
 }
@@ -699,7 +719,7 @@ export function createConfigurationRetrievalEndpoint() {
       enum: ['general', 'security', 'notifications', 'integrations', 'compliance'],
       description: 'Filter by configuration category',
     }),
-    createSuccessResponse(Object as any, 'Configuration retrieved'),
+    createSuccessResponse(createSystemConfigurationSchema(), 'Configuration retrieved'),
   );
 }
 
@@ -771,7 +791,7 @@ export function createUserCreationEndpoint() {
       description: 'User account data',
       schema: createUserAccountSchema(),
     }),
-    createCreatedResponse(Object as any, 'User account created'),
+    createCreatedResponse(createUserAccountSchema(), 'User account created'),
     createBadRequestError('Invalid user data or username already exists'),
   );
 }
@@ -792,7 +812,7 @@ export function createUserUpdateEndpoint() {
     createAdminAuthDecorator(['super-admin', 'admin']),
     createAdminPermissionDecorator(['users:update']),
     createUuidPathParam('userId', 'User identifier'),
-    createSuccessResponse(Object as any, 'User account updated'),
+    createSuccessResponse(createUserAccountSchema(), 'User account updated'),
     createNotFoundError('User not found'),
   );
 }
@@ -819,7 +839,7 @@ export function createUserRetrievalEndpoint() {
     }),
     createPaginationQueryParams(1, 20, 100),
     createSortingQueryParams(['lastName', 'createdAt', 'lastLogin'], 'lastName'),
-    createOffsetPaginatedResponse(Object as any, 'Paginated users'),
+    createOffsetPaginatedResponse(createUserAccountSchema(), 'Paginated users'),
   );
 }
 
@@ -976,7 +996,7 @@ export function createAuditLogQueryEndpoint() {
     createSearchQueryParam(['username', 'resource', 'resourceId'], 2),
     createPaginationQueryParams(1, 50, 500),
     createSortingQueryParams(['timestamp', 'action', 'username'], 'timestamp'),
-    createOffsetPaginatedResponse(Object as any, 'Paginated audit logs'),
+    createOffsetPaginatedResponse(createAuditLogSchema(), 'Paginated audit logs'),
   );
 }
 
@@ -1063,7 +1083,7 @@ export function createSecurityEventEndpoint() {
       enum: ['low', 'medium', 'high', 'critical'],
       description: 'Filter by severity',
     }),
-    createOffsetPaginatedResponse(Object as any, 'Security events'),
+    createOffsetPaginatedResponse(createSecurityEventSchema(), 'Security events'),
   );
 }
 
@@ -1165,7 +1185,14 @@ export function createComplianceDashboardEndpoint() {
     }),
     createAdminAuthDecorator(),
     createAdminPermissionDecorator(['compliance:read']),
-    createSuccessResponse(Object as any, 'Compliance dashboard data'),
+    createSuccessResponse(
+      generateObjectSchema('Compliance dashboard', {
+        ferpaCompliance: createFERPAComplianceSchema(),
+        hipaaCompliance: createHIPAAComplianceSchema(),
+        overallStatus: generateEnumSchema(['compliant', 'non_compliant', 'under_review'], 'Status', 'string'),
+        lastAudit: generateFormatValidationSchema('date-time', 'Last audit date'),
+      }, ['ferpaCompliance', 'hipaaCompliance', 'overallStatus'])
+    , 'Compliance dashboard data'),
   );
 }
 
@@ -1197,7 +1224,15 @@ export function createComplianceExportEndpoint() {
       description: 'Export format',
     }),
     createDateRangeQueryParams('startDate', 'endDate', 'date'),
-    createSuccessResponse(Object as any, 'Compliance report file'),
+    createSuccessResponse(
+      generateObjectSchema('Compliance report file', {
+        fileName: generateStringSchema('File name'),
+        reportType: generateEnumSchema(['hipaa', 'ferpa', 'immunization', 'screening'], 'Type', 'string'),
+        format: generateEnumSchema(['pdf', 'excel'], 'Format', 'string'),
+        downloadUrl: generateStringSchema('Download URL', { format: 'uri' }),
+        generatedAt: generateFormatValidationSchema('date-time', 'Generation timestamp'),
+      }, ['fileName', 'reportType', 'format', 'downloadUrl'])
+    , 'Compliance report file'),
   );
 }
 
@@ -1261,7 +1296,7 @@ export function createDashboardEndpoint() {
       description: 'Retrieve real-time dashboard metrics and alerts',
     }),
     createAdminAuthDecorator(),
-    createSuccessResponse(Object as any, 'Dashboard data'),
+    createSuccessResponse(createAdminDashboardMetricsSchema(), 'Dashboard data'),
   );
 }
 
@@ -1297,7 +1332,14 @@ export function createAnalyticsQueryEndpoint() {
         }, ['startDate', 'endDate']),
       }, ['queryType', 'metrics', 'dateRange']),
     }),
-    createSuccessResponse(Object as any, 'Analytics results'),
+    createSuccessResponse(
+      generateObjectSchema('Analytics results', {
+        queryType: generateStringSchema('Query type'),
+        results: generateArraySchema('Result data points', generateObjectSchema('Data point', {}, []), {}),
+        summary: generateObjectSchema('Summary statistics', {}, []),
+        generatedAt: generateFormatValidationSchema('date-time', 'Generation timestamp'),
+      }, ['queryType', 'results', 'generatedAt'])
+    , 'Analytics results'),
   );
 }
 

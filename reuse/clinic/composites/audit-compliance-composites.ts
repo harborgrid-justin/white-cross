@@ -36,6 +36,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
+import { ApiProperty } from '@nestjs/swagger';
 
 // ============================================================================
 // ADVANCED TYPE DEFINITIONS
@@ -45,22 +46,55 @@ import * as crypto from 'crypto';
  * Audit log entry with cryptographic signing
  */
 export interface AuditLogEntry {
+  @ApiProperty({ description: 'Unique audit log entry identifier', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174000' })
   id: string;
+
+  @ApiProperty({ description: 'Timestamp when the event occurred', type: Date, example: '2024-11-11T10:30:00Z' })
   timestamp: Date;
+
+  @ApiProperty({ description: 'User ID who performed the action', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174001' })
   userId: string;
+
+  @ApiProperty({ description: 'Email address of the user', format: 'email', example: 'nurse@school.edu' })
   userEmail: string;
+
+  @ApiProperty({ description: 'Action performed', example: 'CREATE', enum: ['CREATE', 'READ', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT'] })
   action: string;
+
+  @ApiProperty({ description: 'Resource type affected', example: 'Patient', enum: ['Patient', 'User', 'MedicalRecord', 'Appointment'] })
   resource: string;
+
+  @ApiProperty({ description: 'Specific resource instance ID', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174002' })
   resourceId: string;
+
+  @ApiProperty({ description: 'Additional details about the action', type: 'object', example: { field: 'status', oldValue: 'pending', newValue: 'active' } })
   details: Record<string, unknown>;
+
+  @ApiProperty({ description: 'IP address of the requester', example: '192.168.1.100' })
   ipAddress: string;
+
+  @ApiProperty({ description: 'User agent string of the client', example: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' })
   userAgent: string;
+
+  @ApiProperty({ description: 'Session identifier', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174003' })
   sessionId: string;
+
+  @ApiProperty({ description: 'Correlation ID for tracking related events', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174004' })
   correlationId: string;
+
+  @ApiProperty({ description: 'Result of the operation', enum: ['success', 'failure', 'partial'], example: 'success' })
   result: 'success' | 'failure' | 'partial';
+
+  @ApiProperty({ description: 'Error message if operation failed', required: false, example: 'Validation failed: Email is required' })
   errorMessage?: string;
+
+  @ApiProperty({ description: 'Cryptographic signature of the entry for tamper detection', example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6' })
   signature: string;
+
+  @ApiProperty({ description: 'Hash of the previous audit log entry for chain integrity', required: false, example: 'b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7' })
   previousHash?: string;
+
+  @ApiProperty({ description: 'Additional metadata', type: 'object', example: { source: 'web-app', version: '1.0.0' } })
   metadata: Record<string, unknown>;
 }
 
@@ -68,15 +102,34 @@ export interface AuditLogEntry {
  * FERPA compliance record
  */
 export interface FERPAComplianceRecord {
+  @ApiProperty({ description: 'Student ID whose record was accessed', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174005' })
   studentId: string;
+
+  @ApiProperty({ description: 'Type of educational record accessed', enum: ['academic', 'financial', 'disciplinary', 'health', 'directory'], example: 'health' })
   recordType: 'academic' | 'financial' | 'disciplinary' | 'health' | 'directory';
+
+  @ApiProperty({ description: 'User ID who accessed the record', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174006' })
   accessedBy: string;
+
+  @ApiProperty({ description: 'Timestamp of access', type: Date, example: '2024-11-11T10:30:00Z' })
   accessedAt: Date;
+
+  @ApiProperty({ description: 'Purpose for accessing the record', example: 'Medical treatment coordination' })
   purpose: string;
+
+  @ApiProperty({ description: 'Whether parental/student consent was provided', example: true })
   consentProvided: boolean;
+
+  @ApiProperty({ description: 'Consent record ID if applicable', format: 'uuid', required: false, example: '123e4567-e89b-12d3-a456-426614174007' })
   consentId?: string;
+
+  @ApiProperty({ description: 'Type of disclosure under FERPA', enum: ['authorized', 'directory', 'emergency', 'legal'], example: 'authorized' })
   disclosureType: 'authorized' | 'directory' | 'emergency' | 'legal';
+
+  @ApiProperty({ description: 'Recipient ID if record was disclosed to third party', format: 'uuid', required: false, example: '123e4567-e89b-12d3-a456-426614174008' })
   recipientId?: string;
+
+  @ApiProperty({ description: 'Additional compliance metadata', type: 'object', example: { schoolId: '123e4567-e89b-12d3-a456-426614174009', reviewedBy: 'Compliance Officer' } })
   metadata: Record<string, unknown>;
 }
 
@@ -84,15 +137,34 @@ export interface FERPAComplianceRecord {
  * HIPAA compliance record
  */
 export interface HIPAAComplianceRecord {
+  @ApiProperty({ description: 'Patient ID whose PHI was accessed', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174010' })
   patientId: string;
+
+  @ApiProperty({ description: 'Type of Protected Health Information accessed', enum: ['medical_record', 'diagnosis', 'prescription', 'lab_result', 'imaging', 'billing'], example: 'medical_record' })
   phiType: 'medical_record' | 'diagnosis' | 'prescription' | 'lab_result' | 'imaging' | 'billing';
+
+  @ApiProperty({ description: 'User ID who accessed the PHI', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174011' })
   accessedBy: string;
+
+  @ApiProperty({ description: 'Timestamp of PHI access', type: Date, example: '2024-11-11T10:30:00Z' })
   accessedAt: Date;
+
+  @ApiProperty({ description: 'Purpose of PHI access under HIPAA', enum: ['treatment', 'payment', 'operations', 'research', 'disclosure'], example: 'treatment' })
   purpose: 'treatment' | 'payment' | 'operations' | 'research' | 'disclosure';
+
+  @ApiProperty({ description: 'Patient authorization ID if required', format: 'uuid', required: false, example: '123e4567-e89b-12d3-a456-426614174012' })
   authorizationId?: string;
+
+  @ApiProperty({ description: 'Whether minimum necessary standard was met', example: true })
   minimumNecessary: boolean;
+
+  @ApiProperty({ description: 'Whether PHI was accessed over encrypted channel', example: true })
   encrypted: boolean;
+
+  @ApiProperty({ description: 'Audit trail identifier for this PHI access', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174013' })
   auditTrail: string;
+
+  @ApiProperty({ description: 'Additional HIPAA compliance metadata', type: 'object', example: { facilityId: '123e4567-e89b-12d3-a456-426614174014', businessAssociate: 'Lab Corp' } })
   metadata: Record<string, unknown>;
 }
 
@@ -191,13 +263,28 @@ export interface ComplianceValidationResult {
  * Compliance violation
  */
 export interface ComplianceViolation {
+  @ApiProperty({ description: 'Compliance rule ID that was violated', example: 'HIPAA-001' })
   ruleId: string;
+
+  @ApiProperty({ description: 'Regulatory framework', example: 'HIPAA', enum: ['FERPA', 'HIPAA', 'GDPR', 'CCPA', 'SOX'] })
   regulation: string;
+
+  @ApiProperty({ description: 'Severity level of the violation', enum: ['low', 'medium', 'high', 'critical'], example: 'high' })
   severity: 'low' | 'medium' | 'high' | 'critical';
+
+  @ApiProperty({ description: 'Detailed description of the violation', example: 'PHI accessed without proper authorization' })
   description: string;
+
+  @ApiProperty({ description: 'Recommended remediation steps', example: 'Review access controls and revoke unauthorized access immediately' })
   remediation: string;
+
+  @ApiProperty({ description: 'Timestamp when violation occurred', type: Date, example: '2024-11-11T10:30:00Z' })
   timestamp: Date;
+
+  @ApiProperty({ description: 'Whether violation has been acknowledged by responsible party', example: false })
   acknowledged: boolean;
+
+  @ApiProperty({ description: 'Additional violation metadata', type: 'object', example: { affectedRecords: 5, investigationId: '123e4567-e89b-12d3-a456-426614174018' } })
   metadata: Record<string, unknown>;
 }
 
@@ -220,17 +307,40 @@ export interface DataRetentionPolicy {
  * Consent record
  */
 export interface ConsentRecord {
+  @ApiProperty({ description: 'Unique consent record identifier', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174015' })
   id: string;
+
+  @ApiProperty({ description: 'User ID who provided consent', format: 'uuid', example: '123e4567-e89b-12d3-a456-426614174016' })
   userId: string;
+
+  @ApiProperty({ description: 'Purpose of the consent', example: 'Access to health records for care coordination' })
   purpose: string;
+
+  @ApiProperty({ description: 'Scope of data/actions covered by consent', type: [String], example: ['health_records', 'academic_records', 'emergency_contact'] })
   scope: string[];
+
+  @ApiProperty({ description: 'Timestamp when consent was granted', type: Date, example: '2024-11-11T10:30:00Z' })
   grantedAt: Date;
+
+  @ApiProperty({ description: 'Expiration date of consent', type: Date, required: false, example: '2025-11-11T10:30:00Z' })
   expiresAt?: Date;
+
+  @ApiProperty({ description: 'Timestamp when consent was revoked', type: Date, required: false, example: '2024-12-11T10:30:00Z' })
   revokedAt?: Date;
+
+  @ApiProperty({ description: 'Version of consent form', example: '2.1' })
   version: string;
+
+  @ApiProperty({ description: 'IP address when consent was granted', example: '192.168.1.100' })
   ipAddress: string;
+
+  @ApiProperty({ description: 'User agent when consent was granted', example: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' })
   userAgent: string;
+
+  @ApiProperty({ description: 'Digital signature of consent', required: false, example: 'c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8' })
   signature?: string;
+
+  @ApiProperty({ description: 'Additional consent metadata', type: 'object', example: { consentMethod: 'electronic', witnessId: '123e4567-e89b-12d3-a456-426614174017' } })
   metadata: Record<string, unknown>;
 }
 
@@ -303,9 +413,14 @@ export interface RegulatoryReport {
  */
 @Injectable()
 export class AuditLogger extends EventEmitter {
-  private readonly logger = new Logger(AuditLogger.name);
+  private readonly logger: Logger;
   private logs: AuditLogEntry[] = [];
   private lastHash: string | undefined;
+
+  constructor() {
+    super();
+    this.logger = new Logger(AuditLogger.name);
+  }
 
   /**
    * Log audit event
@@ -493,9 +608,13 @@ export function createAuditContext(
  */
 @Injectable()
 export class FERPAComplianceManager {
-  private readonly logger = new Logger(FERPAComplianceManager.name);
+  private readonly logger: Logger;
   private records: FERPAComplianceRecord[] = [];
   private consents = new Map<string, ConsentRecord>();
+
+  constructor() {
+    this.logger = new Logger(FERPAComplianceManager.name);
+  }
 
   /**
    * Record FERPA access
@@ -639,9 +758,14 @@ export function createFERPAConsent(
  */
 @Injectable()
 export class HIPAAComplianceManager extends EventEmitter {
-  private readonly logger = new Logger(HIPAAComplianceManager.name);
+  private readonly logger: Logger;
   private records: HIPAAComplianceRecord[] = [];
   private authorizations = new Map<string, ConsentRecord>();
+
+  constructor() {
+    super();
+    this.logger = new Logger(HIPAAComplianceManager.name);
+  }
 
   /**
    * Record PHI access
@@ -802,8 +926,12 @@ export class HIPAAComplianceManager extends EventEmitter {
  */
 @Injectable()
 export class DataLineageTracker {
-  private readonly logger = new Logger(DataLineageTracker.name);
+  private readonly logger: Logger;
   private graphs = new Map<string, DataProvenanceGraph>();
+
+  constructor() {
+    this.logger = new Logger(DataLineageTracker.name);
+  }
 
   /**
    * Create lineage graph
@@ -1001,8 +1129,12 @@ export function createLineageEdge(
  */
 @Injectable()
 export class ForensicInvestigator {
-  private readonly logger = new Logger(ForensicInvestigator.name);
+  private readonly logger: Logger;
   private investigations = new Map<string, ForensicInvestigation>();
+
+  constructor() {
+    this.logger = new Logger(ForensicInvestigator.name);
+  }
 
   /**
    * Start investigation
@@ -1152,8 +1284,12 @@ export class ForensicInvestigator {
  */
 @Injectable()
 export class ChainOfCustodyManager {
-  private readonly logger = new Logger(ChainOfCustodyManager.name);
+  private readonly logger: Logger;
   private chains = new Map<string, ChainOfCustodyEntry[]>();
+
+  constructor() {
+    this.logger = new Logger(ChainOfCustodyManager.name);
+  }
 
   /**
    * Create chain of custody
@@ -1294,8 +1430,12 @@ export class ChainOfCustodyManager {
  */
 @Injectable()
 export class ComplianceRuleEngine {
-  private readonly logger = new Logger(ComplianceRuleEngine.name);
+  private readonly logger: Logger;
   private rules = new Map<string, ComplianceRule>();
+
+  constructor() {
+    this.logger = new Logger(ComplianceRuleEngine.name);
+  }
 
   /**
    * Register compliance rule
