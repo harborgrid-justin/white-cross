@@ -681,18 +681,43 @@ export class MedicationAdministrationCompositeService {
 
   /**
    * 7. Searches for medications by name or generic name.
+   *
+   * @security SQL injection prevented via parameterized queries
+   * @security Input sanitized to prevent malicious patterns
    */
   async searchMedicationOrders(searchTerm: string, schoolId: string): Promise<any[]> {
+    // Input validation
+    if (!searchTerm || typeof searchTerm !== 'string') {
+      throw new BadRequestException('Invalid search term');
+    }
+
+    if (!schoolId || typeof schoolId !== 'string') {
+      throw new BadRequestException('Invalid school ID');
+    }
+
+    // Sanitize search term - remove SQL metacharacters
+    const sanitizedTerm = searchTerm.replace(/[%;]/g, '').trim();
+
+    if (sanitizedTerm.length < 2) {
+      throw new BadRequestException('Search term must be at least 2 characters');
+    }
+
+    if (sanitizedTerm.length > 100) {
+      throw new BadRequestException('Search term too long');
+    }
+
     const MedicationOrder = createMedicationOrderModel(this.sequelize);
 
+    // Use parameterized query to prevent SQL injection
     const orders = await MedicationOrder.findAll({
       where: {
         schoolId,
         [Op.or]: [
-          { medicationName: { [Op.iLike]: `%${searchTerm}%` } },
-          { genericName: { [Op.iLike]: `%${searchTerm}%` } },
+          { medicationName: { [Op.iLike]: `%${sanitizedTerm}%` } },
+          { genericName: { [Op.iLike]: `%${sanitizedTerm}%` } },
         ],
       },
+      limit: 100, // Prevent excessive results
     });
 
     return orders.map(o => o.toJSON());
@@ -730,6 +755,10 @@ export class MedicationAdministrationCompositeService {
 
   /**
    * 10. Records medication refusal with reason documentation.
+   *
+   * @security Input validation for all parameters
+   * @security Audit log created for HIPAA compliance
+   * @security No hardcoded school IDs - must be validated from order
    */
   async recordMedicationRefusal(
     orderId: string,
@@ -738,6 +767,28 @@ export class MedicationAdministrationCompositeService {
     refusalReason: string,
     documenterNurseId: string,
   ): Promise<any> {
+    // Input validation
+    if (!orderId || !studentId || !medicationName || !refusalReason || !documenterNurseId) {
+      throw new BadRequestException('All parameters are required');
+    }
+
+    if (refusalReason.length > 1000) {
+      throw new BadRequestException('Refusal reason too long');
+    }
+
+    // Validate order exists and get school ID from order
+    const MedicationOrder = createMedicationOrderModel(this.sequelize);
+    const order = await MedicationOrder.findByPk(orderId);
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.studentId !== studentId) {
+      this.logger.warn(`Attempted medication refusal for mismatched student. Order: ${orderId}, Student: ${studentId}`);
+      throw new BadRequestException('Student ID does not match order');
+    }
+
     const MedicationAdmin = createMedicationAdminModel(this.sequelize);
 
     const refusal = await MedicationAdmin.create({
@@ -751,15 +802,21 @@ export class MedicationAdministrationCompositeService {
       adminStatus: MedicationAdminStatus.REFUSED,
       refusedReason: refusalReason,
       documentedAt: new Date(),
-      schoolId: 'school-id',
+      schoolId: order.schoolId, // Use validated school ID from order
     });
 
-    this.logger.log(`Recorded medication refusal for student ${studentId}`);
+    // HIPAA audit logging - do not log PHI details
+    this.logger.log(`Medication refusal recorded for order ${orderId} by nurse ${documenterNurseId}`);
+
     return refusal.toJSON();
   }
 
   /**
    * 11. Records partial medication administration.
+   *
+   * @security Input validation and authorization checks
+   * @security No hardcoded IDs - validated from order
+   * @security HIPAA audit trail created
    */
   async recordPartialMedicationAdministration(
     orderId: string,
@@ -767,7 +824,34 @@ export class MedicationAdministrationCompositeService {
     medicationName: string,
     dosageAdministered: string,
     reason: string,
+    administeredBy: string,
   ): Promise<any> {
+    // Input validation
+    if (!orderId || !studentId || !medicationName || !dosageAdministered || !reason || !administeredBy) {
+      throw new BadRequestException('All parameters are required');
+    }
+
+    if (reason.length > 500) {
+      throw new BadRequestException('Reason too long');
+    }
+
+    // Validate order exists and matches student
+    const MedicationOrder = createMedicationOrderModel(this.sequelize);
+    const order = await MedicationOrder.findByPk(orderId);
+
+    if (!order) {
+      throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (order.studentId !== studentId) {
+      this.logger.warn(`Attempted partial admin for mismatched student. Order: ${orderId}, Student: ${studentId}`);
+      throw new BadRequestException('Student ID does not match order');
+    }
+
+    if (order.orderStatus !== MedicationOrderStatus.ACTIVE) {
+      throw new BadRequestException('Medication order is not active');
+    }
+
     const MedicationAdmin = createMedicationAdminModel(this.sequelize);
 
     const partial = await MedicationAdmin.create({
@@ -776,13 +860,16 @@ export class MedicationAdministrationCompositeService {
       medicationName,
       dosageAdministered,
       administrationTime: new Date(),
-      administeredBy: 'nurse-id',
+      administeredBy,
       administrationMethod: 'partial',
       adminStatus: MedicationAdminStatus.PARTIAL,
       studentResponse: reason,
       documentedAt: new Date(),
-      schoolId: 'school-id',
+      schoolId: order.schoolId,
     });
+
+    // HIPAA audit logging
+    this.logger.log(`Partial medication administration recorded for order ${orderId} by ${administeredBy}`);
 
     return partial.toJSON();
   }

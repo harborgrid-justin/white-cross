@@ -629,8 +629,31 @@ export class PatientCareServicesCompositeService {
     chiefComplaint: string,
     severity: TriageSeverity,
     documentedBy: string,
+    schoolId: string,
+    academicYear: string,
   ): Promise<any> {
-    this.logger.log(`Initiating health visit for student ${studentId}`);
+    // Input validation
+    if (!studentId || !chiefComplaint || !severity || !documentedBy || !schoolId || !academicYear) {
+      throw new BadRequestException('All parameters are required');
+    }
+
+    if (chiefComplaint.length < 3 || chiefComplaint.length > 500) {
+      throw new BadRequestException('Chief complaint must be between 3 and 500 characters');
+    }
+
+    // Validate severity is a valid enum value
+    if (!Object.values(TriageSeverity).includes(severity)) {
+      throw new BadRequestException('Invalid triage severity level');
+    }
+
+    // Academic year validation (format: YYYY-YYYY)
+    const yearPattern = /^\d{4}-\d{4}$/;
+    if (!yearPattern.test(academicYear)) {
+      throw new BadRequestException('Invalid academic year format. Expected: YYYY-YYYY');
+    }
+
+    // HIPAA audit logging - no PHI in logs
+    this.logger.log(`Initiating health visit for student in school ${schoolId} by ${documentedBy}`);
 
     const StudentHealthVisit = createStudentHealthVisitModel(this.sequelize);
 
@@ -648,8 +671,8 @@ export class PatientCareServicesCompositeService {
       followUpRequired: false,
       parentNotified: false,
       documentedBy,
-      schoolId: 'school-id',
-      academicYear: '2024-2025',
+      schoolId,
+      academicYear,
     });
 
     return visit.toJSON();
@@ -675,13 +698,40 @@ export class PatientCareServicesCompositeService {
    * ```
    */
   async recordStudentVitalSigns(visitId: string, vitalSigns: any): Promise<any> {
+    // Input validation
+    if (!visitId) {
+      throw new BadRequestException('Visit ID is required');
+    }
+
+    if (!vitalSigns || typeof vitalSigns !== 'object') {
+      throw new BadRequestException('Valid vital signs object is required');
+    }
+
+    // Validate vital signs values are within acceptable ranges
+    if (vitalSigns.temperature && (vitalSigns.temperature < 90 || vitalSigns.temperature > 110)) {
+      throw new BadRequestException('Temperature out of acceptable range (90-110°F)');
+    }
+
+    if (vitalSigns.heartRate && (vitalSigns.heartRate < 30 || vitalSigns.heartRate > 250)) {
+      throw new BadRequestException('Heart rate out of acceptable range (30-250 bpm)');
+    }
+
+    if (vitalSigns.oxygenSaturation && (vitalSigns.oxygenSaturation < 50 || vitalSigns.oxygenSaturation > 100)) {
+      throw new BadRequestException('Oxygen saturation out of acceptable range (50-100%)');
+    }
+
+    if (vitalSigns.painLevel && (vitalSigns.painLevel < 0 || vitalSigns.painLevel > 10)) {
+      throw new BadRequestException('Pain level must be between 0 and 10');
+    }
+
+    // HIPAA audit logging
     this.logger.log(`Recording vital signs for visit ${visitId}`);
 
     const StudentHealthVisit = createStudentHealthVisitModel(this.sequelize);
     const visit = await StudentHealthVisit.findByPk(visitId);
 
     if (!visit) {
-      throw new NotFoundException(`Visit ${visitId} not found`);
+      throw new NotFoundException(`Visit not found`);
     }
 
     await visit.update({ vitalSigns });
