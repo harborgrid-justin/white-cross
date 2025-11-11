@@ -1,0 +1,592 @@
+================================================================================
+WHITE CROSS HEALTHCARE PLATFORM - LOGIN FLOW TRACE
+Complete Function/File Path from Frontend to Backend
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              FRONTEND - CLIENT SIDE                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+1. USER ACTION: User enters credentials and submits login form
+   ├─ File: /frontend/src/app/login/page.tsx
+   ├─ Component: LoginPage (Client Component - 'use client')
+   ├─ Form Element: <form action={formAction}>
+   └─ Action Trigger: form submission → formAction (from useActionState)
+
+2. FORM STATE MANAGEMENT
+   ├─ Hook: useActionState(handleLoginSubmission, { success: false })
+   ├─ Manages form state and pending status
+   ├─ Triggers server action on form submission
+   └─ Returns: [formState, formAction]
+
+3. FORM DATA COLLECTION
+   ├─ Input: email (name="email", type="email")
+   ├─ Input: password (name="password", type="password")
+   └─ Data sent as FormData to server action
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        FRONTEND - SERVER ACTION LAYER                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+4. SERVER ACTION ENTRY POINT
+   ├─ File: /frontend/src/identity-access/actions/auth.login.ts
+   ├─ Function: handleLoginSubmission(prevState, formData)
+   ├─ Directive: 'use server'
+   ├─ Purpose: Wrapper that calls loginAction and handles redirect
+   └─ Flow:
+       ├─ const result = await loginAction(prevState, formData)
+       ├─ if (result.success):
+       │   ├─ revalidatePath('/dashboard', 'page')
+       │   └─ redirect('/dashboard')
+       └─ return result
+
+5. CORE LOGIN ACTION
+   ├─ File: /frontend/src/identity-access/actions/auth.login.ts
+   ├─ Function: loginAction(_prevState, formData)
+   └─ Processing Steps:
+       │
+       ├─ 5.1: EXTRACT CLIENT CONTEXT
+       │   ├─ const headersList = await headers()
+       │   ├─ const ipAddress = extractIPAddress(mockRequest)
+       │   └─ Purpose: For audit logging and rate limiting
+       │
+       ├─ 5.2: SANITIZE INPUTS
+       │   ├─ const email = safeFormDataEmail(formData, 'email')
+       │   ├─ const password = safeFormDataPassword(formData, 'password')
+       │   └─ Security: Prevent XSS, SQL injection
+       │
+       ├─ 5.3: RATE LIMITING (IP-based)
+       │   ├─ const ipRateLimit = checkRateLimit('login-ip', ipAddress, ...)
+       │   ├─ Limit: 5 attempts per 15 minutes per IP
+       │   └─ If exceeded: Log audit + return rate limit error
+       │
+       ├─ 5.4: RATE LIMITING (Email-based)
+       │   ├─ const emailRateLimit = checkRateLimit('login-email', email, ...)
+       │   ├─ Limit: 3 attempts per 15 minutes per email
+       │   └─ If exceeded: Log audit + return rate limit error
+       │
+       ├─ 5.5: VALIDATION (Zod Schema)
+       │   ├─ const validatedFields = loginSchema.safeParse({ email, password })
+       │   ├─ Schema: /frontend/src/identity-access/actions/auth.constants.ts
+       │   └─ If invalid: Return formatted validation errors
+       │
+       ├─ 5.6: BACKEND API CALL
+       │   ├─ const wrappedResponse = await serverPost<any>(
+       │   │     API_ENDPOINTS.AUTH.LOGIN,    // '/api/auth/login'
+       │   │     { email, password },
+       │   │     { cache: 'no-store', requiresAuth: false, ... }
+       │   │   )
+       │   └─ Goes to Next.js API client...
+       │
+       └─ Jump to Step 6 ↓
+
+6. API CLIENT REQUEST
+   ├─ File: /frontend/src/lib/api/nextjs-client.ts
+   ├─ Function: serverPost<T>(endpoint, data, options)
+   └─ Processing:
+       │
+       ├─ 6.1: DELEGATE TO CORE FETCH
+       │   └─ return nextFetch<T>(endpoint, { method: 'POST', body: JSON.stringify(data), ... })
+       │
+       ├─ 6.2: BUILD REQUEST
+       │   ├─ URL: getApiBaseUrl() + endpoint
+       │   │   ├─ getApiBaseUrl() → process.env.API_BASE_URL || 'http://localhost:3001'
+       │   │   └─ Full URL: 'http://localhost:3001/api/auth/login'
+       │   │
+       │   ├─ HEADERS:
+       │   │   ├─ 'Content-Type': 'application/json'
+       │   │   ├─ 'Authorization': `Bearer ${token}` (if requiresAuth && token exists)
+       │   │   ├─ 'X-CSRF-Token': csrfToken (for POST/PUT/PATCH/DELETE)
+       │   │   ├─ 'X-Request-ID': generateRequestId()
+       │   │   ├─ 'X-Content-Type-Options': 'nosniff'
+       │   │   ├─ 'X-Frame-Options': 'DENY'
+       │   │   └─ 'X-XSS-Protection': '1; mode=block'
+       │   │
+       │   └─ BODY: JSON.stringify({ email: validatedEmail, password: validatedPassword })
+       │
+       ├─ 6.3: EXECUTE FETCH (with retry logic)
+       │   ├─ const response = await fetch(url, { headers, body, method: 'POST', ... })
+       │   ├─ Retry attempts: 3 (with exponential backoff)
+       │   ├─ Timeout: 30000ms (30 seconds)
+       │   └─ Sends HTTP POST request to backend...
+       │
+       └─ Jump to Step 7 (Backend receives request) ↓
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          BACKEND - HTTP ENTRY POINT                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+7. BACKEND HTTP SERVER (Hapi.js)
+   ├─ Server listens on: http://localhost:3001
+   ├─ Request received: POST /api/auth/login
+   ├─ Request Method: POST
+   ├─ Request Body: { email: "...", password: "..." }
+   └─ Routing: Hapi routes request to NestJS integration
+       │
+       └─ NestJS handles the route...
+
+8. NESTJS ROUTING
+   ├─ Framework: NestJS (running on Hapi.js)
+   ├─ Route Match: POST /auth/login
+   ├─ Module: AuthModule (/backend/src/auth/auth.module.ts)
+   └─ Controller: AuthController (/backend/src/auth/auth.controller.ts)
+       │
+       └─ Jump to Step 9 ↓
+
+9. AUTH CONTROLLER - LOGIN ENDPOINT
+   ├─ File: /backend/src/auth/auth.controller.ts
+   ├─ Decorator: @Controller('auth')
+   ├─ Method: login(@Body() loginDto: LoginDto)
+   ├─ Route: POST /auth/login
+   │
+   └─ Middleware/Decorators Applied:
+       ├─ @Public() - Marks endpoint as publicly accessible (no JWT required)
+       ├─ @HttpCode(HttpStatus.OK) - Returns 200 on success
+       ├─ @Throttle({ short: { limit: 5, ttl: 60000 } }) - Rate limiting
+       ├─ @ApiOperation() - Swagger documentation
+       └─ ValidationPipe - Validates LoginDto structure
+   │
+   └─ Execution:
+       ├─ async login(loginDto: LoginDto): Promise<AuthResponseDto>
+       └─ return this.authService.login(loginDto)
+           │
+           └─ Jump to Step 10 ↓
+
+10. AUTH SERVICE - LOGIN LOGIC
+    ├─ File: /backend/src/auth/auth.service.ts
+    ├─ Class: AuthService
+    ├─ Method: login(loginDto: LoginDto)
+    │
+    └─ Processing Steps:
+        │
+        ├─ 10.1: EXTRACT CREDENTIALS
+        │   └─ const { email, password } = loginDto
+        │
+        ├─ 10.2: FIND USER BY EMAIL
+        │   ├─ const user = await this.userModel.findOne({ where: { email } })
+        │   ├─ Database: PostgreSQL via Sequelize ORM
+        │   ├─ Table: users
+        │   └─ If not found: throw UnauthorizedException('Invalid email or password')
+        │       │
+        │       └─ Jump to Step 11 ↓
+        │
+        ├─ 10.3: CHECK ACCOUNT LOCK STATUS
+        │   ├─ if (user.isAccountLocked())
+        │   ├─ Method: /backend/src/database/models/user.model.ts:isAccountLocked()
+        │   ├─ Logic: return this.lockoutUntil ? this.lockoutUntil > new Date() : false
+        │   └─ If locked: throw UnauthorizedException('Account is temporarily locked...')
+        │
+        ├─ 10.4: VERIFY PASSWORD
+        │   ├─ const isPasswordValid = await user.comparePassword(password)
+        │   ├─ Jump to Step 11 ↓
+        │   │
+        │   └─ If invalid:
+        │       ├─ await user.incrementFailedLoginAttempts()
+        │       │   ├─ Method: /backend/src/database/models/user.model.ts
+        │       │   ├─ Increments failedLoginAttempts counter
+        │       │   └─ If >= 5 attempts: Set lockoutUntil = now + 30 minutes
+        │       │
+        │       └─ throw UnauthorizedException('Invalid email or password')
+        │
+        ├─ 10.5: CHECK ACCOUNT ACTIVE STATUS
+        │   ├─ if (!user.isActive)
+        │   └─ throw UnauthorizedException('Account is inactive')
+        │
+        ├─ 10.6: RESET FAILED ATTEMPTS & UPDATE LAST LOGIN
+        │   └─ await user.resetFailedLoginAttempts()
+        │       ├─ Sets failedLoginAttempts = 0
+        │       ├─ Sets lockoutUntil = null
+        │       └─ Updates lastLogin = new Date()
+        │
+        ├─ 10.7: GENERATE JWT TOKENS
+        │   ├─ const tokens = await this.generateTokens(user)
+        │   └─ Jump to Step 12 ↓
+        │
+        └─ 10.8: RETURN AUTH RESPONSE
+            └─ return {
+                  accessToken: tokens.accessToken,
+                  refreshToken: tokens.refreshToken,
+                  user: user.toSafeObject(),
+                  tokenType: 'Bearer',
+                  expiresIn: 900 // 15 minutes in seconds
+                }
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    BACKEND - PASSWORD VERIFICATION                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+11. USER MODEL - PASSWORD COMPARISON
+    ├─ File: /backend/src/database/models/user.model.ts
+    ├─ Class: User extends Model
+    ├─ Method: comparePassword(candidatePassword: string)
+    │
+    └─ Implementation:
+        └─ async comparePassword(candidatePassword: string): Promise<boolean> {
+              return bcrypt.compare(candidatePassword, this.password);
+            }
+        │
+        ├─ Library: bcrypt (npm package)
+        ├─ Function: bcrypt.compare(plaintext, hash)
+        ├─ Input: candidatePassword (user-provided plaintext)
+        ├─ Stored Hash: this.password (bcrypt hash from database)
+        │   └─ Hash format: $2b$12$[22-char salt][31-char hash]
+        │   └─ Salt rounds: 12 (configured via BCRYPT_SALT_ROUNDS env var)
+        │
+        └─ Returns: Promise<boolean>
+            ├─ true: Password matches stored hash
+            └─ false: Password does not match
+        │
+        └─ Return to Step 10.4 ↑
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      BACKEND - TOKEN GENERATION                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+12. AUTH SERVICE - GENERATE TOKENS
+    ├─ File: /backend/src/auth/auth.service.ts
+    ├─ Method: generateTokens(user: User)
+    │
+    └─ Processing:
+        │
+        ├─ 12.1: GET JWT SECRETS
+        │   ├─ const jwtSecret = this.configService.get<string>('JWT_SECRET')
+        │   └─ const refreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || jwtSecret
+        │
+        ├─ 12.2: CREATE ACCESS TOKEN PAYLOAD
+        │   └─ const payload: JwtPayload = {
+        │         sub: user.id,           // User ID
+        │         email: user.email,      // User email
+        │         role: user.role,        // User role (NURSE, ADMIN, etc.)
+        │         type: 'access'          // Token type
+        │       }
+        │
+        ├─ 12.3: SIGN ACCESS TOKEN
+        │   ├─ const accessToken = this.jwtService.sign(payload, {
+        │   │     secret: jwtSecret,
+        │   │     expiresIn: '15m',      // 15 minutes
+        │   │     issuer: 'white-cross-healthcare',
+        │   │     audience: 'white-cross-api'
+        │   │   })
+        │   └─ Library: @nestjs/jwt (wraps jsonwebtoken)
+        │
+        ├─ 12.4: CREATE REFRESH TOKEN PAYLOAD
+        │   └─ const refreshPayload: JwtPayload = {
+        │         sub: user.id,
+        │         email: user.email,
+        │         role: user.role,
+        │         type: 'refresh'         // Different token type
+        │       }
+        │
+        ├─ 12.5: SIGN REFRESH TOKEN
+        │   ├─ const refreshToken = this.jwtService.sign(refreshPayload, {
+        │   │     secret: refreshSecret,
+        │   │     expiresIn: '7d',       // 7 days
+        │   │     issuer: 'white-cross-healthcare',
+        │   │     audience: 'white-cross-api'
+        │   │   })
+        │   └─ Library: @nestjs/jwt
+        │
+        └─ 12.6: RETURN TOKENS
+            └─ return { accessToken, refreshToken }
+        │
+        └─ Return to Step 10.7 ↑
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                   BACKEND - RESPONSE TO FRONTEND                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+13. AUTH CONTROLLER - RETURN RESPONSE
+    ├─ File: /backend/src/auth/auth.controller.ts
+    ├─ Method: login() returns AuthResponseDto
+    │
+    └─ Response Structure:
+        └─ {
+              success: true,
+              data: {
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                user: {
+                  id: "uuid-here",
+                  email: "user@example.com",
+                  firstName: "John",
+                  lastName: "Doe",
+                  role: "NURSE",
+                  isActive: true,
+                  // ... other safe user fields (no password, secrets)
+                },
+                tokenType: "Bearer",
+                expiresIn: 900
+              }
+            }
+    │
+    └─ HTTP Response:
+        ├─ Status: 200 OK
+        ├─ Content-Type: application/json
+        └─ Body: JSON serialized response
+        │
+        └─ Response sent to frontend API client ↓
+
+14. BACKEND HTTP RESPONSE
+    ├─ NestJS serializes response to JSON
+    ├─ Hapi.js sends HTTP response
+    └─ Response travels over network to frontend...
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                  FRONTEND - RESPONSE HANDLING                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+15. API CLIENT - RECEIVE RESPONSE
+    ├─ File: /frontend/src/lib/api/nextjs-client.ts
+    ├─ Function: nextFetch() receives response
+    │
+    └─ Processing:
+        │
+        ├─ 15.1: CHECK RESPONSE STATUS
+        │   ├─ if (!response.ok) → Handle error
+        │   └─ Status: 200 OK → Continue
+        │
+        ├─ 15.2: PARSE JSON RESPONSE
+        │   ├─ const contentType = response.headers.get('content-type')
+        │   ├─ if (contentType?.includes('application/json'))
+        │   └─ return await response.json() as T
+        │
+        └─ Return to loginAction (Step 5.6) ↑
+
+16. LOGIN ACTION - PROCESS RESPONSE
+    ├─ File: /frontend/src/identity-access/actions/auth.login.ts
+    ├─ Function: loginAction() continues
+    │
+    └─ Processing:
+        │
+        ├─ 16.1: EXTRACT AUTH DATA
+        │   ├─ const wrappedResponse = await serverPost<any>(...)
+        │   ├─ const response: AuthResponse = wrappedResponse?.data || wrappedResponse
+        │   └─ Unwrap backend's ApiResponse wrapper
+        │
+        ├─ 16.2: VALIDATE RESPONSE
+        │   ├─ if (!response || !response.accessToken)
+        │   └─ throw error if tokens missing
+        │
+        ├─ 16.3: EXTRACT TOKENS AND USER
+        │   └─ const { accessToken: token, refreshToken, user } = response
+        │
+        ├─ 16.4: SET HTTP-ONLY COOKIES
+        │   ├─ const cookieStore = await cookies()
+        │   │
+        │   ├─ Set Access Token Cookie:
+        │   │   └─ cookieStore.set(
+        │   │         COOKIE_NAMES.ACCESS_TOKEN,  // 'white-cross.auth.token'
+        │   │         token,
+        │   │         getAccessTokenCookieOptions()  // httpOnly, secure, sameSite
+        │   │       )
+        │   │
+        │   └─ Set Refresh Token Cookie (if present):
+        │       └─ cookieStore.set(
+        │             COOKIE_NAMES.REFRESH_TOKEN,  // 'white-cross.auth.refresh'
+        │             refreshToken,
+        │             getRefreshTokenCookieOptions()  // httpOnly, secure, sameSite
+        │           )
+        │   │
+        │   └─ Cookie Options (from /frontend/src/identity-access/lib/config/cookies.ts):
+        │       ├─ httpOnly: true      (Prevents JavaScript access - XSS protection)
+        │       ├─ secure: true        (HTTPS only in production)
+        │       ├─ sameSite: 'lax'     (CSRF protection)
+        │       ├─ path: '/'           (Available to all routes)
+        │       └─ maxAge: 900s (access) / 604800s (refresh)
+        │
+        ├─ 16.5: AUDIT LOG SUCCESS
+        │   └─ await auditLog({
+        │         userId: user.id,
+        │         action: AUDIT_ACTIONS.LOGIN,
+        │         resource: 'Authentication',
+        │         details: `User ${email} logged in successfully`,
+        │         ipAddress,
+        │         userAgent,
+        │         success: true
+        │       })
+        │
+        └─ 16.6: RETURN SUCCESS STATE
+            └─ return { success: true }
+        │
+        └─ Return to handleLoginSubmission (Step 4) ↑
+
+17. HANDLE LOGIN SUBMISSION - REDIRECT
+    ├─ File: /frontend/src/identity-access/actions/auth.login.ts
+    ├─ Function: handleLoginSubmission() continues
+    │
+    └─ Processing:
+        │
+        ├─ 17.1: CHECK SUCCESS
+        │   └─ if (result.success)
+        │
+        ├─ 17.2: REVALIDATE CACHE
+        │   └─ revalidatePath('/dashboard', 'page')
+        │       ├─ Purpose: Clear Next.js cache for dashboard
+        │       └─ Ensures fresh data on dashboard load
+        │
+        └─ 17.3: REDIRECT TO DASHBOARD
+            └─ redirect('/dashboard')
+                ├─ Next.js Server Action redirect
+                ├─ Throws NEXT_REDIRECT error (caught by Next.js)
+                └─ Browser redirected to: http://localhost:3000/dashboard
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          FRONTEND - POST-LOGIN                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+18. DASHBOARD PAGE LOAD
+    ├─ URL: http://localhost:3000/dashboard
+    ├─ File: /frontend/src/app/(dashboard)/page.tsx (inferred)
+    │
+    └─ Server Component Rendering:
+        │
+        ├─ 18.1: AUTHENTICATION CHECK
+        │   ├─ Next.js middleware reads cookies
+        │   ├─ Cookie: white-cross.auth.token (httpOnly)
+        │   └─ If missing: Redirect to /login
+        │
+        ├─ 18.2: FETCH USER DATA
+        │   ├─ Server Component can access cookies()
+        │   ├─ API calls include Authorization: Bearer {token}
+        │   └─ Token automatically included from httpOnly cookie
+        │
+        └─ 18.3: RENDER DASHBOARD
+            └─ User is now authenticated and viewing dashboard
+
+19. SUBSEQUENT API REQUESTS
+    ├─ All protected API calls include authentication
+    ├─ Cookie automatically sent with requests (httpOnly, sameSite: 'lax')
+    │
+    └─ API Client Flow:
+        │
+        ├─ 19.1: GET AUTH TOKEN
+        │   ├─ const cookieStore = await cookies()
+        │   └─ const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value
+        │
+        ├─ 19.2: ADD AUTHORIZATION HEADER
+        │   └─ headers['Authorization'] = `Bearer ${token}`
+        │
+        └─ 19.3: SEND REQUEST
+            └─ Backend validates JWT and processes request
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                               SECURITY LAYERS                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+FRONTEND SECURITY:
+├─ Input Sanitization: XSS prevention (safeFormDataEmail, safeFormDataPassword)
+├─ Rate Limiting: IP-based (5/15min) + Email-based (3/15min)
+├─ Validation: Zod schema validation
+├─ CSRF Protection: X-CSRF-Token header for mutations
+├─ Audit Logging: All login attempts logged with IP/User-Agent
+└─ HttpOnly Cookies: Tokens stored in httpOnly cookies (XSS protection)
+
+BACKEND SECURITY:
+├─ Password Hashing: bcrypt with 12 salt rounds (HIPAA-compliant)
+├─ Account Lockout: 5 failed attempts → 30-minute lockout
+├─ JWT Tokens: Signed with secret, 15min access + 7day refresh
+├─ Rate Limiting: @Throttle decorator (5 attempts/minute)
+├─ Validation: class-validator DTOs
+├─ Token Blacklist: Revoked tokens tracked (on password change/logout)
+└─ Safe Responses: Sensitive data excluded via toSafeObject()
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           KEY FILES REFERENCE                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+FRONTEND FILES:
+├─ /frontend/src/app/login/page.tsx
+├─ /frontend/src/identity-access/actions/auth.actions.ts (barrel export)
+├─ /frontend/src/identity-access/actions/auth.login.ts
+├─ /frontend/src/identity-access/actions/auth.types.ts
+├─ /frontend/src/identity-access/actions/auth.constants.ts
+├─ /frontend/src/identity-access/lib/config/cookies.ts
+├─ /frontend/src/lib/api/nextjs-client.ts
+├─ /frontend/src/lib/audit.ts
+├─ /frontend/src/constants/api.ts
+└─ /frontend/src/identity-access/lib/helpers/rate-limit.ts
+
+BACKEND FILES:
+├─ /backend/src/auth/auth.controller.ts
+├─ /backend/src/auth/auth.service.ts
+├─ /backend/src/auth/auth.module.ts
+├─ /backend/src/auth/dto/login.dto.ts
+├─ /backend/src/auth/dto/auth-response.dto.ts
+├─ /backend/src/auth/strategies/jwt.strategy.ts
+├─ /backend/src/auth/guards/jwt-auth.guard.ts
+├─ /backend/src/auth/services/token-blacklist.service.ts
+├─ /backend/src/database/models/user.model.ts
+└─ /backend/src/config/ (environment configuration)
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          DATA FLOW SUMMARY                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+CREDENTIALS FLOW:
+User Input → FormData → Server Action → Sanitization → Validation
+  → API Client → HTTP POST → Backend Controller → Service → Database
+  → Password Verification (bcrypt) → JWT Generation → Response
+  → Cookie Storage → Dashboard Redirect
+
+TOKEN FLOW:
+Backend JWT Sign → HTTP Response → Frontend Extract → HttpOnly Cookie Storage
+  → Subsequent Requests → Cookie Auto-Include → Backend JWT Verify
+  → User Authenticated → Protected Resource Access
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          AUTHENTICATION TIMELINE                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+t=0ms    : User clicks "Sign in" button
+t=10ms   : Form submitted, server action triggered
+t=20ms   : Input sanitization and validation
+t=30ms   : Rate limit checks (IP + email)
+t=50ms   : HTTP POST request sent to backend
+t=60ms   : Backend receives request at /auth/login
+t=70ms   : Controller delegates to AuthService
+t=80ms   : Database query: Find user by email
+t=100ms  : User record retrieved from PostgreSQL
+t=110ms  : Account lock status checked
+t=120ms  : Password comparison (bcrypt.compare) - SLOWEST STEP
+t=250ms  : Password validated successfully
+t=260ms  : Failed login attempts reset
+t=270ms  : JWT tokens generated (access + refresh)
+t=290ms  : Response sent to frontend
+t=300ms  : Frontend receives response
+t=310ms  : Tokens stored in httpOnly cookies
+t=320ms  : Audit log written
+t=330ms  : Dashboard cache revalidated
+t=340ms  : Redirect to /dashboard initiated
+t=400ms  : Dashboard page renders with authenticated user
+
+TOTAL LOGIN TIME: ~400ms (typical)
+  - Password hashing: ~130ms (bcrypt intentionally slow for security)
+  - Network latency: ~50ms (local development)
+  - Database query: ~20ms
+  - JWT generation: ~20ms
+  - Other processing: ~180ms
+
+
+================================================================================
+END OF LOGIN FLOW TRACE
+================================================================================
+
+Notes:
+- This trace represents a SUCCESSFUL login flow
+- Error paths (invalid credentials, rate limits, etc.) branch at various points
+- All timestamps are approximate and vary based on system load
+- Password hashing is intentionally slow (bcrypt) for security
+- httpOnly cookies prevent XSS attacks on JWT tokens
+- HIPAA compliance enforced through audit logging and secure password storage
+================================================================================
