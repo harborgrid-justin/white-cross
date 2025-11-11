@@ -1,19 +1,11 @@
 /**
- * BillingDetail Types
- *
- * Centralized type definitions for the BillingDetail component and its sub-components.
+ * @fileoverview BillingDetail Types
+ * @module components/pages/Billing/BillingDetail/types
+ * @category Healthcare - Billing Management
  */
 
-// Re-export types from BillingCard
-export type {
-  BillingInvoice,
-  InvoiceStatus,
-  PaymentMethod,
-  InvoicePriority,
-  ServiceCategory,
-  InvoiceLineItem,
-  PaymentRecord
-} from '../BillingCard';
+import React from 'react';
+import { BillingInvoice, InvoiceLineItem, PaymentRecord } from '../BillingCard';
 
 /**
  * Detail view tab types
@@ -67,71 +59,7 @@ export interface BillingDetailProps {
 }
 
 /**
- * Props for InvoiceOverview component
- */
-export interface InvoiceOverviewProps {
-  /** Invoice data */
-  invoice: BillingInvoice;
-  /** Edit invoice handler */
-  onEditInvoice?: (invoice: BillingInvoice) => void;
-  /** Download invoice handler */
-  onDownloadInvoice?: (invoice: BillingInvoice) => void;
-  /** Send invoice handler */
-  onSendInvoice?: (invoice: BillingInvoice) => void;
-  /** Print invoice handler */
-  onPrintInvoice?: (invoice: BillingInvoice) => void;
-  /** Record payment handler */
-  onRecordPayment?: (invoice: BillingInvoice) => void;
-  /** View patient handler */
-  onViewPatient?: (patientId: string) => void;
-}
-
-/**
- * Props for PaymentHistory component
- */
-export interface PaymentHistoryProps {
-  /** Invoice data */
-  invoice: BillingInvoice;
-  /** Record payment handler */
-  onRecordPayment?: (invoice: BillingInvoice) => void;
-  /** Edit payment handler */
-  onEditPayment?: (payment: PaymentRecord) => void;
-  /** Delete payment handler */
-  onDeletePayment?: (payment: PaymentRecord) => void;
-}
-
-/**
- * Props for ServiceLineItems component
- */
-export interface ServiceLineItemsProps {
-  /** Invoice data */
-  invoice: BillingInvoice;
-  /** Add service handler */
-  onAddService?: (invoice: BillingInvoice) => void;
-  /** Edit service handler */
-  onEditService?: (service: InvoiceLineItem) => void;
-  /** Delete service handler */
-  onDeleteService?: (service: InvoiceLineItem) => void;
-}
-
-/**
- * Props for InvoiceHistory component
- */
-export interface InvoiceHistoryProps {
-  /** Invoice data */
-  invoice: BillingInvoice;
-}
-
-/**
- * Props for InvoiceDocuments component
- */
-export interface InvoiceDocumentsProps {
-  /** Invoice data */
-  invoice: BillingInvoice;
-}
-
-/**
- * Status configuration interface
+ * Status configuration for invoice statuses
  */
 export interface StatusConfig {
   color: string;
@@ -141,9 +69,18 @@ export interface StatusConfig {
 }
 
 /**
- * Payment method configuration interface
+ * Payment method configuration
  */
 export interface PaymentMethodConfig {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+}
+
+/**
+ * Tab configuration for navigation
+ */
+export interface TabConfig {
+  id: BillingDetailTab;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
 }

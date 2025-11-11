@@ -1,26 +1,37 @@
 /**
- * BillingDetail Utilities
- *
- * Shared utility functions for billing detail views and calculations.
+ * @fileoverview BillingDetail Utilities
+ * @module components/pages/Billing/BillingDetail/utils
+ * @category Healthcare - Billing Management
  */
 
 import {
+  DollarSign,
   FileText,
   Clock,
   CheckCircle,
   AlertTriangle,
   X,
   Receipt,
-  CreditCard,
   Banknote,
+  CreditCard,
   Building,
   Shield,
-  Wallet
+  Wallet,
+  User,
+  Calendar,
+  History,
+  Tag,
+  Eye,
+  Printer,
+  Share2,
+  Trash2
 } from 'lucide-react';
-import type { InvoiceStatus, PaymentMethod, StatusConfig, PaymentMethodConfig } from './types';
+
+import { InvoiceStatus, PaymentMethod } from '../BillingCard';
+import { StatusConfig, PaymentMethodConfig, TabConfig, BillingDetailTab } from './types';
 
 /**
- * Formats currency amount to USD
+ * Formats currency amount
  */
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-US', {
@@ -30,7 +41,7 @@ export const formatCurrency = (amount: number): string => {
 };
 
 /**
- * Gets status configuration with color, icon, label, and description
+ * Gets status configuration for invoice statuses
  */
 export const getStatusConfig = (status: InvoiceStatus): StatusConfig => {
   const configs: Record<InvoiceStatus, StatusConfig> = {
@@ -75,7 +86,7 @@ export const getStatusConfig = (status: InvoiceStatus): StatusConfig => {
 };
 
 /**
- * Gets payment method icon and label configuration
+ * Gets payment method configuration
  */
 export const getPaymentMethodConfig = (method: PaymentMethod): PaymentMethodConfig => {
   const configs: Record<PaymentMethod, PaymentMethodConfig> = {
@@ -90,8 +101,7 @@ export const getPaymentMethodConfig = (method: PaymentMethod): PaymentMethodConf
 };
 
 /**
- * Calculates number of days overdue
- * Returns 0 if not overdue
+ * Calculates days overdue from due date
  */
 export const getDaysOverdue = (dueDate: string): number => {
   const due = new Date(dueDate);
@@ -104,9 +114,20 @@ export const getDaysOverdue = (dueDate: string): number => {
 /**
  * Calculates payment percentage
  */
-export const calculatePaymentPercentage = (amountPaid: number, totalAmount: number): number => {
+export const getPaymentPercentage = (totalAmount: number, amountPaid: number): number => {
   return totalAmount > 0 ? Math.round((amountPaid / totalAmount) * 100) : 0;
 };
+
+/**
+ * Tab configurations for navigation
+ */
+export const TAB_CONFIGS: TabConfig[] = [
+  { id: 'overview', label: 'Overview', icon: Eye },
+  { id: 'payments', label: 'Payments', icon: DollarSign },
+  { id: 'services', label: 'Services', icon: Tag },
+  { id: 'history', label: 'History', icon: History },
+  { id: 'documents', label: 'Documents', icon: FileText }
+];
 
 /**
  * Formats date to localized string
@@ -119,6 +140,50 @@ export const formatDate = (date: string): string => {
  * Formats date and time to localized string
  */
 export const formatDateTime = (date: string): string => {
-  const d = new Date(date);
-  return `${d.toLocaleDateString()} at ${d.toLocaleTimeString()}`;
+  const dateObj = new Date(date);
+  return `${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString()}`;
+};
+
+/**
+ * Gets CSS classes for payment percentage bar
+ */
+export const getPaymentProgressColor = (percentage: number): string => {
+  return percentage === 100 ? 'bg-green-600' : 'bg-blue-600';
+};
+
+/**
+ * Gets CSS classes for balance due amount
+ */
+export const getBalanceDueColor = (balanceDue: number): string => {
+  return balanceDue > 0 ? 'text-red-600' : 'text-green-600';
+};
+
+/**
+ * Gets CSS classes for insurance status
+ */
+export const getInsuranceStatusColor = (status?: string): string => {
+  switch (status) {
+    case 'approved':
+      return 'bg-green-100 text-green-800';
+    case 'denied':
+      return 'bg-red-100 text-red-800';
+    case 'processing':
+      return 'bg-yellow-100 text-yellow-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+/**
+ * Capitalizes first letter of string
+ */
+export const capitalizeFirst = (str: string): string => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+/**
+ * Formats service category for display
+ */
+export const formatServiceCategory = (category: string): string => {
+  return category.replace('-', ' ');
 };

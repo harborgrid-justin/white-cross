@@ -2,90 +2,22 @@
 
 import React, { useState } from 'react';
 import { 
-  DollarSign,
-  User,
-  Calendar,
-  Clock,
-  MapPin,
-  Phone,
-  Mail,
-  Building,
-  CreditCard,
-  Receipt,
-  FileText,
-  Download,
-  Send,
-  Edit3,
-  Trash2,
   AlertTriangle,
-  CheckCircle,
   X,
-  Plus,
   Eye,
-  Printer,
-  Share2,
-  Copy,
-  Banknote,
-  Wallet,
-  Shield,
-  History,
+  DollarSign,
   Tag,
-  TrendingUp,
-  Info,
-  ExternalLink
+  History,
+  FileText,
+  Share2,
+  Trash2
 } from 'lucide-react';
-import { BillingInvoice, InvoiceStatus, PaymentMethod, InvoiceLineItem, PaymentRecord } from './BillingCard';
-
-/**
- * Detail view tab types
- */
-type BillingDetailTab = 'overview' | 'payments' | 'services' | 'history' | 'documents';
-
-/**
- * Props for the BillingDetail component
- */
-interface BillingDetailProps {
-  /** Invoice data */
-  invoice?: BillingInvoice;
-  /** Loading state */
-  loading?: boolean;
-  /** Active tab */
-  activeTab?: BillingDetailTab;
-  /** Custom CSS classes */
-  className?: string;
-  /** Tab change handler */
-  onTabChange?: (tab: BillingDetailTab) => void;
-  /** Edit invoice handler */
-  onEditInvoice?: (invoice: BillingInvoice) => void;
-  /** Delete invoice handler */
-  onDeleteInvoice?: (invoice: BillingInvoice) => void;
-  /** Download invoice handler */
-  onDownloadInvoice?: (invoice: BillingInvoice) => void;
-  /** Send invoice handler */
-  onSendInvoice?: (invoice: BillingInvoice) => void;
-  /** Print invoice handler */
-  onPrintInvoice?: (invoice: BillingInvoice) => void;
-  /** Share invoice handler */
-  onShareInvoice?: (invoice: BillingInvoice) => void;
-  /** Record payment handler */
-  onRecordPayment?: (invoice: BillingInvoice) => void;
-  /** Edit payment handler */
-  onEditPayment?: (payment: PaymentRecord) => void;
-  /** Delete payment handler */
-  onDeletePayment?: (payment: PaymentRecord) => void;
-  /** Add service handler */
-  onAddService?: (invoice: BillingInvoice) => void;
-  /** Edit service handler */
-  onEditService?: (service: InvoiceLineItem) => void;
-  /** Delete service handler */
-  onDeleteService?: (service: InvoiceLineItem) => void;
-  /** View patient handler */
-  onViewPatient?: (patientId: string) => void;
-  /** View provider handler */
-  onViewProvider?: (providerId: string) => void;
-  /** Back handler */
-  onBack?: () => void;
-}
+import { BillingInvoice, PaymentRecord, InvoiceLineItem } from './BillingCard';
+import { BillingDetailProps, BillingDetailTab, TabConfig } from './BillingDetail/types';
+import { TAB_CONFIGS } from './BillingDetail/utils';
+import OverviewTab from './BillingDetail/OverviewTab';
+import PaymentsTab from './BillingDetail/PaymentsTab';
+import ServicesTab from './BillingDetail/ServicesTab';
 
 /**
  * BillingDetail Component
