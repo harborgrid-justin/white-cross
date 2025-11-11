@@ -72,9 +72,9 @@ export class MedicationRepository {
           'id',
           'name',
           'genericName',
-          'brandName',
-          'category',
-          'form',
+          'manufacturer',
+          'dosageForm',
+          'strength',
         ], // Only needed fields
         // OPTIMIZATION: Search filtering happens at JOIN level, not in application
         where: query.search
@@ -82,7 +82,7 @@ export class MedicationRepository {
               [Op.or]: [
                 { name: { [Op.iLike]: `%${query.search}%` } },
                 { genericName: { [Op.iLike]: `%${query.search}%` } },
-                { brandName: { [Op.iLike]: `%${query.search}%` } },
+                { manufacturer: { [Op.iLike]: `%${query.search}%` } },
               ],
             }
           : undefined,

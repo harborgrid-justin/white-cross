@@ -10,7 +10,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import InventoryList from '@/components/medications/InventoryList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { serverGet } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 
 export const metadata: Metadata = {
@@ -30,7 +30,12 @@ interface InventoryPageProps {
 /**
  * Fetch inventory data
  */
-async function getInventoryData(searchParams: any) {
+async function getInventoryData(searchParams: any): Promise<{
+  inventory: unknown[];
+  stats: Record<string, unknown>;
+  alerts: unknown[];
+  total: number;
+}> {
   const params = new URLSearchParams({
     ...(searchParams.filter && { filter: searchParams.filter }),
     page: searchParams.page || '1',
@@ -38,16 +43,11 @@ async function getInventoryData(searchParams: any) {
   });
 
   try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/inventory?${params}`,
+    return await serverGet(
+      API_ENDPOINTS.INVENTORY.BASE,
+      Object.fromEntries(params),
       { next: { tags: ['medication-inventory'], revalidate: 300 } }
     );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch inventory');
-    }
-
-    return response.json();
   } catch (error) {
     console.error('Error fetching inventory:', error);
     return { inventory: [], stats: {}, alerts: [], total: 0 };
@@ -64,22 +64,20 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
     <div className="space-y-6">
       <PageHeader
         title="Medication Inventory"
-        description="Manage stock levels, expiration dates, and inventory adjustments"
-        backLink="/medications"
-        backLabel="Back to Medications"
+        subtitle="Manage stock levels, expiration dates, and inventory adjustments"
       >
         <div className="flex space-x-3">
           <Link
             href="/medications/inventory/low-stock"
             className="inline-flex items-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500"
           >
-            Low Stock ({stats.lowStockCount || 0})
+            Low Stock ({(stats as any).lowStockCount || 0})
           </Link>
           <Link
             href="/medications/inventory/expiring"
             className="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500"
           >
-            Expiring ({stats.expiringSoonCount || 0})
+            Expiring ({(stats as any).expiringSoonCount || 0})
           </Link>
         </div>
       </PageHeader>
@@ -107,9 +105,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
 
       <Suspense fallback={<InventoryLoadingSkeleton />}>
         <InventoryList
-          inventory={inventory}
-          stats={stats}
-          total={total}
+          inventoryItems={inventory as any[]}
         />
       </Suspense>
     </div>
