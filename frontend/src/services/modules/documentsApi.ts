@@ -1,989 +1,228 @@
 /**
- * @fileoverview Complete Documents API Implementation
+ * @fileoverview Documents API - Modular Implementation
  * @module services/modules/documentsApi
  * @category Healthcare - Documents
  *
  * Comprehensive document management API client for the White Cross healthcare platform.
- * Handles student health documents, consent forms, medical records, administrative
- * documents with full lifecycle management including versioning, digital signatures,
- * sharing, and compliance tracking.
+ * Now implemented using modular architecture for better maintainability and focused development.
  *
- * **Key Features:**
- * - **Document CRUD**: Complete create, read, update, delete operations
- * - **Version Control**: Track document revisions with full version history
- * - **Digital Signatures**: Cryptographic signing with multiple signature types
- * - **Advanced Search**: Full-text search with filters, sorting, and pagination
- * - **Bulk Operations**: Mass delete and download with progress tracking
- * - **Template Management**: Reusable document templates for common forms
- * - **Access Control**: Share documents with granular permissions
- * - **Audit Trail**: Complete access logging for HIPAA compliance
- * - **Categorization**: Organize documents by type, category, and tags
+ * **Refactored Architecture:**
+ * This file now serves as a backward-compatible wrapper around the modular services:
+ * - `DocumentsCrudService` - CRUD operations (Create, Read, Update, Delete)
+ * - `DocumentsVersionService` - Version management and comparison
+ * - `DocumentsActionsService` - Actions (sign, share, download, templates)
+ * - `DocumentsSearchService` - Search and filtering operations
+ * - `DocumentsAuditService` - Audit trail and compliance management
  *
- * **Healthcare Compliance:**
- * - HIPAA-compliant document access logging
- * - PHI detection and protection in document content
- * - Audit trail for all document operations
- * - Secure sharing with expiration and permissions
- * - Document retention and archival policies
+ * Each module is focused on a specific functional area while maintaining
+ * healthcare compliance and PHI protection throughout.
  *
- * **Document Types:**
- * - Consent Forms (immunization, treatment, field trips)
- * - Medical Records (doctor notes, prescriptions, test results)
- * - Health Plans (504 plans, IEPs, care plans)
- * - Administrative (enrollment forms, emergency contacts)
- * - Insurance Documents (cards, claims, authorizations)
+ * **Benefits of Modular Architecture:**
+ * - **Focused Development**: Each service handles one concern
+ * - **Easier Testing**: Isolated functionality can be tested independently
+ * - **Better Maintainability**: Changes to one area don't affect others
+ * - **Reduced File Size**: Individual modules are under 500 lines
+ * - **Improved Performance**: Only load needed functionality
  *
- * **Signature Types:**
- * - ELECTRONIC: Click-to-sign electronic signature
- * - DIGITAL: Cryptographic digital signature with certificate
- * - BIOMETRIC: Signature pad or touchscreen signature
- * - PIN: PIN-based signature for authentication
+ * **Backward Compatibility:**
+ * All existing API methods remain available and work exactly the same.
+ * Existing code using `documentsApi.methodName()` continues to work.
  *
- * @example Basic document operations
+ * @example Using the complete API (backward compatible)
  * ```typescript
  * import { documentsApi } from '@/services/modules/documentsApi';
  *
- * // Create a new document
- * const { document } = await documentsApi.createDocument({
+ * // All existing methods work exactly the same
+ * const { documents } = await documentsApi.getDocuments({
  *   studentId: 'student-123',
- *   title: 'Immunization Consent Form',
- *   category: 'CONSENT',
- *   description: 'Annual flu shot consent',
- *   fileUrl: 'https://storage.example.com/doc.pdf',
- *   expirationDate: '2025-12-31'
- * });
- *
- * // Get all documents for a student
- * const { documents, pagination } = await documentsApi.getDocuments({
- *   studentId: 'student-123',
- *   category: 'CONSENT',
- *   page: 1,
- *   limit: 20
+ *   category: 'CONSENT'
  * });
  * ```
  *
- * @example Digital signature workflow
+ * @example Using individual services (new capability)
  * ```typescript
- * // Sign a document electronically
- * const { signature } = await documentsApi.signDocument('doc-123', {
- *   signedBy: 'user-456',
- *   signedByRole: 'School Nurse',
- *   signatureType: 'ELECTRONIC',
- *   signatureData: 'data:image/png;base64,...',
- *   ipAddress: '192.168.1.1'
+ * import { createDocumentsApiService } from '@/services/modules/documentsApi';
+ * import { apiClient } from '@/services/core/ApiClient';
+ *
+ * const documentsApi = createDocumentsApiService(apiClient);
+ *
+ * // Use complete API
+ * const { documents } = await documentsApi.getDocuments();
+ *
+ * // Or access individual services for focused operations
+ * const searchResults = await documentsApi.search.advancedSearch({
+ *   filters: { category: 'MEDICAL_RECORD' },
+ *   sort: { field: 'createdAt', order: 'desc' }
  * });
  *
- * // Verify signature validity
- * const verification = await documentsApi.verifySignature(signature.id);
- * if (verification.isValid) {
- *   console.log('Signature verified!');
- * }
+ * const auditTrail = await documentsApi.audit.getDocumentAuditTrail('doc-id');
  * ```
- *
- * @example Version control workflow
- * ```typescript
- * // Create a new version of a document
- * const { document: newVersion } = await documentsApi.createDocumentVersion(
- *   'parent-doc-123',
- *   {
- *     versionNumber: 2,
- *     notes: 'Updated with current school year information',
- *     fileUrl: 'https://storage.example.com/doc-v2.pdf'
- *   }
- * );
- *
- * // Compare two versions
- * const comparison = await documentsApi.compareVersions(
- *   'doc-123',
- *   'version-1-id',
- *   'version-2-id'
- * );
- * console.log(`Changes: ${comparison.differences.length} modifications`);
- * ```
- *
- * @example Bulk download with progress tracking
- * ```typescript
- * // Download multiple documents with progress callback
- * const { blob, fileName, documentCount } = await documentsApi.bulkDownload(
- *   {
- *     documentIds: ['doc-1', 'doc-2', 'doc-3'],
- *     format: 'zip',
- *     includeMetadata: true,
- *     includeSignatures: true
- *   },
- *   {
- *     onProgress: (progress) => {
- *       console.log(`${progress.percentage}% complete`);
- *       console.log(`Processed: ${progress.processedDocuments}/${progress.totalDocuments}`);
- *     },
- *     timeout: 300000 // 5 minutes
- *   }
- * );
- *
- * // Save the downloaded archive
- * const url = URL.createObjectURL(blob);
- * const link = document.createElement('a');
- * link.href = url;
- * link.download = fileName;
- * link.click();
- * ```
- *
- * @see {@link createDocumentsApi} Factory function for creating API instances
- * @see {@link DocumentsApi} Interface definition
- * @see {@link Document} Document type definition
- * @see {@link DocumentVersion} Version type definition
- * @see {@link DocumentSignature} Signature type definition
- *
- * PHI Protection: All document operations log access for HIPAA compliance
- * Type Safety: Full TypeScript coverage with Zod validation
- * Error Handling: Comprehensive error handling with retry logic
  */
 
-import type { ApiClient } from '../core/ApiClient';
-import { API_ENDPOINTS } from '../config/apiConfig';
-import { extractApiData } from '../utils/apiUtils';
-import { buildUrlParams } from '../utils/apiUtils';
-import type { ApiResponse } from '../types';
+// Import the modular implementation
+import { 
+  DocumentsApiService, 
+  createDocumentsApiService,
+  type DocumentsApi 
+} from './documentsApi/index';
 
-// Import types
+// Import types for re-export
 import type {
   Document,
-  DocumentFilters,
-  DocumentTemplate,
   DocumentVersion,
   DocumentSignature,
-  DocumentAuditTrail,
-  DocumentStatistics,
-  DocumentCategoryMetadata,
-  DocumentPermission,
-  PaginatedDocumentsResponse,
+  DocumentFilters,
+  AdvancedSearchFilters,
+  SearchResults,
+  BulkDownloadRequest,
+  BulkDownloadResponse,
+  BulkDownloadProgress,
+  BulkDownloadOptions,
+  VersionComparison,
+  SignatureType,
   CreateDocumentRequest,
   UpdateDocumentRequest,
   SignDocumentRequest,
   CreateDocumentVersionRequest,
   CreateFromTemplateRequest,
   ShareDocumentRequest,
-  BulkDeleteDocumentsResponse,
-  AdvancedSearchFilters,
-  SearchResults,
-  SearchSortOptions,
   SearchDocumentsRequest,
-  BulkDownloadRequest,
-  BulkDownloadResponse,
-  BulkDownloadProgress,
-  BulkDownloadOptions,
-  VersionComparison,
-  VersionComparisonRequest,
-  SignatureVerificationResult,
-  SignatureType,
+  BulkDeleteDocumentsResponse,
 } from '../types';
 
-// Import validation schemas from documentSchemas
-import {
-  signDocumentSchema,
-  createDocumentVersionSchema,
-  // TODO: Add these schemas to documentSchemas.ts
-  // versionComparisonSchema,
-  // advancedSearchFiltersSchema,
-  // searchDocumentsRequestSchema,
-  // bulkDownloadRequestSchema,
-  type SignDocumentInput,
-  type CreateDocumentVersionInput,
-  // type VersionComparisonInput,
-  // type AdvancedSearchFiltersInput,
-  // type SearchDocumentsRequestInput,
-  // type BulkDownloadRequestInput,
-} from '../../schemas/documentSchemas';
-
-// Import existing schemas for backward compatibility
-import {
-  createDocumentSchema,
-  updateDocumentSchema,
-  createFromTemplateSchema,
-  shareDocumentSchema,
-  bulkDeleteDocumentsSchema,
-  documentFiltersSchema,
-  type CreateDocumentInput,
-  type UpdateDocumentInput,
-  type CreateFromTemplateInput,
-  type ShareDocumentInput,
-  type BulkDeleteDocumentsInput,
-  type DocumentFiltersInput,
-} from '../../schemas/documentSchemas';
+// Import API client for default instance
+import { apiClient } from '../core/ApiClient';
 
 // ============================================================================
-// API Interface
+// Backward Compatibility Implementation
 // ============================================================================
 
 /**
- * Documents API Interface
- * Complete interface for document management operations
+ * Legacy Documents API Implementation
+ * Maintains backward compatibility while using the modular architecture internally
  */
-export interface DocumentsApi {
-  // ===== Document CRUD =====
-  getDocuments(filters?: DocumentFilters): Promise<PaginatedDocumentsResponse>;
-  getDocumentById(id: string): Promise<{ document: Document }>;
-  createDocument(data: CreateDocumentRequest): Promise<{ document: Document }>;
-  updateDocument(id: string, data: UpdateDocumentRequest): Promise<{ document: Document }>;
-  deleteDocument(id: string): Promise<void>;
-
-  // ===== Document Versions =====
-  getDocumentVersions(parentId: string): Promise<{ versions: DocumentVersion[] }>;
-  createDocumentVersion(
-    parentId: string,
-    data: CreateDocumentVersionRequest | FormData
-  ): Promise<{ document: DocumentVersion }>;
-  getDocumentVersion(versionId: string): Promise<{ version: DocumentVersion }>;
-  downloadVersion(documentId: string, versionId: string): Promise<Blob>;
-  compareVersions(
-    documentId: string,
-    versionId1: string,
-    versionId2: string
-  ): Promise<VersionComparison>;
-
-  // ===== Document Actions =====
-  signDocument(id: string, data: SignDocumentRequest): Promise<{ signature: DocumentSignature }>;
-  verifySignature(signatureId: string): Promise<SignatureVerificationResult>;
-  downloadDocument(id: string, version?: number): Promise<Blob>;
-  viewDocument(id: string): Promise<{ document: Document }>;
-  shareDocument(
-    id: string,
-    data: ShareDocumentRequest
-  ): Promise<{ shared: boolean; sharedWith: string[] }>;
-
-  // ===== Templates =====
-  getTemplates(category?: string): Promise<{ templates: DocumentTemplate[] }>;
-  getTemplateById(id: string): Promise<{ template: DocumentTemplate }>;
-  createFromTemplate(
-    templateId: string,
-    data: CreateFromTemplateRequest
-  ): Promise<{ document: Document }>;
-
-  // ===== Student Documents =====
-  getStudentDocuments(
-    studentId: string,
-    filters?: Omit<DocumentFilters, 'studentId'>
-  ): Promise<{ documents: Document[] }>;
-
-  // ===== Search and Filter =====
-  searchDocuments(query: string, filters?: DocumentFilters): Promise<{ documents: Document[] }>;
-  advancedSearch(
-    request: SearchDocumentsRequest
-  ): Promise<SearchResults>;
-  getExpiringDocuments(days?: number): Promise<{ documents: Document[] }>;
-
-  // ===== Bulk Operations =====
-  bulkDeleteDocuments(documentIds: string[]): Promise<BulkDeleteDocumentsResponse>;
-  bulkDownload(
-    request: BulkDownloadRequest,
-    options?: BulkDownloadOptions
-  ): Promise<BulkDownloadResponse>;
-
-  // ===== Audit and Signatures =====
-  getDocumentAuditTrail(
-    documentId: string,
-    limit?: number
-  ): Promise<{ auditTrail: DocumentAuditTrail[] }>;
-  getDocumentSignatures(documentId: string): Promise<{ signatures: DocumentSignature[] }>;
-
-  // ===== Categories and Statistics =====
-  getDocumentCategories(): Promise<{ categories: DocumentCategoryMetadata[] }>;
-  getStatistics(
-    dateRange?: { startDate: string; endDate: string }
-  ): Promise<{ statistics: DocumentStatistics }>;
-
-  // ===== Archive Operations =====
-  archiveExpiredDocuments(): Promise<{ archived: number; failed: number }>;
-}
-
-// ============================================================================
-// API Implementation
-// ============================================================================
-
 class DocumentsApiImpl implements DocumentsApi {
-  constructor(private readonly client: ApiClient) {}
+  private readonly modularService: DocumentsApiService;
 
-  // =========================================================================
-  // Document CRUD
-  // =========================================================================
-
-  /**
-   * Get documents with optional filters
-   * @param filters - Optional filters for querying documents
-   * @returns Paginated list of documents
-   *
-   * PHI: Documents may contain PHI - access is logged for audit trail
-   */
-  async getDocuments(filters: DocumentFilters = {}): Promise<PaginatedDocumentsResponse> {
-    const validatedFilters = documentFiltersSchema.parse(filters);
-    const params = buildUrlParams(validatedFilters);
-    const response = await this.client.get<ApiResponse<PaginatedDocumentsResponse> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}?${params.toString()}`
-    );
-    return extractApiData(response as any);
+  constructor(client: any) {
+    this.modularService = createDocumentsApiService(client);
   }
 
-  /**
-   * Get document by ID
-   * @param id - Document UUID
-   * @returns Document with metadata
-   *
-   * PHI: Document may contain PHI - access is logged
-   */
-  async getDocumentById(id: string): Promise<{ document: Document }> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-      throw new Error('Invalid document ID format');
-    }
-    const response = await this.client.get<ApiResponse<{ document: Document }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`
-    );
-    return extractApiData(response as any);
+  // Delegate all methods to the modular implementation
+  async getDocuments(filters?: DocumentFilters) {
+    return this.modularService.getDocuments(filters);
   }
 
-  /**
-   * Create new document
-   * @param data - Document creation data
-   * @returns Created document
-   *
-   * PHI: Document may contain PHI - creation is logged
-   */
-  async createDocument(data: CreateDocumentRequest): Promise<{ document: Document }> {
-    const validatedData = createDocumentSchema.parse(data);
-    const response = await this.client.post<ApiResponse<{ document: Document }> | undefined>(
-      API_ENDPOINTS.DOCUMENTS.BASE,
-      validatedData
-    );
-    return extractApiData(response as any);
+  async getDocumentById(id: string) {
+    return this.modularService.getDocumentById(id);
   }
 
-  /**
-   * Update document
-   * @param id - Document UUID
-   * @param data - Document update data
-   * @returns Updated document
-   *
-   * PHI: Document may contain PHI - update is logged
-   */
-  async updateDocument(id: string, data: UpdateDocumentRequest): Promise<{ document: Document }> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-      throw new Error('Invalid document ID format');
-    }
-    const validatedData = updateDocumentSchema.parse(data);
-    const response = await this.client.put<ApiResponse<{ document: Document }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`,
-      validatedData
-    );
-    return extractApiData(response as any);
+  async createDocument(data: CreateDocumentRequest) {
+    return this.modularService.createDocument(data);
   }
 
-  /**
-   * Delete document
-   * @param id - Document UUID
-   *
-   * PHI: Document deletion is logged for audit trail
-   */
-  async deleteDocument(id: string): Promise<void> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-      throw new Error('Invalid document ID format');
-    }
-    await this.client.delete(`${API_ENDPOINTS.DOCUMENTS.BASE}/${id}`);
+  async updateDocument(id: string, data: UpdateDocumentRequest) {
+    return this.modularService.updateDocument(id, data);
   }
 
-  // =========================================================================
-  // Document Versions
-  // =========================================================================
-
-  /**
-   * Get all versions of a document
-   * @param parentId - Parent document UUID
-   * @returns List of document versions
-   *
-   * PHI: Versions may contain PHI - access is logged
-   */
-  async getDocumentVersions(parentId: string): Promise<{ versions: DocumentVersion[] }> {
-    const response = await this.client.get<ApiResponse<{ versions: DocumentVersion[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${parentId}/versions`
-    );
-    return extractApiData(response as any);
+  async deleteDocument(id: string) {
+    return this.modularService.deleteDocument(id);
   }
 
-  /**
-   * Create new document version
-   * @param parentId - Parent document UUID
-   * @param data - Version creation data or FormData
-   * @returns Created version
-   *
-   * PHI: New version may contain PHI - creation is logged
-   */
-  async createDocumentVersion(
-    parentId: string,
-    data: CreateDocumentVersionRequest | FormData
-  ): Promise<{ document: DocumentVersion }> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(parentId)) {
-      throw new Error('Invalid parent document ID format');
-    }
-
-    let validatedData: any = data;
-    if (!(data instanceof FormData)) {
-      validatedData = createDocumentVersionSchema.parse(data);
-    }
-
-    const response = await this.client.post<ApiResponse<{ document: DocumentVersion }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${parentId}/version`,
-      validatedData,
-      data instanceof FormData
-        ? {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        : undefined
-    );
-    return extractApiData(response as any);
+  async getDocumentVersions(parentId: string) {
+    return this.modularService.getDocumentVersions(parentId);
   }
 
-  /**
-   * Get specific document version
-   * @param versionId - Version UUID
-   * @returns Document version
-   *
-   * PHI: Version may contain PHI - access is logged
-   */
-  async getDocumentVersion(versionId: string): Promise<{ version: DocumentVersion }> {
-    const response = await this.client.get<ApiResponse<{ version: DocumentVersion }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/versions/${versionId}`
-    );
-    return extractApiData(response as any);
+  async createDocumentVersion(parentId: string, data: CreateDocumentVersionRequest | FormData) {
+    return this.modularService.createDocumentVersion(parentId, data);
   }
 
-  /**
-   * Download specific document version
-   * @param documentId - Document UUID
-   * @param versionId - Version UUID
-   * @returns Blob containing the document file
-   *
-   * PHI: Downloaded file may contain PHI - download is logged
-   */
-  async downloadVersion(documentId: string, versionId: string): Promise<Blob> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(documentId)) {
-      throw new Error('Invalid document ID format');
-    }
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(versionId)) {
-      throw new Error('Invalid version ID format');
-    }
-
-    const response = await this.client.get(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/versions/${versionId}/download`,
-      { responseType: 'blob' }
-    );
-    return response.data;
+  async getDocumentVersion(versionId: string) {
+    return this.modularService.getDocumentVersion(versionId);
   }
 
-  /**
-   * Compare two document versions
-   * @param documentId - Document UUID
-   * @param versionId1 - First version UUID
-   * @param versionId2 - Second version UUID
-   * @returns Comparison result with differences
-   *
-   * PHI: Comparison may reveal PHI - operation is logged
-   */
-  async compareVersions(
-    documentId: string,
-    versionId1: string,
-    versionId2: string
-  ): Promise<VersionComparison> {
-    const validatedRequest = versionComparisonSchema.parse({
-      documentId,
-      versionId1,
-      versionId2,
-    });
-
-    const response = await this.client.post<ApiResponse<VersionComparison> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/versions/compare`,
-      {
-        versionId1: validatedRequest.versionId1,
-        versionId2: validatedRequest.versionId2,
-        comparisonType: validatedRequest.comparisonType,
-        includeContent: validatedRequest.includeContent,
-      }
-    );
-    return extractApiData(response as any);
+  async downloadVersion(documentId: string, versionId: string) {
+    return this.modularService.downloadVersion(documentId, versionId);
   }
 
-  // =========================================================================
-  // Document Actions
-  // =========================================================================
-
-  /**
-   * Sign document with digital signature
-   * @param id - Document UUID
-   * @param data - Signature data including type and metadata
-   * @returns Created signature
-   *
-   * PHI: Signature contains PII - signature is logged for audit trail
-   */
-  async signDocument(id: string, data: SignDocumentRequest): Promise<{ signature: DocumentSignature }> {
-    const validatedData = signDocumentSchema.parse({ ...data, documentId: id });
-    const response = await this.client.post<ApiResponse<{ signature: DocumentSignature }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/sign`,
-      {
-        signedBy: validatedData.signedBy,
-        signedByRole: validatedData.signedByRole,
-        signatureType: validatedData.signatureType,
-        signatureData: validatedData.signatureData,
-        ipAddress: validatedData.ipAddress,
-        certificateId: validatedData.certificateId,
-        location: validatedData.location,
-        deviceInfo: validatedData.deviceInfo,
-        pin: validatedData.pin,
-        biometricData: validatedData.biometricData,
-      }
-    );
-    return extractApiData(response as any);
+  async compareVersions(documentId: string, versionId1: string, versionId2: string) {
+    return this.modularService.compareVersions(documentId, versionId1, versionId2);
   }
 
-  /**
-   * Verify document signature
-   * @param signatureId - Signature UUID
-   * @returns Verification result
-   *
-   * PHI: Verification is logged for audit trail
-   */
-  async verifySignature(signatureId: string): Promise<SignatureVerificationResult> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(signatureId)) {
-      throw new Error('Invalid signature ID format');
-    }
-
-    const response = await this.client.get<ApiResponse<SignatureVerificationResult> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/signatures/${signatureId}/verify`
-    );
-    return extractApiData(response as any);
+  async signDocument(id: string, data: SignDocumentRequest) {
+    return this.modularService.signDocument(id, data);
   }
 
-  /**
-   * Download document
-   * @param id - Document UUID
-   * @param version - Optional version number
-   * @returns Blob containing the document file
-   *
-   * PHI: Downloaded file may contain PHI - download is logged
-   */
-  async downloadDocument(id: string, version?: number): Promise<Blob> {
-    const params = version ? `?version=${version}` : '';
-    const response = await this.client.get(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/download${params}`,
-      { responseType: 'blob' }
-    );
-    return response.data;
+  async verifySignature(signatureId: string) {
+    return this.modularService.verifySignature(signatureId);
   }
 
-  /**
-   * View document (track access)
-   * @param id - Document UUID
-   * @returns Document with metadata
-   *
-   * PHI: Document may contain PHI - view is logged
-   */
-  async viewDocument(id: string): Promise<{ document: Document }> {
-    return this.getDocumentById(id);
+  async downloadDocument(id: string, version?: number) {
+    return this.modularService.downloadDocument(id, version);
   }
 
-  /**
-   * Share document with users
-   * @param id - Document UUID
-   * @param data - Share configuration
-   * @returns Share result
-   *
-   * PHI: Sharing PHI documents requires audit logging
-   */
-  async shareDocument(
-    id: string,
-    data: ShareDocumentRequest
-  ): Promise<{ shared: boolean; sharedWith: string[] }> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
-      throw new Error('Invalid document ID format');
-    }
-    const validatedData = shareDocumentSchema.parse(data);
-    const response = await this.client.post<
-      ApiResponse<{ success: boolean; sharedWith: string[] }> | undefined
-    >(`${API_ENDPOINTS.DOCUMENTS.BASE}/${id}/share`, {
-      sharedWith: validatedData.userIds,
-      permissions: validatedData.permissions,
-      expiresAt: validatedData.expiresAt,
-      message: validatedData.message,
-    });
-    const result = extractApiData(response as any);
-    return { shared: result.success, sharedWith: result.sharedWith };
+  async viewDocument(id: string) {
+    return this.modularService.viewDocument(id);
   }
 
-  // =========================================================================
-  // Templates
-  // =========================================================================
-
-  /**
-   * Get document templates
-   * @param category - Optional category filter
-   * @returns List of templates
-   */
-  async getTemplates(category?: string): Promise<{ templates: DocumentTemplate[] }> {
-    const params = buildUrlParams({ category });
-    const response = await this.client.get<ApiResponse<{ templates: DocumentTemplate[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/templates/list?${params.toString()}`
-    );
-    return extractApiData(response as any);
+  async shareDocument(id: string, data: ShareDocumentRequest) {
+    return this.modularService.shareDocument(id, data);
   }
 
-  /**
-   * Get template by ID
-   * @param id - Template UUID
-   * @returns Template details
-   */
-  async getTemplateById(id: string): Promise<{ template: DocumentTemplate }> {
-    const response = await this.client.get<ApiResponse<{ template: DocumentTemplate }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/templates/${id}`
-    );
-    return extractApiData(response as any);
+  async getTemplates(category?: string) {
+    return this.modularService.getTemplates(category);
   }
 
-  /**
-   * Create document from template
-   * @param templateId - Template UUID
-   * @param data - Document creation data
-   * @returns Created document
-   *
-   * PHI: Created document may contain PHI - creation is logged
-   */
-  async createFromTemplate(
-    templateId: string,
-    data: CreateFromTemplateRequest
-  ): Promise<{ document: Document }> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(templateId)) {
-      throw new Error('Invalid template ID format');
-    }
-    const validatedData = createFromTemplateSchema.parse(data);
-    const response = await this.client.post<ApiResponse<{ document: Document }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/templates/${templateId}/create`,
-      validatedData
-    );
-    return extractApiData(response as any);
+  async getTemplateById(id: string) {
+    return this.modularService.getTemplateById(id);
   }
 
-  // =========================================================================
-  // Student Documents
-  // =========================================================================
-
-  /**
-   * Get documents for specific student
-   * @param studentId - Student UUID
-   * @param filters - Optional filters
-   * @returns List of student documents
-   *
-   * PHI: Student documents contain PHI - access is logged
-   */
-  async getStudentDocuments(
-    studentId: string,
-    filters: Omit<DocumentFilters, 'studentId'> = {}
-  ): Promise<{ documents: Document[] }> {
-    const params = buildUrlParams(filters);
-    const response = await this.client.get<ApiResponse<{ documents: Document[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/student/${studentId}?${params.toString()}`
-    );
-    return extractApiData(response as any);
+  async createFromTemplate(templateId: string, data: CreateFromTemplateRequest) {
+    return this.modularService.createFromTemplate(templateId, data);
   }
 
-  // =========================================================================
-  // Search and Filter
-  // =========================================================================
-
-  /**
-   * Basic search documents (GET method for backward compatibility)
-   * @param query - Search query
-   * @param filters - Optional filters
-   * @returns List of matching documents
-   *
-   * PHI: Search results may contain PHI - search is logged
-   */
-  async searchDocuments(query: string, filters: DocumentFilters = {}): Promise<{ documents: Document[] }> {
-    const params = buildUrlParams({ q: query, ...filters });
-    const response = await this.client.get<ApiResponse<{ documents: Document[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/search/query?${params.toString()}`
-    );
-    return extractApiData(response as any);
+  async getStudentDocuments(studentId: string, filters?: Omit<DocumentFilters, 'studentId'>) {
+    return this.modularService.getStudentDocuments(studentId, filters);
   }
 
-  /**
-   * Advanced search with POST method and comprehensive filters
-   * @param request - Search request with filters, sorting, and pagination
-   * @returns Search results with metadata and aggregations
-   *
-   * PHI: Search results may contain PHI - search is logged
-   */
-  async advancedSearch(request: SearchDocumentsRequest): Promise<SearchResults> {
-    const validatedRequest = searchDocumentsRequestSchema.parse(request);
-
-    const response = await this.client.post<ApiResponse<SearchResults> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/search`,
-      {
-        filters: validatedRequest.filters,
-        sort: validatedRequest.sort,
-        page: validatedRequest.page,
-        limit: validatedRequest.limit,
-        includeAggregations: validatedRequest.includeAggregations,
-        includeHighlights: validatedRequest.includeHighlights,
-      }
-    );
-    return extractApiData(response as any);
+  async searchDocuments(query: string, filters?: DocumentFilters) {
+    return this.modularService.searchDocuments(query, filters);
   }
 
-  /**
-   * Get expiring documents
-   * @param days - Number of days to look ahead (default 30)
-   * @returns List of expiring documents
-   *
-   * PHI: Expiring documents may contain PHI - access is logged
-   */
-  async getExpiringDocuments(days: number = 30): Promise<{ documents: Document[] }> {
-    const params = buildUrlParams({ days });
-    const response = await this.client.get<ApiResponse<{ documents: Document[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/expiring/list?${params.toString()}`
-    );
-    return extractApiData(response as any);
+  async advancedSearch(request: SearchDocumentsRequest) {
+    return this.modularService.advancedSearch(request);
   }
 
-  // =========================================================================
-  // Bulk Operations
-  // =========================================================================
-
-  /**
-   * Bulk delete documents
-   * @param documentIds - Array of document UUIDs
-   * @returns Delete result
-   *
-   * PHI: Bulk deletion is logged for audit trail
-   */
-  async bulkDeleteDocuments(documentIds: string[]): Promise<BulkDeleteDocumentsResponse> {
-    const validatedData = bulkDeleteDocumentsSchema.parse({ documentIds });
-    const response = await this.client.post<ApiResponse<BulkDeleteDocumentsResponse> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/bulk-delete`,
-      validatedData
-    );
-    return extractApiData(response as any);
+  async getExpiringDocuments(days?: number) {
+    return this.modularService.getExpiringDocuments(days);
   }
 
-  /**
-   * Bulk download documents as ZIP archive
-   * @param request - Bulk download configuration
-   * @param options - Optional progress tracking and cancellation
-   * @returns Bulk download response with blob and metadata
-   *
-   * PHI: Bulk download may contain PHI - operation is logged
-   * Progress tracking allows monitoring large downloads
-   */
-  async bulkDownload(
-    request: BulkDownloadRequest,
-    options?: BulkDownloadOptions
-  ): Promise<BulkDownloadResponse> {
-    const validatedRequest = bulkDownloadRequestSchema.parse(request);
-
-    // Create abort controller for cancellation
-    const abortController = options?.signal ? undefined : new AbortController();
-    const signal = options?.signal || abortController?.signal;
-
-    // Emit initial progress
-    options?.onProgress?.({
-      status: 'preparing',
-      currentStep: 'Validating documents...',
-      processedDocuments: 0,
-      totalDocuments: validatedRequest.documentIds.length,
-      processedBytes: 0,
-      totalBytes: 0,
-      percentage: 0,
-    });
-
-    try {
-      // Start download with progress tracking
-      const response = await this.client.post(
-        `${API_ENDPOINTS.DOCUMENTS.BASE}/bulk-download`,
-        {
-          documentIds: validatedRequest.documentIds,
-          includeVersions: validatedRequest.includeVersions,
-          includeMetadata: validatedRequest.includeMetadata,
-          format: validatedRequest.format,
-          fileName: validatedRequest.fileName,
-          excludeArchived: validatedRequest.excludeArchived,
-          excludeExpired: validatedRequest.excludeExpired,
-          maxFileSize: validatedRequest.maxFileSize,
-          metadataFormat: validatedRequest.metadataFormat,
-          includeSignatures: validatedRequest.includeSignatures,
-          includeAuditTrail: validatedRequest.includeAuditTrail,
-        },
-        {
-          responseType: 'blob',
-          timeout: options?.timeout || 300000, // 5 minutes default
-          signal,
-          onDownloadProgress: (progressEvent) => {
-            if (options?.onProgress && progressEvent.total) {
-              const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-              options.onProgress({
-                status: 'downloading',
-                currentStep: 'Downloading archive...',
-                processedDocuments: Math.floor(
-                  (progressEvent.loaded / progressEvent.total) * validatedRequest.documentIds.length
-                ),
-                totalDocuments: validatedRequest.documentIds.length,
-                processedBytes: progressEvent.loaded,
-                totalBytes: progressEvent.total,
-                percentage,
-              });
-            }
-          },
-        }
-      );
-
-      // Extract metadata from headers
-      const contentDisposition = response.headers['content-disposition'];
-      const fileName =
-        validatedRequest.fileName ||
-        (contentDisposition ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') : undefined) ||
-        `documents-${Date.now()}.${validatedRequest.format || 'zip'}`;
-
-      const totalSize = response.data.size;
-
-      // Emit completion progress
-      options?.onProgress?.({
-        status: 'completed',
-        currentStep: 'Download complete',
-        processedDocuments: validatedRequest.documentIds.length,
-        totalDocuments: validatedRequest.documentIds.length,
-        processedBytes: totalSize,
-        totalBytes: totalSize,
-        percentage: 100,
-      });
-
-      // Parse metadata if available
-      const metadataHeader = response.headers['x-download-metadata'];
-      const metadata = metadataHeader
-        ? JSON.parse(decodeURIComponent(metadataHeader))
-        : {
-            generatedAt: new Date().toISOString(),
-            requestedBy: 'current-user',
-            includedDocuments: validatedRequest.documentIds.map((id) => ({
-              id,
-              title: 'Unknown',
-              fileName: 'Unknown',
-              fileSize: 0,
-            })),
-          };
-
-      return {
-        blob: response.data,
-        fileName,
-        totalSize,
-        documentCount: validatedRequest.documentIds.length,
-        metadata,
-      };
-    } catch (error: any) {
-      // Emit error progress
-      options?.onProgress?.({
-        status: 'error',
-        currentStep: 'Download failed',
-        processedDocuments: 0,
-        totalDocuments: validatedRequest.documentIds.length,
-        processedBytes: 0,
-        totalBytes: 0,
-        percentage: 0,
-        error: error.message || 'Unknown error',
-      });
-
-      throw error;
-    }
+  async bulkDeleteDocuments(documentIds: string[]) {
+    return this.modularService.bulkDeleteDocuments(documentIds);
   }
 
-  // =========================================================================
-  // Audit and Signatures
-  // =========================================================================
-
-  /**
-   * Get document audit trail
-   * @param documentId - Document UUID
-   * @param limit - Optional limit (default 100)
-   * @returns List of audit trail entries
-   *
-   * PHI: Audit trail may contain PHI - access is logged
-   */
-  async getDocumentAuditTrail(
-    documentId: string,
-    limit: number = 100
-  ): Promise<{ auditTrail: DocumentAuditTrail[] }> {
-    const params = buildUrlParams({ limit });
-    const response = await this.client.get<ApiResponse<{ auditTrail: DocumentAuditTrail[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/audit-trail?${params.toString()}`
-    );
-    return extractApiData(response as any);
+  async bulkDownload(request: BulkDownloadRequest, options?: BulkDownloadOptions) {
+    return this.modularService.bulkDownload(request, options);
   }
 
-  /**
-   * Get document signatures
-   * @param documentId - Document UUID
-   * @returns List of signatures
-   *
-   * PHI: Signatures contain PII - access is logged
-   */
-  async getDocumentSignatures(documentId: string): Promise<{ signatures: DocumentSignature[] }> {
-    const response = await this.client.get<ApiResponse<{ signatures: DocumentSignature[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/${documentId}/signatures`
-    );
-    return extractApiData(response as any);
+  async getDocumentAuditTrail(documentId: string, limit?: number) {
+    return this.modularService.getDocumentAuditTrail(documentId, limit);
   }
 
-  // =========================================================================
-  // Categories and Statistics
-  // =========================================================================
-
-  /**
-   * Get document categories with metadata
-   * @returns List of categories
-   */
-  async getDocumentCategories(): Promise<{ categories: DocumentCategoryMetadata[] }> {
-    const response = await this.client.get<ApiResponse<{ categories: DocumentCategoryMetadata[] }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/categories`
-    );
-    return extractApiData(response as any);
+  async getDocumentSignatures(documentId: string) {
+    return this.modularService.getDocumentSignatures(documentId);
   }
 
-  /**
-   * Get document statistics
-   * @param dateRange - Optional date range filter
-   * @returns Statistics
-   */
-  async getStatistics(
-    dateRange?: { startDate: string; endDate: string }
-  ): Promise<{ statistics: DocumentStatistics }> {
-    const params = buildUrlParams(dateRange || {});
-    const response = await this.client.get<ApiResponse<DocumentStatistics> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/statistics/overview?${params.toString()}`
-    );
-    const data = extractApiData(response as any);
-    return { statistics: data as DocumentStatistics };
+  async getDocumentCategories() {
+    return this.modularService.getDocumentCategories();
   }
 
-  // =========================================================================
-  // Archive Operations
-  // =========================================================================
+  async getStatistics(dateRange?: { startDate: string; endDate: string }) {
+    return this.modularService.getStatistics(dateRange);
+  }
 
-  /**
-   * Archive expired documents
-   * @returns Archive result
-   *
-   * PHI: Archived documents may contain PHI - operation is logged
-   */
-  async archiveExpiredDocuments(): Promise<{ archived: number; failed: number }> {
-    const response = await this.client.post<ApiResponse<{ archived: number; failed?: number }> | undefined>(
-      `${API_ENDPOINTS.DOCUMENTS.BASE}/archive-expired`
-    );
-    const result = extractApiData(response as any);
-    return { archived: result.archived, failed: result.failed || 0 };
+  async archiveExpiredDocuments() {
+    return this.modularService.archiveExpiredDocuments();
   }
 }
 
@@ -992,18 +231,27 @@ class DocumentsApiImpl implements DocumentsApi {
 // ============================================================================
 
 /**
- * Create Documents API instance
+ * Create Documents API instance (legacy interface)
  * @param client - API client instance
- * @returns Documents API implementation
+ * @returns Documents API implementation with backward compatibility
+ * 
+ * @deprecated Use `createDocumentsApiService` for new code
  */
-export function createDocumentsApi(client: ApiClient): DocumentsApiImpl {
+export function createDocumentsApi(client: any): DocumentsApiImpl {
   return new DocumentsApiImpl(client);
 }
 
 // ============================================================================
-// Export Types
+// Exports
 // ============================================================================
 
+// Export the new modular service creation function
+export { createDocumentsApiService } from './documentsApi';
+
+// Export the main service class for direct use
+export { DocumentsApiService } from './documentsApi';
+
+// Export all types for external usage
 export type {
   DocumentsApi,
   Document,
@@ -1015,10 +263,35 @@ export type {
   BulkDownloadRequest,
   BulkDownloadResponse,
   BulkDownloadProgress,
+  BulkDownloadOptions,
   VersionComparison,
   SignatureType,
+  CreateDocumentRequest,
+  UpdateDocumentRequest,
+  SignDocumentRequest,
+  CreateDocumentVersionRequest,
+  CreateFromTemplateRequest,
+  ShareDocumentRequest,
+  SearchDocumentsRequest,
+  BulkDeleteDocumentsResponse,
 };
 
 // Create and export a default instance for backward compatibility
-import { apiClient } from '../core/ApiClient';
 export const documentsApi = createDocumentsApi(apiClient);
+
+/**
+ * Export the new modular service instance for new code
+ * 
+ * @example
+ * ```typescript
+ * import { documentsApiService } from '@/services/modules/documentsApi';
+ * 
+ * // Use complete API
+ * const documents = await documentsApiService.getDocuments();
+ * 
+ * // Or access individual services
+ * const results = await documentsApiService.search.advancedSearch(request);
+ * const audit = await documentsApiService.audit.getDocumentAuditTrail('doc-id');
+ * ```
+ */
+export const documentsApiService = createDocumentsApiService(apiClient);
