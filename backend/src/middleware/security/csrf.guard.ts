@@ -34,9 +34,19 @@ const DEFAULT_CSRF_CONFIG: CSRFConfig = {
   tokenLifetimeMs: 24 * 60 * 60 * 1000, // 24 hours
   skipPaths: new Set([
     '/api/auth/login',
+    '/api/v1/auth/login',
     '/api/auth/logout',
+    '/api/v1/auth/logout',
+    '/api/auth/register',
+    '/api/v1/auth/register',
+    '/api/auth/forgot-password',
+    '/api/v1/auth/forgot-password',
+    '/api/auth/reset-password',
+    '/api/v1/auth/reset-password',
     '/api/webhook',
+    '/api/v1/webhook',
     '/api/public',
+    '/api/v1/public',
   ]),
 };
 

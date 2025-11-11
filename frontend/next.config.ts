@@ -3,8 +3,14 @@
  *
  * PERFORMANCE FIX: Aggressive bundle splitting for heavy libraries
  *
+ * NEXT.JS 16 COMPATIBILITY:
+ * - Uses Turbopack by default (development and production)
+ * - Webpack config maintained for compatibility and custom optimizations
+ * - Empty turbopack config acknowledges Turbopack without migration
+ *
  * @module next.config
  * @since 2025-11-05
+ * @updated 2025-11-11 - Added Turbopack compatibility for Next.js 16
  */
 
 import type { NextConfig } from 'next';
@@ -20,6 +26,10 @@ const nextConfig: NextConfig = {
 
   // React Compiler (Next.js 16)
   reactCompiler: true,
+
+  // Turbopack configuration (Next.js 16+ default)
+  // Empty config to acknowledge Turbopack and silence migration warning
+  turbopack: {},
 
   webpack: (config, { isServer }) => {
     // Aggressive bundle splitting for heavy libraries

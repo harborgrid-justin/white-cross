@@ -3,8 +3,22 @@ WHITE CROSS HEALTHCARE PLATFORM - LOGIN FLOW TRACE
 Complete Function/File Path from Frontend to Backend
 ================================================================================
 
+⚠️  VERIFICATION STATUS: PARTIALLY VERIFIED
+   Last Verified: November 11, 2025
+   Status: Backend server not running - Steps 7-18 blocked
+   See: LOGIN_FLOW_VERIFICATION_REPORT.md for details
+
+VERIFICATION KEY:
+  ✅ VERIFIED   - Component tested and working correctly
+  ⚠️  PARTIAL   - Component exists but not fully tested
+  🔴 BLOCKED    - Cannot verify (dependency issue)
+  ❓ UNKNOWN    - Not yet verified
+
+================================================================================
+
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              FRONTEND - CLIENT SIDE                          │
+│                              FRONTEND - CLIENT SIDE                         │
+│                                 ✅ VERIFIED                                 │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 1. USER ACTION: User enters credentials and submits login form
@@ -26,7 +40,8 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                        FRONTEND - SERVER ACTION LAYER                        │
+│                        FRONTEND - SERVER ACTION LAYER                       │
+│                                 ✅ VERIFIED                                 │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 4. SERVER ACTION ENTRY POINT
@@ -84,6 +99,8 @@ Complete Function/File Path from Frontend to Backend
 6. API CLIENT REQUEST
    ├─ File: /frontend/src/lib/api/nextjs-client.ts
    ├─ Function: serverPost<T>(endpoint, data, options)
+   ├─ Status: ⚠️  CONFIGURATION VERIFIED, RUNTIME BLOCKED
+   │
    └─ Processing:
        │
        ├─ 6.1: DELEGATE TO CORE FETCH
@@ -91,8 +108,12 @@ Complete Function/File Path from Frontend to Backend
        │
        ├─ 6.2: BUILD REQUEST
        │   ├─ URL: getApiBaseUrl() + endpoint
-       │   │   ├─ getApiBaseUrl() → process.env.API_BASE_URL || 'http://localhost:3001'
-       │   │   └─ Full URL: 'http://localhost:3001/api/auth/login'
+       │   │   ├─ getApiBaseUrl() → process.env.API_BASE_URL || 
+       │   │   │                    process.env.NEXT_PUBLIC_API_URL || 
+       │   │   │                    'http://localhost:3001'
+       │   │   ├─ ACTUAL VALUE: 'http://localhost:3001' ✅
+       │   │   │   (from NEXT_PUBLIC_API_URL in .env.local)
+       │   │   └─ Full URL: 'http://localhost:3001/api/auth/login' ✅
        │   │
        │   ├─ HEADERS:
        │   │   ├─ 'Content-Type': 'application/json'
@@ -115,7 +136,8 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          BACKEND - HTTP ENTRY POINT                          │
+│                          BACKEND - HTTP ENTRY POINT                         │
+│                             🔴 BLOCKED - SERVER NOT RUNNING                 │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 7. BACKEND HTTP SERVER (Hapi.js)
@@ -123,6 +145,10 @@ Complete Function/File Path from Frontend to Backend
    ├─ Request received: POST /api/auth/login
    ├─ Request Method: POST
    ├─ Request Body: { email: "...", password: "..." }
+   ├─ Status: 🔴 SERVER NOT RESPONDING
+   │   └─ Error: Connection refused on localhost:3001
+   │       (Backend compilation in progress or failed)
+   │
    └─ Routing: Hapi routes request to NestJS integration
        │
        └─ NestJS handles the route...
@@ -131,15 +157,27 @@ Complete Function/File Path from Frontend to Backend
    ├─ Framework: NestJS (running on Hapi.js)
    ├─ Route Match: POST /auth/login
    ├─ Module: AuthModule (/backend/src/auth/auth.module.ts)
-   └─ Controller: AuthController (/backend/src/auth/auth.controller.ts)
-       │
-       └─ Jump to Step 9 ↓
+   ├─ Controller: AuthController (/backend/src/auth/auth.controller.ts)
+   ├─ Status: ⚠️  CODE VERIFIED, RUNTIME BLOCKED
+   │
+   ├─ ROUTE CONFIGURATION (from /backend/src/main.ts):
+   │   └─ app.setGlobalPrefix('api', {
+   │         exclude: ['health', 'health/ready', 'health/live']
+   │       });
+   │       ✅ This means /api prefix is added to all routes
+   │       ✅ Frontend calls /api/auth/login
+   │       ✅ Backend receives /api/auth/login  
+   │       ✅ NestJS strips /api prefix → routes to @Controller('auth')
+   │       ✅ NO ROUTE MISMATCH - Configuration is correct!
+   │
+   └─ Jump to Step 9 ↓
 
 9. AUTH CONTROLLER - LOGIN ENDPOINT
    ├─ File: /backend/src/auth/auth.controller.ts
    ├─ Decorator: @Controller('auth')
    ├─ Method: login(@Body() loginDto: LoginDto)
-   ├─ Route: POST /auth/login
+   ├─ Route: POST /auth/login (becomes /api/auth/login with global prefix)
+   ├─ Status: ⚠️  CODE VERIFIED, RUNTIME BLOCKED
    │
    └─ Middleware/Decorators Applied:
        ├─ @Public() - Marks endpoint as publicly accessible (no JWT required)
@@ -215,7 +253,7 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                    BACKEND - PASSWORD VERIFICATION                           │
+│                    BACKEND - PASSWORD VERIFICATION                          │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 11. USER MODEL - PASSWORD COMPARISON
@@ -243,7 +281,7 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      BACKEND - TOKEN GENERATION                              │
+│                      BACKEND - TOKEN GENERATION                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 12. AUTH SERVICE - GENERATE TOKENS
@@ -297,7 +335,7 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                   BACKEND - RESPONSE TO FRONTEND                             │
+│                   BACKEND - RESPONSE TO FRONTEND                            │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 13. AUTH CONTROLLER - RETURN RESPONSE
@@ -338,7 +376,7 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                  FRONTEND - RESPONSE HANDLING                                │
+│                  FRONTEND - RESPONSE HANDLING                               │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 15. API CLIENT - RECEIVE RESPONSE
@@ -438,7 +476,7 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          FRONTEND - POST-LOGIN                               │
+│                          FRONTEND - POST-LOGIN                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 18. DASHBOARD PAGE LOAD
@@ -478,7 +516,7 @@ Complete Function/File Path from Frontend to Backend
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                               SECURITY LAYERS                                │
+│                               SECURITY LAYERS                               │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 FRONTEND SECURITY:
@@ -500,7 +538,7 @@ BACKEND SECURITY:
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           KEY FILES REFERENCE                                │
+│                           KEY FILES REFERENCE                               │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 FRONTEND FILES:
@@ -529,7 +567,7 @@ BACKEND FILES:
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          DATA FLOW SUMMARY                                   │
+│                          DATA FLOW SUMMARY                                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 CREDENTIALS FLOW:
@@ -545,7 +583,7 @@ Backend JWT Sign → HTTP Response → Frontend Extract → HttpOnly Cookie Stor
 
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                          AUTHENTICATION TIMELINE                             │
+│                          AUTHENTICATION TIMELINE                            │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 t=0ms    : User clicks "Sign in" button
@@ -580,6 +618,66 @@ TOTAL LOGIN TIME: ~400ms (typical)
 
 ================================================================================
 END OF LOGIN FLOW TRACE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     VERIFICATION SUMMARY & FINDINGS                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+VERIFICATION DATE: November 11, 2025
+OVERALL STATUS: ⚠️  PARTIALLY VERIFIED - BACKEND DEPENDENCY BLOCKING
+
+✅ VERIFIED COMPONENTS (Steps 1-6):
+  • Frontend login page form structure
+  • Server action implementation and flow
+  • Input sanitization and validation
+  • Rate limiting configuration
+  • API client URL building
+  • Request header configuration
+  • Route path configuration (NO MISMATCH FOUND)
+
+🔴 BLOCKED COMPONENTS (Steps 7-18):
+  • Backend server not responding on port 3001
+  • Cannot verify HTTP request receipt
+  • Cannot verify database queries
+  • Cannot verify password hashing
+  • Cannot verify JWT token generation
+  • Cannot verify cookie storage
+  • Cannot verify dashboard redirect
+
+⚠️  IDENTIFIED ISSUES:
+
+1. CRITICAL - Backend Server Not Running
+   Location: localhost:3001
+   Error: Connection refused
+   Impact: Complete login flow blocked
+   Resolution: Ensure backend compilation completes and server starts
+   Command: cd backend && npm run start:dev
+
+2. POTENTIAL - Cookie Security Configuration  
+   File: /frontend/src/identity-access/lib/config/cookies.ts
+   Issue: secure: true may prevent cookies in development (HTTP)
+   Impact: Cookies won't set over non-HTTPS connection
+   Resolution: Use secure: process.env.NODE_ENV === 'production'
+
+3. VERIFIED - No Route Mismatch
+   Frontend endpoint: /api/auth/login ✅
+   Backend route: POST /auth/login
+   Global prefix: /api (from main.ts)
+   Result: /api + /auth/login = /api/auth/login ✅
+   Status: CORRECT - No configuration error
+
+NEXT STEPS:
+1. Wait for backend TypeScript compilation to complete
+2. Verify backend server starts successfully
+3. Test health endpoint: curl http://localhost:3001/health
+4. Test login endpoint directly with curl
+5. Test full frontend-to-backend flow in browser
+6. Review LOGIN_FLOW_VERIFICATION_REPORT.md for detailed analysis
+
+DETAILED VERIFICATION REPORT:
+See: /workspaces/white-cross/LOGIN_FLOW_VERIFICATION_REPORT.md
+
 ================================================================================
 
 Notes:

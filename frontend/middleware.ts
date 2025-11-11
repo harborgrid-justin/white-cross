@@ -10,13 +10,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-// Stub for auth verification - will be implemented later
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function verifyAccessToken(_token: string) {
-  // TODO: Implement proper JWT verification
-  // TEMP: Return ADMIN role for development access to admin pages
-  return { id: 'user1', email: 'test@test.com', role: 'ADMIN' };
-}
+// Cookie configuration
+const COOKIE_NAMES = {
+  ACCESS_TOKEN: process.env.NODE_ENV === 'production' ? '__Host-auth.token' : 'auth.token',
+};
 
 // Stub for rate limiter - will be implemented later
 function getRateLimiter() {
@@ -153,24 +150,31 @@ export default async function middleware(request: NextRequest) {
 
 /**
  * Authenticate request using JWT token from cookies
+ * Note: This is a lightweight check in middleware. Full JWT verification
+ * happens in API routes and server actions.
  */
 async function authenticateRequest(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
+    const token = request.cookies.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
 
-    if (!token) {
+    if (!token || token.length < 20) {
       return { authenticated: false };
     }
 
-    // Verify JWT token (server-side only)
-    const payload = await verifyAccessToken(token);
+    // Basic token format validation (JWT has 3 parts separated by dots)
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return { authenticated: false };
+    }
 
+    // For middleware, we assume the token is valid if it exists and has proper format
+    // Full verification happens in API routes
     return {
       authenticated: true,
       user: {
-        id: payload.id,
-        email: payload.email,
-        role: payload.role,
+        id: 'middleware-user', // Placeholder - actual user data comes from API routes
+        email: 'middleware@example.com',
+        role: 'USER',
       },
     };
   } catch (error) {

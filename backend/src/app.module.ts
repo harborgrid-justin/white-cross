@@ -2,7 +2,7 @@
  * Root Application Module
  * White Cross School Health Platform - NestJS Backend
  */
-import { Module } from '@nestjs/common';
+import { Module, Injectable, Optional } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -12,9 +12,8 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule, JwtAuthGuard, TokenBlacklistService } from './auth';
 import { AccessControlModule, IpRestrictionGuard } from './access-control';
 import { CsrfGuard } from './middleware/security';
-import { Injectable, Optional } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { HealthRecordModule } from './health-record';
+import { UserModule } from './user';
 
 /**
  * Global Authentication Guard
@@ -26,7 +25,6 @@ export class GlobalAuthGuard extends JwtAuthGuard {
     super(reflector, tokenBlacklistService);
   }
 }
-import { UserModule } from './user';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
 import {
   appConfig,
@@ -312,12 +310,6 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     // Core NestJS services required by guards
     Reflector,
 
-    // Global authentication guard
-    GlobalAuthGuard,
-
-    // Token blacklist service (ensure availability in AppModule context)
-    TokenBlacklistService,
-
     /**
      * GLOBAL INTERCEPTORS
      *
@@ -366,7 +358,7 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
      * - Token blacklist lookups for every attack attempt
      *
      * New (CORRECT) Order:
-     * - ThrottlerGuard → IpRestrictionGuard → JwtAuthGuard → CsrfGuard
+     * - ThrottlerGuard → IpRestrictionGuard → GlobalAuthGuard → CsrfGuard
      */
 
     // 1. RATE LIMITING - Prevent brute force attacks (RUNS FIRST)
@@ -383,9 +375,13 @@ import { SentryModule } from './infrastructure/monitoring/sentry.module';
     },
 
     // 3. AUTHENTICATION - Validate JWT tokens (RUNS THIRD)
+    // Uses factory to properly inject dependencies from AuthModule
     {
       provide: APP_GUARD,
-      useClass: GlobalAuthGuard,
+      useFactory: (reflector: Reflector, tokenBlacklistService: TokenBlacklistService) => {
+        return new GlobalAuthGuard(reflector, tokenBlacklistService);
+      },
+      inject: [Reflector, TokenBlacklistService],
     },
 
     // 4. CSRF PROTECTION - Prevent Cross-Site Request Forgery (RUNS FOURTH)
