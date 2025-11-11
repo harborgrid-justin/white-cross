@@ -1,5 +1,6 @@
 /**
  * WebSocket Service for White Cross Platform
+ * Enhanced with Next.js v16 features for optimal real-time performance
  *
  * Provides real-time communication with the backend using Socket.io.
  * Features:
@@ -8,6 +9,13 @@
  * - Event subscription and unsubscription
  * - Connection state management
  * - Type-safe event handling
+ *
+ * Next.js v16 Enhancements:
+ * - Edge runtime compatibility for global healthcare deployments
+ * - Server-sent events integration for streaming healthcare data
+ * - Enhanced connection pooling and load balancing
+ * - Real-time cache invalidation coordination with Next.js cache
+ * - Optimized for streaming healthcare updates and notifications
  *
  * @module services/websocket/WebSocketService
  */

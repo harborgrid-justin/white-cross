@@ -112,6 +112,11 @@ import { API_CONFIG } from '../../constants/config';
 import type { ITokenManager } from './interfaces/ITokenManager';
 import { setupCsrfProtection } from '../security/CsrfProtection';
 
+// Next.js v16 imports for enhanced functionality
+import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
+import { revalidateTag, revalidatePath } from 'next/cache';
+
 // Import types from extracted modules
 import type {
   ApiResponse,
@@ -285,6 +290,12 @@ export class ApiClient {
   private responseInterceptorIds: number[] = [];
   private resilienceHook?: ResilienceHook;
   private tokenManager?: ITokenManager;
+  
+  // Next.js v16 enhancements
+  private isEdgeRuntime: boolean = false;
+  private streamingEnabled: boolean = false;
+  private cacheTagPrefix: string = 'api';
+  private requestCache = new Map<string, { data: unknown; timestamp: number; tags: string[] }>();
 
   constructor(config: ApiClientConfig = {}) {
     this.tokenManager = config.tokenManager;

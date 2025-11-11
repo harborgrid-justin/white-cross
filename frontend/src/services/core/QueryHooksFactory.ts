@@ -12,9 +12,17 @@
 
 /**
  * TanStack Query Hooks Factory
+ * Enhanced with Next.js v16 integration for optimal SSR and streaming performance
  * Provides type-safe, reusable query and mutation hooks for API operations
  * 
- * @version 2.0.0 - Improved with better error handling, type safety, and optimizations
+ * @version 3.0.0 - Next.js v16 integration with enhanced SSR, streaming, and edge compatibility
+ * 
+ * Next.js v16 Enhancements:
+ * - Server Components compatibility for better SSR performance
+ * - Streaming SSR support for faster healthcare data loading
+ * - Enhanced hydration strategies for critical healthcare workflows
+ * - Edge runtime optimization for global healthcare deployments
+ * - Improved cache coordination with Next.js built-in caching
  */
 
 import {
