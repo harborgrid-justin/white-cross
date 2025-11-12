@@ -4,4 +4,6 @@
  */
 
 export * from './academic-record.interface';
+export * from './transcript-report.interface';
+export * from './performance-analytics.interface';
 
