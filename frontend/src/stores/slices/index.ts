@@ -48,7 +48,7 @@ export { incidentReportsReducer } from './incidentReports';
 // REMOVED: schoolsReducer - Unused, legacy pages-old only
 export { settingsReducer } from './settingsSlice';
 // REMOVED: adminReducer - Unused, 43KB removed
-export { default as configurationReducer } from './configurationSlice';
+export { default as configurationReducer } from './configuration';
 
 // ============================================================
 // COMMUNICATION & DOCUMENTATION

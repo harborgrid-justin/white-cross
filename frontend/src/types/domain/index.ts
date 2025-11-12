@@ -26,7 +26,10 @@ export * from './medication.types';
 // ============================================================================
 // HEALTH RECORDS DOMAIN - Student health records and medical history
 // ============================================================================
-export * from './healthRecords';
+export * from './healthRecords.types';
+export * from './healthRecords.models';
+export * from './healthRecords.forms';
+export * from './healthRecords.api';
 
 // ============================================================================
 // INCIDENTS DOMAIN - Incident reporting and tracking
