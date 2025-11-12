@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { AuditLog, ComplianceType, AuditSeverity } from '../../../database/models/audit-log.model';
-import { User } from '../../../database/models/user.model';
-import { Patient } from '../../../database/models/patient.model';
+import { AuditLog, ComplianceType, AuditSeverity   } from "../../database/models";
+import { User   } from "../../database/models";
+import { Patient   } from "../../database/models";
 
 /**
  * HIPAA Audit Trail Service

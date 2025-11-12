@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { Allergy } from '../../../database/models/allergy.model';
+export { Allergy  } from "../../database/models";

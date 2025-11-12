@@ -8,8 +8,8 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Allergy, AllergySeverity, AllergyType } from '../../database/models/allergy.model';
-import { Student } from '../../database/models/student.model';
+import { Allergy, AllergySeverity, AllergyType   } from "../../database/models";
+import { Student   } from "../../database/models";
 import { AllergyFilterDto } from './dto/allergy-filter.dto';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';

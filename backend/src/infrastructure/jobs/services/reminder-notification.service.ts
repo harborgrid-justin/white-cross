@@ -8,12 +8,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { EmailService } from '@/infrastructure/email';
-import {
-  MessageDelivery,
+import { MessageDelivery,
   RecipientType,
   DeliveryStatus,
   DeliveryChannelType,
-} from '../../../database/models/message-delivery.model';
+  } from "../../database/models";
 
 interface MedicationReminder {
   id: string;

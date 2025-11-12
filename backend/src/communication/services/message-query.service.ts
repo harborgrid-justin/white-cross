@@ -45,35 +45,11 @@ export class MessageQueryService {
     dto: MessagePaginationDto,
     userId: string,
   ): Promise<MessageHistoryResponse> {
+    // Build base where clause
+    const where = await this.buildMessageWhereClause(dto, userId);
+
     const offset = ((dto.page || 1) - 1) * (dto.limit || 20);
     const limit = dto.limit || 20;
-
-    // Build where clause
-    const where: WhereOptions = {};
-
-    if (dto.conversationId) {
-      // Verify user is a participant
-      const isParticipant = await this.isConversationParticipant(dto.conversationId, userId);
-      if (!isParticipant) {
-        throw new BadRequestException('You are not a participant in this conversation');
-      }
-      where.conversationId = dto.conversationId;
-    }
-
-    if (dto.threadId) {
-      where.threadId = dto.threadId;
-    }
-
-    if (dto.dateFrom) {
-      where.createdAt = {
-        ...(where.createdAt as any),
-        [Op.gte]: new Date(dto.dateFrom),
-      };
-    }
-
-    if (dto.dateTo) {
-      where.createdAt = { ...(where.createdAt as any), [Op.lte]: new Date(dto.dateTo) };
-    }
 
     // Query messages
     const { rows: messages, count: total } = await this.messageModel.findAndCountAll({
@@ -105,51 +81,17 @@ export class MessageQueryService {
    * Search messages with full-text search
    */
   async searchMessages(dto: SearchMessagesDto, userId: string): Promise<SearchMessagesResponse> {
-    const offset = ((dto.page || 1) - 1) * (dto.limit || 20);
-    const limit = dto.limit || 20;
-
-    // Build where clause
-    const where: WhereOptions = {
+    // Build base where clause with search criteria
+    const where = await this.buildMessageWhereClause(dto, userId, {
       content: {
         [Op.iLike]: `%${dto.query}%`, // Case-insensitive search
       },
-    };
-
-    if (dto.conversationId) {
-      where.conversationId = dto.conversationId;
-    }
-
-    if (dto.conversationIds && dto.conversationIds.length > 0) {
-      where.conversationId = { [Op.in]: dto.conversationIds };
-    }
-
-    if (dto.senderId) {
-      where.senderId = dto.senderId;
-    }
-
-    if (dto.dateFrom) {
-      where.createdAt = {
-        ...(where.createdAt as any),
-        [Op.gte]: new Date(dto.dateFrom),
-      };
-    }
-
-    if (dto.dateTo) {
-      where.createdAt = { ...(where.createdAt as any), [Op.lte]: new Date(dto.dateTo) };
-    }
-
-    if (dto.hasAttachments) {
-      where.attachments = { [Op.ne]: [] };
-    }
-
-    // Only search in conversations where user is a participant
-    const participantConversations = await this.participantModel.findAll({
-      where: { userId },
-      attributes: ['conversationId'],
+      ...(dto.senderId && { senderId: dto.senderId }),
+      ...(dto.hasAttachments && { attachments: { [Op.ne]: [] } }),
     });
 
-    const conversationIds = participantConversations.map((p) => p.conversationId);
-    where.conversationId = { [Op.in]: conversationIds };
+    const offset = ((dto.page || 1) - 1) * (dto.limit || 20);
+    const limit = dto.limit || 20;
 
     // Query messages
     const { rows: messages, count: total } = await this.messageModel.findAndCountAll({
@@ -169,6 +111,59 @@ export class MessageQueryService {
       },
       query: dto.query,
     };
+  }
+
+  /**
+   * Build common where clause for message queries
+   */
+  private async buildMessageWhereClause(
+    dto: MessagePaginationDto | SearchMessagesDto,
+    userId: string,
+    additionalWhere: WhereOptions = {},
+  ): Promise<WhereOptions> {
+    const where: WhereOptions = { ...additionalWhere };
+
+    // Handle conversation filtering
+    if ('conversationId' in dto && dto.conversationId) {
+      // Verify user is a participant for single conversation queries
+      const isParticipant = await this.isConversationParticipant(dto.conversationId, userId);
+      if (!isParticipant) {
+        throw new BadRequestException('You are not a participant in this conversation');
+      }
+      where.conversationId = dto.conversationId;
+    } else if ('conversationIds' in dto && dto.conversationIds && dto.conversationIds.length > 0) {
+      where.conversationId = { [Op.in]: dto.conversationIds };
+    } else {
+      // For queries without specific conversation, only show messages from user's conversations
+      const participantConversations = await this.participantModel.findAll({
+        where: { userId },
+        attributes: ['conversationId'],
+      });
+      const conversationIds = participantConversations.map((p) => p.conversationId);
+      where.conversationId = { [Op.in]: conversationIds };
+    }
+
+    // Handle thread filtering
+    if ('threadId' in dto && dto.threadId) {
+      where.threadId = dto.threadId;
+    }
+
+    // Handle date filtering
+    if (dto.dateFrom) {
+      where.createdAt = {
+        ...(where.createdAt as any),
+        [Op.gte]: new Date(dto.dateFrom),
+      };
+    }
+
+    if (dto.dateTo) {
+      where.createdAt = {
+        ...(where.createdAt as any),
+        [Op.lte]: new Date(dto.dateTo),
+      };
+    }
+
+    return where;
   }
 
   /**

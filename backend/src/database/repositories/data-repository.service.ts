@@ -1058,124 +1058,6 @@ export abstract class TransactionalRepository<T extends Model> extends BaseRepos
 }
 
 /**
- * Audit repository with comprehensive audit trail
- */
-export abstract class AuditRepository<T extends Model> extends BaseRepository<T> {
-  constructor(
-    model: ModelCtor<T>,
-    private auditModel?: ModelCtor<any>
-  ) {
-    super(model);
-  }
-
-  async create(data: any, audit: AuditMetadata, transaction?: Transaction): Promise<T> {
-    const record = await super.create(data, audit, transaction);
-
-    if (this.auditModel) {
-      await this.createAuditLog('CREATE', record, audit, transaction);
-    }
-
-    return record;
-  }
-
-  async update(
-    id: string,
-    data: Partial<any>,
-    audit: AuditMetadata,
-    transaction?: Transaction
-  ): Promise<T> {
-    const before = await this.findById(id);
-    const record = await super.update(id, data, audit, transaction);
-
-    if (this.auditModel && before) {
-      await this.createAuditLog('UPDATE', record, audit, transaction, before);
-    }
-
-    return record;
-  }
-
-  async delete(id: string, audit: AuditMetadata, transaction?: Transaction): Promise<boolean> {
-    const before = await this.findById(id);
-    const result = await super.delete(id, audit, transaction);
-
-    if (this.auditModel && before) {
-      await this.createAuditLog('DELETE', before, audit, transaction);
-    }
-
-    return result;
-  }
-
-  private async createAuditLog(
-    action: 'CREATE' | 'UPDATE' | 'DELETE',
-    record: T,
-    audit: AuditMetadata,
-    transaction?: Transaction,
-    before?: T
-  ): Promise<void> {
-    if (!this.auditModel) return;
-
-    try {
-      await this.auditModel.create(
-        {
-          entityType: this.model.name,
-          entityId: (record as any).id,
-          action,
-          userId: audit.userId,
-          timestamp: audit.timestamp,
-          ipAddress: audit.ipAddress,
-          userAgent: audit.userAgent,
-          before: before ? before.toJSON() : null,
-          after: record.toJSON(),
-          metadata: audit.metadata,
-        },
-        { transaction }
-      );
-    } catch (error) {
-      this.logger.error('Failed to create audit log', error);
-      // Don't throw - audit logging failure shouldn't break the operation
-    }
-  }
-
-  async getAuditHistory(
-    entityId: string,
-    options?: {
-      limit?: number;
-      offset?: number;
-      startDate?: Date;
-      endDate?: Date;
-    }
-  ): Promise<any[]> {
-    if (!this.auditModel) {
-      return [];
-    }
-
-    const where: any = {
-      entityType: this.model.name,
-      entityId,
-    };
-
-    if (options?.startDate || options?.endDate) {
-      where.timestamp = {};
-
-      if (options.startDate) {
-        where.timestamp[Op.gte] = options.startDate;
-      }
-
-      if (options.endDate) {
-        where.timestamp[Op.lte] = options.endDate;
-      }
-    }
-
-    return await this.auditModel.findAll({
-      where,
-      order: [['timestamp', 'DESC']],
-      limit: options?.limit || 100,
-      offset: options?.offset || 0,
-    });
-  }
-}
-
-/**
  * Soft delete repository with restore capabilities
  */
 export abstract class SoftDeleteRepository<T extends Model> extends BaseRepository<T> {
@@ -1373,7 +1255,6 @@ export const DataRepository = {
   ReadOnlyRepository,
   CachedRepository,
   TransactionalRepository,
-  AuditRepository,
   SoftDeleteRepository,
   MultiTenantRepository,
   RepositoryFactory,

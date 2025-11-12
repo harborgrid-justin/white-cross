@@ -7,8 +7,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Vaccination } from '../../../database/models/vaccination.model';
-import { Student } from '../../../database/models/student.model';
+import { Vaccination   } from "../../database/models";
+import { Student   } from "../../database/models";
 import { ComplianceStatus } from '../../interfaces/vaccination.interface';
 import { CreateVaccinationDto, CreateExemptionDto, BatchImportResult } from './vaccination.dto';
 

@@ -12,8 +12,8 @@
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Allergy } from '../../database/models/allergy.model';
-import { Student } from '../../database/models/student.model';
+import { Allergy   } from "../../database/models";
+import { Student   } from "../../database/models";
 
 /**
  * HealthRecordAllergyService

@@ -14,11 +14,11 @@ import {
   ImmunizationAttributes,
   UpdateImmunizationDTO,
 } from '../interfaces/immunization.repository.interface';
-import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
-import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
-import { QueryOptions } from '../../../database/types';
-import { Immunization } from '../../../database/models/immunization.model';
+import type { IAuditLogger  } from "../../../backend/src/database/interfaces";
+import { sanitizeSensitiveData  } from "../../../backend/src/database/interfaces";
+import type { ICacheManager  } from "../../../backend/src/database/interfaces";
+import { QueryOptions   } from "../../database/types";
+import { Immunization    } from "../../database/models";
 
 @Injectable()
 export class ImmunizationRepository

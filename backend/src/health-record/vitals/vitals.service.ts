@@ -8,8 +8,8 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { VitalSigns } from '../../database/models/vital-signs.model';
-import { Student } from '../../database/models/student.model';
+import { VitalSigns   } from "../../database/models";
+import { Student   } from "../../database/models";
 
 @Injectable()
 export class VitalsService {

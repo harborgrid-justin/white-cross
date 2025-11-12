@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { EmergencyBroadcast } from '../../../database/models/emergency-broadcast.model';
-import { PushNotification } from '../../../database/models/push-notification.model';
-import { User } from '../../../database/models/user.model';
-import { Student } from '../../../database/models/student.model';
-import { EmergencyContact } from '../../../database/models/emergency-contact.model';
+import { EmergencyBroadcast   } from "../../database/models";
+import { PushNotification   } from "../../database/models";
+import { User   } from "../../database/models";
+import { Student   } from "../../database/models";
+import { EmergencyContact   } from "../../database/models";
 
 /**
  * Emergency Notification System

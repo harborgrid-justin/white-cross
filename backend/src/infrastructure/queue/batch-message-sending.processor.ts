@@ -10,7 +10,7 @@ import type { Job } from 'bull';
 import type { JobProgress, JobResult } from './interfaces';
 import { QueueName } from './enums';
 import { BatchMessageJobDto } from './dtos';
-import { Message } from '@/database/models/message.model';
+import { Message   } from "../../database/models";
 import { WebSocketService } from '@/infrastructure/websocket';
 
 /**

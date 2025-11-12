@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
-import { User } from '../../database/models/user.model';
+import { User   } from "../../database/models";
 
 interface PasswordResetToken {
   token: string;

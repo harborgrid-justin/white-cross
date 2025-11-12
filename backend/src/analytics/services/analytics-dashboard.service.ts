@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { BaseService } from '../../common/base';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Appointment, HealthRecord, IncidentReport, MedicationLog } from '@/database';
@@ -124,9 +125,7 @@ interface PlatformSummaryResponse {
  * - Real-time metrics aggregation
  */
 @Injectable()
-export class AnalyticsDashboardService {
-  private readonly logger = new Logger(AnalyticsDashboardService.name);
-
+export class AnalyticsDashboardService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
     @InjectModel(HealthRecord)
@@ -137,7 +136,9 @@ export class AnalyticsDashboardService {
     private readonly medicationLogModel: typeof MedicationLog,
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
-  ) {}
+  ) {
+    super(AnalyticsDashboardService.name);
+  }
 
   /**
    * Get nurse dashboard data

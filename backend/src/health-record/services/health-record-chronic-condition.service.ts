@@ -12,8 +12,8 @@
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { Student } from '../../database/models/student.model';
+import { ChronicCondition   } from "../../database/models";
+import { Student   } from "../../database/models";
 
 /**
  * HealthRecordChronicConditionService

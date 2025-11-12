@@ -16,11 +16,12 @@
  * @compliance CDC Guidelines, ICD-10-CM Standards, CVX Vaccine Codes
  */
 
-import { Injectable, Logger } from '@nestjs/common';
-import { HealthRecord } from '../database/models/health-record.model';
-import { Allergy } from '../database/models/allergy.model';
-import { ChronicCondition } from '../database/models/chronic-condition.model';
-import { Vaccination } from '../database/models/vaccination.model';
+import { Injectable } from '@nestjs/common';
+import { BaseService } from '../common/base';
+import { HealthRecord   } from "../../database/models";
+import { Allergy   } from "../../database/models";
+import { ChronicCondition   } from "../../database/models";
+import { Vaccination   } from "../../database/models";
 import { BulkDeleteResults } from './interfaces/health-record-types';
 import { GrowthDataPoint } from './interfaces/pagination.interface';
 import { HealthRecordStatistics } from './interfaces/health-record-types';
@@ -77,9 +78,7 @@ import { HealthRecordBatchService } from './services/health-record-batch.service
  * - HealthRecordBatchService: Batch operations for DataLoader
  */
 @Injectable()
-export class HealthRecordService {
-  private readonly logger = new Logger(HealthRecordService.name);
-
+export class HealthRecordService extends BaseService {
   constructor(
     private readonly crudService: HealthRecordCrudService,
     private readonly allergyService: HealthRecordAllergyService,
@@ -88,7 +87,9 @@ export class HealthRecordService {
     private readonly vitalsService: HealthRecordVitalsService,
     private readonly summaryService: HealthRecordSummaryService,
     private readonly batchService: HealthRecordBatchService,
-  ) {}
+  ) {
+    super(HealthRecordService.name);
+  }
 
   // ==================== Health Record Operations ====================
 

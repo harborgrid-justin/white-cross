@@ -15,7 +15,7 @@ import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { EnterpriseMetricsService } from '../../shared/enterprise/services/enterprise-metrics.service';
 import { ComplianceLevel, HealthRecordOperation } from '../interfaces/health-record-types';
-import { HealthMetricSnapshot } from '../../database/models/health-metric-snapshot.model';
+import { HealthMetricSnapshot   } from "../../database/models";
 
 export interface HealthRecordMetricSnapshot {
   timestamp: Date;

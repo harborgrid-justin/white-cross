@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags }
 import { ChronicConditionService } from './chronic-condition.service';
 import { CreateChronicConditionDto } from './dto/create-chronic-condition.dto';
 import { UpdateChronicConditionDto } from './dto/update-chronic-condition.dto';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
+import { ChronicCondition   } from "../../database/models";
 
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()

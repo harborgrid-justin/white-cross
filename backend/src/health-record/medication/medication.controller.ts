@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags }
 import { MedicationService } from './medication.service';
 import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
-import { Medication } from '../../database/models/medication.model';
+import { Medication   } from "../../database/models";
 
 @ApiTags('medications')
 @ApiBearerAuth()

@@ -11,7 +11,7 @@ import type { Job } from 'bull';
 import type { JobResult } from './interfaces';
 import { QueueName } from './enums';
 import { MessageCleanupJobDto, CleanupType } from './dtos';
-import { Message } from '@/database/models/message.model';
+import { Message   } from "../../database/models";
 
 /**
  * Message Cleanup Queue Processor

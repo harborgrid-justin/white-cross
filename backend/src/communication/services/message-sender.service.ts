@@ -58,79 +58,12 @@ export class MessageSenderService {
       tenantId,
     );
 
-    // Verify sender is a participant
-    const isParticipant = await this.isConversationParticipant(conversation.id, senderId);
-    if (!isParticipant) {
-      throw new BadRequestException('You are not a participant in this conversation');
-    }
-
-    // Encrypt content if requested
-    let encryptedContent: string | undefined;
-    if (dto.encrypted) {
-      const encryptionResult = await this.encryptionService.encrypt(dto.content);
-      if (encryptionResult.success) {
-        encryptedContent = encryptionResult.data;
-      } else {
-        throw new BadRequestException(`Encryption failed: ${encryptionResult.message}`);
-      }
-    }
-
-    // Set thread ID if this is a reply
-    let threadId = dto.parentId;
-    if (dto.parentId) {
-      const parentMessage = await this.messageModel.findByPk(dto.parentId);
-      if (parentMessage) {
-        threadId = parentMessage.threadId || parentMessage.id;
-      }
-    }
-
-    // Create message
-    const message = await this.messageModel.create({
-      conversationId: conversation.id,
-      content: dto.content,
-      encryptedContent,
-      isEncrypted: !!dto.encrypted,
-      encryptionVersion: dto.encrypted ? '1.0.0' : undefined,
-      senderId,
-      recipientCount: 1,
-      priority: 'MEDIUM',
-      category: 'GENERAL',
-      attachments: dto.attachments || [],
-      parentId: dto.parentId,
-      threadId,
-      metadata: dto.metadata || {},
-      isEdited: false,
-    });
-
-    // Update conversation's last message timestamp
-    await conversation.update({ lastMessageAt: new Date() });
-
-    // Queue message for async delivery, notification, and indexing
-    const queueResult = await this.queueHelper.queueMessageWorkflow({
-      messageId: message.id,
-      senderId,
+    // Create and send message
+    return this.createMessage(dto, senderId, conversation, {
       recipientId: dto.recipientId,
-      conversationId: conversation.id,
-      content: dto.content,
-      encrypted: dto.encrypted,
-      attachments: dto.attachments,
       priority: 'HIGH', // Direct messages are high priority
-      metadata: dto.metadata,
+      recipientCount: 1,
     });
-
-    this.logger.log(
-      `Message ${message.id} queued for delivery. Jobs: ${Object.keys(queueResult.jobIds).join(', ')}`,
-    );
-
-    return {
-      message,
-      conversation,
-      queueStatus: {
-        queued: queueResult.success,
-        jobIds: queueResult.jobIds,
-        errors: queueResult.errors,
-      },
-    };
   }
 
   /**
@@ -152,16 +85,55 @@ export class MessageSenderService {
       throw new BadRequestException('Conversation not found');
     }
 
+    // Get all participants
+    const participants = await this.participantModel.findAll({
+      where: { conversationId: conversation.id },
+    });
+
+    // Get recipient IDs (exclude sender)
+    const recipientIds = participants.filter((p) => p.userId !== senderId).map((p) => p.userId);
+
+    // Create and send message
+    const result = await this.createMessage(dto, senderId, conversation, {
+      recipientIds,
+      priority: 'MEDIUM',
+      recipientCount: recipientIds.length,
+      metadata: {
+        ...dto.metadata,
+        mentions: dto.mentions || [],
+      },
+    });
+
+    return {
+      ...result,
+      recipientCount: recipientIds.length,
+      queueStatus: {
+        ...result.queueStatus,
+        recipientCount: recipientIds.length,
+      },
+    };
+  }
+
+  /**
+   * Create and send a message with common logic
+   */
+  private async createMessage(
+    dto: SendDirectMessageDto | SendGroupMessageDto,
+    senderId: string,
+    conversation: Conversation,
+    options: {
+      recipientId?: string;
+      recipientIds?: string[];
+      priority: 'HIGH' | 'MEDIUM';
+      recipientCount: number;
+      metadata?: Record<string, any>;
+    },
+  ): Promise<SendDirectMessageResponse | SendGroupMessageResponse> {
     // Verify sender is a participant
     const isParticipant = await this.isConversationParticipant(conversation.id, senderId);
     if (!isParticipant) {
       throw new BadRequestException('You are not a participant in this conversation');
     }
-
-    // Get all participants
-    const participants = await this.participantModel.findAll({
-      where: { conversationId: conversation.id },
-    });
 
     // Encrypt content if requested
     let encryptedContent: string | undefined;
@@ -191,51 +163,45 @@ export class MessageSenderService {
       isEncrypted: !!dto.encrypted,
       encryptionVersion: dto.encrypted ? '1.0.0' : undefined,
       senderId,
-      recipientCount: participants.length - 1, // Exclude sender
-      priority: 'MEDIUM',
+      recipientCount: options.recipientCount,
+      priority: options.priority,
       category: 'GENERAL',
       attachments: dto.attachments || [],
       parentId: dto.parentId,
       threadId,
-      metadata: {
-        ...dto.metadata,
-        mentions: dto.mentions || [],
-      },
+      metadata: options.metadata || dto.metadata || {},
       isEdited: false,
     });
 
     // Update conversation's last message timestamp
     await conversation.update({ lastMessageAt: new Date() });
 
-    // Get recipient IDs (exclude sender)
-    const recipientIds = participants.filter((p) => p.userId !== senderId).map((p) => p.userId);
-
-    // Queue message for batch delivery
+    // Queue message for delivery
     const queueResult = await this.queueHelper.queueMessageWorkflow({
       messageId: message.id,
       senderId,
-      recipientIds,
+      ...(options.recipientId && { recipientId: options.recipientId }),
+      ...(options.recipientIds && { recipientIds: options.recipientIds }),
       conversationId: conversation.id,
       content: dto.content,
       encrypted: dto.encrypted,
       attachments: dto.attachments,
-      priority: 'MEDIUM',
-      metadata: dto.metadata,
+      priority: options.priority,
+      metadata: options.metadata || dto.metadata,
     });
 
+    const jobIds = Object.keys(queueResult.jobIds).join(', ');
     this.logger.log(
-      `Group message ${message.id} queued for batch delivery to ${recipientIds.length} recipients. Job ID: ${queueResult.jobIds.delivery}`,
+      `Message ${message.id} queued for delivery. Jobs: ${jobIds}`,
     );
 
     return {
       message,
       conversation,
-      recipientCount: recipientIds.length,
       queueStatus: {
         queued: queueResult.success,
         jobIds: queueResult.jobIds,
         errors: queueResult.errors,
-        recipientCount: recipientIds.length,
       },
     };
   }

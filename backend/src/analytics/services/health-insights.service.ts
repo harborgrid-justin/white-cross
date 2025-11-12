@@ -4,12 +4,15 @@
  * @description Service for generating health insights and risk assessments
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { BaseService } from '../../common/base';
 import { StudentHealthMetrics, RiskAssessment, HealthMetricsData } from '../analytics-interfaces';
 
 @Injectable()
-export class HealthInsightsService {
-  private readonly logger = new Logger(HealthInsightsService.name);
+export class HealthInsightsService extends BaseService {
+  constructor() {
+    super(HealthInsightsService.name);
+  }
 
   /**
    * Generate health insights from metrics data

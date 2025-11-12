@@ -15,8 +15,7 @@ import {
   ReportData,
   AnalyticsOperationResult,
   StudentHealthMetrics,
-  ReportMetadata,
-} from './analytics-interfaces';
+} from './types/analytics-report.types';
 
 import {
   ANALYTICS_CONSTANTS,
@@ -25,14 +24,14 @@ import {
 } from './analytics-constants';
 
 @Injectable()
-export class SpecializedReportGeneratorService {
-  private readonly logger = new Logger(SpecializedReportGeneratorService.name);
-
+export class SpecializedReportGeneratorService extends BaseReportGeneratorService {
   constructor(
-    private readonly eventEmitter: EventEmitter2,
+    eventEmitter: EventEmitter2,
     @Inject(CACHE_MANAGER)
-    private readonly cacheManager: Cache,
-  ) {}
+    cacheManager: Cache,
+  ) {
+    super(eventEmitter, cacheManager, SpecializedReportGeneratorService.name);
+  }
 
   /**
    * Generate a student health summary report
@@ -41,59 +40,35 @@ export class SpecializedReportGeneratorService {
     studentId: string,
     studentMetrics: StudentHealthMetrics,
   ): Promise<AnalyticsOperationResult<ReportData>> {
-    try {
-      const reportId = this.generateReportId();
-
-      const reportContent = {
-        title: `Student Health Summary - ${studentId}`,
-        studentId,
-        period: studentMetrics.period,
-        overview: {
-          totalHealthRecords: studentMetrics.healthRecords,
-          medicationAdministrations: studentMetrics.medicationAdministrations,
-          appointments: studentMetrics.appointments,
-          incidents: studentMetrics.incidents,
-        },
-        timeline: {
-          lastHealthRecord: studentMetrics.lastHealthRecord,
-          lastMedication: studentMetrics.lastMedication,
-          upcomingAppointments: studentMetrics.upcomingAppointments,
-        },
-        riskAssessment: this.assessStudentRisk(studentMetrics),
-        recommendations: this.generateStudentRecommendations(studentMetrics),
-        generatedAt: new Date(),
-      };
-
-      const formattedReport = JSON.stringify(reportContent, null, 2);
-
-      const report: ReportData = {
-        id: reportId,
-        schoolId: 'N/A', // Student-specific report
-        type: AnalyticsReportType.STUDENT_HEALTH_SUMMARY,
-        period: studentMetrics.period,
-        data: studentMetrics,
-        content: reportContent,
-        formattedContent: formattedReport,
-        metadata: {
-          id: reportId,
+    return this.generateReport(
+      'N/A',
+      AnalyticsReportType.STUDENT_HEALTH_SUMMARY,
+      studentMetrics.period,
+      { format: 'JSON' },
+      async () => {
+        const reportContent = {
           title: `Student Health Summary - ${studentId}`,
-          type: AnalyticsReportType.STUDENT_HEALTH_SUMMARY,
-          generatedAt: new Date(),
+          studentId,
           period: studentMetrics.period,
-          format: 'JSON',
-          size: formattedReport.length,
-        },
-        generatedAt: new Date(),
-      };
+          overview: {
+            totalHealthRecords: studentMetrics.healthRecords,
+            medicationAdministrations: studentMetrics.medicationAdministrations,
+            appointments: studentMetrics.appointments,
+            incidents: studentMetrics.incidents,
+          },
+          timeline: {
+            lastHealthRecord: studentMetrics.lastHealthRecord,
+            lastMedication: studentMetrics.lastMedication,
+            upcomingAppointments: studentMetrics.upcomingAppointments,
+          },
+          riskAssessment: this.assessStudentRisk(studentMetrics),
+          recommendations: this.generateStudentRecommendations(studentMetrics),
+          generatedAt: new Date(),
+        };
 
-      return { success: true, data: report };
-    } catch (error) {
-      this.logger.error(`Failed to generate student health report for ${studentId}`, error);
-      return {
-        success: false,
-        error: `Failed to generate student report: ${error.message}`,
-      };
-    }
+        return { data: studentMetrics, content: reportContent };
+      },
+    );
   }
 
   /**
@@ -109,55 +84,34 @@ export class SpecializedReportGeneratorService {
       incidentReporting: number;
     },
   ): Promise<AnalyticsOperationResult<ReportData>> {
-    try {
-      const reportId = this.generateReportId();
+    return this.generateReport(
+      schoolId,
+      AnalyticsReportType.COMPLIANCE_REPORT,
+      period,
+      { format: 'JSON' },
+      async () => {
+        const complianceScores = {
+          overall: this.calculateOverallCompliance(complianceData),
+          medication: complianceData.medicationAdherence,
+          immunization: complianceData.immunizationCompliance,
+          appointments: complianceData.appointmentCompletion,
+          incidents: complianceData.incidentReporting,
+        };
 
-      const complianceScores = {
-        overall: this.calculateOverallCompliance(complianceData),
-        medication: complianceData.medicationAdherence,
-        immunization: complianceData.immunizationCompliance,
-        appointments: complianceData.appointmentCompletion,
-        incidents: complianceData.incidentReporting,
-      };
-
-      const reportContent = {
-        title: `Compliance Report - ${schoolId}`,
-        schoolId,
-        period,
-        complianceScores,
-        status: this.determineComplianceStatus(complianceScores),
-        areasOfConcern: this.identifyComplianceConcerns(complianceScores),
-        recommendations: this.generateComplianceRecommendations(complianceScores),
-        generatedAt: new Date(),
-      };
-
-      const formattedReport = JSON.stringify(reportContent, null, 2);
-
-      const report: ReportData = {
-        id: reportId,
-        schoolId,
-        type: AnalyticsReportType.COMPLIANCE_REPORT,
-        period,
-        data: complianceData,
-        content: reportContent,
-        formattedContent: formattedReport,
-        metadata: this.generateReportMetadata(
-          reportId,
+        const reportContent = {
+          title: `Compliance Report - ${schoolId}`,
           schoolId,
-          AnalyticsReportType.COMPLIANCE_REPORT,
           period,
-        ),
-        generatedAt: new Date(),
-      };
+          complianceScores,
+          status: this.determineComplianceStatus(complianceScores),
+          areasOfConcern: this.identifyComplianceConcerns(complianceScores),
+          recommendations: this.generateComplianceRecommendations(complianceScores),
+          generatedAt: new Date(),
+        };
 
-      return { success: true, data: report };
-    } catch (error) {
-      this.logger.error(`Failed to generate compliance report for school ${schoolId}`, error);
-      return {
-        success: false,
-        error: `Failed to generate compliance report: ${error.message}`,
-      };
-    }
+        return { data: complianceData, content: reportContent };
+      },
+    );
   }
 
   /**
@@ -175,52 +129,31 @@ export class SpecializedReportGeneratorService {
       pendingTasks?: number;
     },
   ): Promise<AnalyticsOperationResult<ReportData>> {
-    try {
-      const reportId = this.generateReportId();
+    return this.generateReport(
+      schoolId,
+      AnalyticsReportType.DASHBOARD_SUMMARY,
+      AnalyticsTimePeriod.LAST_30_DAYS,
+      { format: 'JSON' },
+      async () => {
+        const reportContent = {
+          title: `Dashboard Summary - ${schoolId}`,
+          generatedFor: userType,
+          timeRange,
+          summary: {
+            totalAlerts: dashboardData.alerts?.length || 0,
+            criticalAlerts: dashboardData.alerts?.filter((a: { severity: string }) => a.severity === 'CRITICAL').length || 0,
+            upcomingAppointments: dashboardData.upcomingAppointments || 0,
+            pendingTasks: dashboardData.pendingTasks || 0,
+          },
+          keyMetrics: dashboardData.keyMetrics || [],
+          alerts: dashboardData.alerts || [],
+          recommendations: dashboardData.recommendations || [],
+          generatedAt: new Date(),
+        };
 
-      const reportContent = {
-        title: `Dashboard Summary - ${schoolId}`,
-        generatedFor: userType,
-        timeRange,
-        summary: {
-          totalAlerts: dashboardData.alerts?.length || 0,
-          criticalAlerts: dashboardData.alerts?.filter((a: { severity: string }) => a.severity === 'CRITICAL').length || 0,
-          upcomingAppointments: dashboardData.upcomingAppointments || 0,
-          pendingTasks: dashboardData.pendingTasks || 0,
-        },
-        keyMetrics: dashboardData.keyMetrics || [],
-        alerts: dashboardData.alerts || [],
-        recommendations: dashboardData.recommendations || [],
-        generatedAt: new Date(),
-      };
-
-      const formattedReport = JSON.stringify(reportContent, null, 2);
-
-      const report: ReportData = {
-        id: reportId,
-        schoolId,
-        type: AnalyticsReportType.DASHBOARD_SUMMARY,
-        period: AnalyticsTimePeriod.LAST_30_DAYS, // Default period
-        data: dashboardData,
-        content: reportContent,
-        formattedContent: formattedReport,
-        metadata: this.generateReportMetadata(
-          reportId,
-          schoolId,
-          AnalyticsReportType.DASHBOARD_SUMMARY,
-          AnalyticsTimePeriod.LAST_30_DAYS,
-        ),
-        generatedAt: new Date(),
-      };
-
-      return { success: true, data: report };
-    } catch (error) {
-      this.logger.error(`Failed to generate dashboard summary report for school ${schoolId}`, error);
-      return {
-        success: false,
-        error: `Failed to generate dashboard report: ${error.message}`,
-      };
-    }
+        return { data: dashboardData, content: reportContent };
+      },
+    );
   }
 
   // Private helper methods
@@ -353,26 +286,5 @@ export class SpecializedReportGeneratorService {
     }
 
     return recommendations;
-  }
-
-  private generateReportId(): string {
-    return `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  private generateReportMetadata(
-    reportId: string,
-    schoolId: string,
-    reportType: AnalyticsReportType,
-    period: AnalyticsTimePeriod,
-  ): ReportMetadata {
-    return {
-      id: reportId,
-      title: `${reportType.replace('_', ' ')} Report - ${schoolId}`,
-      type: reportType,
-      generatedAt: new Date(),
-      period,
-      format: 'JSON',
-      size: 0, // Would be calculated based on content size
-    };
   }
 }

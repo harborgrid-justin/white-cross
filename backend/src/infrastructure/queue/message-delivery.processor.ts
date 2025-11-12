@@ -14,13 +14,12 @@ import { DeliveryConfirmationJobDto, SendMessageJobDto } from './dtos';
 
 import { EncryptionService } from '@/infrastructure/encryption';
 import { WebSocketService } from '@/infrastructure/websocket';
-import { Message } from '@/database/models/message.model';
-import {
-  MessageDelivery,
+import { Message   } from "../../database/models";
+import { MessageDelivery,
   RecipientType,
   DeliveryChannelType,
   DeliveryStatus,
-} from '@/database/models/message-delivery.model';
+  } from "../../database/models";
 
 /**
  * Message Delivery Queue Processor

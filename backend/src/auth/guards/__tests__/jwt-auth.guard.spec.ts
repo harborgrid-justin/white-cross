@@ -14,7 +14,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '../jwt-auth.guard';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { UserRole } from '../../../database/models/user.model';
+import { UserRole   } from "../../database/models";
 
 describe('JwtAuthGuard (CRITICAL SECURITY)', () => {
   let guard: JwtAuthGuard;

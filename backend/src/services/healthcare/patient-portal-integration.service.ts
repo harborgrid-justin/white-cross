@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Student } from '../../../database/models/student.model';
-import { HealthRecord } from '../../../database/models/health-record.model';
-import { Medication } from '../../../database/models/medication.model';
-import { Appointment } from '../../../database/models/appointment.model';
-import { Message } from '../../../database/models/message.model';
+import { Student   } from "../../database/models";
+import { HealthRecord   } from "../../database/models";
+import { Medication   } from "../../database/models";
+import { Appointment   } from "../../database/models";
+import { Message   } from "../../database/models";
 
 /**
  * Patient Portal Integration Service

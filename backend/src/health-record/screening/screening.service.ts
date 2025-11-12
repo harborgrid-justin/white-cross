@@ -7,7 +7,7 @@
  */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { HealthScreeningAttributes } from '../../database/models/health-screening.model';
+import { HealthScreeningAttributes   } from "../../database/models";
 
 @Injectable()
 export class ScreeningService {

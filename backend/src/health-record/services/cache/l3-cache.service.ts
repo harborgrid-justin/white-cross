@@ -14,7 +14,7 @@ import { Op } from 'sequelize';
 import * as crypto from 'crypto';
 import { PHIAccessLogger } from '../phi-access-logger.service';
 import { InMemoryCacheEntry, ComplianceLevel } from './cache-interfaces';
-import { CacheEntry as CacheEntryModel } from '../../../database/models/cache-entry.model';
+import { CacheEntry as CacheEntryModel   } from "../../database/models";
 
 @Injectable()
 export class L3CacheService {

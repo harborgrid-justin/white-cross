@@ -6,9 +6,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
-import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
-import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import type { IAuditLogger  } from "../../../backend/src/database/interfaces";
+import { sanitizeSensitiveData  } from "../../../backend/src/database/interfaces";
+import type { ICacheManager  } from "../../../backend/src/database/interfaces";
 
 export interface HealthAssessmentAttributes {
   id: string;

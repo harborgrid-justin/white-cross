@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Student } from '../../../database/models/student.model';
-import { Appointment } from '../../../database/models/appointment.model';
-import { HealthRecord } from '../../../database/models/health-record.model';
+import { Student   } from "../../database/models";
+import { Appointment   } from "../../database/models";
+import { HealthRecord   } from "../../database/models";
 
 /**
  * Advanced Appointment Scheduler Service

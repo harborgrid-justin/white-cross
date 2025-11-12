@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Medication } from '../../../database/models/medication.model';
-import { DrugInteraction } from '../../../database/models/drug-interaction.model';
-import { Student } from '../../../database/models/student.model';
-import { HealthRecord } from '../../../database/models/health-record.model';
+import { Medication   } from "../../database/models";
+import { DrugInteraction   } from "../../database/models";
+import { Student   } from "../../database/models";
+import { HealthRecord   } from "../../database/models";
 
 /**
  * Medication Interaction Checker Service

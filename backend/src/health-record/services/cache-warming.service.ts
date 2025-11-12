@@ -9,10 +9,10 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Op } from 'sequelize';
 import { HealthDataCacheService } from './health-data-cache.service';
-import { Student } from '../../database/models/student.model';
-import { Vaccination } from '../../database/models/vaccination.model';
-import { Allergy } from '../../database/models/allergy.model';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
+import { Student   } from "../../database/models";
+import { Vaccination   } from "../../database/models";
+import { Allergy   } from "../../database/models";
+import { ChronicCondition   } from "../../database/models";
 
 @Injectable()
 export class CacheWarmingService implements OnModuleInit {

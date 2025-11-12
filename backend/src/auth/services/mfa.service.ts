@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import * as speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 import * as crypto from 'crypto';
-import { User } from '../../database/models/user.model';
+import { User   } from "../../database/models";
 import { MfaSetupResponseDto, MfaStatusDto } from '../dto/mfa.dto';
 
 @Injectable()
