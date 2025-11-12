@@ -20,7 +20,7 @@ export interface Screening {
   performedBy: string;
   outcome: ScreeningOutcome;
   results?: string;
-  measurements?: Record<string, unknown>;
+  measurements?: Record<string, string | number | boolean>;
   referralRequired: boolean;
   referralTo?: string;
   followUpRequired: boolean;
@@ -72,7 +72,7 @@ export interface ScreeningCreate {
   performedBy: string;
   outcome: ScreeningOutcome;
   results?: string;
-  measurements?: Record<string, unknown>;
+  measurements?: Record<string, string | number | boolean>;
   referralRequired?: boolean;
   referralTo?: string;
   followUpRequired?: boolean;
@@ -89,7 +89,7 @@ export interface ScreeningUpdate {
   performedBy?: string;
   outcome?: ScreeningOutcome;
   results?: string;
-  measurements?: Record<string, unknown>;
+  measurements?: Record<string, string | number | boolean>;
   referralRequired?: boolean;
   referralTo?: string;
   followUpRequired?: boolean;

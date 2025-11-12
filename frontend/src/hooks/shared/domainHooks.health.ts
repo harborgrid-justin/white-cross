@@ -32,8 +32,7 @@ import {
   appointmentsSelectors,
   selectUpcomingAppointments,
   selectAppointmentsByStudent,
-  selectAppointmentsByDate,
-} from '../slices/appointmentsSlice';
+} from '../slices/appointments';
 
 // =====================
 // HEALTH RECORDS HOOKS

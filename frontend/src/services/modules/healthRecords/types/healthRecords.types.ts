@@ -9,7 +9,12 @@
  * @module services/modules/healthRecords/types/healthRecords.types
  */
 
-import { PaginationParams } from '../../../types';
+import type { PaginationParams } from '../../../types';
+import type { Allergy } from './allergies.types';
+import type { ChronicCondition } from './chronicConditions.types';
+import type { VitalSigns } from './vitalSigns.types';
+import type { GrowthMeasurement } from './growthMeasurements.types';
+import type { Screening } from './screenings.types';
 
 /**
  * Main health record entity
@@ -124,19 +129,19 @@ export interface HealthSummary {
     gender: string;
   };
   criticalAlerts: string[];
-  allergies: unknown[]; // Will be typed properly when allergies types are imported
-  criticalAllergies: unknown[];
-  chronicConditions: unknown[];
-  activeConditions: unknown[];
-  latestVitals?: unknown;
-  latestGrowth?: unknown;
+  allergies: Allergy[];
+  criticalAllergies: Allergy[];
+  chronicConditions: ChronicCondition[];
+  activeConditions: ChronicCondition[];
+  latestVitals?: VitalSigns;
+  latestGrowth?: GrowthMeasurement;
   vaccinations: {
     isCompliant: boolean;
     total: number;
     overdue: number;
     upcoming: number;
   };
-  recentScreenings: unknown[];
+  recentScreenings: Screening[];
   lastPhysicalExam?: {
     date: string;
     provider: string;
