@@ -4,7 +4,9 @@
  * @description Service for querying academic transcript data
  */
 
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { AcademicRecord } from '../interfaces/academic-record.interface';
 import { AcademicTranscriptRepository } from '../../database/repositories/impl/academic-transcript.repository';
 import { StudentRepository } from '../../database/repositories/impl/student.repository';
@@ -16,15 +18,16 @@ import { StudentRepository } from '../../database/repositories/impl/student.repo
  * Supports single student queries and batch operations for performance optimization.
  */
 @Injectable()
-export class TranscriptQueryService {
-  private readonly logger = new Logger(TranscriptQueryService.name);
-
+export class TranscriptQueryService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @Inject(AcademicTranscriptRepository)
     private readonly academicTranscriptRepository: AcademicTranscriptRepository,
     @Inject(StudentRepository)
     private readonly studentRepository: StudentRepository,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Get student's academic history

@@ -5,4 +5,3 @@
 
 export * from './data-encryption-security.service';
 export * from './encryption.service';
-export * from './encryption-service.service';

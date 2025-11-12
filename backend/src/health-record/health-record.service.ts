@@ -29,6 +29,29 @@ import { ImportResults } from './interfaces/health-record-types';
 import { PaginatedHealthRecords } from './interfaces/pagination.interface';
 import { VitalSigns } from './interfaces/vital-signs.interface';
 
+// DTOs
+import { HealthRecordCreateDto } from './dto/create-health-record.dto';
+import { HealthRecordUpdateDto } from './dto/update-health-record.dto';
+import { ImportHealthRecordsDto } from './dto/import-health-records.dto';
+import { HealthRecordFilterDto } from './dto/health-record-filter.dto';
+import { CreateAllergyDto } from './allergy/dto/create-allergy.dto';
+import { UpdateAllergyDto } from './allergy/dto/update-allergy.dto';
+import { CreateChronicConditionDto } from './chronic-condition/dto/create-chronic-condition.dto';
+import { UpdateChronicConditionDto } from './chronic-condition/dto/update-chronic-condition.dto';
+import { CreateVaccinationDto } from './vaccination/dto/create-vaccination.dto';
+import { UpdateVaccinationDto } from './vaccination/dto/update-vaccination.dto';
+
+/**
+ * Filter interface for health record queries
+ */
+interface HealthRecordFilters {
+  type?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  provider?: string;
+  studentId?: string;
+}
+
 // Specialized Services
 import { HealthRecordCrudService } from './services/health-record-crud.service';
 import { HealthRecordAllergyService } from './services/health-record-allergy.service';
@@ -81,19 +104,9 @@ export class HealthRecordService {
     studentId: string,
     page: number = 1,
     limit: number = 20,
-    filters: {
-      type?: string;
-      dateFrom?: Date;
-      dateTo?: Date;
-      provider?: string;
-    } = {},
+    filters: HealthRecordFilters = {},
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
-    return this.crudService.getStudentHealthRecords(
-      studentId,
-      page,
-      limit,
-      filters,
-    );
+    return this.crudService.getStudentHealthRecords(studentId, page, limit, filters);
   }
 
   /**
@@ -101,7 +114,7 @@ export class HealthRecordService {
    * @param data - Health record creation data
    * @returns Created health record with associations
    */
-  async createHealthRecord(data: any): Promise<HealthRecord> {
+  async createHealthRecord(data: HealthRecordCreateDto): Promise<HealthRecord> {
     return this.crudService.createHealthRecord(data);
   }
 
@@ -111,10 +124,7 @@ export class HealthRecordService {
    * @param data - Updated health record data
    * @returns Updated health record with associations
    */
-  async updateHealthRecord(
-    id: string,
-    data: Partial<any>,
-  ): Promise<HealthRecord> {
+  async updateHealthRecord(id: string, data: HealthRecordUpdateDto): Promise<HealthRecord> {
     return this.crudService.updateHealthRecord(id, data);
   }
 
@@ -132,9 +142,7 @@ export class HealthRecordService {
    * @param recordIds - Array of health record UUIDs
    * @returns Deletion results
    */
-  async bulkDeleteHealthRecords(
-    recordIds: string[],
-  ): Promise<BulkDeleteResults> {
+  async bulkDeleteHealthRecords(recordIds: string[]): Promise<BulkDeleteResults> {
     return this.crudService.bulkDeleteHealthRecords(recordIds);
   }
 
@@ -145,7 +153,7 @@ export class HealthRecordService {
    * @param data - Allergy creation data
    * @returns Created allergy record
    */
-  async addAllergy(data: any): Promise<Allergy> {
+  async addAllergy(data: CreateAllergyDto): Promise<Allergy> {
     return this.allergyService.addAllergy(data);
   }
 
@@ -155,7 +163,7 @@ export class HealthRecordService {
    * @param data - Updated allergy data
    * @returns Updated allergy record
    */
-  async updateAllergy(id: string, data: Partial<any>): Promise<Allergy> {
+  async updateAllergy(id: string, data: UpdateAllergyDto): Promise<Allergy> {
     return this.allergyService.updateAllergy(id, data);
   }
 
@@ -184,7 +192,7 @@ export class HealthRecordService {
    * @param data - Chronic condition creation data
    * @returns Created chronic condition record
    */
-  async addChronicCondition(data: any): Promise<ChronicCondition> {
+  async addChronicCondition(data: CreateChronicConditionDto): Promise<ChronicCondition> {
     return this.chronicConditionService.addChronicCondition(data);
   }
 
@@ -205,7 +213,7 @@ export class HealthRecordService {
    */
   async updateChronicCondition(
     id: string,
-    data: Partial<any>,
+    data: UpdateChronicConditionDto,
   ): Promise<ChronicCondition> {
     return this.chronicConditionService.updateChronicCondition(id, data);
   }
@@ -226,7 +234,7 @@ export class HealthRecordService {
    * @param data - Vaccination creation data
    * @returns Created vaccination record
    */
-  async addVaccination(data: any): Promise<Vaccination> {
+  async addVaccination(data: CreateVaccinationDto): Promise<Vaccination> {
     return this.vaccinationService.addVaccination(data);
   }
 
@@ -245,10 +253,7 @@ export class HealthRecordService {
    * @param data - Updated vaccination data
    * @returns Updated vaccination record
    */
-  async updateVaccination(
-    id: string,
-    data: Partial<any>,
-  ): Promise<Vaccination> {
+  async updateVaccination(id: string, data: UpdateVaccinationDto): Promise<Vaccination> {
     return this.vaccinationService.updateVaccination(id, data);
   }
 
@@ -278,10 +283,7 @@ export class HealthRecordService {
    * @param limit - Number of records to retrieve
    * @returns Array of recent vital signs
    */
-  async getRecentVitals(
-    studentId: string,
-    limit: number = 10,
-  ): Promise<VitalSigns[]> {
+  async getRecentVitals(studentId: string, limit: number = 10): Promise<VitalSigns[]> {
     return this.vitalsService.getRecentVitals(studentId, limit);
   }
 
@@ -295,10 +297,7 @@ export class HealthRecordService {
   async getHealthSummary(studentId: string): Promise<HealthSummary> {
     const summary = await this.summaryService.getHealthSummary(studentId);
     // Enhance with vitals from vitals service
-    summary.recentVitals = await this.vitalsService.getRecentVitals(
-      studentId,
-      5,
-    );
+    summary.recentVitals = await this.vitalsService.getRecentVitals(studentId, 5);
     return summary;
   }
 
@@ -336,7 +335,7 @@ export class HealthRecordService {
    */
   async importHealthRecords(
     studentId: string,
-    importData: any,
+    importData: ImportHealthRecordsDto,
   ): Promise<ImportResults> {
     return this.summaryService.importHealthRecords(studentId, importData);
   }
@@ -417,7 +416,7 @@ export class HealthRecordService {
   async findAll(
     page: number = 1,
     limit: number = 20,
-    filters: any = {},
+    filters: HealthRecordFilterDto = {},
   ): Promise<any> {
     return this.getAllHealthRecords(page, limit, filters);
   }
@@ -443,7 +442,7 @@ export class HealthRecordService {
     studentId: string,
     page: number = 1,
     limit: number = 20,
-    filters: any = {},
+    filters: HealthRecordFilterDto = {},
   ): Promise<any> {
     return this.getStudentHealthRecords(studentId, page, limit, filters);
   }
@@ -453,7 +452,7 @@ export class HealthRecordService {
    * @param data - Health record creation data
    * @returns Created health record
    */
-  async create(data: any): Promise<HealthRecord> {
+  async create(data: HealthRecordCreateDto): Promise<HealthRecord> {
     return this.createHealthRecord(data);
   }
 
@@ -463,7 +462,7 @@ export class HealthRecordService {
    * @param data - Update data
    * @returns Updated health record
    */
-  async update(id: string, data: any): Promise<HealthRecord> {
+  async update(id: string, data: HealthRecordUpdateDto): Promise<HealthRecord> {
     return this.updateHealthRecord(id, data);
   }
 

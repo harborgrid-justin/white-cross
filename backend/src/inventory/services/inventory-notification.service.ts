@@ -4,8 +4,10 @@
  * Handles inventory notification logic including alerts and reports
  * Extracted from inventory-maintenance.processor.ts for better modularity
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { EmailService } from '@/infrastructure/email';
 import {
   MessageDelivery,
@@ -39,13 +41,14 @@ export interface DisposalRecord {
 }
 
 @Injectable()
-export class InventoryNotificationService {
-  private readonly logger = new Logger(InventoryNotificationService.name);
-
+export class InventoryNotificationService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Send alert notifications

@@ -1,7 +1,9 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { PurchaseOrder, PurchaseOrderStatus } from '../../database/models/purchase-order.model';
 import { PurchaseOrderItem } from '../../database/models/purchase-order-item.model';
 import { Vendor } from '../../database/models/vendor.model';
@@ -9,10 +11,9 @@ import { InventoryItem } from '../../database/models/inventory-item.model';
 import { CreatePurchaseOrderDto } from '../dto/create-purchase-order.dto';
 
 @Injectable()
-export class PurchaseOrderService {
-  private readonly logger = new Logger(PurchaseOrderService.name);
-
+export class InventoryPurchaseOrderService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(PurchaseOrder)
     private readonly purchaseOrderModel: typeof PurchaseOrder,
     @InjectModel(PurchaseOrderItem)

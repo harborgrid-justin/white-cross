@@ -4,9 +4,11 @@
  * Handles reorder suggestions and calculations
  * Extracted from inventory-maintenance.processor.ts for better modularity
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { ReorderSuggestion } from './inventory-notification.service';
 
 export interface UsageStatistics {
@@ -25,10 +27,13 @@ const SAFETY_STOCK_PERCENTAGE = 0.2; // 20% of lead time demand
 const USAGE_CALCULATION_DAYS = 30; // 30-day rolling average
 
 @Injectable()
-export class InventoryReorderService {
-  private readonly logger = new Logger(InventoryReorderService.name);
-
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+export class InventoryReorderService extends BaseService {
+  constructor(
+    protected readonly requestContext: RequestContextService,
+    @InjectConnection() private readonly sequelize: Sequelize,
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Generate reorder suggestions based on usage patterns and stock levels

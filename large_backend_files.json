@@ -1,1532 +1,2027 @@
 [
   {
-    "path": "migrations/20251010000000-complete-health-records-schema.js",
-    "fullPath": "/workspaces/white-cross/backend/src/migrations/20251010000000-complete-health-records-schema.js",
+    "path": "database\\migrations\\migration-utilities.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\migration-utilities.service.ts",
+    "lines": 3020
+  },
+  {
+    "path": "database\\services\\database-optimization-utilities.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\database-optimization-utilities.service.ts",
+    "lines": 2883
+  },
+  {
+    "path": "config\\swagger-config.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\swagger-config.service.ts",
+    "lines": 2592
+  },
+  {
+    "path": "common\\decorators\\swagger-decorators.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\decorators\\swagger-decorators.service.ts",
+    "lines": 2336
+  },
+  {
+    "path": "services\\parallel-execution\\parallel-execution.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\parallel-execution\\parallel-execution.service.ts",
+    "lines": 2294
+  },
+  {
+    "path": "config\\swagger-schema-generators.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\swagger-schema-generators.service.ts",
+    "lines": 2292
+  },
+  {
+    "path": "database\\services\\advanced-batch-queries.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\advanced-batch-queries.service.ts",
+    "lines": 2119
+  },
+  {
+    "path": "common\\decorators\\api-validation-decorators.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\decorators\\api-validation-decorators.service.ts",
+    "lines": 2052
+  },
+  {
+    "path": "database\\services\\aggregate-analytics-queries.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\aggregate-analytics-queries.service.ts",
+    "lines": 2019
+  },
+  {
+    "path": "database\\services\\association-manager.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\association-manager.service.ts",
+    "lines": 1950
+  },
+  {
+    "path": "database\\services\\transaction-coordination.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\transaction-coordination.service.ts",
+    "lines": 1897
+  },
+  {
+    "path": "config\\swagger-response-builders.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\swagger-response-builders.service.ts",
+    "lines": 1861
+  },
+  {
+    "path": "common\\api-version-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\api-version-management.service.ts",
+    "lines": 1842
+  },
+  {
+    "path": "database\\services\\model-factory-generators.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\model-factory-generators.service.ts",
+    "lines": 1789
+  },
+  {
+    "path": "database\\services\\advanced-queries.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\advanced-queries.service.ts",
+    "lines": 1746
+  },
+  {
+    "path": "database\\services\\streaming-query-operations.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\streaming-query-operations.service.ts",
+    "lines": 1743
+  },
+  {
+    "path": "services\\concurrency-control\\concurrency-control.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\concurrency-control\\concurrency-control.service.ts",
+    "lines": 1737
+  },
+  {
+    "path": "services\\async-coordination\\async-coordination.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\async-coordination\\async-coordination.service.ts",
+    "lines": 1691
+  },
+  {
+    "path": "common\\validators\\api-validation.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\validators\\api-validation.service.ts",
+    "lines": 1667
+  },
+  {
+    "path": "config\\swagger-security-schemes.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\swagger-security-schemes.service.ts",
+    "lines": 1665
+  },
+  {
+    "path": "database\\services\\connection-pooling.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\connection-pooling.service.ts",
+    "lines": 1659
+  },
+  {
+    "path": "common\\decorators\\model-decorators.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\decorators\\model-decorators.service.ts",
+    "lines": 1632
+  },
+  {
+    "path": "common\\encryption\\encryption-service.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\encryption\\encryption-service.service.ts",
+    "lines": 1598
+  },
+  {
+    "path": "common\\exceptions\\exception-filter-strategies.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\exceptions\\exception-filter-strategies.service.ts",
+    "lines": 1579
+  },
+  {
+    "path": "common\\dependency-injection.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\dependency-injection.service.ts",
+    "lines": 1554
+  },
+  {
+    "path": "common\\controller-route-factories.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\controller-route-factories.service.ts",
+    "lines": 1525
+  },
+  {
+    "path": "common\\request-handlers.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\request-handlers.service.ts",
+    "lines": 1521
+  },
+  {
+    "path": "database\\services\\query-optimization-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\query-optimization-cache.service.ts",
+    "lines": 1513
+  },
+  {
+    "path": "common\\decorators\\swagger-parameter-decorators.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\decorators\\swagger-parameter-decorators.service.ts",
+    "lines": 1505
+  },
+  {
+    "path": "database\\services\\crud-operations.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\crud-operations.service.ts",
+    "lines": 1497
+  },
+  {
+    "path": "common\\validators\\model-validation-composites.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\validators\\model-validation-composites.service.ts",
+    "lines": 1493
+  },
+  {
+    "path": "database\\services\\complex-join-operations.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\complex-join-operations.service.ts",
+    "lines": 1493
+  },
+  {
+    "path": "services\\service-patterns\\service-patterns.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\service-patterns\\service-patterns.service.ts",
+    "lines": 1490
+  },
+  {
+    "path": "common\\interceptors\\response-interceptor-patterns.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\interceptors\\response-interceptor-patterns.service.ts",
+    "lines": 1480
+  },
+  {
+    "path": "services\\healthcare\\clinical-decision-support.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\clinical-decision-support.service.ts",
+    "lines": 1460
+  },
+  {
+    "path": "common\\pipes\\request-validation-pipes.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\pipes\\request-validation-pipes.service.ts",
+    "lines": 1456
+  },
+  {
+    "path": "auth\\guards\\authentication-guard-composites.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\auth\\guards\\authentication-guard-composites.service.ts",
+    "lines": 1447
+  },
+  {
+    "path": "common\\openapi-response-formatters.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\openapi-response-formatters.service.ts",
+    "lines": 1391
+  },
+  {
+    "path": "database\\repositories\\data-repository.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\repositories\\data-repository.service.ts",
+    "lines": 1386
+  },
+  {
+    "path": "common\\data-security.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\data-security.service.ts",
+    "lines": 1383
+  },
+  {
+    "path": "config\\swagger-endpoint-documentation.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\swagger-endpoint-documentation.service.ts",
+    "lines": 1370
+  },
+  {
+    "path": "database\\services\\isolation-strategies.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\isolation-strategies.service.ts",
+    "lines": 1340
+  },
+  {
+    "path": "database\\services\\model-scope-patterns.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\model-scope-patterns.service.ts",
+    "lines": 1340
+  },
+  {
+    "path": "database\\services\\model-lifecycle-hooks.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\model-lifecycle-hooks.service.ts",
+    "lines": 1335
+  },
+  {
+    "path": "database\\services\\model-association-strategies.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\model-association-strategies.service.ts",
+    "lines": 1325
+  },
+  {
+    "path": "services\\healthcare\\patient-portal-integration.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\patient-portal-integration.service.ts",
+    "lines": 1320
+  },
+  {
+    "path": "common\\api-response.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\api-response.service.ts",
+    "lines": 1315
+  },
+  {
+    "path": "database\\services\\query-builder.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\query-builder.service.ts",
+    "lines": 1301
+  },
+  {
+    "path": "services\\healthcare\\telemedicine-session-manager.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\telemedicine-session-manager.service.ts",
+    "lines": 1268
+  },
+  {
+    "path": "services\\healthcare\\advanced-appointment-scheduler.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\advanced-appointment-scheduler.service.ts",
+    "lines": 1263
+  },
+  {
+    "path": "services\\healthcare\\medication-interaction-checker.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\medication-interaction-checker.service.ts",
+    "lines": 1240
+  },
+  {
+    "path": "services\\healthcare\\medical-imaging-integration.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\medical-imaging-integration.service.ts",
+    "lines": 1183
+  },
+  {
+    "path": "services\\healthcare\\medical-device-integration.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\medical-device-integration.service.ts",
+    "lines": 1177
+  },
+  {
+    "path": "services\\health-checks\\production-health-checks.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\health-checks\\production-health-checks.service.ts",
+    "lines": 1149
+  },
+  {
+    "path": "common\\performance\\performance-monitoring.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\performance\\performance-monitoring.service.ts",
     "lines": 1100
   },
   {
-    "path": "database/migrations/20251010000000-complete-health-records-schema.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251010000000-complete-health-records-schema.js",
+    "path": "database\\migrations\\20251010000000-complete-health-records-schema.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251010000000-complete-health-records-schema.js",
     "lines": 1085
   },
   {
-    "path": "health-record/services/cache-strategy.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/cache-strategy.service.ts",
-    "lines": 1028
+    "path": "database\\migrations\\migration-version-control.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\migration-version-control.service.ts",
+    "lines": 1066
   },
   {
-    "path": "analytics/analytics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/analytics/analytics.service.ts",
-    "lines": 968
+    "path": "common\\exceptions\\enhanced-error-handling.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\exceptions\\enhanced-error-handling.service.ts",
+    "lines": 1035
   },
   {
-    "path": "enterprise-features/enterprise-features.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/enterprise-features/enterprise-features.service.ts",
-    "lines": 944
+    "path": "common\\decorators\\controller-decorators.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\decorators\\controller-decorators.service.ts",
+    "lines": 1032
   },
   {
-    "path": "appointment/appointment.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/appointment/appointment.controller.ts",
-    "lines": 936
+    "path": "common\\encryption\\encryption.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\encryption\\encryption.service.ts",
+    "lines": 986
   },
   {
-    "path": "health-record/vaccination/vaccination.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/vaccination/vaccination.service.ts",
-    "lines": 935
+    "path": "common\\cache\\healthcare-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\cache\\healthcare-cache.service.ts",
+    "lines": 911
   },
   {
-    "path": "mobile/services/offline-sync.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/mobile/services/offline-sync.service.ts",
-    "lines": 919
-  },
-  {
-    "path": "security/enhanced-security.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/security/enhanced-security.service.ts",
-    "lines": 901
-  },
-  {
-    "path": "infrastructure/websocket/websocket.gateway.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/websocket.gateway.ts",
-    "lines": 896
-  },
-  {
-    "path": "academic-transcript/academic-transcript.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/academic-transcript/academic-transcript.service.ts",
+    "path": "academic-transcript\\academic-transcript.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\academic-transcript\\academic-transcript.service.ts",
     "lines": 886
   },
   {
-    "path": "emergency-broadcast/emergency-broadcast.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/emergency-broadcast/emergency-broadcast.service.ts",
-    "lines": 854
+    "path": "security\\production-security.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\security\\production-security.service.ts",
+    "lines": 856
   },
   {
-    "path": "health-record/import-export/import-export.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/import-export/import-export.service.ts",
+    "path": "health-record\\import-export\\import-export.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\import-export\\import-export.service.ts",
     "lines": 852
   },
   {
-    "path": "communication/services/enhanced-message.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/communication/services/enhanced-message.service.ts",
+    "path": "communication\\services\\enhanced-message.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\communication\\services\\enhanced-message.service.ts",
     "lines": 848
   },
   {
-    "path": "shared/security/authentication.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/security/authentication.service.ts",
+    "path": "shared\\security\\authentication.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\security\\authentication.service.ts",
     "lines": 811
   },
   {
-    "path": "dashboard/dashboard.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/dashboard/dashboard.service.ts",
+    "path": "services\\testing-framework\\production-testing-framework.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\testing-framework\\production-testing-framework.service.ts",
+    "lines": 810
+  },
+  {
+    "path": "services\\performance-monitoring\\production-performance-monitoring.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\performance-monitoring\\production-performance-monitoring.service.ts",
+    "lines": 808
+  },
+  {
+    "path": "config\\production-configuration-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\production-configuration-management.service.ts",
+    "lines": 806
+  },
+  {
+    "path": "dashboard\\dashboard.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\dashboard\\dashboard.service.ts",
     "lines": 800
   },
   {
-    "path": "middleware/monitoring/metrics.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/monitoring/metrics.middleware.ts",
+    "path": "middleware\\monitoring\\metrics.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\monitoring\\metrics.middleware.ts",
     "lines": 794
   },
   {
-    "path": "common/types/utility-types.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/common/types/utility-types.ts",
+    "path": "common\\types\\utility-types.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\types\\utility-types.ts",
     "lines": 792
   },
   {
-    "path": "alerts/alerts.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/alerts/alerts.service.ts",
-    "lines": 790
+    "path": "security\\production-security-hardening.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\security\\production-security-hardening.service.ts",
+    "lines": 783
   },
   {
-    "path": "configuration/services/configuration.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/configuration/services/configuration.service.ts",
-    "lines": 788
-  },
-  {
-    "path": "infrastructure/queue/message-queue.processor.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/queue/message-queue.processor.ts",
+    "path": "infrastructure\\queue\\message-queue.processor.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\queue\\message-queue.processor.ts",
     "lines": 770
   },
   {
-    "path": "features/features.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/features/features.service.ts",
+    "path": "services\\healthcare\\emergency-notification-system.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\emergency-notification-system.service.ts",
+    "lines": 763
+  },
+  {
+    "path": "features\\features.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\features\\features.service.ts",
     "lines": 761
   },
   {
-    "path": "middleware/monitoring/tracing.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/monitoring/tracing.middleware.ts",
+    "path": "middleware\\monitoring\\tracing.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\monitoring\\tracing.middleware.ts",
     "lines": 761
   },
   {
-    "path": "infrastructure/jobs/processors/medication-reminder.processor.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/jobs/processors/medication-reminder.processor.ts",
+    "path": "infrastructure\\jobs\\processors\\medication-reminder.processor.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\jobs\\processors\\medication-reminder.processor.ts",
     "lines": 760
   },
   {
-    "path": "middleware/monitoring/audit.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/monitoring/audit.middleware.ts",
+    "path": "middleware\\monitoring\\audit.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\monitoring\\audit.middleware.ts",
     "lines": 760
   },
   {
-    "path": "database/migrations/20250103000000-create-base-schema.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20250103000000-create-base-schema.js",
+    "path": "database\\migrations\\20250103000000-create-base-schema.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20250103000000-create-base-schema.js",
     "lines": 756
   },
   {
-    "path": "migrations/20250103000000-create-base-schema.js",
-    "fullPath": "/workspaces/white-cross/backend/src/migrations/20250103000000-create-base-schema.js",
+    "path": "migrations\\20250103000000-create-base-schema.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\migrations\\20250103000000-create-base-schema.js",
     "lines": 756
   },
   {
-    "path": "health-domain/health-domain.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/health-domain.service.ts",
+    "path": "health-domain\\health-domain.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\health-domain.service.ts",
     "lines": 750
   },
   {
-    "path": "health-metrics/health-metrics.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-metrics/health-metrics.controller.ts",
+    "path": "services\\healthcare\\hipaa-audit-trail.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\hipaa-audit-trail.service.ts",
+    "lines": 746
+  },
+  {
+    "path": "health-metrics\\health-metrics.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-metrics\\health-metrics.controller.ts",
     "lines": 745
   },
   {
-    "path": "config/app-config.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/config/app-config.service.ts",
+    "path": "config\\app-config.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\app-config.service.ts",
     "lines": 744
   },
   {
-    "path": "budget/budget.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/budget/budget.service.ts",
+    "path": "budget\\budget.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\budget\\budget.service.ts",
     "lines": 743
   },
   {
-    "path": "health-record/services/health-record-metrics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/health-record-metrics.service.ts",
+    "path": "health-record\\services\\health-record-metrics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\health-record-metrics.service.ts",
     "lines": 733
   },
   {
-    "path": "health-record/search/search.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/search/search.service.ts",
+    "path": "health-record\\search\\search.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\search\\search.service.ts",
     "lines": 732
   },
   {
-    "path": "shared/security/sql-sanitizer.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/security/sql-sanitizer.service.ts",
+    "path": "common\\errors\\production-error-handler.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\errors\\production-error-handler.ts",
     "lines": 729
   },
   {
-    "path": "clinical/controllers/medication-administration.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/clinical/controllers/medication-administration.controller.ts",
+    "path": "shared\\security\\sql-sanitizer.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\security\\sql-sanitizer.service.ts",
+    "lines": 729
+  },
+  {
+    "path": "clinical\\controllers\\medication-administration.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\clinical\\controllers\\medication-administration.controller.ts",
     "lines": 721
   },
   {
-    "path": "health-record/services/phi-access-logger.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/phi-access-logger.service.ts",
+    "path": "health-record\\services\\phi-access-logger.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\phi-access-logger.service.ts",
     "lines": 718
   },
   {
-    "path": "shared/base/BaseService.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/base/BaseService.ts",
+    "path": "shared\\base\\BaseService.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\base\\BaseService.ts",
     "lines": 714
   },
   {
-    "path": "inventory/inventory.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/inventory/inventory.controller.ts",
+    "path": "inventory\\inventory.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\inventory\\inventory.controller.ts",
     "lines": 711
   },
   {
-    "path": "health-record/validation/validation.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/validation/validation.service.ts",
+    "path": "health-record\\validation\\validation.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\validation\\validation.service.ts",
     "lines": 709
   },
   {
-    "path": "health-record/services/intelligent-cache-invalidation.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/intelligent-cache-invalidation.service.ts",
+    "path": "health-record\\services\\intelligent-cache-invalidation.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\intelligent-cache-invalidation.service.ts",
     "lines": 708
   },
   {
-    "path": "common/exceptions/enhanced-error-handling.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/common/exceptions/enhanced-error-handling.service.ts",
+    "path": "common\\exceptions\\enhanced-error-handling.service.backup.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\exceptions\\enhanced-error-handling.service.backup.ts",
     "lines": 702
   },
   {
-    "path": "discovery/discovery-example.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/discovery-example.service.ts",
+    "path": "discovery\\discovery-example.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\discovery-example.service.ts",
     "lines": 684
   },
   {
-    "path": "infrastructure/sms/sms.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/sms/sms.service.ts",
+    "path": "infrastructure\\sms\\sms.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\sms\\sms.service.ts",
     "lines": 682
   },
   {
-    "path": "database/migrations/20250103000002-create-additional-critical-tables.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20250103000002-create-additional-critical-tables.js",
+    "path": "common\\caching\\advanced-caching.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\caching\\advanced-caching.service.ts",
     "lines": 681
   },
   {
-    "path": "migrations/20250103000002-create-additional-critical-tables.js",
-    "fullPath": "/workspaces/white-cross/backend/src/migrations/20250103000002-create-additional-critical-tables.js",
+    "path": "database\\migrations\\20250103000002-create-additional-critical-tables.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20250103000002-create-additional-critical-tables.js",
     "lines": 681
   },
   {
-    "path": "health-domain/health-domain.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/health-domain.controller.ts",
+    "path": "migrations\\20250103000002-create-additional-critical-tables.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\migrations\\20250103000002-create-additional-critical-tables.js",
+    "lines": 681
+  },
+  {
+    "path": "health-domain\\health-domain.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\health-domain.controller.ts",
     "lines": 679
   },
   {
-    "path": "health-record/services/query-performance-analyzer.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/query-performance-analyzer.service.ts",
+    "path": "health-record\\services\\query-performance-analyzer.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\query-performance-analyzer.service.ts",
     "lines": 678
   },
   {
-    "path": "infrastructure/monitoring/performance-metrics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/performance-metrics.service.ts",
+    "path": "infrastructure\\monitoring\\performance-metrics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\performance-metrics.service.ts",
     "lines": 677
   },
   {
-    "path": "communication/controllers/enhanced-message.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/communication/controllers/enhanced-message.controller.ts",
+    "path": "communication\\controllers\\enhanced-message.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\communication\\controllers\\enhanced-message.controller.ts",
     "lines": 675
   },
   {
-    "path": "database/models/user.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/user.model.ts",
+    "path": "database\\models\\user.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\user.model.ts",
     "lines": 674
   },
   {
-    "path": "ai-search/ai-search.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/ai-search/ai-search.service.ts",
+    "path": "ai-search\\ai-search.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\ai-search\\ai-search.service.ts",
     "lines": 672
   },
   {
-    "path": "shared/permissions/Permission.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/permissions/Permission.ts",
+    "path": "shared\\permissions\\Permission.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\permissions\\Permission.ts",
     "lines": 672
   },
   {
-    "path": "communication/services/conversation.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/communication/services/conversation.service.ts",
+    "path": "communication\\services\\conversation.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\communication\\services\\conversation.service.ts",
     "lines": 671
   },
   {
-    "path": "database/migrations/20251011000000-performance-indexes.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251011000000-performance-indexes.js",
+    "path": "database\\migrations\\20251011000000-performance-indexes.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251011000000-performance-indexes.js",
     "lines": 668
   },
   {
-    "path": "infrastructure/websocket/services/admin-metrics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/services/admin-metrics.service.ts",
+    "path": "infrastructure\\websocket\\services\\admin-metrics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\services\\admin-metrics.service.ts",
     "lines": 668
   },
   {
-    "path": "migrations/20251011000000-performance-indexes.js",
-    "fullPath": "/workspaces/white-cross/backend/src/migrations/20251011000000-performance-indexes.js",
+    "path": "migrations\\20251011000000-performance-indexes.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\migrations\\20251011000000-performance-indexes.js",
     "lines": 666
   },
   {
-    "path": "infrastructure/email/email.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/email/email.service.ts",
+    "path": "infrastructure\\email\\email.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\email\\email.service.ts",
     "lines": 665
   },
   {
-    "path": "health-record/health-record.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/health-record.controller.ts",
+    "path": "health-record\\health-record.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\health-record.controller.ts",
     "lines": 657
   },
   {
-    "path": "enterprise-features/enterprise-features.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/enterprise-features/enterprise-features.controller.ts",
+    "path": "enterprise-features\\enterprise-features.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\enterprise-features.controller.ts",
     "lines": 654
   },
   {
-    "path": "infrastructure/monitoring/enhanced-health-check.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/enhanced-health-check.service.ts",
+    "path": "infrastructure\\monitoring\\enhanced-health-check.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\enhanced-health-check.service.ts",
     "lines": 647
   },
   {
-    "path": "infrastructure/encryption/key-management.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/encryption/key-management.service.ts",
+    "path": "config\\swagger-documentation-automation.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\swagger-documentation-automation.service.ts",
     "lines": 642
   },
   {
-    "path": "infrastructure/encryption/encryption.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/encryption/encryption.service.ts",
+    "path": "infrastructure\\encryption\\key-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\encryption\\key-management.service.ts",
+    "lines": 642
+  },
+  {
+    "path": "services\\healthcare\\patient-consent-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\services\\healthcare\\patient-consent-management.service.ts",
+    "lines": 637
+  },
+  {
+    "path": "infrastructure\\encryption\\encryption.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\encryption\\encryption.service.ts",
     "lines": 635
   },
   {
-    "path": "report/controllers/reports.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/report/controllers/reports.controller.ts",
+    "path": "report\\controllers\\reports.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\report\\controllers\\reports.controller.ts",
     "lines": 622
   },
   {
-    "path": "database/repositories/base/base.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/repositories/base/base.repository.ts",
+    "path": "database\\repositories\\base\\base.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\repositories\\base\\base.repository.ts",
     "lines": 619
   },
   {
-    "path": "chronic-condition/chronic-condition.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/chronic-condition/chronic-condition.service.ts",
+    "path": "infrastructure\\backup\\backup-restore.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\backup\\backup-restore.service.ts",
+    "lines": 612
+  },
+  {
+    "path": "chronic-condition\\chronic-condition.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\chronic-condition\\chronic-condition.service.ts",
     "lines": 607
   },
   {
-    "path": "infrastructure/cache/enhanced-cache.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/cache/enhanced-cache.service.ts",
+    "path": "infrastructure\\cache\\enhanced-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\cache\\enhanced-cache.service.ts",
     "lines": 605
   },
   {
     "path": "main.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/main.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\main.ts",
     "lines": 605
   },
   {
-    "path": "security/breach-detection.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/security/breach-detection.service.ts",
+    "path": "security\\breach-detection.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\security\\breach-detection.service.ts",
     "lines": 601
   },
   {
-    "path": "student/services/student-crud.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/student/services/student-crud.service.ts",
+    "path": "student\\services\\student-crud.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\student\\services\\student-crud.service.ts",
     "lines": 599
   },
   {
-    "path": "auth/auth.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/auth/auth.controller.ts",
+    "path": "auth\\auth.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\auth\\auth.controller.ts",
     "lines": 597
   },
   {
-    "path": "database/models/vaccination.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/vaccination.model.ts",
+    "path": "database\\models\\vaccination.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\vaccination.model.ts",
     "lines": 597
   },
   {
-    "path": "infrastructure/queue/dtos/message-job.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/queue/dtos/message-job.dto.ts",
+    "path": "infrastructure\\queue\\dtos\\message-job.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\queue\\dtos\\message-job.dto.ts",
     "lines": 597
   },
   {
-    "path": "infrastructure/websocket/websocket.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/websocket.service.ts",
+    "path": "infrastructure\\websocket\\websocket.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\websocket.service.ts",
     "lines": 593
   },
   {
-    "path": "database/database.module.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/database.module.ts",
+    "path": "database\\database.module.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\database.module.ts",
     "lines": 592
   },
   {
-    "path": "infrastructure/websocket/gateways/admin.gateway.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/gateways/admin.gateway.ts",
+    "path": "infrastructure\\migrations\\migration-version-control.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\migrations\\migration-version-control.service.ts",
+    "lines": 589
+  },
+  {
+    "path": "infrastructure\\websocket\\gateways\\admin.gateway.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\gateways\\admin.gateway.ts",
     "lines": 586
   },
   {
-    "path": "middleware/adapters/hapi/hapi.adapter.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/adapters/hapi/hapi.adapter.ts",
+    "path": "middleware\\adapters\\hapi\\hapi.adapter.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\adapters\\hapi\\hapi.adapter.ts",
     "lines": 582
   },
   {
-    "path": "incident-report/incident-report.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/incident-report/incident-report.controller.ts",
+    "path": "incident-report\\incident-report.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\incident-report\\incident-report.controller.ts",
     "lines": 581
   },
   {
-    "path": "shared/security/permission.utils.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/security/permission.utils.ts",
+    "path": "shared\\security\\permission.utils.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\security\\permission.utils.ts",
     "lines": 581
   },
   {
-    "path": "infrastructure/websocket/listeners/appointment.listener.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/listeners/appointment.listener.ts",
+    "path": "infrastructure\\websocket\\listeners\\appointment.listener.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\listeners\\appointment.listener.ts",
     "lines": 579
   },
   {
-    "path": "infrastructure/monitoring/query-monitor.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/query-monitor.service.ts",
+    "path": "infrastructure\\monitoring\\query-monitor.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\query-monitor.service.ts",
     "lines": 577
   },
   {
-    "path": "allergy/allergy.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/allergy/allergy.controller.ts",
+    "path": "analytics\\analytics-report-generator.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\analytics-report-generator.service.ts",
+    "lines": 576
+  },
+  {
+    "path": "allergy\\allergy.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\allergy\\allergy.controller.ts",
     "lines": 574
   },
   {
-    "path": "database/models/student.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/student.model.ts",
+    "path": "database\\models\\student.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\student.model.ts",
     "lines": 573
   },
   {
-    "path": "shared/utils/sequelize-compliance-checker.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/utils/sequelize-compliance-checker.ts",
+    "path": "shared\\utils\\sequelize-compliance-checker.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\utils\\sequelize-compliance-checker.ts",
     "lines": 572
   },
   {
-    "path": "communication/controllers/communication.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/communication/controllers/communication.controller.ts",
+    "path": "communication\\controllers\\communication.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\communication\\controllers\\communication.controller.ts",
     "lines": 570
   },
   {
-    "path": "health-domain/services/health-domain-facade.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/services/health-domain-facade.service.ts",
+    "path": "health-domain\\services\\health-domain-facade.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\services\\health-domain-facade.service.ts",
     "lines": 568
   },
   {
-    "path": "compliance/compliance.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/compliance/compliance.controller.ts",
+    "path": "compliance\\compliance.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\compliance\\compliance.controller.ts",
     "lines": 564
   },
   {
-    "path": "discovery/modules/decorators/memory-optimization.decorators.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/decorators/memory-optimization.decorators.ts",
+    "path": "discovery\\modules\\decorators\\memory-optimization.decorators.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\decorators\\memory-optimization.decorators.ts",
     "lines": 563
   },
   {
-    "path": "database/migrations/20250103000001-create-health-records-core.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20250103000001-create-health-records-core.js",
+    "path": "database\\migrations\\20250103000001-create-health-records-core.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20250103000001-create-health-records-core.js",
     "lines": 558
   },
   {
-    "path": "migrations/20250103000001-create-health-records-core.js",
-    "fullPath": "/workspaces/white-cross/backend/src/migrations/20250103000001-create-health-records-core.js",
+    "path": "migrations\\20250103000001-create-health-records-core.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\migrations\\20250103000001-create-health-records-core.js",
     "lines": 558
   },
   {
-    "path": "clinical/services/drug-interaction.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/clinical/services/drug-interaction.service.ts",
+    "path": "clinical\\services\\drug-interaction.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\clinical\\services\\drug-interaction.service.ts",
     "lines": 557
   },
   {
-    "path": "middleware/security/csp.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/security/csp.middleware.ts",
+    "path": "middleware\\security\\csp.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\security\\csp.middleware.ts",
     "lines": 553
   },
   {
-    "path": "discovery/modules/guards/gc-scheduler.guard.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/guards/gc-scheduler.guard.ts",
+    "path": "discovery\\modules\\guards\\gc-scheduler.guard.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\guards\\gc-scheduler.guard.ts",
     "lines": 552
   },
   {
-    "path": "shared/types/guards.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/types/guards.ts",
+    "path": "shared\\types\\guards.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\types\\guards.ts",
     "lines": 546
   },
   {
-    "path": "access-control/access-control.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/access-control/access-control.controller.ts",
+    "path": "access-control\\access-control.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\access-control\\access-control.controller.ts",
     "lines": 545
   },
   {
-    "path": "clinical/controllers/clinical-protocol.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/clinical/controllers/clinical-protocol.controller.ts",
+    "path": "clinical\\controllers\\clinical-protocol.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\clinical\\controllers\\clinical-protocol.controller.ts",
     "lines": 544
   },
   {
-    "path": "mobile/services/notification-platform.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/mobile/services/notification-platform.service.ts",
+    "path": "mobile\\services\\notification-platform.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\mobile\\services\\notification-platform.service.ts",
     "lines": 542
   },
   {
-    "path": "discovery/modules/services/memory-leak-detection.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/memory-leak-detection.service.ts",
+    "path": "discovery\\modules\\services\\memory-leak-detection.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\memory-leak-detection.service.ts",
     "lines": 540
   },
   {
-    "path": "configuration/configuration.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/configuration/configuration.controller.ts",
+    "path": "configuration\\configuration.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\configuration\\configuration.controller.ts",
     "lines": 534
   },
   {
-    "path": "infrastructure/graphql/dataloaders/dataloader.factory.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/graphql/dataloaders/dataloader.factory.ts",
+    "path": "infrastructure\\graphql\\dataloaders\\dataloader.factory.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\graphql\\dataloaders\\dataloader.factory.ts",
     "lines": 534
   },
   {
-    "path": "health-record/guards/health-record-rate-limit.guard.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/guards/health-record-rate-limit.guard.ts",
+    "path": "health-record\\guards\\health-record-rate-limit.guard.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\guards\\health-record-rate-limit.guard.ts",
     "lines": 533
   },
   {
-    "path": "database/services/audit-logging.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/services/audit-logging.service.ts",
+    "path": "database\\services\\audit-logging.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\audit-logging.service.ts",
     "lines": 531
   },
   {
-    "path": "database/models/mental-health-record.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/mental-health-record.model.ts",
+    "path": "database\\models\\mental-health-record.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\mental-health-record.model.ts",
     "lines": 530
   },
   {
-    "path": "infrastructure/monitoring/health-check.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/health-check.service.ts",
+    "path": "infrastructure\\monitoring\\health-check.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\health-check.service.ts",
     "lines": 530
   },
   {
-    "path": "analytics/services/health-metrics-analyzer.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/analytics/services/health-metrics-analyzer.service.ts",
+    "path": "analytics\\analytics-data-collector.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\analytics-data-collector.service.ts",
+    "lines": 525
+  },
+  {
+    "path": "analytics\\services\\health-metrics-analyzer.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\services\\health-metrics-analyzer.service.ts",
     "lines": 523
   },
   {
-    "path": "health-domain/repositories/impl/medical-history.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/repositories/impl/medical-history.repository.ts",
+    "path": "health-domain\\repositories\\impl\\medical-history.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\repositories\\impl\\medical-history.repository.ts",
     "lines": 521
   },
   {
-    "path": "student/services/student-academic.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/student/services/student-academic.service.ts",
+    "path": "student\\services\\student-academic.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\student\\services\\student-academic.service.ts",
     "lines": 521
   },
   {
-    "path": "communication/helpers/queue-integration.helper.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/communication/helpers/queue-integration.helper.ts",
+    "path": "communication\\helpers\\queue-integration.helper.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\communication\\helpers\\queue-integration.helper.ts",
     "lines": 520
   },
   {
-    "path": "discovery/modules/services/gc-optimization.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/gc-optimization.service.ts",
+    "path": "discovery\\modules\\services\\gc-optimization.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\gc-optimization.service.ts",
     "lines": 515
   },
   {
-    "path": "incident-report/services/incident-core.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/incident-report/services/incident-core.service.ts",
+    "path": "incident-report\\services\\incident-core.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\incident-report\\services\\incident-core.service.ts",
     "lines": 511
   },
   {
-    "path": "database/migrations/20251107120003-create-materialized-views.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251107120003-create-materialized-views.js",
+    "path": "database\\migrations\\20251107120003-create-materialized-views.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251107120003-create-materialized-views.js",
     "lines": 509
   },
   {
-    "path": "health-record/health-record.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/health-record.service.ts",
+    "path": "health-record\\health-record.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\health-record.service.ts",
     "lines": 509
   },
   {
-    "path": "infrastructure/queue/message-queue.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/queue/message-queue.service.ts",
+    "path": "infrastructure\\queue\\message-queue.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\queue\\message-queue.service.ts",
     "lines": 509
   },
   {
-    "path": "database/models/alert.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/alert.model.ts",
+    "path": "database\\models\\alert.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\alert.model.ts",
     "lines": 507
   },
   {
-    "path": "discovery/modules/services/smart-garbage-collection.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/smart-garbage-collection.service.ts",
+    "path": "discovery\\modules\\services\\smart-garbage-collection.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\smart-garbage-collection.service.ts",
     "lines": 506
   },
   {
-    "path": "health-domain/repositories/impl/lab-results.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/repositories/impl/lab-results.repository.ts",
+    "path": "health-domain\\repositories\\impl\\lab-results.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\repositories\\impl\\lab-results.repository.ts",
     "lines": 506
   },
   {
-    "path": "infrastructure/cache/cache.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/cache/cache.service.ts",
+    "path": "infrastructure\\cache\\cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\cache\\cache.service.ts",
     "lines": 503
   },
   {
-    "path": "discovery/modules/services/dynamic-resource-pool.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/dynamic-resource-pool.service.ts",
+    "path": "discovery\\modules\\services\\dynamic-resource-pool.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\dynamic-resource-pool.service.ts",
     "lines": 501
   },
   {
-    "path": "shared/errors/ErrorCode.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/errors/ErrorCode.ts",
+    "path": "shared\\errors\\ErrorCode.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\errors\\ErrorCode.ts",
     "lines": 501
   },
   {
-    "path": "infrastructure/cache/cache-statistics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/cache/cache-statistics.service.ts",
+    "path": "infrastructure\\cache\\cache-statistics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\cache\\cache-statistics.service.ts",
     "lines": 500
   },
   {
-    "path": "infrastructure/email/listeners/appointment.listener.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/email/listeners/appointment.listener.ts",
+    "path": "infrastructure\\email\\listeners\\appointment.listener.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\email\\listeners\\appointment.listener.ts",
     "lines": 498
   },
   {
-    "path": "health-domain/repositories/impl/growth-tracking.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/repositories/impl/growth-tracking.repository.ts",
+    "path": "health-domain\\repositories\\impl\\growth-tracking.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\repositories\\impl\\growth-tracking.repository.ts",
     "lines": 497
   },
   {
-    "path": "middleware/monitoring/performance.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/monitoring/performance.middleware.ts",
+    "path": "middleware\\monitoring\\performance.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\monitoring\\performance.middleware.ts",
     "lines": 493
   },
   {
-    "path": "discovery/modules/guards/resource-quota.guard.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/guards/resource-quota.guard.ts",
+    "path": "discovery\\modules\\guards\\resource-quota.guard.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\guards\\resource-quota.guard.ts",
     "lines": 492
   },
   {
-    "path": "middleware/core/middleware/session.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/core/middleware/session.middleware.ts",
+    "path": "middleware\\core\\middleware\\session.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\core\\middleware\\session.middleware.ts",
     "lines": 491
   },
   {
-    "path": "config/validation.schema.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/config/validation.schema.ts",
+    "path": "config\\validation.schema.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\validation.schema.ts",
     "lines": 490
   },
   {
-    "path": "integrations/clients/base-api.client.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/integrations/clients/base-api.client.ts",
+    "path": "integrations\\clients\\base-api.client.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\integrations\\clients\\base-api.client.ts",
     "lines": 490
   },
   {
-    "path": "clinical/services/clinic-visit.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/clinical/services/clinic-visit.service.ts",
+    "path": "clinical\\services\\clinic-visit.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\clinical\\services\\clinic-visit.service.ts",
     "lines": 487
   },
   {
-    "path": "discovery/discovery.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/discovery.controller.ts",
+    "path": "discovery\\discovery.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\discovery.controller.ts",
     "lines": 487
   },
   {
-    "path": "database/migrations/20251107000001-add-data-integrity-constraints.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251107000001-add-data-integrity-constraints.js",
+    "path": "database\\migrations\\20251107000001-add-data-integrity-constraints.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251107000001-add-data-integrity-constraints.js",
     "lines": 486
   },
   {
-    "path": "security/security.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/security/security.controller.ts",
+    "path": "security\\security.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\security\\security.controller.ts",
     "lines": 485
   },
   {
-    "path": "infrastructure/graphql/resolvers/student.resolver.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/graphql/resolvers/student.resolver.ts",
+    "path": "infrastructure\\graphql\\resolvers\\student.resolver.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\graphql\\resolvers\\student.resolver.ts",
     "lines": 484
   },
   {
-    "path": "shared/cache/cache.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/cache/cache.service.ts",
+    "path": "shared\\cache\\cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\cache\\cache.service.ts",
     "lines": 484
   },
   {
-    "path": "user/user.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/user/user.service.ts",
+    "path": "user\\user.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\user\\user.service.ts",
     "lines": 481
   },
   {
-    "path": "health-metrics/health-metrics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-metrics/health-metrics.service.ts",
+    "path": "health-metrics\\health-metrics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-metrics\\health-metrics.service.ts",
     "lines": 480
   },
   {
-    "path": "medication/medication.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/medication/medication.controller.ts",
+    "path": "analytics\\analytics-metrics-calculator.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\analytics-metrics-calculator.service.ts",
     "lines": 478
   },
   {
-    "path": "database/services/query-cache.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/services/query-cache.service.ts",
+    "path": "medication\\medication.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\medication\\medication.controller.ts",
+    "lines": 478
+  },
+  {
+    "path": "database\\services\\query-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\query-cache.service.ts",
     "lines": 477
   },
   {
-    "path": "discovery/modules/services/pool-optimization.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/pool-optimization.service.ts",
+    "path": "discovery\\modules\\services\\pool-optimization.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\pool-optimization.service.ts",
     "lines": 477
   },
   {
-    "path": "health-record/interceptors/health-record-cache.interceptor.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/interceptors/health-record-cache.interceptor.ts",
+    "path": "health-record\\interceptors\\health-record-cache.interceptor.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\interceptors\\health-record-cache.interceptor.ts",
     "lines": 476
   },
   {
-    "path": "security/services/ip-restriction.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/security/services/ip-restriction.service.ts",
+    "path": "security\\services\\ip-restriction.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\security\\services\\ip-restriction.service.ts",
     "lines": 476
   },
   {
-    "path": "middleware/security/rate-limit.guard.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/security/rate-limit.guard.ts",
+    "path": "middleware\\security\\rate-limit.guard.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\security\\rate-limit.guard.ts",
     "lines": 475
   },
   {
-    "path": "shared/config/helpers.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/config/helpers.ts",
+    "path": "shared\\config\\helpers.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\config\\helpers.ts",
     "lines": 472
   },
   {
-    "path": "shared/errors/ServiceErrors.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/errors/ServiceErrors.ts",
+    "path": "shared\\errors\\ServiceErrors.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\errors\\ServiceErrors.ts",
     "lines": 471
   },
   {
-    "path": "health-record/statistics/statistics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/statistics/statistics.service.ts",
+    "path": "health-record\\statistics\\statistics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\statistics\\statistics.service.ts",
     "lines": 470
   },
   {
-    "path": "compliance/services/audit.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/compliance/services/audit.service.ts",
+    "path": "compliance\\services\\audit.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\compliance\\services\\audit.service.ts",
     "lines": 468
   },
   {
-    "path": "emergency-contact/services/contact-management.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/emergency-contact/services/contact-management.service.ts",
+    "path": "emergency-contact\\services\\contact-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\emergency-contact\\services\\contact-management.service.ts",
     "lines": 468
   },
   {
-    "path": "types/config.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/types/config.ts",
+    "path": "types\\config.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\types\\config.ts",
     "lines": 468
   },
   {
-    "path": "infrastructure/monitoring/sentry.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/sentry.service.ts",
+    "path": "infrastructure\\monitoring\\sentry.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\sentry.service.ts",
     "lines": 465
   },
   {
-    "path": "emergency-contact/emergency-contact.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/emergency-contact/emergency-contact.controller.ts",
+    "path": "emergency-contact\\emergency-contact.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\emergency-contact\\emergency-contact.controller.ts",
     "lines": 463
   },
   {
-    "path": "common/exceptions/filters/hipaa-exception.filter.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/common/exceptions/filters/hipaa-exception.filter.ts",
+    "path": "common\\exceptions\\filters\\hipaa-exception.filter.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\exceptions\\filters\\hipaa-exception.filter.ts",
     "lines": 461
   },
   {
-    "path": "health-domain/repositories/impl/vital-signs.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/repositories/impl/vital-signs.repository.ts",
+    "path": "health-domain\\repositories\\impl\\vital-signs.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\repositories\\impl\\vital-signs.repository.ts",
     "lines": 459
   },
   {
-    "path": "mobile/services/notification-analytics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/mobile/services/notification-analytics.service.ts",
+    "path": "mobile\\services\\notification-analytics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\mobile\\services\\notification-analytics.service.ts",
     "lines": 459
   },
   {
-    "path": "middleware/adapters/express/express.adapter.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/adapters/express/express.adapter.ts",
+    "path": "middleware\\adapters\\express\\express.adapter.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\adapters\\express\\express.adapter.ts",
     "lines": 458
   },
   {
-    "path": "infrastructure/graphql/resolvers/health-record.resolver.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/graphql/resolvers/health-record.resolver.ts",
+    "path": "infrastructure\\graphql\\resolvers\\health-record.resolver.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\graphql\\resolvers\\health-record.resolver.ts",
     "lines": 457
   },
   {
-    "path": "health-record/interceptors/health-record-audit.interceptor.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/interceptors/health-record-audit.interceptor.ts",
+    "path": "health-record\\interceptors\\health-record-audit.interceptor.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\interceptors\\health-record-audit.interceptor.ts",
     "lines": 456
   },
   {
-    "path": "pdf/pdf.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/pdf/pdf.service.ts",
+    "path": "pdf\\pdf.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\pdf\\pdf.service.ts",
     "lines": 456
   },
   {
-    "path": "appointment/appointment.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/appointment/appointment.service.ts",
+    "path": "appointment\\appointment.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\appointment\\appointment.service.ts",
     "lines": 455
   },
   {
-    "path": "middleware/adapters/shared/base.adapter.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/adapters/shared/base.adapter.ts",
+    "path": "middleware\\adapters\\shared\\base.adapter.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\adapters\\shared\\base.adapter.ts",
     "lines": 455
   },
   {
-    "path": "medication/events/medication.events.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/medication/events/medication.events.ts",
+    "path": "medication\\events\\medication.events.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\medication\\events\\medication.events.ts",
     "lines": 454
   },
   {
-    "path": "infrastructure/monitoring/metrics-collection.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/metrics-collection.service.ts",
+    "path": "infrastructure\\monitoring\\metrics-collection.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\metrics-collection.service.ts",
     "lines": 453
   },
   {
-    "path": "database/services/materialized-view.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/services/materialized-view.service.ts",
+    "path": "database\\services\\materialized-view.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\materialized-view.service.ts",
     "lines": 452
   },
   {
-    "path": "academic-transcript/academic-transcript.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/academic-transcript/academic-transcript.controller.ts",
+    "path": "health-record\\services\\cache\\cache-strategy-orchestrator.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\cache\\cache-strategy-orchestrator.service.ts",
+    "lines": 452
+  },
+  {
+    "path": "academic-transcript\\academic-transcript.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\academic-transcript\\academic-transcript.controller.ts",
     "lines": 450
   },
   {
-    "path": "discovery/modules/interceptors/memory-pressure.interceptor.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/interceptors/memory-pressure.interceptor.ts",
+    "path": "discovery\\modules\\interceptors\\memory-pressure.interceptor.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\interceptors\\memory-pressure.interceptor.ts",
     "lines": 448
   },
   {
-    "path": "auth/auth.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/auth/auth.service.ts",
+    "path": "auth\\auth.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\auth\\auth.service.ts",
     "lines": 447
   },
   {
-    "path": "health-record/vitals/vitals.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/vitals/vitals.service.ts",
+    "path": "health-record\\vitals\\vitals.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\vitals\\vitals.service.ts",
     "lines": 447
   },
   {
-    "path": "infrastructure/graphql/resolvers/contact.resolver.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/graphql/resolvers/contact.resolver.ts",
+    "path": "infrastructure\\graphql\\resolvers\\contact.resolver.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\graphql\\resolvers\\contact.resolver.ts",
     "lines": 447
   },
   {
-    "path": "database/migrations/20251106000003-add-fulltext-search-indexes.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251106000003-add-fulltext-search-indexes.js",
+    "path": "database\\migrations\\20251106000003-add-fulltext-search-indexes.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251106000003-add-fulltext-search-indexes.js",
     "lines": 446
   },
   {
-    "path": "database/models/alert-rule.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/alert-rule.model.ts",
+    "path": "database\\models\\alert-rule.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\alert-rule.model.ts",
     "lines": 445
   },
   {
-    "path": "infrastructure/websocket/listeners/appointment-events.listener.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/listeners/appointment-events.listener.ts",
+    "path": "health-record\\services\\cache\\cache-optimization.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\cache\\cache-optimization.service.ts",
     "lines": 445
   },
   {
-    "path": "appointment/events/appointment.events.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/appointment/events/appointment.events.ts",
+    "path": "infrastructure\\websocket\\listeners\\appointment-events.listener.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\listeners\\appointment-events.listener.ts",
+    "lines": 445
+  },
+  {
+    "path": "appointment\\events\\appointment.events.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\appointment\\events\\appointment.events.ts",
     "lines": 444
   },
   {
-    "path": "database/models/incident-report.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/incident-report.model.ts",
+    "path": "database\\models\\incident-report.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\incident-report.model.ts",
     "lines": 443
   },
   {
-    "path": "health-record/services/health-data-cache.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/health-data-cache.service.ts",
+    "path": "health-record\\services\\health-data-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\health-data-cache.service.ts",
     "lines": 443
   },
   {
-    "path": "infrastructure/email/dto/email.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/email/dto/email.dto.ts",
+    "path": "infrastructure\\email\\dto\\email.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\email\\dto\\email.dto.ts",
     "lines": 443
   },
   {
-    "path": "analytics/services/compliance-report-generator.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/analytics/services/compliance-report-generator.service.ts",
+    "path": "analytics\\services\\compliance-report-generator.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\services\\compliance-report-generator.service.ts",
     "lines": 440
   },
   {
-    "path": "shared/enterprise/services/enterprise-metrics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/enterprise/services/enterprise-metrics.service.ts",
+    "path": "shared\\enterprise\\services\\enterprise-metrics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\enterprise\\services\\enterprise-metrics.service.ts",
     "lines": 439
   },
   {
-    "path": "middleware/security/csrf.guard.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/security/csrf.guard.ts",
+    "path": "middleware\\security\\csrf.guard.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\security\\csrf.guard.ts",
     "lines": 435
   },
   {
-    "path": "inventory/services/inventory-notification.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/inventory/services/inventory-notification.service.ts",
+    "path": "emergency-broadcast\\services\\broadcast-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\emergency-broadcast\\services\\broadcast-management.service.ts",
     "lines": 432
   },
   {
-    "path": "appointment/services/appointment-statistics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/appointment/services/appointment-statistics.service.ts",
+    "path": "inventory\\services\\inventory-notification.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\inventory\\services\\inventory-notification.service.ts",
+    "lines": 432
+  },
+  {
+    "path": "appointment\\services\\appointment-statistics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\appointment\\services\\appointment-statistics.service.ts",
     "lines": 429
   },
   {
-    "path": "database/models/health-record.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/health-record.model.ts",
+    "path": "database\\models\\health-record.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\health-record.model.ts",
     "lines": 429
   },
   {
-    "path": "medication/services/medication.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/medication/services/medication.service.ts",
+    "path": "medication\\services\\medication.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\medication\\services\\medication.service.ts",
     "lines": 429
   },
   {
-    "path": "database/models/prescription.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/prescription.model.ts",
+    "path": "database\\models\\prescription.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\prescription.model.ts",
     "lines": 428
   },
   {
-    "path": "database/models/push-notification.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/push-notification.model.ts",
+    "path": "database\\models\\push-notification.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\push-notification.model.ts",
     "lines": 426
   },
   {
-    "path": "shared/validation/commonValidators.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/validation/commonValidators.ts",
+    "path": "shared\\validation\\commonValidators.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\validation\\commonValidators.ts",
     "lines": 425
   },
   {
-    "path": "administration/services/user-management.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/administration/services/user-management.service.ts",
+    "path": "administration\\services\\user-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\administration\\services\\user-management.service.ts",
     "lines": 420
   },
   {
-    "path": "discovery/modules/services/resource-monitor.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/resource-monitor.service.ts",
+    "path": "discovery\\modules\\services\\resource-monitor.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\resource-monitor.service.ts",
     "lines": 420
   },
   {
-    "path": "shared/utilities/responseHelpers.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/utilities/responseHelpers.ts",
+    "path": "shared\\utilities\\responseHelpers.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\utilities\\responseHelpers.ts",
     "lines": 419
   },
   {
-    "path": "database/models/appointment.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/appointment.model.ts",
+    "path": "database\\models\\appointment.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\appointment.model.ts",
     "lines": 418
   },
   {
-    "path": "document/entities/document.entity.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/document/entities/document.entity.ts",
+    "path": "document\\entities\\document.entity.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\document\\entities\\document.entity.ts",
     "lines": 418
   },
   {
-    "path": "appointment/services/appointment-write.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/appointment/services/appointment-write.service.ts",
+    "path": "appointment\\services\\appointment-write.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\appointment\\services\\appointment-write.service.ts",
     "lines": 417
   },
   {
-    "path": "clinical/controllers/drug-interaction.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/clinical/controllers/drug-interaction.controller.ts",
+    "path": "clinical\\controllers\\drug-interaction.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\clinical\\controllers\\drug-interaction.controller.ts",
     "lines": 416
   },
   {
-    "path": "health-domain/repositories/impl/health-screening.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/repositories/impl/health-screening.repository.ts",
+    "path": "health-domain\\repositories\\impl\\health-screening.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\repositories\\impl\\health-screening.repository.ts",
     "lines": 416
   },
   {
-    "path": "health-record/allergy/allergy.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/allergy/allergy.service.ts",
+    "path": "health-record\\allergy\\allergy.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\allergy\\allergy.service.ts",
     "lines": 416
   },
   {
-    "path": "middleware/security/cors.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/security/cors.middleware.ts",
+    "path": "middleware\\security\\cors.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\security\\cors.middleware.ts",
     "lines": 416
   },
   {
-    "path": "shared/utilities/dateHelpers.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/utilities/dateHelpers.ts",
+    "path": "shared\\utilities\\dateHelpers.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\utilities\\dateHelpers.ts",
     "lines": 416
   },
   {
-    "path": "discovery/modules/interceptors/resource-throttle.interceptor.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/interceptors/resource-throttle.interceptor.ts",
+    "path": "discovery\\modules\\interceptors\\resource-throttle.interceptor.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\interceptors\\resource-throttle.interceptor.ts",
     "lines": 415
   },
   {
-    "path": "infrastructure/monitoring/monitoring.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/monitoring.controller.ts",
+    "path": "infrastructure\\monitoring\\monitoring.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\monitoring.controller.ts",
     "lines": 415
   },
   {
-    "path": "health-record/services/health-record-summary.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/health-record-summary.service.ts",
+    "path": "health-record\\services\\health-record-summary.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\health-record-summary.service.ts",
     "lines": 413
   },
   {
-    "path": "analytics/services/compliance-report-builder.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/analytics/services/compliance-report-builder.service.ts",
+    "path": "analytics\\services\\compliance-report-builder.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\services\\compliance-report-builder.service.ts",
     "lines": 412
   },
   {
-    "path": "database/migrations/20251106000002-add-user-security-indexes.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251106000002-add-user-security-indexes.js",
+    "path": "database\\migrations\\20251106000002-add-user-security-indexes.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251106000002-add-user-security-indexes.js",
     "lines": 412
   },
   {
-    "path": "security/services/threat-detection.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/security/services/threat-detection.service.ts",
+    "path": "security\\services\\threat-detection.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\security\\services\\threat-detection.service.ts",
     "lines": 412
   },
   {
-    "path": "shared/time/businessHours.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/time/businessHours.ts",
+    "path": "shared\\time\\businessHours.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\time\\businessHours.ts",
     "lines": 412
   },
   {
-    "path": "security/services/security-incident.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/security/services/security-incident.service.ts",
+    "path": "security\\services\\security-incident.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\security\\services\\security-incident.service.ts",
     "lines": 410
   },
   {
-    "path": "database/migrations/20251106000001-add-missing-critical-indexes.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251106000001-add-missing-critical-indexes.js",
+    "path": "database\\migrations\\20251106000001-add-missing-critical-indexes.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251106000001-add-missing-critical-indexes.js",
     "lines": 406
   },
   {
-    "path": "shared/enterprise/services/enterprise-cache.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/enterprise/services/enterprise-cache.service.ts",
+    "path": "shared\\enterprise\\services\\enterprise-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\enterprise\\services\\enterprise-cache.service.ts",
     "lines": 402
   },
   {
     "path": "app.module.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/app.module.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\app.module.ts",
     "lines": 401
   },
   {
-    "path": "middleware/utils/types/middleware.types.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/utils/types/middleware.types.ts",
+    "path": "middleware\\utils\\types\\middleware.types.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\utils\\types\\middleware.types.ts",
     "lines": 400
   },
   {
-    "path": "access-control/services/role-management.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/access-control/services/role-management.service.ts",
+    "path": "enterprise-features\\analytics-dashboard.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\analytics-dashboard.service.ts",
+    "lines": 399
+  },
+  {
+    "path": "access-control\\services\\role-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\access-control\\services\\role-management.service.ts",
     "lines": 397
   },
   {
-    "path": "user/entities/user.entity.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/user/entities/user.entity.ts",
+    "path": "user\\entities\\user.entity.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\user\\entities\\user.entity.ts",
     "lines": 397
   },
   {
-    "path": "budget/budget.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/budget/budget.controller.ts",
+    "path": "budget\\budget.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\budget\\budget.controller.ts",
     "lines": 396
   },
   {
-    "path": "infrastructure/email/email-queue.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/email/email-queue.service.ts",
+    "path": "enterprise-features\\recurring-appointments.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\recurring-appointments.service.ts",
     "lines": 394
   },
   {
-    "path": "access-control/services/user-role-assignment.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/access-control/services/user-role-assignment.service.ts",
+    "path": "infrastructure\\email\\email-queue.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\email\\email-queue.service.ts",
+    "lines": 394
+  },
+  {
+    "path": "access-control\\services\\user-role-assignment.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\access-control\\services\\user-role-assignment.service.ts",
     "lines": 393
   },
   {
-    "path": "database/services/query-logger.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/services/query-logger.service.ts",
+    "path": "database\\services\\query-logger.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\query-logger.service.ts",
     "lines": 393
   },
   {
-    "path": "shared/utilities/pagination.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/utilities/pagination.ts",
+    "path": "shared\\utilities\\pagination.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\utilities\\pagination.ts",
     "lines": 391
   },
   {
-    "path": "workers/worker-pool.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/workers/worker-pool.service.ts",
+    "path": "workers\\worker-pool.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\workers\\worker-pool.service.ts",
     "lines": 391
   },
   {
-    "path": "database/repositories/impl/alert-rule.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/repositories/impl/alert-rule.repository.ts",
+    "path": "database\\repositories\\impl\\alert-rule.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\repositories\\impl\\alert-rule.repository.ts",
     "lines": 388
   },
   {
-    "path": "shared/security/sqlSanitizer.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/security/sqlSanitizer.ts",
+    "path": "shared\\security\\sqlSanitizer.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\security\\sqlSanitizer.ts",
     "lines": 388
   },
   {
-    "path": "health-domain/repositories/impl/immunization.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/repositories/impl/immunization.repository.ts",
+    "path": "health-domain\\repositories\\impl\\immunization.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\repositories\\impl\\immunization.repository.ts",
     "lines": 387
   },
   {
-    "path": "database/services/audit.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/services/audit.service.ts",
+    "path": "database\\services\\audit.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\audit.service.ts",
     "lines": 386
   },
   {
-    "path": "shared/utilities/array.utils.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/utilities/array.utils.ts",
+    "path": "shared\\utilities\\array.utils.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\utilities\\array.utils.ts",
     "lines": 384
   },
   {
-    "path": "contact/services/emergency-contact.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/contact/services/emergency-contact.service.ts",
+    "path": "contact\\services\\emergency-contact.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\contact\\services\\emergency-contact.service.ts",
     "lines": 383
   },
   {
-    "path": "integration/integration.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/integration/integration.controller.ts",
+    "path": "integration\\integration.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\integration\\integration.controller.ts",
     "lines": 381
   },
   {
-    "path": "database/services/transaction-utility.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/services/transaction-utility.service.ts",
+    "path": "enterprise-features\\enterprise-features-interfaces.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\enterprise-features-interfaces.ts",
+    "lines": 380
+  },
+  {
+    "path": "analytics\\services\\analytics-dashboard.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\services\\analytics-dashboard.service.ts",
+    "lines": 379
+  },
+  {
+    "path": "analytics\\specialized-report-generator.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\specialized-report-generator.service.ts",
+    "lines": 379
+  },
+  {
+    "path": "database\\services\\transaction-utility.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\transaction-utility.service.ts",
     "lines": 378
   },
   {
-    "path": "infrastructure/websocket/websocket-enhanced.gateway.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/websocket-enhanced.gateway.ts",
+    "path": "analytics\\dashboard-data.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\dashboard-data.service.ts",
+    "lines": 376
+  },
+  {
+    "path": "infrastructure\\websocket\\websocket-enhanced.gateway.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\websocket-enhanced.gateway.ts",
     "lines": 375
   },
   {
-    "path": "student/types/student.types.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/student/types/student.types.ts",
+    "path": "student\\types\\student.types.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\student\\types\\student.types.ts",
     "lines": 375
   },
   {
-    "path": "health-record/services/cache-warming.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/cache-warming.service.ts",
+    "path": "health-record\\services\\cache-warming.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\cache-warming.service.ts",
     "lines": 374
   },
   {
-    "path": "infrastructure/encryption/interfaces/key-management.interfaces.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/encryption/interfaces/key-management.interfaces.ts",
+    "path": "infrastructure\\encryption\\interfaces\\key-management.interfaces.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\encryption\\interfaces\\key-management.interfaces.ts",
     "lines": 374
   },
   {
-    "path": "common/exceptions/filters/http-exception.filter.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/common/exceptions/filters/http-exception.filter.ts",
+    "path": "common\\exceptions\\filters\\http-exception.filter.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\exceptions\\filters\\http-exception.filter.ts",
     "lines": 373
   },
   {
-    "path": "database/models/allergy.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/allergy.model.ts",
+    "path": "database\\models\\allergy.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\allergy.model.ts",
     "lines": 373
   },
   {
-    "path": "infrastructure/graphql/dto/contact.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/graphql/dto/contact.dto.ts",
+    "path": "infrastructure\\graphql\\dto\\contact.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\graphql\\dto\\contact.dto.ts",
     "lines": 373
   },
   {
-    "path": "analytics/services/health-trend-analytics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/analytics/services/health-trend-analytics.service.ts",
+    "path": "analytics\\services\\health-trend-analytics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\services\\health-trend-analytics.service.ts",
     "lines": 372
   },
   {
-    "path": "contact/services/contact.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/contact/services/contact.service.ts",
+    "path": "contact\\services\\contact.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\contact\\services\\contact.service.ts",
     "lines": 372
   },
   {
-    "path": "health-record/services/health-record-crud.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/health-record-crud.service.ts",
+    "path": "health-record\\services\\health-record-crud.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\health-record-crud.service.ts",
     "lines": 372
   },
   {
-    "path": "database/models/clinical-note.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/clinical-note.model.ts",
+    "path": "database\\models\\clinical-note.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\clinical-note.model.ts",
     "lines": 371
   },
   {
-    "path": "config/query-performance-logger.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/config/query-performance-logger.service.ts",
+    "path": "config\\query-performance-logger.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\config\\query-performance-logger.service.ts",
     "lines": 370
   },
   {
-    "path": "medication/medication.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/medication/medication.repository.ts",
+    "path": "medication\\medication.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\medication\\medication.repository.ts",
     "lines": 370
   },
   {
-    "path": "appointment/services/appointment-query.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/appointment/services/appointment-query.service.ts",
+    "path": "mobile\\services\\offline-sync-conflict.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\mobile\\services\\offline-sync-conflict.service.ts",
+    "lines": 369
+  },
+  {
+    "path": "appointment\\services\\appointment-query.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\appointment\\services\\appointment-query.service.ts",
     "lines": 366
   },
   {
-    "path": "infrastructure/encryption/dto/key-exchange.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/encryption/dto/key-exchange.dto.ts",
+    "path": "infrastructure\\encryption\\dto\\key-exchange.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\encryption\\dto\\key-exchange.dto.ts",
     "lines": 366
   },
   {
-    "path": "infrastructure/sms/services/sms-template.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/sms/services/sms-template.service.ts",
+    "path": "infrastructure\\sms\\services\\sms-template.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\sms\\services\\sms-template.service.ts",
     "lines": 366
   },
   {
-    "path": "infrastructure/graphql/dto/health-record.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/graphql/dto/health-record.dto.ts",
+    "path": "infrastructure\\graphql\\dto\\health-record.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\graphql\\dto\\health-record.dto.ts",
     "lines": 365
   },
   {
-    "path": "student/models/student.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/student/models/student.model.ts",
+    "path": "student\\models\\student.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\student\\models\\student.model.ts",
     "lines": 365
   },
   {
-    "path": "access-control/access-control.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/access-control/access-control.service.ts",
+    "path": "access-control\\access-control.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\access-control\\access-control.service.ts",
     "lines": 364
   },
   {
-    "path": "infrastructure/encryption/dto/encryption-keys.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/encryption/dto/encryption-keys.dto.ts",
+    "path": "infrastructure\\encryption\\dto\\encryption-keys.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\encryption\\dto\\encryption-keys.dto.ts",
     "lines": 363
   },
   {
-    "path": "health-domain/dto/schedule.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/dto/schedule.dto.ts",
+    "path": "health-domain\\dto\\schedule.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\dto\\schedule.dto.ts",
     "lines": 362
   },
   {
-    "path": "database/models/audit-log.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/audit-log.model.ts",
+    "path": "database\\models\\audit-log.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\audit-log.model.ts",
     "lines": 361
   },
   {
-    "path": "infrastructure/cache/cache-storage.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/cache/cache-storage.service.ts",
+    "path": "health-record\\vaccination\\vaccination-compliance.helper.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\vaccination\\vaccination-compliance.helper.ts",
     "lines": 361
   },
   {
-    "path": "health-record/services/resource-monitor.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/resource-monitor.service.ts",
+    "path": "infrastructure\\cache\\cache-storage.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\cache\\cache-storage.service.ts",
+    "lines": 361
+  },
+  {
+    "path": "infrastructure\\websocket\\services\\message-handler.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\services\\message-handler.service.ts",
+    "lines": 361
+  },
+  {
+    "path": "configuration\\services\\config-statistics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\configuration\\services\\config-statistics.service.ts",
     "lines": 360
   },
   {
-    "path": "health-record/chronic-condition/chronic-condition.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/chronic-condition/chronic-condition.service.ts",
+    "path": "health-record\\services\\resource-monitor.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\resource-monitor.service.ts",
+    "lines": 360
+  },
+  {
+    "path": "mobile\\services\\offline-sync.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\mobile\\services\\offline-sync.service.ts",
+    "lines": 360
+  },
+  {
+    "path": "health-record\\chronic-condition\\chronic-condition.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\chronic-condition\\chronic-condition.service.ts",
     "lines": 359
   },
   {
-    "path": "database/models/emergency-contact.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/emergency-contact.model.ts",
+    "path": "database\\models\\emergency-contact.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\emergency-contact.model.ts",
     "lines": 358
   },
   {
-    "path": "analytics/analytics.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/analytics/analytics.controller.ts",
+    "path": "enterprise-features\\bulk-messaging.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\bulk-messaging.service.ts",
+    "lines": 358
+  },
+  {
+    "path": "enterprise-features\\consent-form-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\consent-form-management.service.ts",
+    "lines": 358
+  },
+  {
+    "path": "analytics\\analytics.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\analytics.controller.ts",
     "lines": 357
   },
   {
-    "path": "shared/healthcare/validators.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/healthcare/validators.ts",
+    "path": "shared\\healthcare\\validators.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\healthcare\\validators.ts",
     "lines": 357
   },
   {
-    "path": "shared/utils/circular-dependency.util.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/utils/circular-dependency.util.ts",
+    "path": "shared\\utils\\circular-dependency.util.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\utils\\circular-dependency.util.ts",
     "lines": 356
   },
   {
-    "path": "database/models/system-config.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/system-config.model.ts",
+    "path": "database\\models\\system-config.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\system-config.model.ts",
     "lines": 355
   },
   {
-    "path": "student/events/student.events.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/student/events/student.events.ts",
+    "path": "emergency-broadcast\\services\\broadcast-delivery.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\emergency-broadcast\\services\\broadcast-delivery.service.ts",
+    "lines": 353
+  },
+  {
+    "path": "student\\events\\student.events.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\student\\events\\student.events.ts",
     "lines": 352
   },
   {
-    "path": "infrastructure/email/email-rate-limiter.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/email/email-rate-limiter.service.ts",
+    "path": "infrastructure\\email\\email-rate-limiter.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\email\\email-rate-limiter.service.ts",
     "lines": 351
   },
   {
-    "path": "document/document.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/document/document.service.ts",
+    "path": "document\\document.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\document\\document.service.ts",
     "lines": 349
   },
   {
-    "path": "health-record/services/resource-optimization-engine.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/resource-optimization-engine.service.ts",
+    "path": "enterprise-features\\custom-report-builder.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\custom-report-builder.service.ts",
     "lines": 349
   },
   {
-    "path": "shared/files/validation.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/files/validation.ts",
+    "path": "health-record\\services\\resource-optimization-engine.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\resource-optimization-engine.service.ts",
     "lines": 349
   },
   {
-    "path": "document/document.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/document/document.controller.ts",
+    "path": "shared\\files\\validation.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\files\\validation.ts",
+    "lines": 349
+  },
+  {
+    "path": "document\\document.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\document\\document.controller.ts",
     "lines": 348
   },
   {
-    "path": "inventory/services/alerts.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/inventory/services/alerts.service.ts",
+    "path": "enterprise-features\\insurance-claim.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\insurance-claim.service.ts",
+    "lines": 348
+  },
+  {
+    "path": "inventory\\services\\alerts.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\inventory\\services\\alerts.service.ts",
     "lines": 347
   },
   {
-    "path": "health-risk-assessment/health-risk-assessment.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-risk-assessment/health-risk-assessment.service.ts",
+    "path": "enterprise-features\\enterprise-features.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\enterprise-features.service.ts",
+    "lines": 345
+  },
+  {
+    "path": "enterprise-features\\message-template-library.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\message-template-library.service.ts",
+    "lines": 345
+  },
+  {
+    "path": "health-record\\vaccination\\vaccination.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\vaccination\\vaccination.service.ts",
     "lines": 344
   },
   {
-    "path": "database/models/chronic-condition.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/chronic-condition.model.ts",
+    "path": "health-risk-assessment\\health-risk-assessment.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-risk-assessment\\health-risk-assessment.service.ts",
+    "lines": 344
+  },
+  {
+    "path": "database\\models\\chronic-condition.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\chronic-condition.model.ts",
     "lines": 343
   },
   {
-    "path": "database/models/message.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/message.model.ts",
+    "path": "database\\models\\message.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\message.model.ts",
     "lines": 343
   },
   {
-    "path": "mobile/services/notification.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/mobile/services/notification.service.ts",
+    "path": "mobile\\services\\notification.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\mobile\\services\\notification.service.ts",
     "lines": 342
   },
   {
-    "path": "analytics/services/compliance-report-exporter.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/analytics/services/compliance-report-exporter.service.ts",
+    "path": "analytics\\services\\compliance-report-exporter.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\services\\compliance-report-exporter.service.ts",
     "lines": 341
   },
   {
-    "path": "middleware/security/security-headers.middleware.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/middleware/security/security-headers.middleware.ts",
+    "path": "middleware\\security\\security-headers.middleware.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\middleware\\security\\security-headers.middleware.ts",
     "lines": 341
   },
   {
-    "path": "discovery/modules/services/memory-monitor.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/memory-monitor.service.ts",
+    "path": "discovery\\modules\\services\\memory-monitor.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\memory-monitor.service.ts",
     "lines": 339
   },
   {
-    "path": "shared/monitoring/performance.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/monitoring/performance.ts",
+    "path": "shared\\monitoring\\performance.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\monitoring\\performance.ts",
     "lines": 339
   },
   {
-    "path": "auth/services/mfa.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/auth/services/mfa.service.ts",
+    "path": "auth\\services\\mfa.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\auth\\services\\mfa.service.ts",
     "lines": 337
   },
   {
-    "path": "discovery/modules/services/memory-optimized-cache.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/discovery/modules/services/memory-optimized-cache.service.ts",
+    "path": "discovery\\modules\\services\\memory-optimized-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\discovery\\modules\\services\\memory-optimized-cache.service.ts",
     "lines": 337
   },
   {
-    "path": "infrastructure/graphql/resolvers/subscription.resolver.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/graphql/resolvers/subscription.resolver.ts",
+    "path": "infrastructure\\websocket\\websocket.gateway.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\websocket.gateway.ts",
+    "lines": 337
+  },
+  {
+    "path": "common\\decorators\\enterprise-decorators\\performance.decorators.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\decorators\\enterprise-decorators\\performance.decorators.ts",
     "lines": 333
   },
   {
-    "path": "infrastructure/websocket/services/rate-limiter.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/websocket/services/rate-limiter.service.ts",
+    "path": "infrastructure\\graphql\\resolvers\\subscription.resolver.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\graphql\\resolvers\\subscription.resolver.ts",
     "lines": 333
   },
   {
-    "path": "inventory/services/purchase-order.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/inventory/services/purchase-order.service.ts",
+    "path": "infrastructure\\websocket\\services\\rate-limiter.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\websocket\\services\\rate-limiter.service.ts",
     "lines": 333
   },
   {
-    "path": "database/repositories/impl/student.repository.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/repositories/impl/student.repository.ts",
+    "path": "inventory\\services\\purchase-order.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\inventory\\services\\purchase-order.service.ts",
+    "lines": 333
+  },
+  {
+    "path": "database\\repositories\\impl\\student.repository.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\repositories\\impl\\student.repository.ts",
     "lines": 332
   },
   {
-    "path": "infrastructure/sms/providers/twilio.provider.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/sms/providers/twilio.provider.ts",
+    "path": "infrastructure\\sms\\providers\\twilio.provider.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\sms\\providers\\twilio.provider.ts",
     "lines": 332
   },
   {
-    "path": "database/services/connection-monitor.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/services/connection-monitor.service.ts",
+    "path": "database\\services\\connection-monitor.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\services\\connection-monitor.service.ts",
     "lines": 331
   },
   {
-    "path": "database/models/follow-up-appointment.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/follow-up-appointment.model.ts",
+    "path": "database\\models\\follow-up-appointment.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\follow-up-appointment.model.ts",
     "lines": 330
   },
   {
-    "path": "integrations/clients/sis-api.client.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/integrations/clients/sis-api.client.ts",
+    "path": "integrations\\clients\\sis-api.client.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\integrations\\clients\\sis-api.client.ts",
     "lines": 330
   },
   {
-    "path": "shared/communication/templates.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/communication/templates.ts",
+    "path": "shared\\communication\\templates.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\communication\\templates.ts",
     "lines": 330
   },
   {
-    "path": "database/models/academic-transcript.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/academic-transcript.model.ts",
+    "path": "database\\models\\academic-transcript.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\academic-transcript.model.ts",
     "lines": 328
   },
   {
-    "path": "database/migrations/20251009013303-enhance-system-configuration.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251009013303-enhance-system-configuration.js",
+    "path": "database\\migrations\\20251009013303-enhance-system-configuration.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251009013303-enhance-system-configuration.js",
     "lines": 327
   },
   {
-    "path": "common/exceptions/student.exceptions.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/common/exceptions/student.exceptions.ts",
+    "path": "health-record\\services\\cache\\l2-cache.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\cache\\l2-cache.service.ts",
+    "lines": 327
+  },
+  {
+    "path": "common\\exceptions\\student.exceptions.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\exceptions\\student.exceptions.ts",
     "lines": 324
   },
   {
-    "path": "shared/utilities/resilience/retry.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/shared/utilities/resilience/retry.ts",
+    "path": "shared\\utilities\\resilience\\retry.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\shared\\utilities\\resilience\\retry.ts",
     "lines": 323
   },
   {
-    "path": "health-record/services/cache/cache-access-pattern-tracker.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/cache/cache-access-pattern-tracker.service.ts",
+    "path": "analytics\\analytics-interfaces.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\analytics-interfaces.ts",
     "lines": 322
   },
   {
-    "path": "database/migrations/20251107000000-add-critical-performance-indexes.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251107000000-add-critical-performance-indexes.js",
+    "path": "health-record\\services\\cache\\cache-access-pattern-tracker.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\cache\\cache-access-pattern-tracker.service.ts",
+    "lines": 322
+  },
+  {
+    "path": "common\\monitoring\\monitoring.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\monitoring\\monitoring.service.ts",
+    "lines": 321
+  },
+  {
+    "path": "analytics\\basic-report-generator.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\analytics\\basic-report-generator.service.ts",
     "lines": 319
   },
   {
-    "path": "ai-search/ai-search.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/ai-search/ai-search.controller.ts",
+    "path": "database\\migrations\\20251107000000-add-critical-performance-indexes.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251107000000-add-critical-performance-indexes.js",
+    "lines": 319
+  },
+  {
+    "path": "ai-search\\ai-search.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\ai-search\\ai-search.controller.ts",
     "lines": 318
   },
   {
-    "path": "infrastructure/monitoring/monitoring.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/monitoring/monitoring.service.ts",
+    "path": "infrastructure\\monitoring\\monitoring.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\monitoring\\monitoring.service.ts",
     "lines": 318
   },
   {
-    "path": "migrations/20251009013303-enhance-system-configuration.js",
-    "fullPath": "/workspaces/white-cross/backend/src/migrations/20251009013303-enhance-system-configuration.js",
+    "path": "migrations\\20251009013303-enhance-system-configuration.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\migrations\\20251009013303-enhance-system-configuration.js",
     "lines": 318
   },
   {
-    "path": "common/exceptions/filters/all-exceptions.filter.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/common/exceptions/filters/all-exceptions.filter.ts",
+    "path": "common\\exceptions\\filters\\all-exceptions.filter.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\exceptions\\filters\\all-exceptions.filter.ts",
     "lines": 316
   },
   {
-    "path": "database/models/clinic-visit.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/clinic-visit.model.ts",
+    "path": "database\\models\\clinic-visit.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\clinic-visit.model.ts",
     "lines": 316
   },
   {
-    "path": "audit/audit.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/audit/audit.controller.ts",
+    "path": "alerts\\services\\alert-statistics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\alerts\\services\\alert-statistics.service.ts",
     "lines": 315
   },
   {
-    "path": "emergency-contact/services/contact-statistics.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/emergency-contact/services/contact-statistics.service.ts",
+    "path": "audit\\audit.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\audit\\audit.controller.ts",
     "lines": 315
   },
   {
-    "path": "health-domain/dto/exemption.dto.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-domain/dto/exemption.dto.ts",
+    "path": "emergency-contact\\services\\contact-statistics.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\emergency-contact\\services\\contact-statistics.service.ts",
+    "lines": 315
+  },
+  {
+    "path": "health-domain\\dto\\exemption.dto.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-domain\\dto\\exemption.dto.ts",
     "lines": 314
   },
   {
-    "path": "student/services/student-query.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/student/services/student-query.service.ts",
+    "path": "migrations\\20251010000004-create-measurements-tables.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\migrations\\20251010000004-create-measurements-tables.js",
+    "lines": 314
+  },
+  {
+    "path": "student\\services\\student-query.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\student\\services\\student-query.service.ts",
     "lines": 313
   },
   {
-    "path": "access-control/services/security-monitoring.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/access-control/services/security-monitoring.service.ts",
+    "path": "access-control\\services\\security-monitoring.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\access-control\\services\\security-monitoring.service.ts",
     "lines": 311
   },
   {
-    "path": "dashboard/dashboard.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/dashboard/dashboard.controller.ts",
+    "path": "dashboard\\dashboard.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\dashboard\\dashboard.controller.ts",
     "lines": 311
   },
   {
-    "path": "health-record/services/cache/cache-health-monitor.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/health-record/services/cache/cache-health-monitor.service.ts",
+    "path": "health-record\\services\\cache\\cache-health-monitor.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\health-record\\services\\cache\\cache-health-monitor.service.ts",
     "lines": 311
   },
   {
-    "path": "infrastructure/queue/message-delivery.processor.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/queue/message-delivery.processor.ts",
+    "path": "infrastructure\\queue\\message-delivery.processor.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\queue\\message-delivery.processor.ts",
     "lines": 310
   },
   {
-    "path": "commands/seed-health-records.command.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/commands/seed-health-records.command.ts",
+    "path": "commands\\seed-health-records.command.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\commands\\seed-health-records.command.ts",
     "lines": 309
   },
   {
-    "path": "emergency-contact/services/notification-orchestration.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/emergency-contact/services/notification-orchestration.service.ts",
+    "path": "configuration\\services\\configuration.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\configuration\\services\\configuration.service.ts",
+    "lines": 309
+  },
+  {
+    "path": "configuration\\services\\config-import-export.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\configuration\\services\\config-import-export.service.ts",
     "lines": 308
   },
   {
-    "path": "appointment/services/appointment-scheduling.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/appointment/services/appointment-scheduling.service.ts",
+    "path": "emergency-contact\\services\\notification-orchestration.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\emergency-contact\\services\\notification-orchestration.service.ts",
+    "lines": 308
+  },
+  {
+    "path": "infrastructure\\streaming\\streaming-query.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\streaming\\streaming-query.service.ts",
+    "lines": 308
+  },
+  {
+    "path": "appointment\\services\\appointment-scheduling.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\appointment\\services\\appointment-scheduling.service.ts",
     "lines": 307
   },
   {
-    "path": "database/migrations/20251107120002-add-partial-indexes.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20251107120002-add-partial-indexes.js",
+    "path": "common\\decorators\\enterprise-decorators\\validation.decorators.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\common\\decorators\\enterprise-decorators\\validation.decorators.ts",
+    "lines": 307
+  },
+  {
+    "path": "database\\migrations\\20251107120002-add-partial-indexes.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20251107120002-add-partial-indexes.js",
     "lines": 306
   },
   {
-    "path": "communication/controllers/message.controller.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/communication/controllers/message.controller.ts",
+    "path": "enterprise-features\\waitlist-management.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\enterprise-features\\waitlist-management.service.ts",
+    "lines": 306
+  },
+  {
+    "path": "communication\\controllers\\message.controller.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\communication\\controllers\\message.controller.ts",
     "lines": 305
   },
   {
-    "path": "advanced-features/advanced-features.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/advanced-features/advanced-features.service.ts",
+    "path": "advanced-features\\advanced-features.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\advanced-features\\advanced-features.service.ts",
     "lines": 304
   },
   {
-    "path": "database/models/vital-signs.model.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/database/models/vital-signs.model.ts",
+    "path": "database\\models\\vital-signs.model.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\models\\vital-signs.model.ts",
     "lines": 303
   },
   {
-    "path": "infrastructure/encryption/interfaces/encryption.interfaces.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/infrastructure/encryption/interfaces/encryption.interfaces.ts",
+    "path": "infrastructure\\encryption\\interfaces\\encryption.interfaces.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\infrastructure\\encryption\\interfaces\\encryption.interfaces.ts",
     "lines": 303
   },
   {
-    "path": "common/encryption/encryption.service.ts",
-    "fullPath": "/workspaces/white-cross/backend/src/common/encryption/encryption.service.ts",
-    "lines": 301
+    "path": "mobile\\services\\offline-sync-queue.service.ts",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\mobile\\services\\offline-sync-queue.service.ts",
+    "lines": 303
   },
   {
-    "path": "database/migrations/20250103000003-create-system-configuration.js",
-    "fullPath": "/workspaces/white-cross/backend/src/database/migrations/20250103000003-create-system-configuration.js",
+    "path": "database\\migrations\\20250103000003-create-system-configuration.js",
+    "fullPath": "F:\\temp\\white-cross\\backend\\src\\database\\migrations\\20250103000003-create-system-configuration.js",
     "lines": 301
   }
 ]

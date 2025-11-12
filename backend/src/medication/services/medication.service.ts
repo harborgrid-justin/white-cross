@@ -1,5 +1,7 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { MedicationRepository } from '../medication.repository';
 import { CreateMedicationDto } from '../dto/create-medication.dto';
 import { DeactivateMedicationDto } from '../dto/deactivate-medication.dto';
@@ -59,13 +61,15 @@ export class MedicationDeactivatedEvent {
 }
 
 @Injectable()
-export class MedicationService {
-  private readonly logger = new Logger(MedicationService.name);
+export class MedicationService extends BaseService {
 
   constructor(
+    protected readonly requestContext: RequestContextService,
     private readonly medicationRepository: MedicationRepository,
     @Optional() private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Get all medications with pagination and filtering

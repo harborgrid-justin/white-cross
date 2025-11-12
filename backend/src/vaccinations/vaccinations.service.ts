@@ -7,17 +7,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { RequestContextService } from '../shared/context/request-context.service';
+import { BaseService } from '../shared/base/base.service';
 import { Student } from '../database/models/student.model';
 import { Vaccination } from '../database/models/vaccination.model';
 
 @Injectable()
-export class VaccinationsService {
+export class VaccinationsService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
     @InjectModel(Vaccination)
     private readonly vaccinationModel: typeof Vaccination,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Get vaccinations by status (due, overdue, or both)

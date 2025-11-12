@@ -1,7 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
 import { StockAdjustmentDto } from '../dto/stock-adjustment.dto';
@@ -24,16 +26,17 @@ export interface StockHistoryResponse {
 }
 
 @Injectable()
-export class StockManagementService {
-  private readonly logger = new Logger(StockManagementService.name);
-
+export class InventoryStockManagementService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(InventoryItem)
     private readonly inventoryItemModel: typeof InventoryItem,
     @InjectModel(InventoryTransaction)
     private readonly transactionModel: typeof InventoryTransaction,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Get current stock level for an item

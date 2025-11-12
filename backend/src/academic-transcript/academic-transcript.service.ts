@@ -5,27 +5,25 @@
  * Migrated from backend/src/services/academicTranscript
  */
 
-import { ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import {
-  AcademicRecord,
-  AttendanceRecord,
-  BehaviorRecord,
-  SubjectGrade,
-} from './interfaces/academic-record.interface';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { RequestContextService } from '../shared/context/request-context.service';
+import { BaseService } from '../shared/base/base.service';
+import { AcademicRecord, AttendanceRecord, BehaviorRecord, SubjectGrade } from './interfaces/academic-record.interface';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
 import { AcademicTranscriptRepository } from '../database/repositories/impl/academic-transcript.repository';
 import { StudentRepository } from '../database/repositories/impl/student.repository';
 
 @Injectable()
-export class AcademicTranscriptService {
-  private readonly logger = new Logger(AcademicTranscriptService.name);
-
+export class AcademicTranscriptService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @Inject(AcademicTranscriptRepository)
     private readonly academicTranscriptRepository: AcademicTranscriptRepository,
     @Inject(StudentRepository)
     private readonly studentRepository: StudentRepository,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Import academic transcript data from SIS

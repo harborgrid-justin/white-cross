@@ -4,7 +4,9 @@
  * @description Service for calculating Grade Point Average
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { SubjectGrade } from '../interfaces/academic-record.interface';
 
 /**
@@ -14,8 +16,10 @@ import { SubjectGrade } from '../interfaces/academic-record.interface';
  * Supports credit-weighted GPA calculation with plus/minus grade variations.
  */
 @Injectable()
-export class GpaCalculatorService {
-  private readonly logger = new Logger(GpaCalculatorService.name);
+export class GpaCalculatorService extends BaseService {
+  constructor(protected readonly requestContext: RequestContextService) {
+    super(requestContext);
+  }
 
   /**
    * Grade point mapping for 4.0 scale

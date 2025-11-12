@@ -4,9 +4,11 @@
  * Handles inventory alert identification and processing
  * Extracted from inventory-maintenance.processor.ts for better modularity
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 
 export interface InventoryAlert {
   type: 'EXPIRED' | 'NEAR_EXPIRY' | 'LOW_STOCK' | 'OUT_OF_STOCK';
@@ -28,10 +30,13 @@ export interface InventoryStatus {
 }
 
 @Injectable()
-export class InventoryAlertService {
-  private readonly logger = new Logger(InventoryAlertService.name);
-
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+export class InventoryAlertService extends BaseService {
+  constructor(
+    protected readonly requestContext: RequestContextService,
+    @InjectConnection() private readonly sequelize: Sequelize,
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Identify critical alerts that need immediate attention

@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { StockManagementService } from './stock-management.service';
+import { InventoryStockManagementService } from './stock-management.service';
 
 export enum ReorderPriority {
   CRITICAL = 'CRITICAL',
@@ -22,14 +24,15 @@ export interface ReorderRecommendation {
 }
 
 @Injectable()
-export class ReorderAutomationService {
-  private readonly logger = new Logger(ReorderAutomationService.name);
-
+export class InventoryReorderAutomationService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(InventoryItem)
     private readonly inventoryItemModel: typeof InventoryItem,
-    private readonly stockManagementService: StockManagementService,
-  ) {}
+    private readonly stockManagementService: InventoryStockManagementService,
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Analyze inventory and generate reorder recommendations

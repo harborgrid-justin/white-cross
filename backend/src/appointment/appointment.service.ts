@@ -15,7 +15,9 @@
  * - ReminderService: Reminder management
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { RequestContextService } from '../shared/context/request-context.service';
+import { BaseService } from '../shared/base/base.service';
 import { AppConfigService } from '../config/app-config.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { AppointmentStatus, UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -58,11 +60,11 @@ import { ReminderService } from './services/reminder.service';
  * - Backward Compatible: Existing API remains unchanged
  */
 @Injectable()
-export class AppointmentService implements OnModuleDestroy {
-  private readonly logger = new Logger(AppointmentService.name);
+export class AppointmentService extends BaseService implements OnModuleDestroy {
   private cleanupInterval?: NodeJS.Timeout;
 
   constructor(
+    protected readonly requestContext: RequestContextService,
     // Specialized services
     private readonly readService: AppointmentReadService,
     private readonly writeService: AppointmentWriteService,

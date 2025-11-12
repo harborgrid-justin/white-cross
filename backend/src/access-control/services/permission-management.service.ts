@@ -1,6 +1,8 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { AuditService } from '../../database/services/audit.service';
 import { ExecutionContext } from '../../database/types/execution-context.interface';
 import { PermissionCacheService } from './permission-cache.service';
@@ -22,14 +24,15 @@ import {
  * - Audit logging for permission operations
  */
 @Injectable()
-export class PermissionManagementService {
-  private readonly logger = new Logger(PermissionManagementService.name);
-
+export class PermissionManagementService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectConnection() private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditService: AuditService,
     private readonly cacheService: PermissionCacheService,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Get Sequelize models dynamically

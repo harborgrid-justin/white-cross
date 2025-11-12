@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { AuditLog } from '../entities/audit-log.entity';
 import { AuditAction } from '../enums/administration.enums';
 import { AuditQueryDto } from '../dto/audit.dto';
@@ -12,13 +14,14 @@ import { PaginatedResponse, PaginationResult } from '../interfaces/administratio
  * Handles audit logging for administration operations
  */
 @Injectable()
-export class AuditService {
-  private readonly logger = new Logger(AuditService.name);
-
+export class AuditService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(AuditLog)
     private auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Create an audit log entry

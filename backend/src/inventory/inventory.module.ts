@@ -13,6 +13,10 @@ import { InventoryNotificationService } from './services/inventory-notification.
 import { InventoryReorderService } from './services/inventory-reorder.service';
 import { InventoryReportService } from './services/inventory-report.service';
 import { InventoryDisposalService } from './services/inventory-disposal.service';
+import { InventoryStockManagementService } from './services/stock-management.service';
+import { InventoryPurchaseOrderService } from './services/purchase-order.service';
+import { InventoryTransactionService } from './services/transaction.service';
+import { InventoryReorderAutomationService } from './services/reorder-automation.service';
 
 @Module({
   imports: [
@@ -26,6 +30,10 @@ import { InventoryDisposalService } from './services/inventory-disposal.service'
     InventoryReorderService,
     InventoryReportService,
     InventoryDisposalService,
+    InventoryStockManagementService,
+    InventoryPurchaseOrderService,
+    InventoryTransactionService,
+    InventoryReorderAutomationService,
   ],
   exports: [
     InventoryAlertService,
@@ -33,6 +41,10 @@ import { InventoryDisposalService } from './services/inventory-disposal.service'
     InventoryReorderService,
     InventoryReportService,
     InventoryDisposalService,
+    InventoryStockManagementService,
+    InventoryPurchaseOrderService,
+    InventoryTransactionService,
+    InventoryReorderAutomationService,
   ],
 })
 export class InventoryModule {}

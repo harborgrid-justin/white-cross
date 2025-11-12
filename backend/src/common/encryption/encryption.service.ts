@@ -875,6 +875,42 @@ export class HealthcareEncryptionService {
     return result;
   }
 
+  // ==================== Utility Methods ====================
+
+  /**
+   * Checks if a value appears to be encrypted
+   *
+   * @param value - Value to check
+   * @returns True if the value appears to be encrypted data
+   */
+  isEncrypted(value: string): boolean {
+    if (!value || typeof value !== 'string') {
+      return false;
+    }
+
+    try {
+      // Try to decode as base64
+      const decoded = Buffer.from(value, 'base64').toString('utf8');
+
+      // Try to parse as JSON
+      const envelope = JSON.parse(decoded);
+
+      // Check if it has the expected structure
+      return (
+        envelope &&
+        typeof envelope === 'object' &&
+        envelope.algorithm &&
+        envelope.ciphertext &&
+        envelope.iv &&
+        envelope.authTag &&
+        typeof envelope.timestamp === 'number' &&
+        typeof envelope.version === 'number'
+      );
+    } catch {
+      return false;
+    }
+  }
+
   // ==================== Public Health Check and Metrics ====================
 
   /**

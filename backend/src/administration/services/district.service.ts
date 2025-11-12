@@ -1,6 +1,8 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { District } from '../entities/district.entity';
 import { School } from '../entities/school.entity';
 import { License } from '../entities/license.entity';
@@ -10,10 +12,9 @@ import { AuditAction, LicenseStatus } from '../enums/administration.enums';
 import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
 
 @Injectable()
-export class DistrictService {
-  private readonly logger = new Logger(DistrictService.name);
-
+export class DistrictService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(District)
     private districtModel: typeof District,
     @InjectModel(School)

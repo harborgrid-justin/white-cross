@@ -1,5 +1,7 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { License } from '../entities/license.entity';
 import { District } from '../entities/district.entity';
 import { AuditService } from './audit.service';
@@ -8,16 +10,17 @@ import { AuditAction, LicenseStatus, LicenseType } from '../enums/administration
 import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
 
 @Injectable()
-export class LicenseService {
-  private readonly logger = new Logger(LicenseService.name);
-
+export class LicenseService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(License)
     private licenseModel: typeof License,
     @InjectModel(District)
     private districtModel: typeof District,
     private auditService: AuditService,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   async createLicense(data: CreateLicenseDto): Promise<License> {
     try {

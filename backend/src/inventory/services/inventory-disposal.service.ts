@@ -4,19 +4,22 @@
  * Handles expired medication disposal workflow
  * Extracted from inventory-maintenance.processor.ts for better modularity
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { InventoryNotificationService, DisposalRecord } from './inventory-notification.service';
 
 @Injectable()
-export class InventoryDisposalService {
-  private readonly logger = new Logger(InventoryDisposalService.name);
-
+export class InventoryDisposalService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectConnection() private readonly sequelize: Sequelize,
     private readonly notificationService: InventoryNotificationService,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Mark expired inventory for disposal

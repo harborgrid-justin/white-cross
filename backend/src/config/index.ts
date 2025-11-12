@@ -1,41 +1,45 @@
 /**
- * Configuration Module Index
- * Central export point for all configuration
+ * Configuration Module - Main Export
+ *
+ * Centralized exports for all configuration utilities including database,
+ * caching, security, swagger documentation, and application settings.
+ *
+ * @module config
+ * @version 1.0.0
  */
 
-export { default as appConfig } from './app.config';
-export { default as databaseConfig } from './database.config';
-export { default as authConfig } from './auth.config';
-export { default as securityConfig } from './security.config';
-export { default as redisConfig } from './redis.config';
-export { default as awsConfig } from './aws.config';
-export { default as cacheConfig } from './cache.config';
-export { default as queueConfig } from './queue.config';
+// Application configuration
+export * from './app.config';
+export * from './app-config.service';
 
-export { validationSchema, validateEnvironment } from './validation.schema';
+// Authentication & Security
+export * from './auth.config';
+export * from './security.config';
 
-export type { AppConfig } from './app.config';
-export type { DatabaseConfig } from './database.config';
-export type { AuthConfig } from './auth.config';
-export type { SecurityConfig } from './security.config';
-export type { RedisConfig } from './redis.config';
-export type { AwsConfig } from './aws.config';
-export type { CacheConfig } from './cache.config';
-export type { QueueConfig } from './queue.config';
-
-// Export centralized configuration service
-export { AppConfigService } from './app-config.service';
-
-// Export module loader helpers for conditional module loading
-export { loadConditionalModules, FeatureFlags } from './module-loader.helper';
-export type { ConditionalModuleConfig } from './module-loader.helper';
-
+// Database configuration
+export * from './database.config';
 export * from './database-pool-monitor.service';
-export * from './query-performance-logger.service';
-export * from './swagger-documentation-automation.service';
-export * from './swagger-endpoint-documentation.service';
-export * from './swagger-response-builders.service';
-export * from './swagger-schema-generators.service';
-export * from './swagger-security-schemes.service';
-export * from './swagger-config.service';
+
+// Caching & Redis
+export * from './cache.config';
+export * from './redis.config';
+
+// Queue configuration
+export * from './queue.config';
+
+// AWS configuration
+export * from './aws.config';
+
+// Swagger/OpenAPI documentation (refactored modular structure)
+export * from './swagger';
+
+// Validation schemas
+export * from './validation.schema';
+
+// Utility services
+export * from './module-loader.helper';
 export * from './production-configuration-management.service';
+export * from './query-performance-logger.service';
+
+// Note: Large swagger files have been refactored into modular structure
+// Old files (swagger-*.service.ts) should be removed after migration

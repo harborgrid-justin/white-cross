@@ -4,8 +4,10 @@
  * Handles inventory report generation and distribution
  * Extracted from inventory-maintenance.processor.ts for better modularity
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { EmailService } from '@/infrastructure/email';
 import { InventoryAlertService, InventoryStatus, InventoryAlert } from './inventory-alert.service';
 import { InventoryReorderService } from './inventory-reorder.service';
@@ -26,15 +28,16 @@ export interface InventoryReport {
 }
 
 @Injectable()
-export class InventoryReportService {
-  private readonly logger = new Logger(InventoryReportService.name);
-
+export class InventoryReportService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
     private readonly alertService: InventoryAlertService,
     private readonly reorderService: InventoryReorderService,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Generate and send inventory report

@@ -21,7 +21,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HealthRecordService } from './health-record.service';
-import { HealthRecordController } from './health-record.controller';
+import { HealthRecordCrudController, HealthRecordComplianceController } from './controllers';
 
 // Specialized Services (Refactored from main service)
 import { HealthRecordCrudService } from './services/health-record-crud.service';
@@ -150,7 +150,7 @@ import { CacheEntry } from '../database/models/cache-entry.model';
     // Enterprise Pattern Guards
     HealthRecordRateLimitGuard,
   ],
-  controllers: [HealthRecordController],
+  controllers: [HealthRecordCrudController, HealthRecordComplianceController],
   exports: [
     HealthRecordService,
     PHIAccessLogger,

@@ -1,16 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { InventoryTransaction } from '../entities/inventory-transaction.entity';
 import { CreateInventoryTransactionDto } from '../dto/create-inventory-transaction.dto';
 
 @Injectable()
-export class TransactionService {
-  private readonly logger = new Logger(TransactionService.name);
-
+export class InventoryTransactionService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(InventoryTransaction)
     private readonly transactionModel: typeof InventoryTransaction,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Create inventory transaction

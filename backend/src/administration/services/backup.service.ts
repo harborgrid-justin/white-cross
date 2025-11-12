@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { BackupQueryDto, CreateBackupDto } from '../dto/backup.dto';
 import { BackupStatus, BackupType } from '../enums/administration.enums';
 
@@ -14,8 +16,12 @@ export interface BackupLog {
 }
 
 @Injectable()
-export class BackupService {
+export class BackupService extends BaseService {
   private backups: BackupLog[] = [];
+
+  constructor(protected readonly requestContext: RequestContextService) {
+    super(requestContext);
+  }
 
   public async createBackup(dto: CreateBackupDto): Promise<BackupLog> {
     const backup: BackupLog = {

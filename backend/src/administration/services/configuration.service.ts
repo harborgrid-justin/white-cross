@@ -1,6 +1,8 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { RequestContextService } from '../../shared/context/request-context.service';
+import { BaseService } from '../../shared/base/base.service';
 import { ConfigCategory, SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { ConfigurationDto } from '../dto/configuration.dto';
@@ -11,10 +13,9 @@ import { ConfigurationDto } from '../dto/configuration.dto';
  * Manages system configuration settings with change history tracking
  */
 @Injectable()
-export class ConfigurationService {
-  private readonly logger = new Logger(ConfigurationService.name);
-
+export class ConfigurationService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(SystemConfig)
     private configModel: typeof SystemConfig,
     @InjectModel(ConfigurationHistory)

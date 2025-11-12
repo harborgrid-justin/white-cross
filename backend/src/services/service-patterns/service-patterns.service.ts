@@ -104,96 +104,6 @@ import { ICommand, IQuery, IEvent, CommandHandler, QueryHandler, EventsHandler }
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 /**
- * Base service class with common lifecycle management and logging
- * @template TEntity Entity type this service manages
- * @description Provides foundation for all domain services with built-in lifecycle hooks.
- * This class is designed to be extended by domain services and is singleton-scoped by default.
- *
- * @remarks
- * - **Scope**: Singleton (DEFAULT) - one instance per application lifecycle
- * - **Lifecycle**: Implements OnModuleInit and OnModuleDestroy hooks
- * - **Thread Safety**: Not thread-safe, use request-scoped services for concurrent operations
- * - **Circular Dependencies**: Use forwardRef() when injecting circular dependencies
- *
- * @example
- * ```typescript
- * @Injectable()
- * export class UserService extends BaseService<User> {
- *   constructor(
- *     private readonly userRepository: UserRepository,
- *     @Inject(forwardRef(() => EmailService))
- *     private readonly emailService: EmailService
- *   ) {
- *     super('UserService');
- *   }
- *
- *   protected async initialize(): Promise<void> {
- *     // Custom initialization logic
- *     this.logger.log('UserService custom initialization');
- *   }
- *
- *   protected async cleanup(): Promise<void> {
- *     // Custom cleanup logic
- *     this.logger.log('UserService custom cleanup');
- *   }
- * }
- * ```
- */
-export abstract class BaseService<TEntity = any> implements OnModuleInit, OnModuleDestroy {
-  protected readonly logger: Logger;
-  protected isInitialized = false;
-
-  /**
-   * Creates a new base service instance
-   * @param serviceName Name of the service for logging purposes
-   */
-  constructor(serviceName: string) {
-    this.logger = new Logger(serviceName);
-  }
-
-  /**
-   * NestJS lifecycle hook called after module initialization
-   * @throws {Error} If initialization fails
-   */
-  async onModuleInit(): Promise<void> {
-    this.logger.log('Service initializing...');
-    await this.initialize();
-    this.isInitialized = true;
-    this.logger.log('Service initialized successfully');
-  }
-
-  /**
-   * NestJS lifecycle hook called before module destruction
-   * @throws {Error} If cleanup fails
-   */
-  async onModuleDestroy(): Promise<void> {
-    this.logger.log('Service shutting down...');
-    await this.cleanup();
-    this.logger.log('Service shutdown complete');
-  }
-
-  /**
-   * Custom initialization logic to be implemented by derived classes
-   * @protected
-   * @virtual
-   * @returns Promise that resolves when initialization is complete
-   */
-  protected async initialize(): Promise<void> {
-    // Override in derived classes
-  }
-
-  /**
-   * Custom cleanup logic to be implemented by derived classes
-   * @protected
-   * @virtual
-   * @returns Promise that resolves when cleanup is complete
-   */
-  protected async cleanup(): Promise<void> {
-    // Override in derived classes
-  }
-}
-
-/**
  * Generic repository service pattern base class
  * @template TEntity Entity type
  * @template TRepository Repository interface
@@ -201,7 +111,7 @@ export abstract class BaseService<TEntity = any> implements OnModuleInit, OnModu
  * This abstract class enforces implementation of standard repository methods.
  *
  * @remarks
- * - **Scope**: Singleton (DEFAULT) - inherits from BaseService
+ * - **Scope**: Singleton (DEFAULT)
  * - **Pattern**: Repository Pattern abstraction layer
  * - **Dependencies**: Requires a repository implementation injected via constructor
  * - **Circular Dependencies**: Avoid circular references with domain services
@@ -229,7 +139,9 @@ export abstract class BaseService<TEntity = any> implements OnModuleInit, OnModu
  * }
  * ```
  */
-export abstract class RepositoryService<TEntity, TRepository> extends BaseService<TEntity> {
+export abstract class RepositoryService<TEntity, TRepository> {
+  protected readonly logger: Logger;
+
   /**
    * Creates a new repository service instance
    * @param serviceName Name of the service for logging
@@ -239,7 +151,7 @@ export abstract class RepositoryService<TEntity, TRepository> extends BaseServic
     serviceName: string,
     protected readonly repository: TRepository,
   ) {
-    super(serviceName);
+    this.logger = new Logger(serviceName);
   }
 
   /**
@@ -289,8 +201,13 @@ export abstract class RepositoryService<TEntity, TRepository> extends BaseServic
  * @template TAggregate Root aggregate type
  * @description Encapsulates domain-specific business rules and invariants
  */
-export abstract class DomainService<TAggregate = any> extends BaseService<TAggregate> {
+export abstract class DomainService<TAggregate = any> {
+  protected readonly logger: Logger;
   protected domainEvents: IEvent[] = [];
+
+  constructor(serviceName: string) {
+    this.logger = new Logger(serviceName);
+  }
 
   protected addDomainEvent(event: IEvent): void {
     this.domainEvents.push(event);
@@ -312,12 +229,14 @@ export abstract class DomainService<TAggregate = any> extends BaseService<TAggre
  * Application service pattern for use case orchestration
  * @description Coordinates between domain services and infrastructure
  */
-export abstract class ApplicationService extends BaseService {
+export abstract class ApplicationService {
+  protected readonly logger: Logger;
+
   constructor(
     serviceName: string,
     @Optional() @Inject('TRANSACTION_MANAGER') protected transactionManager?: any,
   ) {
-    super(serviceName);
+    this.logger = new Logger(serviceName);
   }
 
   protected async executeInTransaction<T>(operation: () => Promise<T>): Promise<T> {
@@ -335,9 +254,14 @@ export abstract class ApplicationService extends BaseService {
  * Infrastructure service base for external integrations
  * @description Handles external API calls, caching, and resilience patterns
  */
-export abstract class InfrastructureService extends BaseService {
+export abstract class InfrastructureService {
+  protected readonly logger: Logger;
   protected retryAttempts = 3;
   protected retryDelayMs = 1000;
+
+  constructor(serviceName: string) {
+    this.logger = new Logger(serviceName);
+  }
 
   protected async withRetry<T>(
     operation: () => Promise<T>,
@@ -473,11 +397,12 @@ export function createEventHandler<TEvent extends IEvent>(
  * ```
  */
 @Injectable()
-export class ServiceOrchestrator extends BaseService {
+export class ServiceOrchestrator {
+  protected readonly logger: Logger;
   private services: Map<string, any> = new Map();
 
   constructor() {
-    super('ServiceOrchestrator');
+    this.logger = new Logger('ServiceOrchestrator');
   }
 
   /**
@@ -538,12 +463,13 @@ export class ServiceOrchestrator extends BaseService {
  * Saga pattern implementation for distributed transactions
  * @description Manages compensating transactions across microservices
  */
-export abstract class SagaOrchestrator extends BaseService {
+export abstract class SagaOrchestrator {
+  protected readonly logger: Logger;
   protected steps: SagaStep[] = [];
   protected completedSteps: SagaStep[] = [];
 
   constructor(sagaName: string) {
-    super(sagaName);
+    this.logger = new Logger(sagaName);
   }
 
   protected addStep(step: SagaStep): void {
@@ -669,12 +595,14 @@ export interface IEventStore {
  * @description Publishes domain events to event bus with retry logic
  */
 @Injectable()
-export class DomainEventPublisher extends BaseService {
+export class DomainEventPublisher {
+  protected readonly logger: Logger;
+
   constructor(
     @Optional() @Inject('EVENT_BUS') private readonly eventBus?: any,
     @Optional() private readonly eventEmitter?: EventEmitter2,
   ) {
-    super('DomainEventPublisher');
+    this.logger = new Logger('DomainEventPublisher');
   }
 
   async publish(event: IEvent): Promise<void> {
@@ -763,12 +691,13 @@ export interface IHealthCheckable {
  * @description Monitors service health and triggers alerts
  */
 @Injectable()
-export class ServiceHealthMonitor extends BaseService {
+export class ServiceHealthMonitor {
+  protected readonly logger: Logger;
   private services = new Map<string, IHealthCheckable>();
   private lastCheckResults = new Map<string, HealthCheckResult>();
 
   constructor() {
-    super('ServiceHealthMonitor');
+    this.logger = new Logger('ServiceHealthMonitor');
   }
 
   registerService(name: string, service: IHealthCheckable): void {

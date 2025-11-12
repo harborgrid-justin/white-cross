@@ -37,7 +37,7 @@ function findLargeFiles(dir, minLines = 300) {
           if (item.endsWith('.ts') || item.endsWith('.js')) {
             const lineCount = countLines(itemPath);
             if (lineCount > minLines) {
-              const relativePath = path.relative('/workspaces/white-cross/backend/src', itemPath);
+              const relativePath = path.relative(srcDir, itemPath);
               results.push({
                 path: relativePath,
                 fullPath: itemPath,
@@ -56,7 +56,7 @@ function findLargeFiles(dir, minLines = 300) {
   return results.sort((a, b) => b.lines - a.lines);
 }
 
-const srcDir = '/workspaces/white-cross/backend/src';
+const srcDir = path.join(process.cwd(), 'backend', 'src');
 const largeFiles = findLargeFiles(srcDir);
 
 console.log(`Found ${largeFiles.length} files larger than 300 lines in backend/src:`);

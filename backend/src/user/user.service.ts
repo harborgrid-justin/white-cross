@@ -7,9 +7,11 @@
  * @security Account lockout after 5 failed attempts
  */
 
-import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { RequestContextService } from '../shared/context/request-context.service';
+import { BaseService } from '../shared/base/base.service';
 import { User } from '@/user/entities';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,14 +22,15 @@ import { UserRole } from '@/user/enums';
 import { QueryCacheService } from '@/database/services';
 
 @Injectable()
-export class UserService {
-  private readonly logger = new Logger(UserService.name);
-
+export class UserService extends BaseService {
   constructor(
+    protected readonly requestContext: RequestContextService,
     @InjectModel(User)
     private readonly userModel: typeof User,
     private readonly queryCacheService: QueryCacheService,
-  ) {}
+  ) {
+    super(requestContext);
+  }
 
   /**
    * Get paginated list of users with optional filters
