@@ -111,6 +111,7 @@
     "pdf-lib": "^1.17.1",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
+    "prom-client": "^15.1.0",
     "qrcode": "^1.5.4",
     "redis": "^5.9.0",
     "reflect-metadata": "^0.2.2",

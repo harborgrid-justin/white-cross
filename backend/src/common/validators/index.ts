@@ -13,4 +13,6 @@ export * from './decorators/is-dosage.decorator';
 export * from './decorators/sanitize-html.decorator';
 
 // Utility validators
+export * from './api-validation.service';
+export * from './model-validation-composites.service';
 export * from './validators/healthcare.validator';

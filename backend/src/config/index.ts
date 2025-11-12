@@ -32,3 +32,10 @@ export type { ConditionalModuleConfig } from './module-loader.helper';
 
 export * from './database-pool-monitor.service';
 export * from './query-performance-logger.service';
+export * from './swagger-documentation-automation.service';
+export * from './swagger-endpoint-documentation.service';
+export * from './swagger-response-builders.service';
+export * from './swagger-schema-generators.service';
+export * from './swagger-security-schemes.service';
+export * from './swagger-config.service';
+export * from './production-configuration-management.service';

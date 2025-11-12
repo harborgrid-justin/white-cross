@@ -3,6 +3,7 @@
  * @module common/interceptors
  */
 
+export * from './response-interceptor-patterns.service';
 export * from './logging.interceptor';
 export * from './sanitization.interceptor';
 export * from './timeout.interceptor';

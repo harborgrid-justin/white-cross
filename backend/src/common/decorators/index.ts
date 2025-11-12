@@ -11,6 +11,11 @@
  */
 
 // Auth Decorators
+export * from './api-validation-decorators.service';
+export * from './controller-decorators.service';
+export * from './model-decorators.service';
+export * from './swagger-decorators.service';
+export * from './swagger-parameter-decorators.service';
 export * from '../../auth/decorators/roles.decorator';
 export * from '../../auth/decorators/public.decorator';
 export * from '../../auth/decorators/current-user.decorator';

@@ -10,8 +10,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Vaccination } from '../../../database/models/vaccination.model';
-import { Student } from '../../../database/models/student.model';
+import { Vaccination, Student } from '../../../database/models';
 import { CDC_CVX_CODES, SCHOOL_REQUIREMENTS } from './vaccination.constants';
 import {
   ComplianceReport,
@@ -54,12 +53,7 @@ export class VaccinationComplianceHelper {
     nextDueDate: Date | null,
     seriesComplete: boolean,
     exemptionStatus: boolean,
-  ):
-    | 'COMPLIANT'
-    | 'OVERDUE'
-    | 'PARTIALLY_COMPLIANT'
-    | 'EXEMPT'
-    | 'NON_COMPLIANT' {
+  ): 'COMPLIANT' | 'OVERDUE' | 'PARTIALLY_COMPLIANT' | 'EXEMPT' | 'NON_COMPLIANT' {
     if (exemptionStatus) {
       return 'EXEMPT';
     }
@@ -128,10 +122,7 @@ export class VaccinationComplianceHelper {
     // Check each school requirement
     for (const requirement of SCHOOL_REQUIREMENTS) {
       // Skip if age requirement not met
-      if (
-        requirement.ageRequirement &&
-        ageInMonths > requirement.ageRequirement
-      ) {
+      if (requirement.ageRequirement && ageInMonths > requirement.ageRequirement) {
         continue;
       }
 
@@ -139,22 +130,16 @@ export class VaccinationComplianceHelper {
       const matchingVaccines = vaccinations.filter(
         (v) =>
           (v.vaccineName &&
-            v.vaccineName
-              .toLowerCase()
-              .includes(requirement.vaccineName.toLowerCase())) ||
+            v.vaccineName.toLowerCase().includes(requirement.vaccineName.toLowerCase())) ||
           (v.vaccineType &&
-            requirement.vaccineName
-              .toLowerCase()
-              .includes(v.vaccineType.toLowerCase())),
+            requirement.vaccineName.toLowerCase().includes(v.vaccineType.toLowerCase())),
       );
 
       // Check if exemption exists
       const hasExemption = exemptedVaccinations.some(
         (v) =>
           v.vaccineName &&
-          v.vaccineName
-            .toLowerCase()
-            .includes(requirement.vaccineName.toLowerCase()),
+          v.vaccineName.toLowerCase().includes(requirement.vaccineName.toLowerCase()),
       );
 
       if (hasExemption) {
@@ -220,9 +205,7 @@ export class VaccinationComplianceHelper {
    * @param studentId - Student UUID
    * @returns Due vaccinations response
    */
-  async getDueVaccinations(
-    studentId: string,
-  ): Promise<DueVaccinationsResponse> {
+  async getDueVaccinations(studentId: string): Promise<DueVaccinationsResponse> {
     const student = await this.studentModel.findByPk(studentId);
     if (!student) {
       throw new NotFoundException('Student not found');
@@ -230,9 +213,7 @@ export class VaccinationComplianceHelper {
 
     const complianceReport = await this.checkComplianceStatus(studentId);
     const today = new Date();
-    const thirtyDaysFromNow = new Date(
-      today.getTime() + 30 * 24 * 60 * 60 * 1000,
-    );
+    const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     const dueVaccinations = complianceReport.upcoming.filter((vax) => {
       if (!vax.dueDate) return false;
@@ -240,9 +221,7 @@ export class VaccinationComplianceHelper {
       return dueDate >= today && dueDate <= thirtyDaysFromNow;
     });
 
-    this.logger.log(
-      `PHI Access: Due vaccinations retrieved for student ${studentId}`,
-    );
+    this.logger.log(`PHI Access: Due vaccinations retrieved for student ${studentId}`);
 
     return {
       studentId,
@@ -262,9 +241,7 @@ export class VaccinationComplianceHelper {
    * @param studentId - Student UUID
    * @returns Overdue vaccinations response
    */
-  async getOverdueVaccinationsForStudent(
-    studentId: string,
-  ): Promise<DueVaccinationsResponse> {
+  async getOverdueVaccinationsForStudent(studentId: string): Promise<DueVaccinationsResponse> {
     const student = await this.studentModel.findByPk(studentId);
     if (!student) {
       throw new NotFoundException('Student not found');
@@ -277,15 +254,13 @@ export class VaccinationComplianceHelper {
       (vax) => vax.status === 'OVERDUE' && vax.dueDate,
     );
 
-    this.logger.log(
-      `PHI Access: Overdue vaccinations retrieved for student ${studentId}`,
-    );
+    this.logger.log(`PHI Access: Overdue vaccinations retrieved for student ${studentId}`);
 
     return {
       studentId,
       studentName: `${student.firstName} ${student.lastName}`,
       dueVaccinations: overdueVaccinations.map((vax) => {
-        const dueDate = new Date(vax.dueDate!);
+        const dueDate = new Date(vax.dueDate);
         const daysOverdue = Math.floor(
           (today.getTime() - dueDate.getTime()) / (24 * 60 * 60 * 1000),
         );
@@ -294,7 +269,7 @@ export class VaccinationComplianceHelper {
           vaccineName: vax.vaccineName,
           doseNumber: vax.nextDose || vax.completedDoses + 1,
           totalDoses: vax.requiredDoses,
-          dueDate: vax.dueDate!,
+          dueDate: vax.dueDate,
           status: 'OVERDUE',
           daysOverdue,
         };
@@ -307,9 +282,7 @@ export class VaccinationComplianceHelper {
    * @param query - Query parameters for filtering
    * @returns Compliance report with student data
    */
-  async getComplianceReport(
-    query: ComplianceReportQuery,
-  ): Promise<ComplianceReportResponse> {
+  async getComplianceReport(query: ComplianceReportQuery): Promise<ComplianceReportResponse> {
     const { schoolId, gradeLevel, vaccineType, onlyNonCompliant } = query;
 
     // This is a simplified implementation - in production, you'd query across multiple students
@@ -342,12 +315,9 @@ export class VaccinationComplianceHelper {
     );
 
     // Calculate compliance for each student
-    const complianceData: StudentComplianceData[] = Object.values(
-      studentGroups,
-    ).map((group) => {
+    const complianceData: StudentComplianceData[] = Object.values(studentGroups).map((group) => {
       const compliantCount = group.vaccinations.filter(
-        (v) =>
-          v.complianceStatus === 'COMPLIANT' || v.complianceStatus === 'EXEMPT',
+        (v) => v.complianceStatus === 'COMPLIANT' || v.complianceStatus === 'EXEMPT',
       ).length;
       const totalVaccinations = group.vaccinations.length;
       const compliancePercentage =
@@ -373,22 +343,16 @@ export class VaccinationComplianceHelper {
       ? complianceData.filter((d) => d.status !== 'COMPLIANT')
       : complianceData;
 
-    this.logger.log(
-      `Compliance report generated: ${filteredData.length} students`,
-    );
+    this.logger.log(`Compliance report generated: ${filteredData.length} students`);
 
     return {
       reportDate: new Date().toISOString(),
       filters: { schoolId, gradeLevel, vaccineType, onlyNonCompliant },
       totalStudents: filteredData.length,
       summary: {
-        compliant: filteredData.filter((d) => d.status === 'COMPLIANT')
-          .length,
-        partiallyCompliant: filteredData.filter(
-          (d) => d.status === 'PARTIALLY_COMPLIANT',
-        ).length,
-        nonCompliant: filteredData.filter((d) => d.status === 'NON_COMPLIANT')
-          .length,
+        compliant: filteredData.filter((d) => d.status === 'COMPLIANT').length,
+        partiallyCompliant: filteredData.filter((d) => d.status === 'PARTIALLY_COMPLIANT').length,
+        nonCompliant: filteredData.filter((d) => d.status === 'NON_COMPLIANT').length,
       },
       students: filteredData,
     };
