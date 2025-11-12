@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MessageTemplate } from './enterprise-features-interfaces';
+import { TemplateValidationHelper } from './helpers/template-validation.helper';
 
 @Injectable()
 export class MessageTemplateLibraryService {
@@ -22,7 +23,7 @@ export class MessageTemplateLibraryService {
     createdBy: string,
   ): MessageTemplate {
     try {
-      this.validateTemplateParameters(name, category, subject, body, variables, language);
+      TemplateValidationHelper.validateTemplateParameters(name, category, subject, body, variables, language);
 
       const template: MessageTemplate = {
         id: `MT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -80,7 +81,7 @@ export class MessageTemplateLibraryService {
     updatedBy: string,
   ): MessageTemplate {
     try {
-      this.validateUpdateParameters(templateId, updates, updatedBy);
+      TemplateValidationHelper.validateUpdateParameters(templateId, updates, updatedBy);
 
       const template = this.messageTemplates.find((t) => t.id === templateId);
       if (!template) {
@@ -123,7 +124,7 @@ export class MessageTemplateLibraryService {
    */
   getMessageTemplate(templateId: string): MessageTemplate | null {
     try {
-      this.validateTemplateId(templateId);
+      TemplateValidationHelper.validateTemplateId(templateId);
 
       const template = this.messageTemplates.find((t) => t.id === templateId);
       if (!template) {
@@ -147,7 +148,7 @@ export class MessageTemplateLibraryService {
    */
   getMessageTemplatesByCategory(category: string): MessageTemplate[] {
     try {
-      this.validateCategory(category);
+      TemplateValidationHelper.validateCategory(category);
 
       const templates = this.messageTemplates.filter((t) => t.category === category && t.isActive);
 
@@ -189,7 +190,7 @@ export class MessageTemplateLibraryService {
    */
   renderMessageTemplate(templateId: string, variables: Record<string, string>): string {
     try {
-      this.validateRenderParameters(templateId, variables);
+      TemplateValidationHelper.validateRenderParameters(templateId, variables);
 
       const template = this.messageTemplates.find((t) => t.id === templateId);
       if (!template) {
@@ -209,7 +210,7 @@ export class MessageTemplateLibraryService {
       }
 
       // Check for missing variables
-      const missingVars = this.findMissingVariables(renderedContent);
+      const missingVars = TemplateValidationHelper.findMissingVariables(renderedContent);
       if (missingVars.length > 0) {
         throw new Error(`Missing required variables: ${missingVars.join(', ')}`);
       }
@@ -242,7 +243,7 @@ export class MessageTemplateLibraryService {
    */
   deleteMessageTemplate(templateId: string, deletedBy: string): boolean {
     try {
-      this.validateDeleteParameters(templateId, deletedBy);
+      TemplateValidationHelper.validateDeleteParameters(templateId, deletedBy);
 
       const template = this.messageTemplates.find((t) => t.id === templateId);
       if (!template) {
@@ -299,7 +300,7 @@ export class MessageTemplateLibraryService {
    */
   cloneMessageTemplate(templateId: string, newName: string, clonedBy: string): MessageTemplate {
     try {
-      this.validateCloneParameters(templateId, newName, clonedBy);
+      TemplateValidationHelper.validateCloneParameters(templateId, newName, clonedBy);
 
       const originalTemplate = this.messageTemplates.find((t) => t.id === templateId);
       if (!originalTemplate) {
@@ -340,138 +341,4 @@ export class MessageTemplateLibraryService {
     }
   }
 
-  /**
-   * Validate template parameters
-   */
-  private validateTemplateParameters(
-    name: string,
-    category: string,
-    subject: string,
-    body: string,
-    variables: string[],
-    language: string,
-  ): void {
-    if (!name || name.trim().length === 0) {
-      throw new Error('Template name is required');
-    }
-
-    if (!category || category.trim().length === 0) {
-      throw new Error('Template category is required');
-    }
-
-    if (!subject || subject.trim().length === 0) {
-      throw new Error('Template subject is required');
-    }
-
-    if (!body || body.trim().length === 0) {
-      throw new Error('Template body is required');
-    }
-
-    if (!variables || variables.length === 0) {
-      throw new Error('Template variables are required');
-    }
-
-    if (!language || language.trim().length === 0) {
-      throw new Error('Template language is required');
-    }
-  }
-
-  /**
-   * Validate update parameters
-   */
-  private validateUpdateParameters(
-    templateId: string,
-    updates: Partial<
-      Pick<
-        MessageTemplate,
-        'name' | 'category' | 'subject' | 'body' | 'variables' | 'language' | 'isActive'
-      >
-    >,
-    updatedBy: string,
-  ): void {
-    if (!templateId || templateId.trim().length === 0) {
-      throw new Error('Template ID is required');
-    }
-
-    if (!updates || Object.keys(updates).length === 0) {
-      throw new Error('Updates are required');
-    }
-
-    if (!updatedBy || updatedBy.trim().length === 0) {
-      throw new Error('Updated by is required');
-    }
-  }
-
-  /**
-   * Validate template ID
-   */
-  private validateTemplateId(templateId: string): void {
-    if (!templateId || templateId.trim().length === 0) {
-      throw new Error('Template ID is required');
-    }
-  }
-
-  /**
-   * Validate category
-   */
-  private validateCategory(category: string): void {
-    if (!category || category.trim().length === 0) {
-      throw new Error('Category is required');
-    }
-  }
-
-  /**
-   * Validate render parameters
-   */
-  private validateRenderParameters(templateId: string, variables: Record<string, string>): void {
-    if (!templateId || templateId.trim().length === 0) {
-      throw new Error('Template ID is required');
-    }
-
-    if (!variables) {
-      throw new Error('Variables are required');
-    }
-  }
-
-  /**
-   * Validate delete parameters
-   */
-  private validateDeleteParameters(templateId: string, deletedBy: string): void {
-    if (!templateId || templateId.trim().length === 0) {
-      throw new Error('Template ID is required');
-    }
-
-    if (!deletedBy || deletedBy.trim().length === 0) {
-      throw new Error('Deleted by is required');
-    }
-  }
-
-  /**
-   * Validate clone parameters
-   */
-  private validateCloneParameters(templateId: string, newName: string, clonedBy: string): void {
-    if (!templateId || templateId.trim().length === 0) {
-      throw new Error('Template ID is required');
-    }
-
-    if (!newName || newName.trim().length === 0) {
-      throw new Error('New name is required');
-    }
-
-    if (!clonedBy || clonedBy.trim().length === 0) {
-      throw new Error('Cloned by is required');
-    }
-  }
-
-  /**
-   * Find missing variables in rendered content
-   */
-  private findMissingVariables(content: string): string[] {
-    const variableRegex = /\{\{(\w+)\}\}/g;
-    const matches = content.match(variableRegex);
-    if (!matches) return [];
-
-    const foundVars = new Set(matches.map((match) => match.replace(/\{\{|\}\}/g, '')));
-    return Array.from(foundVars);
-  }
 }
