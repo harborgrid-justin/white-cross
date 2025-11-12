@@ -5,7 +5,7 @@
  */
 
 import type { Socket } from 'socket.io-client';
-import { ConnectionState, type SocketConfig, type ConnectionEvent } from './types';
+import { ConnectionState, type SocketConfig, type ConnectionEvent, type ConnectionMetrics } from './types';
 
 export class ConnectionManager {
   private socket: Socket | null = null;
@@ -19,6 +19,15 @@ export class ConnectionManager {
   private connectionTimer: NodeJS.Timeout | null = null;
   private onStateChange?: (state: ConnectionState) => void;
   private onConnectionEvent?: (event: ConnectionEvent) => void;
+  private metrics: ConnectionMetrics = {
+    connectTime: 0,
+    disconnectTime: 0,
+    reconnectCount: 0,
+    messageCount: 0,
+    errorCount: 0,
+    lastPing: 0,
+    averageLatency: 0
+  };
 
   constructor(config: SocketConfig) {
     this.config = config;
@@ -270,60 +279,74 @@ export class ConnectionManager {
   }
 
   /**
-   * Update connection state (public method for SocketService)
+   * Get connection info
    */
-  updateState(newState: ConnectionState): void {
-    this.updateState(newState);
-  }
-
-  /**
-   * Schedule reconnect (public method for SocketService)
-   */
-  scheduleReconnect(callback?: () => void): void {
-    this.scheduleReconnect();
-    // Note: callback parameter not used in current implementation
-  }
-
-  /**
-   * Get connection state (public method for SocketService)
-   */
-  getState(): ConnectionState {
-    return this.state;
-  }
-
-  /**
-   * Get connection metrics (public method for SocketService)
-   */
-  getMetrics(): ConnectionMetrics {
+  getConnectionInfo(): {
+    state: ConnectionState;
+    reconnectAttempts: number;
+    connected: boolean;
+  } {
     return {
-      connectTime: this.metrics.connectTime,
-      disconnectTime: this.metrics.disconnectTime,
-      reconnectCount: this.metrics.reconnectCount,
-      messageCount: this.metrics.messageCount,
-      errorCount: this.metrics.errorCount,
-      lastPing: this.metrics.lastPing,
-      averageLatency: this.metrics.averageLatency
+      state: this.state,
+      reconnectAttempts: this.reconnectAttempts,
+      connected: this.isConnected(),
     };
   }
 
   /**
-   * Reset reconnect attempts (public method for SocketService)
+   * Get connection metrics
+   */
+  getMetrics(): ConnectionMetrics {
+    return { ...this.metrics };
+  }
+
+  /**
+   * Update connection metrics
+   */
+  updateMetrics(updates: Partial<ConnectionMetrics>): void {
+    this.metrics = { ...this.metrics, ...updates };
+  }
+
+  /**
+   * Reset reconnect attempts
    */
   resetReconnectAttempts(): void {
     this.reconnectAttempts = 0;
   }
 
   /**
-   * Set state change callback (public method for SocketService)
+   * Cleanup resources
    */
-  onStateChange(callback: (state: ConnectionState) => void): void {
+  cleanup(): void {
+    this.disconnect();
+  }
+
+  /**
+   * Public method to update state (for SocketService)
+   */
+  publicUpdateState(newState: ConnectionState): void {
+    this.updateState(newState);
+  }
+
+  /**
+   * Public method to schedule reconnect (for SocketService)
+   */
+  publicScheduleReconnect(callback?: () => void): void {
+    this.scheduleReconnect();
+    // Note: callback parameter not used in current implementation
+  }
+
+  /**
+   * Public method to set state change callback (for SocketService)
+   */
+  publicOnStateChange(callback: (state: ConnectionState) => void): void {
     this.onStateChange = callback;
   }
 
   /**
-   * Remove state change callback (public method for SocketService)
+   * Public method to remove state change callback (for SocketService)
    */
-  offStateChange(callback: (state: ConnectionState) => void): void {
+  publicOffStateChange(callback: (state: ConnectionState) => void): void {
     if (this.onStateChange === callback) {
       this.onStateChange = undefined;
     }
