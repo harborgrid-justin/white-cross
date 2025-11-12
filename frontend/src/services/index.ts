@@ -260,7 +260,7 @@ export type {
 } from './modules/studentManagementApi';
 
 // Health Assessments API exports
-export { healthAssessmentsApi } from './modules/healthAssessmentsApi';
+export { healthAssessmentsApi } from './modules/healthAssessments';
 export type {
   HealthRiskAssessment,
   HealthScreening,
@@ -269,7 +269,7 @@ export type {
   EmergencyNotification,
   CreateEmergencyNotificationRequest,
   HealthAssessmentsApi
-} from './modules/healthAssessmentsApi';
+} from './modules/healthAssessments';
 
 // Medication module API exports
 export { 

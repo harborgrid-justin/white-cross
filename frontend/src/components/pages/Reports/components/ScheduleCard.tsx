@@ -1,5 +1,5 @@
 import React from 'react';
-import { 
+import {
   ChevronDown,
   ChevronRight,
   Pause,
@@ -11,7 +11,8 @@ import {
   Users,
   User
 } from 'lucide-react';
-import type { ReportSchedule, ScheduleStatus, ScheduleConfig } from '../types';
+import type { ReportSchedule } from '../types';
+import { getStatusBadgeConfig, getFrequencyText, formatDate, getSuccessRate } from '../ReportScheduler/utils';
 
 interface ScheduleCardProps {
   schedule: ReportSchedule;
@@ -23,67 +24,13 @@ interface ScheduleCardProps {
 /**
  * Gets status badge styling
  */
-const getStatusBadge = (status: ScheduleStatus) => {
-  const statusConfig = {
-    active: { bg: 'bg-green-100', text: 'text-green-800', label: 'Active' },
-    paused: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Paused' },
-    stopped: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Stopped' },
-    completed: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Completed' },
-    failed: { bg: 'bg-red-100', text: 'text-red-800', label: 'Failed' },
-    pending: { bg: 'bg-orange-100', text: 'text-orange-800', label: 'Pending' }
-  };
-
-  const config = statusConfig[status];
+const getStatusBadge = (status: ReportSchedule['status']) => {
+  const config = getStatusBadgeConfig(status);
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
       {config.label}
     </span>
   );
-};
-
-/**
- * Gets frequency display text
- */
-const getFrequencyText = (config: ScheduleConfig): string => {
-  switch (config.frequency) {
-    case 'once':
-      return 'One time';
-    case 'hourly':
-      return 'Every hour';
-    case 'daily':
-      return `Daily at ${config.time}`;
-    case 'weekly':
-      return `Weekly on ${config.daysOfWeek?.join(', ') || 'weekdays'} at ${config.time}`;
-    case 'monthly':
-      return `Monthly on day ${config.dayOfMonth || 1} at ${config.time}`;
-    case 'quarterly':
-      return `Quarterly at ${config.time}`;
-    case 'yearly':
-      return `Yearly in ${config.month || 'January'} at ${config.time}`;
-    default:
-      return 'Custom';
-  }
-};
-
-/**
- * Formats date string
- */
-const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
-/**
- * Calculates success rate
- */
-const getSuccessRate = (schedule: ReportSchedule): number => {
-  if (schedule.executionCount === 0) return 0;
-  return Math.round((schedule.successCount / schedule.executionCount) * 100);
 };
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({

@@ -2,10 +2,19 @@
  * @fileoverview Integration Types Module Index
  * @module types/domain/integrations
  * @category Healthcare - Integration Management
- * 
+ *
  * Main entry point for all integration-related types.
  * Re-exports all types from modular components for backward compatibility.
  */
+
+// ==================== COMMON TYPES ====================
+export type {
+  JsonPrimitive,
+  JsonValue,
+  JsonObject,
+  JsonArray,
+  UnknownRecord,
+} from './common';
 
 // ==================== CORE TYPES ====================
 export {

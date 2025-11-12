@@ -17,6 +17,7 @@ import type {
   IncidentType,
   IncidentSeverity,
   IncidentStatus,
+  WitnessType,
   ActionPriority,
   ActionStatus
 } from '../../domain/incidents';
@@ -85,7 +86,7 @@ export interface WitnessStatementsState {
   formState: FormState<{
     incidentReportId: string;
     witnessName: string;
-    witnessType: string;
+    witnessType: WitnessType;
     witnessContact?: string;
     statement: string;
   }> | null;

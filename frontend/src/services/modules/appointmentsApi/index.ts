@@ -56,29 +56,44 @@ import {
   getStatusColor
 } from './types';
 
-// Import validation exports
+// Import validation exports from modular validation files
 import {
   createAppointmentSchema,
   updateAppointmentSchema,
   appointmentFiltersSchema,
-  appointmentFormSchema,
-  nurseAvailabilitySchema,
+  appointmentFormSchema
+} from './validation-appointments';
+
+import {
+  nurseAvailabilitySchema
+} from './validation-availability';
+
+import {
   waitlistEntrySchema,
-  waitlistFiltersSchema,
+  waitlistFiltersSchema
+} from './validation-waitlist';
+
+import {
   scheduleReminderSchema,
   cancelReminderSchema,
   recurrenceConfigurationSchema,
-  recurringAppointmentSchema,
+  recurringAppointmentSchema
+} from './validation-recurring';
+
+import {
   conflictCheckSchema,
   bulkCancelSchema,
   statisticsFiltersSchema,
-  trendsQuerySchema,
+  trendsQuerySchema
+} from './validation-operations';
+
+import {
   uuidSchema,
   dateRangeSchema,
   paginationSchema,
   getValidationErrors,
   validateAppointmentBusinessRules
-} from './validation';
+} from './validation-helpers';
 
 // Import service factories and ApiClient type
 import type { ApiClient } from '../../core/ApiClient';
@@ -210,7 +225,7 @@ export class AppointmentsApiService {
     this.core = createAppointmentsCoreService(config.client);
     this.availability = new AvailabilityService();
     this.waitlist = createWaitlistService(config.client);
-    this.reminders = createReminderService(config.client);
+    this.reminders = createReminderService();
     
     // Services that depend on core service
     this.status = createAppointmentsStatusService(

@@ -105,7 +105,7 @@ export type {
 } from './domain/appointments';
 
 export type {
-  Incident,
+  IncidentReport,
   IncidentType,
   IncidentSeverity,
 } from './domain/incidents';
