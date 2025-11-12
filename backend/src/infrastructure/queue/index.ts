@@ -47,14 +47,9 @@ export type {
 } from './interfaces';
 
 // Processors (for advanced usage)
-export {
-  MessageDeliveryProcessor,
-  MessageNotificationProcessor,
-  MessageEncryptionProcessor,
-  MessageIndexingProcessor,
-  BatchMessageProcessor,
-  MessageCleanupProcessor,
-} from './message-queue.processor';
-
-export * from './message-queue.processor.complete';
-export * from './message-queue.processor';
+export { MessageDeliveryProcessor } from './message-delivery.processor';
+export { MessageNotificationProcessor } from './message-notification.processor';
+export { MessageEncryptionProcessor } from './message-encryption.processor';
+export { MessageIndexingProcessor } from './message-indexing.processor';
+export { BatchMessageProcessor } from './batch-message-sending.processor';
+export { MessageCleanupProcessor } from './message-cleanup.processor';

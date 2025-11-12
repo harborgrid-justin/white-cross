@@ -1,8 +1,10 @@
 /**
- * WebSocket Gateway
+ * @fileoverview WebSocket Gateway
+ * @module infrastructure/websocket
+ * @description Main WebSocket gateway that delegates to specialized service handlers
  *
- * Handles real-time WebSocket communication for the White Cross platform.
- * Provides connection management, authentication, and event handling for clients.
+ * This is a refactored version that has been broken down into smaller,
+ * more focused services for better maintainability.
  *
  * Key Features:
  * - JWT-based authentication for secure connections
@@ -12,25 +14,6 @@
  * - Presence tracking (online/offline/typing)
  * - Rate limiting to prevent spam
  * - Conversation room management
- *
- * Event Handlers:
- * - connection: New client connection with authentication
- * - disconnect: Client disconnection cleanup with presence update
- * - ping: Health check request
- * - subscribe: Subscribe to notification channels
- * - unsubscribe: Unsubscribe from notification channels
- * - notification:read: Mark notification as read
- * - message:send: Send a message to conversation
- * - message:edit: Edit existing message
- * - message:delete: Delete message
- * - message:delivered: Message delivery confirmation
- * - message:read: Message read receipt
- * - message:typing: Typing indicator
- * - conversation:join: Join a conversation room
- * - conversation:leave: Leave a conversation room
- * - presence:update: Update user presence status
- *
- * @class WebSocketGateway
  */
 import {
   ConnectedSocket,
@@ -40,13 +23,11 @@ import {
   SubscribeMessage,
   WebSocketGateway as NestWebSocketGateway,
   WebSocketServer,
-  WsException,
 } from '@nestjs/websockets';
 import { Logger, UseFilters, UseGuards } from '@nestjs/common';
 import { Server } from 'socket.io';
 import type { AuthenticatedSocket } from './interfaces';
 import {
-  ConnectionConfirmedDto,
   ConversationEventDto,
   MessageDeliveryDto,
   MessageEventDto,
@@ -54,13 +35,16 @@ import {
   TypingIndicatorDto,
 } from './dto';
 import { WsJwtAuthGuard } from './guards';
-import { RateLimiterService } from './services/rate-limiter.service';
 import { WsExceptionFilter } from './filters/ws-exception.filter';
+import { ConnectionManagerService } from './services/connection-manager.service';
+import { MessageHandlerService } from './services/message-handler.service';
+import { ConversationHandlerService } from './services/conversation-handler.service';
+import { PresenceManagerService } from './services/presence-manager.service';
 
 @UseFilters(new WsExceptionFilter())
 @NestWebSocketGateway({
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: 'http://localhost:5173', // TODO: Use ConfigService for CORS_ORIGIN
     credentials: true,
     methods: ['GET', 'POST'],
   },
@@ -69,24 +53,18 @@ import { WsExceptionFilter } from './filters/ws-exception.filter';
   pingTimeout: 60000,
   pingInterval: 25000,
 })
-export class WebSocketGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class WebSocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
   private readonly logger = new Logger(WebSocketGateway.name);
 
-  /**
-   * In-memory presence tracking
-   * Maps userId to presence status
-   */
-  private readonly presenceMap = new Map<
-    string,
-    { status: 'online' | 'offline' | 'away'; lastSeen: string }
-  >();
-
-  constructor(private readonly rateLimiter: RateLimiterService) {}
+  constructor(
+    private readonly connectionManager: ConnectionManagerService,
+    private readonly messageHandler: MessageHandlerService,
+    private readonly conversationHandler: ConversationHandlerService,
+    private readonly presenceManager: PresenceManagerService,
+  ) {}
 
   /**
    * Handles new WebSocket connections

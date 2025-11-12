@@ -1,186 +1,48 @@
 /**
- * @fileoverview Advanced Cache Strategy Service
+ * @fileoverview Advanced Cache Strategy Service - Facade/Compatibility Layer
  * @module health-record/services
- * @description Multi-tier caching strategy with intelligent prefetching and optimization
+ * @description Facade for the new modular multi-tier caching strategy
  *
- * HIPAA CRITICAL - This service manages PHI caching across multiple tiers with compliance controls
+ * HIPAA CRITICAL - This service provides backward compatibility while delegating to modular services
  *
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
-import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
-import { Sequelize } from 'sequelize-typescript';
-import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { HealthRecordMetricsService } from './health-record-metrics.service';
-import { PHIAccessLogger } from './phi-access-logger.service';
-import { ComplianceLevel } from '../interfaces/health-record-types';
-import { CacheEntry as CacheEntryModel } from '../../database/models/cache-entry.model';
-
-export interface InMemoryCacheEntry<T = any> {
-  data: T;
-  timestamp: Date;
-  accessCount: number;
-  lastAccessed: Date;
-  compliance: ComplianceLevel;
-  encrypted: boolean;
-  tags: string[];
-  size: number;
-  tier: CacheTier;
-}
-
-export enum CacheTier {
-  L1 = 'L1', // In-memory application cache
-  L2 = 'L2', // Redis distributed cache
-  L3 = 'L3', // Database query result cache
-}
-
-export interface CacheMetrics {
-  l1Stats: {
-    hits: number;
-    misses: number;
-    evictions: number;
-    size: number;
-    memoryUsage: number;
-  };
-  l2Stats: {
-    hits: number;
-    misses: number;
-    networkLatency: number;
-    size: number;
-  };
-  l3Stats: {
-    hits: number;
-    misses: number;
-    queryTime: number;
-    size: number;
-  };
-  overall: {
-    hitRate: number;
-    averageResponseTime: number;
-    totalMemoryUsage: number;
-  };
-}
-
-export interface AccessPattern {
-  key: string;
-  frequency: number;
-  lastAccess: Date;
-  predictedNextAccess: Date;
-  importance: number;
-  studentId?: string;
-  dataType: string;
-}
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { CacheStrategyOrchestratorService } from './cache/cache-strategy-orchestrator.service';
+import { CacheOptimizationService } from './cache/cache-optimization.service';
+import {
+  InMemoryCacheEntry,
+  CacheTier,
+  CacheMetrics,
+  AccessPattern,
+  ComplianceLevel,
+} from './cache/cache-interfaces';
 
 /**
- * Advanced Cache Strategy Service
+ * Advanced Cache Strategy Service - Facade Pattern
  *
- * Implements multi-tier caching strategy with:
- * - L1: Fast in-memory cache for hot data
- * - L2: Distributed Redis cache for shared data
- * - L3: Database result cache for complex queries
- * - Intelligent prefetching based on access patterns
- * - HIPAA-compliant cache management
+ * This service now acts as a facade/compatibility layer that delegates
+ * to the new modular cache services. This maintains backward compatibility
+ * while using the improved modular architecture.
  */
 @Injectable()
 export class CacheStrategyService implements OnModuleDestroy {
   private readonly logger = new Logger(CacheStrategyService.name);
 
-  // L1 Cache: In-memory storage
-  private readonly l1Cache = new Map<string, InMemoryCacheEntry>();
-  private readonly maxL1Size = 1000; // Maximum entries in L1
-  private readonly l1MaxMemory = 50 * 1024 * 1024; // 50MB max memory
-
-  // Access pattern tracking
-  private readonly accessPatterns = new Map<string, AccessPattern>();
-  private readonly prefetchQueue = new Set<string>();
-
-  // Cache warming
-  private readonly warmingEnabled = true;
-  private readonly prefetchEnabled = true;
-
-  // L2 and L3 cache metrics
-  private l2Stats = { hits: 0, misses: 0, networkLatency: 0, size: 0 };
-  private l3Stats = { hits: 0, misses: 0, queryTime: 0, size: 0 };
-
   constructor(
-    private readonly metricsService: HealthRecordMetricsService,
-    private readonly phiLogger: PHIAccessLogger,
-    private readonly eventEmitter: EventEmitter2,
-    @Inject(CACHE_MANAGER) private readonly redisCache: Cache,
-    private readonly sequelize: Sequelize,
-    @InjectModel(CacheEntryModel)
-    private readonly cacheEntryModel: typeof CacheEntryModel,
+    private readonly orchestrator: CacheStrategyOrchestratorService,
+    private readonly optimization: CacheOptimizationService,
   ) {
-    this.initializeCacheStrategy();
-    this.setupEventListeners();
-  }
-
-  /**
-   * Initialize cache strategy and start monitoring
-   */
-  private initializeCacheStrategy(): void {
-    this.logger.log('Initializing advanced multi-tier cache strategy');
-
-    // Setup cache eviction policies
-    this.setupEvictionPolicies();
-
-    // Initialize cache warming
-    if (this.warmingEnabled) {
-      this.initializeCacheWarming();
-    }
-
-    this.logger.log('Cache strategy initialized successfully');
+    this.logger.log('Cache Strategy Service (Facade) initialized - delegating to modular services');
   }
 
   /**
    * Get data from cache with intelligent tier fallback
    */
   async get<T>(key: string, compliance: ComplianceLevel): Promise<T | null> {
-    const startTime = Date.now();
-
-    try {
-      // Try L1 cache first (fastest)
-      const l1Result = this.getFromL1<T>(key);
-      if (l1Result !== null) {
-        this.updateAccessPattern(key, 'L1_HIT');
-        this.recordCacheHit('L1', Date.now() - startTime);
-        return l1Result;
-      }
-
-      // Try L2 cache (Redis)
-      const l2Result = await this.getFromL2<T>(key, compliance);
-      if (l2Result !== null) {
-        // Promote to L1 if appropriate
-        await this.promoteToL1(key, l2Result, compliance);
-        this.updateAccessPattern(key, 'L2_HIT');
-        this.recordCacheHit('L2', Date.now() - startTime);
-        return l2Result;
-      }
-
-      // Try L3 cache (Database result cache)
-      const l3Result = await this.getFromL3<T>(key, compliance);
-      if (l3Result !== null) {
-        // Consider promoting to higher tiers
-        await this.considerPromotion(key, l3Result, compliance);
-        this.updateAccessPattern(key, 'L3_HIT');
-        this.recordCacheHit('L3', Date.now() - startTime);
-        return l3Result;
-      }
-
-      // Cache miss across all tiers
-      this.updateAccessPattern(key, 'MISS');
-      this.recordCacheMiss(Date.now() - startTime);
-
-      return null;
-    } catch (error) {
-      this.logger.error(`Cache get operation failed for key ${key}:`, error);
-      return null;
-    }
+    const result = await this.orchestrator.get<T>(key, compliance);
+    return result.success ? result.data || null : null;
   }
 
   /**
@@ -193,40 +55,7 @@ export class CacheStrategyService implements OnModuleDestroy {
     compliance: ComplianceLevel,
     tags: string[] = [],
   ): Promise<void> {
-    const startTime = Date.now();
-    const dataSize = this.calculateDataSize(data);
-
-    try {
-      const cacheEntry: InMemoryCacheEntry<T> = {
-        data,
-        timestamp: new Date(),
-        accessCount: 1,
-        lastAccessed: new Date(),
-        compliance,
-        encrypted: compliance === 'PHI' || compliance === 'SENSITIVE_PHI',
-        tags,
-        size: dataSize,
-        tier: this.determineBestTier(key, dataSize, compliance),
-      };
-
-      // Set in appropriate tier based on strategy
-      await this.setInOptimalTier(key, cacheEntry, ttl);
-
-      // Update access patterns
-      this.updateAccessPattern(key, 'SET', {
-        dataType: this.extractDataType(key, tags),
-      });
-
-      // Record metrics
-      this.recordCacheSet(cacheEntry.tier, Date.now() - startTime, dataSize);
-
-      // Consider prefetching related data
-      if (this.prefetchEnabled) {
-        this.scheduleRelatedPrefetch(key, tags, compliance);
-      }
-    } catch (error) {
-      this.logger.error(`Cache set operation failed for key ${key}:`, error);
-    }
+    await this.orchestrator.set(key, data, ttl, compliance, tags);
   }
 
   /**
@@ -236,172 +65,42 @@ export class CacheStrategyService implements OnModuleDestroy {
     pattern: string | string[],
     reason: string = 'manual',
   ): Promise<void> {
-    const patterns = Array.isArray(pattern) ? pattern : [pattern];
-    let invalidatedCount = 0;
-
-    for (const pat of patterns) {
-      // Invalidate from all tiers
-      invalidatedCount += await this.invalidateFromAllTiers(pat);
-
-      // Remove from access patterns
-      this.removeAccessPattern(pat);
-    }
-
-    this.logger.log(
-      `Cache invalidation completed: ${invalidatedCount} entries removed, reason: ${reason}`,
-    );
-
-    // Emit invalidation event for dependent systems
-    this.eventEmitter.emit('cache.invalidated', {
-      patterns,
-      reason,
-      count: invalidatedCount,
-    });
+    await this.orchestrator.invalidate(pattern, reason);
   }
 
   /**
    * Get cache performance metrics
    */
   getCacheMetrics(): CacheMetrics {
-    const l1Stats = this.getL1Stats();
-    const l2Stats = this.getL2Stats();
-    const l3Stats = this.getL3Stats();
-
-    const totalHits = l1Stats.hits + l2Stats.hits + l3Stats.hits;
-    const totalMisses = l1Stats.misses + l2Stats.misses + l3Stats.misses;
-    const totalRequests = totalHits + totalMisses;
-
-    return {
-      l1Stats,
-      l2Stats,
-      l3Stats,
-      overall: {
-        hitRate: totalRequests > 0 ? totalHits / totalRequests : 0,
-        averageResponseTime: this.calculateAverageResponseTime(),
-        totalMemoryUsage: l1Stats.memoryUsage,
-      },
-    };
+    return this.orchestrator.getCacheMetrics();
   }
 
   /**
    * Get access patterns for analytics
    */
   getAccessPatterns(): AccessPattern[] {
-    return Array.from(this.accessPatterns.values())
-      .sort((a, b) => b.importance - a.importance)
-      .slice(0, 100); // Top 100 patterns
+    return this.orchestrator.getAccessPatterns();
   }
 
   /**
-   * Cache warming based on access patterns
+   * Delegate cache warming to optimization service
    */
-  @Cron(CronExpression.EVERY_5_MINUTES)
   async performCacheWarming(): Promise<void> {
-    if (!this.warmingEnabled) return;
-
-    this.logger.debug('Starting cache warming process');
-
-    const topPatterns = this.getTopAccessPatterns(20);
-    let warmedCount = 0;
-
-    for (const pattern of topPatterns) {
-      if (this.shouldWarmCache(pattern)) {
-        try {
-          await this.warmCacheEntry(pattern.key);
-          warmedCount++;
-        } catch (error) {
-          this.logger.error(`Cache warming failed for ${pattern.key}:`, error);
-        }
-      }
-    }
-
-    if (warmedCount > 0) {
-      this.logger.log(`Cache warming completed: ${warmedCount} entries warmed`);
-    }
+    await this.optimization.performCacheWarming();
   }
 
   /**
-   * Intelligent prefetching based on access patterns
+   * Delegate intelligent prefetching to optimization service
    */
-  @Cron('*/2 * * * *') // Every 2 minutes
   async performIntelligentPrefetch(): Promise<void> {
-    if (!this.prefetchEnabled || this.prefetchQueue.size === 0) return;
-
-    this.logger.debug(
-      `Starting intelligent prefetch: ${this.prefetchQueue.size} candidates`,
-    );
-
-    const prefetchBatch = Array.from(this.prefetchQueue).slice(0, 10);
-    this.prefetchQueue.clear();
-
-    let prefetched = 0;
-    for (const key of prefetchBatch) {
-      try {
-        const success = await this.prefetchRelatedData(key);
-        if (success) prefetched++;
-      } catch (error) {
-        this.logger.error(`Prefetch failed for ${key}:`, error);
-      }
-    }
-
-    if (prefetched > 0) {
-      this.logger.log(
-        `Intelligent prefetch completed: ${prefetched} entries prefetched`,
-      );
-    }
+    await this.optimization.performIntelligentPrefetch();
   }
 
   /**
-   * Cache optimization and cleanup
+   * Delegate cache optimization to optimization service
    */
-  @Cron(CronExpression.EVERY_HOUR)
   async performCacheOptimization(): Promise<void> {
-    this.logger.debug('Starting cache optimization');
-
-    // Optimize L1 cache
-    const l1Optimized = this.optimizeL1Cache();
-
-    // Clean up expired L3 cache entries
-    const l3Cleaned = await this.cleanupExpiredL3Entries();
-
-    // Clean up stale access patterns
-    const patternsCleanedUp = this.cleanupAccessPatterns();
-
-    // Update cache metrics
-    this.updateCacheMetrics();
-
-    this.logger.log(
-      `Cache optimization completed: L1 optimized: ${l1Optimized}, L3 cleaned: ${l3Cleaned}, patterns cleaned: ${patternsCleanedUp}`,
-    );
-  }
-
-  /**
-   * Clean up expired L3 cache entries
-   */
-  private async cleanupExpiredL3Entries(): Promise<number> {
-    try {
-      const deletedCount = await this.cacheEntryModel.destroy({
-        where: {
-          expiresAt: {
-            [Op.lt]: new Date(), // Expired entries
-          },
-        },
-      });
-
-      if (deletedCount > 0) {
-        this.logger.debug(
-          `Cleaned up ${deletedCount} expired L3 cache entries`,
-        );
-
-        // Update L3 cache size metric
-        this.l3Stats.size = Math.max(0, this.l3Stats.size - deletedCount);
-      }
-
-      return deletedCount;
-    } catch (error) {
-      this.logger.error('Failed to cleanup expired L3 cache entries:', error);
-      return 0;
-    }
+    await this.optimization.performCacheOptimization();
   }
 
   // ==================== Private Helper Methods ====================

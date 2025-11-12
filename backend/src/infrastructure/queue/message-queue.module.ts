@@ -47,14 +47,12 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { QueueName } from './enums';
 import { QUEUE_CONFIGS, QueueConfigService } from './queue.config';
 import { MessageQueueService } from './message-queue.service';
-import {
-  BatchMessageProcessor,
-  MessageCleanupProcessor,
-  MessageDeliveryProcessor,
-  MessageEncryptionProcessor,
-  MessageIndexingProcessor,
-  MessageNotificationProcessor,
-} from './message-queue.processor.complete';
+import { MessageDeliveryProcessor } from './message-delivery.processor';
+import { MessageNotificationProcessor } from './message-notification.processor';
+import { MessageEncryptionProcessor } from './message-encryption.processor';
+import { MessageIndexingProcessor } from './message-indexing.processor';
+import { BatchMessageProcessor } from './batch-message-sending.processor';
+import { MessageCleanupProcessor } from './message-cleanup.processor';
 import { EncryptionModule } from '@/infrastructure/encryption';
 import { WebSocketModule } from '@/infrastructure/websocket';
 import { Message, MessageDelivery } from '@/database';

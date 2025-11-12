@@ -7,9 +7,18 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { StudentService } from './student.service';
-import { StudentController } from './student.controller';
 import { StudentCoreController } from './controllers/student-core.controller';
 import { StudentStatusController } from './controllers/student-status.controller';
+import { StudentCrudController } from './controllers/student-crud.controller';
+import { StudentManagementController } from './controllers/student-management.controller';
+import { StudentQueryController } from './controllers/student-query.controller';
+import { StudentAnalyticsController } from './controllers/student-analytics.controller';
+import { StudentHealthController } from './controllers/student-health.controller';
+import { StudentPhotoController } from './controllers/student-photo.controller';
+import { StudentAcademicController } from './controllers/student-academic.controller';
+import { StudentGradeController } from './controllers/student-grade.controller';
+import { StudentBarcodeController } from './controllers/student-barcode.controller';
+import { StudentWaitlistController } from './controllers/student-waitlist.controller';
 import {
   StudentCrudService,
   StudentQueryService,
@@ -53,9 +62,18 @@ import { AuditModule } from '@/audit';
     AuditModule,
   ],
   controllers: [
-    StudentController, // Keep original for backward compatibility
     StudentCoreController,
     StudentStatusController,
+    StudentCrudController,
+    StudentManagementController,
+    StudentQueryController,
+    StudentAnalyticsController,
+    StudentHealthController,
+    StudentPhotoController,
+    StudentAcademicController,
+    StudentGradeController,
+    StudentBarcodeController,
+    StudentWaitlistController,
   ],
   providers: [
     StudentService, // Main facade service for backward compatibility
