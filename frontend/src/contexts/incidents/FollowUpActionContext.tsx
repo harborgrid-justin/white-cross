@@ -36,7 +36,7 @@ import {
   type FollowUpAction,
   type CreateFollowUpActionRequest,
   type UpdateFollowUpActionRequest,
-} from '@/types/incidents';
+} from '@/types/domain/incidents';
 
 // =====================
 // TYPE DEFINITIONS

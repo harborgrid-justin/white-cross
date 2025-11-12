@@ -2,10 +2,12 @@
  * @fileoverview Core Integration Types
  * @module types/domain/integrations/core
  * @category Healthcare - Integration Management
- * 
+ *
  * Core types and enums for integration management system.
  * Defines fundamental integration concepts used across the platform.
  */
+
+import { JsonValue, UnknownRecord } from './common';
 
 // ==================== ENUMS ====================
 
@@ -148,16 +150,18 @@ export interface IntegrationLog {
 /**
  * Log Details
  * Additional information stored with integration logs
+ *
+ * @note Index signature allows extensible log data while maintaining type safety
  */
 export interface LogDetails {
   message?: string;
   errors?: string[];
   warnings?: string[];
-  metadata?: Record<string, any>;
+  metadata?: UnknownRecord;
   stackTrace?: string;
   apiVersion?: string;
   requestId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -203,7 +207,7 @@ export interface FieldMapping {
   targetField: string;
   dataType: 'string' | 'number' | 'boolean' | 'date' | 'array' | 'object';
   required: boolean;
-  defaultValue?: any;
+  defaultValue?: JsonValue;
   transformRule?: string; // Reference to transform rule ID
   validationRules?: ValidationRule[];
 }
@@ -217,7 +221,7 @@ export interface TransformRule {
   name: string;
   type: 'format' | 'calculate' | 'lookup' | 'conditional' | 'custom';
   expression: string;
-  parameters?: Record<string, any>;
+  parameters?: UnknownRecord;
 }
 
 /**
@@ -226,7 +230,7 @@ export interface TransformRule {
  */
 export interface ValidationRule {
   type: 'required' | 'pattern' | 'range' | 'enum' | 'custom';
-  value?: any;
+  value?: JsonValue;
   message?: string;
 }
 
@@ -237,7 +241,7 @@ export interface ValidationRule {
 export interface SyncFilter {
   field: string;
   operator: 'equals' | 'contains' | 'startsWith' | 'greaterThan' | 'lessThan' | 'between';
-  value: any;
+  value: JsonValue;
   logicalOperator?: 'AND' | 'OR';
 }
 

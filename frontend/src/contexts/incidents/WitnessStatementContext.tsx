@@ -54,7 +54,7 @@ import type {
   CreateWitnessStatementRequest,
   UpdateWitnessStatementRequest,
   WitnessStatementFormData
-} from '@/types/incidents';
+} from '@/types/domain/incidents';
 import { incidentsApi } from '@/services';
 import { showSuccessToast, showErrorToast } from '@/utils/toast';
 
