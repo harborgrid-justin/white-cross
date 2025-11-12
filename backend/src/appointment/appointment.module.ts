@@ -16,6 +16,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AppointmentCoreController } from './controllers/appointment-core.controller';
 import { AppointmentStatusController } from './controllers/appointment-status.controller';
 import { AppointmentQueryController } from './controllers/appointment-query.controller';
+import { AppointmentStatisticsController } from './controllers/appointment-statistics.controller';
+import { AppointmentAdvancedController } from './controllers/appointment-advanced.controller';
 import { WaitlistController } from './controllers/waitlist.controller';
 import { ReminderController } from './controllers/reminder.controller';
 import { AppointmentService } from './appointment.service';
@@ -81,6 +83,8 @@ import { AppConfigService } from '../config/app-config.service';
     AppointmentCoreController,
     AppointmentStatusController,
     AppointmentQueryController,
+    AppointmentStatisticsController,
+    AppointmentAdvancedController,
     WaitlistController,
     ReminderController,
   ],
