@@ -17,7 +17,7 @@ import {
   IncidentAnalyticsData,
   DashboardData,
   ComplianceData,
-} from '../types/analytics-report.types';
+} from '../analytics-interfaces';
 
 @Injectable()
 export class ReportDataCollectorService {

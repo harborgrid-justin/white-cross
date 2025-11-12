@@ -4,7 +4,7 @@
  * @description Main service orchestrating all analytics report generation
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -17,7 +17,7 @@ import {
   ReportData,
   AnalyticsOperationResult,
   ReportMetadata,
-} from './types/analytics-report.types';
+} from './analytics-interfaces';
 import { ReportDataCollectorService } from './services/report-data-collector.service';
 import { ReportFormatterService } from './services/report-formatter.service';
 import { HealthInsightsService } from './services/health-insights.service';

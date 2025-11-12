@@ -12,9 +12,34 @@ export class CustomizeReminderPreferencesDto {
   @IsString()
   studentId: string;
 
-  @ApiProperty({ description: 'Reminder preferences object' })
+  @ApiProperty({
+    description: 'Reminder preferences object',
+    type: 'object',
+    properties: {
+      emailEnabled: { type: 'boolean' },
+      smsEnabled: { type: 'boolean' },
+      pushEnabled: { type: 'boolean' },
+      advanceNotice: { enum: ['24h', '1h', '15m'] },
+      quietHours: {
+        type: 'object',
+        properties: {
+          start: { type: 'string' },
+          end: { type: 'string' },
+        },
+      },
+    },
+  })
   @IsObject()
-  preferences: any;
+  preferences: {
+    emailEnabled: boolean;
+    smsEnabled: boolean;
+    pushEnabled: boolean;
+    advanceNotice: '24h' | '1h' | '15m';
+    quietHours?: {
+      start: string;
+      end: string;
+    };
+  };
 }
 
 export class ReminderScheduleResponseDto {

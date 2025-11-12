@@ -13,12 +13,10 @@ import { Reflector } from '@nestjs/core';
 import {
   Permission,
   type RbacConfig,
-  ROLE_HIERARCHY,
-  ROLE_PERMISSIONS,
   type UserProfile,
-  UserRole,
 } from '../types/rbac.types';
 import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../decorators/permissions.decorator';
+import { RbacPermissionService } from '../services/rbac-permission.service';
 
 /**
  * Permissions Guard - Fine-grained permission-based authorization
@@ -46,6 +44,7 @@ export class PermissionsGuard implements CanActivate {
 
   constructor(
     private readonly reflector: Reflector,
+    private readonly rbacPermissionService: RbacPermissionService,
     @Optional() config?: RbacConfig,
   ) {
     this.config = {
@@ -90,22 +89,25 @@ export class PermissionsGuard implements CanActivate {
     // Check permissions based on mode
     const hasPermission =
       permissionsMode === 'all'
-        ? this.hasAllPermissions(user, requiredPermissions)
-        : this.hasAnyPermission(user, requiredPermissions);
+        ? this.rbacPermissionService.hasAllPermissions(user, requiredPermissions, this.config)
+        : this.rbacPermissionService.hasAnyPermission(user, requiredPermissions, this.config);
 
     if (!hasPermission) {
-      const missingPermissions = requiredPermissions.filter(
-        (permission) => !this.hasPermission(user, permission),
+      const missingPermissions = this.rbacPermissionService.getMissingPermissions(
+        user,
+        requiredPermissions,
+        this.config,
       );
 
       if (this.config.enableAuditLogging) {
-        this.logger.warn('Permission authorization failed', {
-          userId: user.userId,
-          userRole: user.role,
+        this.rbacPermissionService.logAuthorizationAttempt(
+          'permission',
+          false,
+          user,
           requiredPermissions,
           missingPermissions,
-          mode: permissionsMode,
-        });
+          permissionsMode,
+        );
       }
 
       throw new ForbiddenException(
@@ -114,90 +116,16 @@ export class PermissionsGuard implements CanActivate {
     }
 
     if (this.config.enableAuditLogging) {
-      this.logger.debug('Permission authorization successful', {
-        userId: user.userId,
-        userRole: user.role,
+      this.rbacPermissionService.logAuthorizationAttempt(
+        'permission',
+        true,
+        user,
         requiredPermissions,
-        mode: permissionsMode,
-      });
+        [],
+        permissionsMode,
+      );
     }
 
     return true;
-  }
-
-  /**
-   * Check if user has specific permission
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {Permission} requiredPermission - Required permission
-   * @returns {boolean} True if user has permission
-   */
-  private hasPermission(
-    user: UserProfile,
-    requiredPermission: Permission,
-  ): boolean {
-    const userRole = user.role as UserRole;
-
-    // Check explicit user permissions first
-    if (user.permissions && user.permissions.includes(requiredPermission)) {
-      return true;
-    }
-
-    // Check role-based permissions
-    const rolePermissions = ROLE_PERMISSIONS[userRole] || [];
-    if (rolePermissions.includes(requiredPermission)) {
-      return true;
-    }
-
-    // Check inherited permissions from lower roles (if hierarchy enabled)
-    if (this.config.enableHierarchy) {
-      const userLevel = ROLE_HIERARCHY[userRole];
-
-      for (const [role, level] of Object.entries(ROLE_HIERARCHY)) {
-        if (level < userLevel) {
-          const inheritedPermissions = ROLE_PERMISSIONS[role as UserRole] || [];
-          if (inheritedPermissions.includes(requiredPermission)) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Check if user has ANY of the required permissions (OR logic)
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {Permission[]} requiredPermissions - Required permissions
-   * @returns {boolean} True if user has at least one permission
-   */
-  private hasAnyPermission(
-    user: UserProfile,
-    requiredPermissions: Permission[],
-  ): boolean {
-    return requiredPermissions.some((permission) =>
-      this.hasPermission(user, permission),
-    );
-  }
-
-  /**
-   * Check if user has ALL required permissions (AND logic)
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {Permission[]} requiredPermissions - Required permissions
-   * @returns {boolean} True if user has all permissions
-   */
-  private hasAllPermissions(
-    user: UserProfile,
-    requiredPermissions: Permission[],
-  ): boolean {
-    return requiredPermissions.every((permission) =>
-      this.hasPermission(user, permission),
-    );
   }
 }

@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { StudentHealthMetrics, RiskAssessment, HealthMetricsData } from '../types/analytics-report.types';
+import { StudentHealthMetrics, RiskAssessment, HealthMetricsData } from '../analytics-interfaces';
 
 @Injectable()
 export class HealthInsightsService {

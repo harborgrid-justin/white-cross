@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsOptional, IsString, IsUrl, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsArray, IsOptional, IsUUID } from 'class-validator';
+import { BaseSendMessageDto } from './base-send-message.dto';
 
 /**
  * DTO for sending group messages (1-to-many conversations)
@@ -7,43 +8,13 @@ import { IsArray, IsBoolean, IsOptional, IsString, IsUrl, IsUUID, MaxLength, Min
  * Group messages are sent to multiple recipients in an existing group conversation.
  * The conversation must exist before sending a group message.
  */
-export class SendGroupMessageDto {
+export class SendGroupMessageDto extends BaseSendMessageDto {
   @ApiProperty({
     description: 'Conversation ID to send the message to',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsUUID()
   conversationId: string;
-
-  @ApiProperty({
-    description: 'Message content',
-    minLength: 1,
-    maxLength: 10000,
-    example: 'Hello everyone!',
-  })
-  @IsString()
-  @MinLength(1)
-  @MaxLength(10000)
-  content: string;
-
-  @ApiPropertyOptional({
-    description: 'Message attachments (file URLs)',
-    type: [String],
-    maxItems: 10,
-    example: ['https://example.com/document.pdf'],
-  })
-  @IsOptional()
-  @IsArray()
-  @IsUrl({}, { each: true })
-  attachments?: string[];
-
-  @ApiPropertyOptional({
-    description: 'Parent message ID for threaded replies',
-    example: '789e0123-e89b-12d3-a456-426614174000',
-  })
-  @IsOptional()
-  @IsUUID()
-  parentId?: string;
 
   @ApiPropertyOptional({
     description: 'Mention specific users by their IDs',
@@ -54,20 +25,4 @@ export class SendGroupMessageDto {
   @IsArray()
   @IsUUID('4', { each: true })
   mentions?: string[];
-
-  @ApiPropertyOptional({
-    description: 'Whether to encrypt the message content',
-    default: false,
-  })
-  @IsOptional()
-  @IsBoolean()
-  encrypted?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Additional metadata for the message',
-    type: 'object',
-    additionalProperties: true,
-  })
-  @IsOptional()
-  metadata?: Record<string, any>;
 }

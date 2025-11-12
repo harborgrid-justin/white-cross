@@ -18,6 +18,7 @@ import { Global, MiddlewareConsumer, Module, NestModule, RequestMethod } from '@
 import { SessionMiddleware } from './middleware/session.middleware';
 import { RbacGuard } from './guards/rbac.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
+import { RbacPermissionService } from './services/rbac-permission.service';
 import { RequestContextMiddleware } from '../../common/middleware/request-context.middleware';
 
 /**
@@ -71,6 +72,9 @@ import { RequestContextMiddleware } from '../../common/middleware/request-contex
     // Session management middleware
     SessionMiddleware,
 
+    // Authorization services
+    RbacPermissionService,
+
     // Authorization guards
     RbacGuard,
     PermissionsGuard,
@@ -79,6 +83,7 @@ import { RequestContextMiddleware } from '../../common/middleware/request-contex
     // Export for use in other modules
     RequestContextMiddleware,
     SessionMiddleware,
+    RbacPermissionService,
     RbacGuard,
     PermissionsGuard,
   ],

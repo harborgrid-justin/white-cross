@@ -88,15 +88,15 @@ export class EnterpriseFeaturesService {
   // ============================================
 
   async createRecurringTemplate(data: Omit<RecurringTemplate, 'id'>): Promise<RecurringTemplate> {
-    return this.recurringAppointmentsService.createTemplate(data);
+    return this.recurringAppointmentsService.createRecurringTemplate(data);
   }
 
   private async generateAppointmentsFromTemplate(template: RecurringTemplate): Promise<void> {
-    return this.recurringAppointmentsService.generateAppointments(template.id);
+    return this.recurringAppointmentsService.generateAppointmentsFromTemplate(template.id);
   }
 
   async cancelRecurringSeries(templateId: string): Promise<boolean> {
-    return this.recurringAppointmentsService.deactivateTemplate(templateId);
+    return this.recurringAppointmentsService.cancelRecurringSeries(templateId, 'system', 'API cancellation');
   }
 
   // ============================================
@@ -175,7 +175,7 @@ export class EnterpriseFeaturesService {
   // ============================================
 
   async performComplianceAudit(): Promise<HIPAAComplianceCheck[]> {
-    return this.hipaaComplianceService.performAudit();
+    return this.hipaaComplianceService.performComplianceAudit();
   }
 
   async generateComplianceReport(startDate: Date, endDate: Date): Promise<{
@@ -191,7 +191,7 @@ export class EnterpriseFeaturesService {
   // ============================================
 
   async trackRegulationChanges(state: string): Promise<RegulationUpdate[]> {
-    return this.regulationTrackingService.trackChanges(state);
+    return this.regulationTrackingService.trackRegulationChanges(state);
   }
 
   async assessImpact(regulationId: string): Promise<string[]> {
