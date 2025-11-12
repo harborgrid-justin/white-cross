@@ -1,26 +1,86 @@
 /**
- * Socket.io Messaging Service
+ * Socket.io Service Module
  *
- * Export all socket service components
+ * Export all socket service components including:
+ * - Core service class and singleton
+ * - React Context and Provider
+ * - React hooks for socket integration
+ * - Configuration and types
  *
  * @module services/socket
  */
 
-// Main service
-export { socketService, SocketService } from './socket.service';
+// ==========================================
+// CORE SERVICE
+// ==========================================
 
-// Configuration
+export { SocketServiceBase } from './SocketServiceBase';
+export { SocketService, socketService } from './SocketService';
+
+// ==========================================
+// REACT INTEGRATION
+// ==========================================
+
+// Context and Provider
+export { SocketProvider, useSocket } from './SocketReactContext';
+
+// React Hooks
+export {
+  useSocketEvent,
+  useMessageListener,
+  useNotificationListener,
+  useTypingIndicator,
+  useTypingListener,
+  useEmergencyAlerts,
+  useHealthNotifications,
+  useStudentHealthAlerts,
+  useMedicationReminders
+} from './SocketReactHooks';
+
+// ==========================================
+// CONFIGURATION
+// ==========================================
+
 export { socketConfig, getSocketConfig } from './socket.config';
 export type { SocketConfig } from './socket.config';
 
-// Types
+// ==========================================
+// TYPES AND ENUMS
+// ==========================================
+
 export {
   ConnectionState,
-  SocketEvent
-} from './socket.types';
+  WebSocketEvent
+} from './types';
 
 export type {
   Message,
+  Notification,
+  TypingIndicator,
+  ReadReceipt,
+  SendMessagePayload,
+  ConnectionMetrics,
+  EventHandler,
+  StateChangeListener,
+  SocketContextValue,
+  SocketProviderProps,
+  ConnectionEvent
+} from './types';
+
+// ==========================================
+// MODULAR MANAGERS
+// ==========================================
+
+export { EventManager } from './EventManager';
+export { ConnectionManager } from './ConnectionManager';
+export { MessageQueue } from './MessageQueue';
+
+// ==========================================
+// LEGACY EXPORTS (from socket.types)
+// ==========================================
+
+// Re-export socket.types for backward compatibility
+export type {
   MessageReceivedPayload,
   MessageDeliveredPayload,
   MessageReadPayload,
@@ -31,20 +91,16 @@ export type {
   ConnectionErrorPayload,
   PingPayload,
   PongPayload,
-  SendMessagePayload,
-  EventHandler,
-  StateChangeListener,
   QueuedMessage,
   SocketError,
-  ConnectionMetrics,
   SocketEventPayloadMap,
   SocketEventHandlers
 } from './socket.types';
 
-// Managers
-export { SocketEventManager } from './socket-events';
-export { SocketConnectionManager } from './socket-manager';
-export { SocketMessageQueue } from './socket-queue';
+export { SocketEvent } from './socket.types';
 
-// Default export
+// ==========================================
+// DEFAULT EXPORT
+// ==========================================
+
 export default socketService;
