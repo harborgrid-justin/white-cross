@@ -13,7 +13,7 @@ import type {
   StudentFilters,
   PaginatedStudentsResponse,
 } from '@/types/student.types';
-import type { StudentUIState } from '@/stores/slices/studentsSlice';
+import type { StudentUIState } from '@/stores/slices/students';
 
 // =====================
 // RETURN TYPES

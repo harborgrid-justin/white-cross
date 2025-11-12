@@ -32,14 +32,14 @@ export { appointmentsReducer, appointmentsSlice } from './appointmentsSlice';
 // ============================================================
 // STUDENT MANAGEMENT
 // ============================================================
-export { studentsReducer, studentsSlice } from './studentsSlice';
+export { studentsReducer, studentsSlice } from './students';
 
 export { emergencyContactsReducer, emergencyContactsSlice } from './emergencyContactsSlice';
 
 // ============================================================
 // INCIDENT MANAGEMENT
 // ============================================================
-export { default as incidentReportsReducer } from './incidentReportsSlice';
+export { incidentReportsReducer } from './incidentReports';
 
 // ============================================================
 // ADMINISTRATION

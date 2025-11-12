@@ -12,7 +12,7 @@ import {
   selectStudentSearchQuery,
   selectShowInactiveStudents,
   type StudentUIState,
-} from '@/stores/slices/studentsSlice';
+} from '@/stores/slices/students';
 
 /**
  * Hook for managing student view mode (grid, list, table)
