@@ -249,3 +249,41 @@ export const configurationSchema = z.object({
     .min(0, 'Sort order cannot be negative')
     .optional(),
 });
+
+// ==================== BACKUP VALIDATION SCHEMAS ====================
+
+export const createBackupSchema = z.object({
+  type: z.enum(['FULL', 'INCREMENTAL', 'DIFFERENTIAL']).optional(),
+  description: z.string()
+    .max(500, 'Description cannot exceed 500 characters')
+    .optional(),
+  includeFiles: z.boolean().optional(),
+  compress: z.boolean().optional(),
+}).optional().default({});
+
+// ==================== METRICS VALIDATION SCHEMAS ====================
+
+export const recordMetricSchema = z.object({
+  metricType: z.string()
+    .min(1, 'Metric type is required')
+    .max(100, 'Metric type cannot exceed 100 characters'),
+  value: z.number()
+    .min(0, 'Metric value cannot be negative'),
+  unit: z.string()
+    .max(50, 'Unit cannot exceed 50 characters')
+    .optional(),
+  context: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const metricFiltersSchema = z.object({
+  metricType: z.string()
+    .max(100, 'Metric type cannot exceed 100 characters')
+    .optional(),
+  startDate: z.union([z.string(), z.date()]).optional(),
+  endDate: z.union([z.string(), z.date()]).optional(),
+  limit: z.number()
+    .min(1, 'Limit must be at least 1')
+    .max(1000, 'Limit cannot exceed 1000')
+    .optional(),
+  tags: z.array(z.string()).optional(),
+});

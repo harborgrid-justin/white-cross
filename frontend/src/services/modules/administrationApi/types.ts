@@ -168,3 +168,17 @@ export interface AdministrationApiOperations {
   // Audit Logs
   getAuditLogs(filters?: AuditLogQueryFilters): Promise<PaginatedResponse<AuditLog>>;
 }
+
+// ==================== MONITORING TYPES ====================
+
+/**
+ * Individual service health status
+ */
+export interface ServiceHealth {
+  name: string;
+  status: 'operational' | 'degraded' | 'down';
+  responseTime: number;
+  uptime: number;
+  lastCheck: string | Date;
+  errorRate?: number;
+}

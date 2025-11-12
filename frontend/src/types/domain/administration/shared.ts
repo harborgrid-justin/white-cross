@@ -85,6 +85,7 @@ export interface MetricFilters {
   startDate?: Date | string;
   endDate?: Date | string;
   limit?: number;
+  tags?: string[];
 }
 
 // ==================== API RESPONSE TYPES ====================

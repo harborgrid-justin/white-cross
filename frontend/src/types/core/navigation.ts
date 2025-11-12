@@ -20,8 +20,13 @@
  */
 
 // Import directly from source files to avoid circular dependency with index
-import { UserRole, PermissionResource, PermissionAction } from './common';
-import { LucideIcon } from 'lucide-react';
+import { UserRole } from './common';
+import type { LucideIcon } from 'lucide-react';
+
+// Note: PermissionResource and PermissionAction are defined in domain/accessControl.ts
+// Using string types for now to avoid circular dependencies
+type PermissionResource = string;
+type PermissionAction = string;
 
 // ============================================================================
 // NAVIGATION ITEM TYPES
