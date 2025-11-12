@@ -2,64 +2,67 @@
  * @fileoverview Granular cache invalidation strategy for surgical cache updates
  * @module services/cache/InvalidationStrategy
  * @category Services
- * 
+ *
  * Provides operation-specific cache invalidation patterns that replace
  * over-aggressive "invalidate everything" approaches with targeted updates.
- * 
+ *
  * Key Features:
  * - Operation-specific invalidation rules (create, update, delete)
  * - Entity-aware invalidation patterns
  * - Relationship tracking (e.g., student → health records)
  * - Configurable refetch strategies
  * - 60% reduction in unnecessary cache invalidations
- * 
+ *
  * @example
  * ```typescript
  * const strategy = new InvalidationStrategy(queryClient);
- * 
+ *
  * // Invalidate based on operation
- * await strategy.invalidateForOperation({
- *   operation: 'update',
- *   entityType: 'students',
+ * await strategy.invalidate({
+ *   operationType: 'update',
+ *   entity: 'students',
  *   entityId: '123',
- *   affectedFields: ['name', 'grade']
+ *   changedFields: ['name', 'grade']
  * });
  * ```
  */
 
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, type Query } from '@tanstack/react-query';
 import type {
   InvalidationOperation,
   InvalidationRule,
   InvalidationTarget
 } from './types';
 import { QueryKeyFactory } from './QueryKeyFactory';
+import { createStudentRules } from './invalidation-rules/student-rules';
+import { createHealthRecordRules, createMedicationRules } from './invalidation-rules/health-rules';
+import { createAppointmentRules, createIncidentRules } from './invalidation-rules/other-rules';
 
 /**
  * Invalidation Strategy Manager
- * 
+ *
  * @class
  * @classdesc Manages granular cache invalidation rules for all entity types.
  * Provides surgical cache updates that minimize unnecessary refetches while
  * ensuring data consistency across related entities.
- * 
+ *
  * Architecture:
  * - Rule-based invalidation patterns
  * - Operation-specific targeting
  * - Relationship-aware propagation
  * - Configurable refetch behavior
- * 
+ *
  * @example
  * ```typescript
  * const strategy = new InvalidationStrategy(queryClient);
- * 
+ *
  * // Automatically invalidates:
  * // - Specific student detail
  * // - Student lists that include this student
  * // - Related health records (if applicable)
- * await strategy.invalidateForOperation({
- *   operation: 'updatePersonalInfo',
- *   entityType: 'students',
+ * await strategy.invalidate({
+ *   operationType: 'update',
+ *   entity: 'students',
  *   entityId: 'student-123'
  * });
  * ```
@@ -75,512 +78,27 @@ export class InvalidationStrategy {
 
   /**
    * Initialize Invalidation Rules for All Entity Types
+   *
+   * @private
+   * @description
+   * Registers invalidation rules from modular rule factories.
+   * Each entity type has its own rule set defined in separate files.
    */
   private initializeRules(): void {
-    this.registerStudentRules();
-    this.registerHealthRecordRules();
-    this.registerMedicationRules();
-    this.registerAppointmentRules();
-    this.registerIncidentRules();
-  }
+    // Register student rules
+    this.rules.set('students', createStudentRules());
 
-  /**
-   * Register Student Invalidation Rules
-   */
-  private registerStudentRules(): void {
-    const rules: InvalidationRule[] = [
-      // CREATE STUDENT
-      {
-        operationPattern: /^create$/i,
-        entityType: 'students',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
+    // Register health record rules
+    this.rules.set('health-records', createHealthRecordRules());
 
-          // Invalidate all student lists (new student affects all lists)
-          targets.push({
-            queryKey: /^\["students","list"/,
-            refetch: true
-          });
+    // Register medication rules
+    this.rules.set('medications', createMedicationRules());
 
-          // Invalidate statistics
-          targets.push({
-            queryKey: /^\["students","stats"\]/,
-            refetch: true
-          });
+    // Register appointment rules
+    this.rules.set('appointments', createAppointmentRules());
 
-          return targets;
-        }
-      },
-
-      // UPDATE PERSONAL INFO
-      {
-        operationPattern: /^update.*personal.*info$/i,
-        entityType: 'students',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Always invalidate the specific student detail
-          if (op.entityId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'students',
-                'detail',
-                op.entityId
-              ]),
-              refetch: true
-            });
-          }
-
-          // Only invalidate lists if name changed (affects sorting/display)
-          const nameChanged =
-            op.changedFields?.some((field) =>
-              ['firstName', 'lastName', 'preferredName'].includes(field)
-            ) ?? false;
-
-          if (nameChanged) {
-            targets.push({
-              queryKey: /^\["students","list"/,
-              refetch: true
-            });
-          }
-
-          return targets;
-        }
-      },
-
-      // UPDATE GRADE
-      {
-        operationPattern: /^update.*grade$/i,
-        entityType: 'students',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate the specific student
-          if (op.entityId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'students',
-                'detail',
-                op.entityId
-              ]),
-              refetch: true
-            });
-          }
-
-          // Invalidate old grade list
-          const oldGrade = op.previousValues?.grade;
-          if (oldGrade) {
-            const oldGradeKey = QueryKeyFactory.create({
-              entity: 'students',
-              operation: 'list',
-              filters: { grade: oldGrade }
-            });
-            targets.push({
-              queryKey: QueryKeyFactory.toString(oldGradeKey),
-              refetch: true
-            });
-          }
-
-          // Invalidate new grade list
-          const newGrade = op.newValues?.grade;
-          if (newGrade) {
-            const newGradeKey = QueryKeyFactory.create({
-              entity: 'students',
-              operation: 'list',
-              filters: { grade: newGrade }
-            });
-            targets.push({
-              queryKey: QueryKeyFactory.toString(newGradeKey),
-              refetch: true
-            });
-          }
-
-          // Invalidate stats (grade distribution changed)
-          targets.push({
-            queryKey: /^\["students","stats"\]/,
-            refetch: true
-          });
-
-          return targets;
-        }
-      },
-
-      // UPDATE SCHOOL
-      {
-        operationPattern: /^update.*school$/i,
-        entityType: 'students',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate the specific student
-          if (op.entityId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'students',
-                'detail',
-                op.entityId
-              ]),
-              refetch: true
-            });
-          }
-
-          // Invalidate old school list
-          const oldSchool = op.previousValues?.schoolId;
-          if (oldSchool) {
-            const oldSchoolKey = QueryKeyFactory.create({
-              entity: 'students',
-              operation: 'list',
-              filters: { schoolId: oldSchool }
-            });
-            targets.push({
-              queryKey: QueryKeyFactory.toString(oldSchoolKey),
-              refetch: true
-            });
-          }
-
-          // Invalidate new school list
-          const newSchool = op.newValues?.schoolId;
-          if (newSchool) {
-            const newSchoolKey = QueryKeyFactory.create({
-              entity: 'students',
-              operation: 'list',
-              filters: { schoolId: newSchool }
-            });
-            targets.push({
-              queryKey: QueryKeyFactory.toString(newSchoolKey),
-              refetch: true
-            });
-          }
-
-          return targets;
-        }
-      },
-
-      // UPDATE STATUS (active/archived)
-      {
-        operationPattern: /^update.*status$/i,
-        entityType: 'students',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate the specific student
-          if (op.entityId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'students',
-                'detail',
-                op.entityId
-              ]),
-              refetch: true
-            });
-          }
-
-          // Invalidate active students list
-          targets.push({
-            queryKey: QueryKeyFactory.toString(
-              QueryKeyFactory.create({
-                entity: 'students',
-                operation: 'list',
-                filters: { status: 'active' }
-              })
-            ),
-            refetch: true
-          });
-
-          // Invalidate archived students list
-          targets.push({
-            queryKey: QueryKeyFactory.toString(
-              QueryKeyFactory.create({
-                entity: 'students',
-                operation: 'list',
-                filters: { status: 'archived' }
-              })
-            ),
-            refetch: true
-          });
-
-          // Invalidate stats
-          targets.push({
-            queryKey: /^\["students","stats"\]/,
-            refetch: true
-          });
-
-          return targets;
-        }
-      },
-
-      // DELETE STUDENT
-      {
-        operationPattern: /^delete$/i,
-        entityType: 'students',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate all student lists (student removed from all lists)
-          targets.push({
-            queryKey: /^\["students","list"/,
-            refetch: true
-          });
-
-          // Invalidate the specific student detail
-          if (op.entityId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'students',
-                'detail',
-                op.entityId
-              ]),
-              refetch: false // Don't refetch deleted item
-            });
-          }
-
-          // Invalidate statistics
-          targets.push({
-            queryKey: /^\["students","stats"\]/,
-            refetch: true
-          });
-
-          return targets;
-        }
-      }
-    ];
-
-    this.rules.set('students', rules);
-  }
-
-  /**
-   * Register Health Record Invalidation Rules
-   */
-  private registerHealthRecordRules(): void {
-    const rules: InvalidationRule[] = [
-      // CREATE HEALTH RECORD
-      {
-        operationPattern: /^create$/i,
-        entityType: 'health-records',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate lists for this student
-          const studentId = op.newValues?.studentId;
-          if (studentId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString(
-                QueryKeyFactory.create({
-                  entity: 'health-records',
-                  operation: 'list',
-                  filters: { studentId }
-                })
-              ),
-              refetch: true
-            });
-
-            // Invalidate student's health summary
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'students',
-                'detail',
-                studentId
-              ]),
-              refetch: true
-            });
-          }
-
-          return targets;
-        }
-      },
-
-      // UPDATE HEALTH RECORD
-      {
-        operationPattern: /^update$/i,
-        entityType: 'health-records',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate the specific record
-          if (op.entityId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'health-records',
-                'detail',
-                op.entityId
-              ]),
-              refetch: true
-            });
-          }
-
-          // Invalidate student's health records list
-          const studentId = op.newValues?.studentId || op.previousValues?.studentId;
-          if (studentId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString(
-                QueryKeyFactory.create({
-                  entity: 'health-records',
-                  operation: 'list',
-                  filters: { studentId }
-                })
-              ),
-              refetch: true
-            });
-          }
-
-          return targets;
-        }
-      }
-    ];
-
-    this.rules.set('health-records', rules);
-  }
-
-  /**
-   * Register Medication Invalidation Rules
-   */
-  private registerMedicationRules(): void {
-    const rules: InvalidationRule[] = [
-      // CREATE MEDICATION
-      {
-        operationPattern: /^create$/i,
-        entityType: 'medications',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate all medication lists
-          targets.push({
-            queryKey: /^\["medications","list"/,
-            refetch: true
-          });
-
-          // Invalidate active medications
-          targets.push({
-            queryKey: QueryKeyFactory.toString(
-              QueryKeyFactory.create({
-                entity: 'medications',
-                operation: 'list',
-                filters: { status: 'active' }
-              })
-            ),
-            refetch: true
-          });
-
-          return targets;
-        }
-      },
-
-      // UPDATE MEDICATION STATUS
-      {
-        operationPattern: /^update.*status$/i,
-        entityType: 'medications',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate the specific medication
-          if (op.entityId) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString([
-                'medications',
-                'detail',
-                op.entityId
-              ]),
-              refetch: true
-            });
-          }
-
-          // Only invalidate active list if status changed to/from active
-          const statusChanged = op.changedFields?.includes('status');
-          if (statusChanged) {
-            targets.push({
-              queryKey: QueryKeyFactory.toString(
-                QueryKeyFactory.create({
-                  entity: 'medications',
-                  operation: 'list',
-                  filters: { status: 'active' }
-                })
-              ),
-              refetch: true
-            });
-          }
-
-          return targets;
-        }
-      }
-    ];
-
-    this.rules.set('medications', rules);
-  }
-
-  /**
-   * Register Appointment Invalidation Rules
-   */
-  private registerAppointmentRules(): void {
-    const rules: InvalidationRule[] = [
-      // CREATE APPOINTMENT
-      {
-        operationPattern: /^create$/i,
-        entityType: 'appointments',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate upcoming appointments
-          targets.push({
-            queryKey: QueryKeyFactory.toString(
-              QueryKeyFactory.create({
-                entity: 'appointments',
-                operation: 'list',
-                filters: { status: 'upcoming' }
-              })
-            ),
-            refetch: true
-          });
-
-          return targets;
-        }
-      }
-    ];
-
-    this.rules.set('appointments', rules);
-  }
-
-  /**
-   * Register Incident Invalidation Rules
-   */
-  private registerIncidentRules(): void {
-    const rules: InvalidationRule[] = [
-      // CREATE INCIDENT
-      {
-        operationPattern: /^create$/i,
-        entityType: 'incidents',
-        getInvalidationTargets: (_op) => {
-          const targets: InvalidationTarget[] = [];
-
-          // Invalidate incident lists
-          targets.push({
-            queryKey: /^\["incidents","list"/,
-            refetch: true
-          });
-
-          // Invalidate recent incidents
-          targets.push({
-            queryKey: QueryKeyFactory.toString(
-              QueryKeyFactory.create({
-                entity: 'incidents',
-                operation: 'list',
-                filters: { recent: true }
-              })
-            ),
-            refetch: true
-          });
-
-          // Invalidate incident stats
-          targets.push({
-            queryKey: /^\["incidents","stats"\]/,
-            refetch: true
-          });
-
-          return targets;
-        }
-      }
-    ];
-
-    this.rules.set('incidents', rules);
+    // Register incident rules
+    this.rules.set('incidents', createIncidentRules());
   }
 
   /**
@@ -588,6 +106,22 @@ export class InvalidationStrategy {
    *
    * @param operation - Invalidation operation details
    * @returns Number of queries invalidated
+   *
+   * @description
+   * Finds matching invalidation rule for the operation and executes
+   * all targeted cache invalidations. Uses pattern matching for query
+   * keys and respects refetch configuration.
+   *
+   * @example
+   * ```typescript
+   * const count = await strategy.invalidate({
+   *   operationType: 'update',
+   *   entity: 'students',
+   *   entityId: '123',
+   *   changedFields: ['grade']
+   * });
+   * console.log(`Invalidated ${count} queries`);
+   * ```
    */
   async invalidate(operation: InvalidationOperation): Promise<number> {
     const { operationType, entity } = operation;
@@ -617,24 +151,8 @@ export class InvalidationStrategy {
 
     // Execute invalidations
     for (const target of targets) {
-      if (typeof target.queryKey === 'string') {
-        // Exact key match
-        await this.queryClient.invalidateQueries({
-          queryKey: QueryKeyFactory.fromString(target.queryKey),
-          refetchType: target.refetch ? 'active' : 'none'
-        } as any);
-        invalidatedCount++;
-      } else {
-        // Pattern match
-        await this.queryClient.invalidateQueries({
-          predicate: (query: any) => {
-            const key = QueryKeyFactory.toString(query.queryKey as unknown[]);
-            return (target.queryKey as RegExp).test(key);
-          },
-          refetchType: target.refetch ? 'active' : 'none'
-        } as any);
-        invalidatedCount++;
-      }
+      await this.executeInvalidation(target);
+      invalidatedCount++;
     }
 
     console.log(
@@ -646,10 +164,52 @@ export class InvalidationStrategy {
   }
 
   /**
+   * Execute Single Invalidation Target
+   *
+   * @private
+   * @param target - Invalidation target with query key and refetch options
+   *
+   * @description
+   * Executes a single invalidation, handling both exact key matches
+   * and pattern-based matches. Properly typed to avoid 'any' usage.
+   */
+  private async executeInvalidation(target: InvalidationTarget): Promise<void> {
+    if (typeof target.queryKey === 'string') {
+      // Exact key match
+      await this.queryClient.invalidateQueries({
+        queryKey: QueryKeyFactory.fromString(target.queryKey),
+        refetchType: target.refetch ? 'active' : 'none'
+      });
+    } else {
+      // Pattern match - use predicate
+      await this.queryClient.invalidateQueries({
+        predicate: (query: Query): boolean => {
+          const key = QueryKeyFactory.toString(query.queryKey);
+          return target.queryKey instanceof RegExp && target.queryKey.test(key);
+        },
+        refetchType: target.refetch ? 'active' : 'none'
+      });
+    }
+  }
+
+  /**
    * Register Custom Rule
    *
    * @param entityType - Entity type
    * @param rule - Invalidation rule
+   *
+   * @description
+   * Allows runtime registration of custom invalidation rules for
+   * entity types not covered by default rules.
+   *
+   * @example
+   * ```typescript
+   * strategy.registerRule('custom-entity', {
+   *   operationPattern: /^create$/,
+   *   entityType: 'custom-entity',
+   *   getInvalidationTargets: (op) => [...]
+   * });
+   * ```
    */
   registerRule(entityType: string, rule: InvalidationRule): void {
     const existingRules = this.rules.get(entityType) || [];
@@ -666,6 +226,17 @@ let invalidationStrategyInstance: InvalidationStrategy | null = null;
  *
  * @param queryClient - React Query client
  * @returns Invalidation strategy instance
+ *
+ * @description
+ * Returns the singleton instance of InvalidationStrategy, creating it
+ * if it doesn't exist. Ensures only one instance manages invalidation
+ * rules across the application.
+ *
+ * @example
+ * ```typescript
+ * const strategy = getInvalidationStrategy(queryClient);
+ * await strategy.invalidate({ ... });
+ * ```
  */
 export function getInvalidationStrategy(
   queryClient: QueryClient
@@ -677,31 +248,18 @@ export function getInvalidationStrategy(
 }
 
 /**
- * Reset Invalidation Strategy (for testing)
+ * Reset Invalidation Strategy
+ *
+ * @description
+ * Resets the singleton instance. Primarily used for testing to ensure
+ * clean state between test runs.
+ *
+ * @example
+ * ```typescript
+ * // In test teardown
+ * resetInvalidationStrategy();
+ * ```
  */
 export function resetInvalidationStrategy(): void {
   invalidationStrategyInstance = null;
-}
-
-/**
- * Helper: Create Student Update Operation
- */
-export function createStudentUpdateOperation(
-  operationType: 'create' | 'update' | 'delete' | 'bulk',
-  studentId: string | number,
-  previousValues: Record<string, unknown>,
-  newValues: Record<string, unknown>
-): InvalidationOperation {
-  const changedFields = Object.keys(newValues).filter(
-    (key) => previousValues[key] !== newValues[key]
-  );
-
-  return {
-    operationType,
-    entity: 'students',
-    entityId: studentId,
-    changedFields,
-    previousValues,
-    newValues
-  };
 }

@@ -67,13 +67,19 @@ export {
 import {
   InvalidationStrategy as InvalidationStrategyClass,
   getInvalidationStrategy as getInvalidationStrategyFunc,
-  resetInvalidationStrategy as resetInvalidationStrategyFunc,
-  createStudentUpdateOperation as createStudentUpdateOperationFunc
+  resetInvalidationStrategy as resetInvalidationStrategyFunc
 } from './InvalidationStrategy';
 export {
   InvalidationStrategyClass as InvalidationStrategy,
   getInvalidationStrategyFunc as getInvalidationStrategy,
-  resetInvalidationStrategyFunc as resetInvalidationStrategy,
+  resetInvalidationStrategyFunc as resetInvalidationStrategy
+};
+
+// Invalidation Helpers
+import {
+  createStudentUpdateOperation as createStudentUpdateOperationFunc
+} from './invalidation-helpers';
+export {
   createStudentUpdateOperationFunc as createStudentUpdateOperation
 };
 

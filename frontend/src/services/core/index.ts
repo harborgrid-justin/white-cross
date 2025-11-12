@@ -79,9 +79,15 @@ export type {
   QueryHooksConfig,
   ListQueryOptions,
   DetailQueryOptions,
+  SearchQueryOptions,
   CreateMutationOptions,
   UpdateMutationOptions,
   DeleteMutationOptions,
+  BulkMutationOptions,
+  QueryHooks,
+  EntityFromHooks,
+  CreateDtoFromHooks,
+  UpdateDtoFromHooks,
 } from './QueryHooksFactory';
 
 export { ApiMonitoring, apiMonitoring } from './ApiMonitoring';
