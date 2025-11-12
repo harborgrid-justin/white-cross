@@ -1,156 +1,30 @@
 /**
- * Performance Metrics Service
- *
- * Comprehensive performance tracking and analysis for the White Cross platform
- *
- * Features:
- * - Request duration tracking
- * - Query execution time distribution
- * - Cache hit/miss ratio tracking
- * - Connection pool utilization monitoring
- * - Memory usage trends
- * - API endpoint performance tracking
- * - Real-time metrics aggregation
- * - Historical performance analysis
- *
- * Metrics are stored in-memory with configurable retention and can be exported
- * to external monitoring systems (Prometheus, CloudWatch, etc.)
+ * @fileoverview Performance Metrics Service
+ * @module infrastructure/monitoring
+ * @description Main service orchestrating all performance monitoring functionality
  */
 
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { InjectConnection } from '@nestjs/sequelize';
-import { Sequelize } from 'sequelize';
-
-export interface RequestMetrics {
-  endpoint: string;
-  method: string;
-  count: number;
-  totalDuration: number;
-  avgDuration: number;
-  minDuration: number;
-  maxDuration: number;
-  p50Duration: number;
-  p95Duration: number;
-  p99Duration: number;
-  statusCodes: Record<number, number>;
-  errorCount: number;
-  lastAccessed: Date;
-}
-
-export interface CacheMetrics {
-  hits: number;
-  misses: number;
-  sets: number;
-  deletes: number;
-  hitRate: number;
-  avgHitDuration: number;
-  avgMissDuration: number;
-  cacheSize: number;
-  evictions: number;
-}
-
-export interface PoolMetrics {
-  activeConnections: number;
-  idleConnections: number;
-  waitingRequests: number;
-  totalConnections: number;
-  maxConnections: number;
-  utilizationPercent: number;
-  avgWaitTime: number;
-  connectionErrors: number;
-}
-
-export interface MemoryMetrics {
-  heapUsed: number;
-  heapTotal: number;
-  external: number;
-  rss: number;
-  utilizationPercent: number;
-  gcPauses: number;
-  avgGcDuration: number;
-}
-
-export interface QueryPerformanceMetrics {
-  totalQueries: number;
-  slowQueries: number;
-  avgQueryTime: number;
-  p50QueryTime: number;
-  p95QueryTime: number;
-  p99QueryTime: number;
-  n1DetectionCount: number;
-  queryDistribution: {
-    fast: number;
-    medium: number;
-    slow: number;
-    verySlow: number;
-  };
-}
-
-export interface PerformanceSummary {
-  timestamp: Date;
-  uptime: number;
-  requests: {
-    total: number;
-    perSecond: number;
-    avgDuration: number;
-    errorRate: number;
-  };
-  queries: QueryPerformanceMetrics;
-  cache: CacheMetrics;
-  pool: PoolMetrics;
-  memory: MemoryMetrics;
-  topEndpoints: RequestMetrics[];
-  slowestEndpoints: RequestMetrics[];
-}
-
-export interface PerformanceTrend {
-  timestamp: Date;
-  metric: string;
-  value: number;
-  baseline: number;
-  percentChange: number;
-  trend: 'improving' | 'degrading' | 'stable';
-}
+import { RequestMetrics, CacheMetrics, PerformanceSummary, PerformanceTrend } from './types/metrics.types';
+import { RequestMetricsService } from './services/request-metrics.service';
+import { CacheMetricsService } from './services/cache-metrics.service';
+import { SystemMetricsService } from './services/system-metrics.service';
+import { PerformanceAnalyzerService } from './services/performance-analyzer.service';
 
 @Injectable()
 export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PerformanceMetricsService.name);
-
-  // Configuration
-  private readonly MAX_ENDPOINT_METRICS = 500;
-  private readonly MAX_HISTORY_POINTS = 1440; // 24 hours at 1 min intervals
   private readonly METRICS_RETENTION_HOURS = 24;
-
-  // Metrics storage
-  private requestMetrics = new Map<string, RequestMetrics>();
-  private requestDurations: number[] = [];
-  private cacheMetrics: CacheMetrics = {
-    hits: 0,
-    misses: 0,
-    sets: 0,
-    deletes: 0,
-    hitRate: 0,
-    avgHitDuration: 0,
-    avgMissDuration: 0,
-    cacheSize: 0,
-    evictions: 0,
-  };
-  private poolMetricsHistory: PoolMetrics[] = [];
-  private memoryMetricsHistory: MemoryMetrics[] = [];
-  private performanceHistory: PerformanceSummary[] = [];
-
-  // Counters
-  private totalRequests = 0;
-  private totalErrors = 0;
-  private startTime = Date.now();
 
   // Intervals
   private metricsCollectionInterval: NodeJS.Timeout | null = null;
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(
-    @InjectConnection()
-    private readonly sequelize: Sequelize,
+    private readonly requestMetrics: RequestMetricsService,
+    private readonly cacheMetrics: CacheMetricsService,
+    private readonly systemMetrics: SystemMetricsService,
+    private readonly performanceAnalyzer: PerformanceAnalyzerService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -164,8 +38,134 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
   private startMetricsCollection(): void {
     // Collect metrics every minute
     this.metricsCollectionInterval = setInterval(() => {
-      this.collectSystemMetrics();
-      this.recordPerformanceSummary();
+      this.systemMetrics.collectSystemMetrics();
+      this.performanceAnalyzer.recordPerformanceSummary();
+    }, 60000);
+
+    // Cleanup old metrics every hour
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupOldMetrics();
+    }, 3600000);
+
+    this.logger.log('Performance metrics collection started');
+  }
+
+  /**
+   * Record HTTP request metrics
+   */
+  recordRequest(endpoint: string, method: string, duration: number, statusCode: number): void {
+    this.requestMetrics.recordRequest(endpoint, method, duration, statusCode);
+  }
+
+  /**
+   * Record cache operation
+   */
+  recordCacheOperation(operation: 'hit' | 'miss' | 'set' | 'delete' | 'eviction', duration?: number): void {
+    this.cacheMetrics.recordCacheOperation(operation, duration);
+  }
+
+  /**
+   * Update cache size
+   */
+  updateCacheSize(size: number): void {
+    this.cacheMetrics.updateCacheSize(size);
+  }
+
+  /**
+   * Clean up old metrics
+   */
+  private cleanupOldMetrics(): void {
+    const cutoff = Date.now() - this.METRICS_RETENTION_HOURS * 3600000;
+    this.requestMetrics.cleanupOldMetrics(cutoff);
+  }
+
+  /**
+   * Get current performance summary
+   */
+  getCurrentSummary(): PerformanceSummary {
+    return this.performanceAnalyzer.getCurrentSummary();
+  }
+
+  /**
+   * Get performance trends
+   */
+  getPerformanceTrends(hours: number = 1): PerformanceTrend[] {
+    return this.performanceAnalyzer.getPerformanceTrends(hours);
+  }
+
+  /**
+   * Get endpoint metrics
+   */
+  getEndpointMetrics(endpoint?: string, method?: string): RequestMetrics[] {
+    return this.requestMetrics.getEndpointMetrics(endpoint, method);
+  }
+
+  /**
+   * Get cache metrics
+   */
+  getCacheMetrics(): CacheMetrics {
+    return this.cacheMetrics.getCacheMetrics();
+  }
+
+  /**
+   * Get pool metrics history
+   */
+  getPoolMetricsHistory(hours: number = 1) {
+    return this.systemMetrics.getPoolMetricsHistory(hours);
+  }
+
+  /**
+   * Get memory metrics history
+   */
+  getMemoryMetricsHistory(hours: number = 1) {
+    return this.systemMetrics.getMemoryMetricsHistory(hours);
+  }
+
+  /**
+   * Get performance history
+   */
+  getPerformanceHistory(hours: number = 1): PerformanceSummary[] {
+    return this.performanceAnalyzer.getPerformanceHistory(hours);
+  }
+
+  /**
+   * Reset all metrics
+   */
+  resetMetrics(): void {
+    this.requestMetrics.reset();
+    this.cacheMetrics.reset();
+    this.systemMetrics.reset();
+    this.performanceAnalyzer.reset();
+    this.logger.log('All performance metrics reset');
+  }
+
+  /**
+   * Export metrics for external monitoring systems
+   */
+  exportMetrics() {
+    const summary = this.performanceAnalyzer.getCurrentSummary();
+
+    return {
+      requests: this.requestMetrics.getEndpointMetrics(),
+      cache: this.cacheMetrics.getCacheMetrics(),
+      pool: this.systemMetrics.getCurrentPoolMetrics(),
+      memory: this.systemMetrics.getCurrentMemoryMetrics(),
+      summary,
+    };
+  }
+
+  /**
+   * Cleanup on module destroy
+   */
+  async onModuleDestroy(): Promise<void> {
+    if (this.metricsCollectionInterval) {
+      clearInterval(this.metricsCollectionInterval);
+    }
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+    this.logger.log('Performance metrics service stopped');
+  }
     }, 60000);
 
     // Cleanup old metrics every hour

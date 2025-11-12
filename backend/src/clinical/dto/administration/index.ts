@@ -35,6 +35,9 @@ export {
   CalculateDoseDto,
 } from './administration-filters.dto';
 
+// Update Administration
+export { UpdateAdministrationDto, FollowUpStatus } from './update-administration.dto';
+
 export * from './administration-filters.dto';
 export * from './five-rights-verification.dto';
 export * from './record-administration.dto';

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ClinicVisitService } from '../services/clinic-visit.service';
+import { ClinicVisitBasicService } from '../services/clinic-visit-basic.service';
+import { ClinicVisitAnalyticsService } from '../services/clinic-visit-analytics.service';
 import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
 import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
@@ -13,7 +14,10 @@ import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
 @ApiBearerAuth()
 @Controller('clinical/visits')
 export class ClinicVisitController {
-  constructor(private readonly clinicVisitService: ClinicVisitService) {}
+  constructor(
+    private readonly clinicVisitBasicService: ClinicVisitBasicService,
+    private readonly clinicVisitAnalyticsService: ClinicVisitAnalyticsService,
+  ) {}
 
   /**
    * Check in a student to the clinic
@@ -30,7 +34,7 @@ export class ClinicVisitController {
     description: 'Student already has an active visit',
   })
   async checkIn(@Body() checkInDto: CheckInDto) {
-    return this.clinicVisitService.checkIn(checkInDto);
+    return this.clinicVisitBasicService.checkIn(checkInDto);
   }
 
   /**
@@ -46,7 +50,7 @@ export class ClinicVisitController {
   @ApiResponse({ status: 404, description: 'Visit not found' })
   @ApiResponse({ status: 400, description: 'Visit already checked out' })
   async checkOut(@Param('id') id: string, @Body() checkOutDto: CheckOutDto) {
-    return this.clinicVisitService.checkOut(id, checkOutDto);
+    return this.clinicVisitBasicService.checkOut(id, checkOutDto);
   }
 
   /**
@@ -62,7 +66,7 @@ export class ClinicVisitController {
     description: 'Active visits retrieved successfully',
   })
   async getActiveVisits() {
-    return this.clinicVisitService.getActiveVisits();
+    return this.clinicVisitBasicService.getActiveVisits();
   }
 
   /**
@@ -74,7 +78,7 @@ export class ClinicVisitController {
   @ApiResponse({ status: 200, description: 'Visit found successfully' })
   @ApiResponse({ status: 404, description: 'Visit not found' })
   async getVisitById(@Param('id') id: string) {
-    return this.clinicVisitService.getVisitById(id);
+    return this.clinicVisitBasicService.getVisitById(id);
   }
 
   /**
@@ -87,7 +91,7 @@ export class ClinicVisitController {
   })
   @ApiResponse({ status: 200, description: 'Visits retrieved successfully' })
   async getVisits(@Query() filters: VisitFiltersDto) {
-    return this.clinicVisitService.getVisits(filters);
+    return this.clinicVisitBasicService.getVisits(filters);
   }
 
   /**
@@ -109,7 +113,7 @@ export class ClinicVisitController {
     @Param('studentId') studentId: string,
     @Query('limit') limit?: number,
   ) {
-    return this.clinicVisitService.getVisitsByStudent(studentId, limit);
+    return this.clinicVisitBasicService.getVisitsByStudent(studentId, limit);
   }
 
   /**
@@ -124,7 +128,7 @@ export class ClinicVisitController {
     @Param('id') id: string,
     @Body() updates: Partial<CheckInDto & CheckOutDto>,
   ) {
-    return this.clinicVisitService.updateVisit(id, updates);
+    return this.clinicVisitBasicService.updateVisit(id, updates);
   }
 
   /**
@@ -137,7 +141,7 @@ export class ClinicVisitController {
   @ApiResponse({ status: 204, description: 'Visit deleted successfully' })
   @ApiResponse({ status: 404, description: 'Visit not found' })
   async deleteVisit(@Param('id') id: string) {
-    await this.clinicVisitService.deleteVisit(id);
+    await this.clinicVisitBasicService.deleteVisit(id);
   }
 
   /**
@@ -166,7 +170,7 @@ export class ClinicVisitController {
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
   ) {
-    return this.clinicVisitService.getStatistics(
+    return this.clinicVisitAnalyticsService.getStatistics(
       new Date(startDate),
       new Date(endDate),
     );
@@ -202,7 +206,7 @@ export class ClinicVisitController {
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.clinicVisitService.getStudentVisitSummary(
+    return this.clinicVisitAnalyticsService.getStudentVisitSummary(
       studentId,
       start,
       end,
@@ -241,7 +245,7 @@ export class ClinicVisitController {
     @Query('endDate') endDate: string,
     @Query('limit') limit?: number,
   ) {
-    return this.clinicVisitService.getFrequentVisitors(
+    return this.clinicVisitAnalyticsService.getFrequentVisitors(
       new Date(startDate),
       new Date(endDate),
       limit,
@@ -274,7 +278,7 @@ export class ClinicVisitController {
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
   ) {
-    return this.clinicVisitService.getVisitsByTimeOfDay(
+    return this.clinicVisitAnalyticsService.getVisitsByTimeOfDay(
       new Date(startDate),
       new Date(endDate),
     );

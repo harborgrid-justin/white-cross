@@ -18,7 +18,8 @@ import {
 // Services
 import { ClinicalNoteService } from './services/clinical-note.service';
 import { ClinicalProtocolService } from './services/clinical-protocol.service';
-import { ClinicVisitService } from './services/clinic-visit.service';
+import { ClinicVisitBasicService } from './services/clinic-visit-basic.service';
+import { ClinicVisitAnalyticsService } from './services/clinic-visit-analytics.service';
 import { DrugInteractionService } from './services/drug-interaction.service';
 import { FollowUpService } from './services/follow-up.service';
 import { PrescriptionService } from './services/prescription.service';
@@ -27,11 +28,19 @@ import { VitalSignsService } from './services/vital-signs.service';
 
 // Controllers
 import { ClinicalNoteController } from './controllers/clinical-note.controller';
-import { ClinicalProtocolController } from './controllers/clinical-protocol.controller';
+import { ClinicalProtocolManagementController } from './controllers/clinical-protocol-management.controller';
+import { ClinicalProtocolQueryController } from './controllers/clinical-protocol-query.controller';
 import { ClinicVisitController } from './controllers/clinic-visit.controller';
-import { DrugInteractionController } from './controllers/drug-interaction.controller';
+import { DrugCatalogController } from './controllers/drug-catalog.controller';
+import { DrugInteractionManagementController } from './controllers/drug-interaction-management.controller';
+import { DrugAllergyController } from './controllers/drug-allergy.controller';
+import { DrugSafetyController } from './controllers/drug-safety.controller';
 import { FollowUpController } from './controllers/follow-up.controller';
-import { MedicationAdministrationController } from './controllers/medication-administration.controller';
+import { MedicationAdministrationCoreController } from './controllers/medication-administration-core.controller';
+import { MedicationAdministrationSchedulingController } from './controllers/medication-administration-scheduling.controller';
+import { MedicationAdministrationSafetyController } from './controllers/medication-administration-safety.controller';
+import { MedicationAdministrationReportingController } from './controllers/medication-administration-reporting.controller';
+import { MedicationAdministrationSpecialController } from './controllers/medication-administration-special.controller';
 import { PrescriptionAliasController } from './controllers/prescription-alias.controller';
 import { PrescriptionController } from './controllers/prescription.controller';
 import { TreatmentPlanController } from './controllers/treatment-plan.controller';
@@ -151,24 +160,33 @@ import { VitalSignsController } from './controllers/vital-signs.controller';
   ],
   controllers: [
     // Existing controllers
-    DrugInteractionController,
+    DrugCatalogController,
+    DrugInteractionManagementController,
+    DrugAllergyController,
+    DrugSafetyController,
     ClinicVisitController,
     // New controllers
     TreatmentPlanController,
     PrescriptionController,
-    ClinicalProtocolController,
+    ClinicalProtocolManagementController,
+    ClinicalProtocolQueryController,
     ClinicalNoteController,
     VitalSignsController,
     FollowUpController,
-    // GAP-MED-002: Medication Administration Controller (14 endpoints)
-    MedicationAdministrationController,
+    // GAP-MED-002: Medication Administration Controllers (14 endpoints)
+    MedicationAdministrationCoreController,
+    MedicationAdministrationSchedulingController,
+    MedicationAdministrationSafetyController,
+    MedicationAdministrationReportingController,
+    MedicationAdministrationSpecialController,
     // GAP-MED-001: Prescription path alias (/prescriptions -> /clinical/prescriptions)
     PrescriptionAliasController,
   ],
   providers: [
     // Existing services
     DrugInteractionService,
-    ClinicVisitService,
+    ClinicVisitBasicService,
+    ClinicVisitAnalyticsService,
     // New services
     TreatmentPlanService,
     PrescriptionService,
@@ -180,7 +198,8 @@ import { VitalSignsController } from './controllers/vital-signs.controller';
   exports: [
     // Export all services for use in other modules
     DrugInteractionService,
-    ClinicVisitService,
+    ClinicVisitBasicService,
+    ClinicVisitAnalyticsService,
     TreatmentPlanService,
     PrescriptionService,
     ClinicalProtocolService,

@@ -1,23 +1,40 @@
 /**
- * Reminder Generator Service
- *
- * Handles the generation of medication reminders using optimized SQL queries.
- * Extracted from medication-reminder.processor.ts for better separation of concerns.
- *
- * Performance Benefits:
- * - Single SQL query generates all reminders
- * - Frequency parsing done in SQL (faster than Node.js)
- * - Administration checks via JOIN (much faster than nested loops)
+ * @fileoverview Medication Reminder Generator Service
+ * @module infrastructure/jobs/services
+ * @description Service for generating medication reminders with optimized SQL queries
  */
+
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
-import {
-  MedicationReminder,
-  MedicationReminderQueryResult,
-  ReminderQueryReplacements,
-} from '../interfaces/medication-reminder.interface';
 
+interface MedicationReminder {
+  id: string;
+  studentMedicationId: string;
+  studentId: string;
+  studentName: string;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  scheduledTime: Date;
+  status: 'PENDING' | 'COMPLETED' | 'MISSED';
+}
+
+interface MedicationReminderQueryResult {
+  student_medication_id: string;
+  student_id: string;
+  student_name: string;
+  medication_name: string;
+  dosage: string;
+  frequency: string;
+  scheduled_hour: number;
+  scheduled_minute: number;
+  was_administered: boolean;
+}
+
+/**
+ * Service for generating medication reminders
+ */
 @Injectable()
 export class ReminderGeneratorService {
   private readonly logger = new Logger(ReminderGeneratorService.name);
@@ -25,15 +42,26 @@ export class ReminderGeneratorService {
   constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
 
   /**
-   * Generate medication reminders using optimized SQL query
-   *
-   * @param date - Date to generate reminders for
-   * @param organizationId - Optional organization filter
-   * @param studentId - Optional student filter
-   * @param medicationId - Optional medication filter
-   * @returns Array of medication reminders with status
+   * Generate reminders for specific student (used for on-demand requests)
    */
-  async generateReminders(
+  async generateForStudent(studentId: string, date: Date): Promise<MedicationReminder[]> {
+    return this.generateRemindersOptimized(date, undefined, studentId);
+  }
+
+  /**
+   * OPTIMIZED: Generate reminders using efficient SQL query
+   *
+   * Instead of:
+   * 1. Load all active medications
+   * 2. Parse frequency in Node.js
+   * 3. Check logs in nested loop
+   *
+   * We:
+   * 1. Use single SQL query to generate all reminders
+   * 2. Parse frequency in SQL (faster)
+   * 3. Check logs using JOIN (much faster)
+   */
+  async generateRemindersOptimized(
     date: Date,
     organizationId?: string,
     studentId?: string,
@@ -46,91 +74,29 @@ export class ReminderGeneratorService {
     endOfDay.setHours(23, 59, 59, 999);
 
     // Build WHERE clause based on filters
-    const whereConditions = this.buildWhereConditions(
-      organizationId,
-      studentId,
-      medicationId,
-    );
-
-    const replacements: ReminderQueryReplacements = {
-      startOfDay,
-      endOfDay,
-      organizationId,
-      studentId,
-      medicationId,
-    };
-
-    // Execute optimized SQL query
-    const queryResults = await this.executeReminderQuery(whereConditions, replacements);
-
-    // Transform query results to reminder objects
-    return this.transformQueryResults(queryResults, date);
-  }
-
-  /**
-   * Generate reminders for a specific student
-   * Convenience method for on-demand student-specific requests
-   *
-   * @param studentId - Student ID
-   * @param date - Date to generate reminders for
-   * @returns Array of medication reminders for the student
-   */
-  async generateForStudent(studentId: string, date: Date): Promise<MedicationReminder[]> {
-    return this.generateReminders(date, undefined, studentId);
-  }
-
-  /**
-   * Build WHERE clause conditions based on provided filters
-   *
-   * @param organizationId - Optional organization filter
-   * @param studentId - Optional student filter
-   * @param medicationId - Optional medication filter
-   * @returns SQL WHERE clause string
-   * @private
-   */
-  private buildWhereConditions(
-    organizationId?: string,
-    studentId?: string,
-    medicationId?: string,
-  ): string {
-    let conditions = `sm.is_active = true
+    let whereConditions = `sm.is_active = true
           AND sm.start_date <= :endOfDay
           AND (sm.end_date IS NULL OR sm.end_date >= :startOfDay)`;
 
+    const replacements: Record<string, unknown> = { startOfDay, endOfDay };
+
     if (organizationId) {
-      conditions += ` AND s.organization_id = :organizationId`;
+      whereConditions += ` AND s.organization_id = :organizationId`;
+      replacements.organizationId = organizationId;
     }
 
     if (studentId) {
-      conditions += ` AND s.id = :studentId`;
+      whereConditions += ` AND s.id = :studentId`;
+      replacements.studentId = studentId;
     }
 
     if (medicationId) {
-      conditions += ` AND m.id = :medicationId`;
+      whereConditions += ` AND m.id = :medicationId`;
+      replacements.medicationId = medicationId;
     }
 
-    return conditions;
-  }
-
-  /**
-   * Execute the optimized SQL query to fetch reminder data
-   *
-   * Query Strategy:
-   * 1. Parse medication frequency in SQL (CASE statement)
-   * 2. Generate scheduled times as array
-   * 3. Unnest to create one row per scheduled time
-   * 4. Join with medication logs to check if administered
-   *
-   * @param whereConditions - WHERE clause conditions
-   * @param replacements - Query parameter replacements
-   * @returns Array of query results
-   * @private
-   */
-  private async executeReminderQuery(
-    whereConditions: string,
-    replacements: ReminderQueryReplacements,
-  ): Promise<MedicationReminderQueryResult[]> {
-    return this.sequelize.query<MedicationReminderQueryResult>(
+    // Use raw SQL for maximum performance
+    const reminders = await this.sequelize.query<MedicationReminderQueryResult>(
       `
       WITH scheduled_times AS (
         SELECT
@@ -185,86 +151,32 @@ export class ReminderGeneratorService {
         type: QueryTypes.SELECT,
       },
     );
-  }
 
-  /**
-   * Transform raw query results into MedicationReminder objects
-   *
-   * @param queryResults - Raw database query results
-   * @param date - Date for the reminders
-   * @returns Array of typed MedicationReminder objects
-   * @private
-   */
-  private transformQueryResults(
-    queryResults: MedicationReminderQueryResult[],
-    date: Date,
-  ): MedicationReminder[] {
+    // Transform to reminder objects
     const now = new Date();
 
-    return queryResults.map((result) => {
+    return reminders.map((r: MedicationReminderQueryResult) => {
       const scheduledTime = new Date(date);
-      scheduledTime.setHours(result.scheduled_hour, result.scheduled_minute, 0, 0);
+      scheduledTime.setHours(r.scheduled_hour, r.scheduled_minute, 0, 0);
 
-      const status = this.determineReminderStatus(result.was_administered, scheduledTime, now);
+      let status: 'PENDING' | 'COMPLETED' | 'MISSED' = 'PENDING';
+      if (r.was_administered) {
+        status = 'COMPLETED';
+      } else if (scheduledTime < now) {
+        status = 'MISSED';
+      }
 
       return {
-        id: this.generateReminderId(
-          result.student_medication_id,
-          date,
-          result.scheduled_hour,
-        ),
-        studentMedicationId: result.student_medication_id,
-        studentId: result.student_id,
-        studentName: result.student_name,
-        medicationName: result.medication_name,
-        dosage: result.dosage,
-        frequency: result.frequency,
+        id: `${r.student_medication_id}_${date.toISOString().split('T')[0]}_${r.scheduled_hour}`,
+        studentMedicationId: r.student_medication_id,
+        studentId: r.student_id,
+        studentName: r.student_name,
+        medicationName: r.medication_name,
+        dosage: r.dosage,
+        frequency: r.frequency,
         scheduledTime,
         status,
       };
     });
-  }
-
-  /**
-   * Determine the status of a reminder based on administration and time
-   *
-   * @param wasAdministered - Whether medication was administered
-   * @param scheduledTime - Scheduled time for reminder
-   * @param currentTime - Current time
-   * @returns Reminder status
-   * @private
-   */
-  private determineReminderStatus(
-    wasAdministered: boolean,
-    scheduledTime: Date,
-    currentTime: Date,
-  ): 'PENDING' | 'COMPLETED' | 'MISSED' {
-    if (wasAdministered) {
-      return 'COMPLETED';
-    }
-
-    if (scheduledTime < currentTime) {
-      return 'MISSED';
-    }
-
-    return 'PENDING';
-  }
-
-  /**
-   * Generate a unique reminder ID
-   *
-   * @param studentMedicationId - Student medication ID
-   * @param date - Date of reminder
-   * @param scheduledHour - Scheduled hour
-   * @returns Unique reminder ID
-   * @private
-   */
-  private generateReminderId(
-    studentMedicationId: string,
-    date: Date,
-    scheduledHour: number,
-  ): string {
-    const dateKey = date.toISOString().split('T')[0];
-    return `${studentMedicationId}_${dateKey}_${scheduledHour}`;
   }
 }
