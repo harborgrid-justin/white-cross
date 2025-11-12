@@ -5,14 +5,16 @@
  * operations, student assignments, administration logging, inventory management,
  * and adverse reaction reporting with full HIPAA compliance and DEA regulations.
  *
- * This module serves as the main entry point for all medication-related operations
- * and maintains backward compatibility with the original medicationsApi interface.
- *
  * @module services/modules/medications
  */
 
 import type { ApiClient } from '../../core/ApiClient';
 import { MedicationMainApi } from './mainApi';
+import { MedicationAdministrationApi } from './administrationApi';
+import { MedicationInventoryApi } from './inventoryApi';
+import { StudentMedicationApi } from './studentMedicationApi';
+import { AdverseReactionsApi } from './adverseReactionsApi';
+import { MedicationScheduleApi } from './scheduleApi';
 import type {
   Medication,
   StudentMedication,
@@ -37,7 +39,7 @@ import type {
   AdverseReactionFormData
 } from './types';
 
-// Re-export types for convenience
+// Re-export types
 export type {
   Medication,
   StudentMedication,
@@ -65,276 +67,130 @@ export type {
 /**
  * Comprehensive Medications API Service
  *
- * Provides unified access to all medication-related operations including:
- * - Medication CRUD operations with validation
- * - Student medication assignments and tracking
- * - Administration logging with Five Rights verification
- * - Inventory management and tracking
- * - Adverse reaction reporting
- * - Scheduling and reminder management
- *
- * **Key Features:**
- * - DEA-compliant controlled substance handling
- * - HIPAA-compliant PHI protection and audit logging
- * - Comprehensive validation with Zod schemas
- * - Five Rights verification for patient safety
- * - Real-time administration logging
- * - Inventory tracking with expiration alerts
- *
- * @class MedicationsApi
+ * Provides unified access to all medication-related operations with
+ * DEA-compliant controlled substance handling and HIPAA-compliant PHI protection.
  */
 export class MedicationsApi {
   private mainApi: MedicationMainApi;
+  private administrationApi: MedicationAdministrationApi;
+  private inventoryApi: MedicationInventoryApi;
+  private studentMedicationApi: StudentMedicationApi;
+  private adverseReactionsApi: AdverseReactionsApi;
+  private scheduleApi: MedicationScheduleApi;
 
   constructor(client: ApiClient) {
     this.mainApi = new MedicationMainApi(client);
+    this.administrationApi = new MedicationAdministrationApi(client);
+    this.inventoryApi = new MedicationInventoryApi(client);
+    this.studentMedicationApi = new StudentMedicationApi(client);
+    this.adverseReactionsApi = new AdverseReactionsApi(client);
+    this.scheduleApi = new MedicationScheduleApi(client);
   }
 
-  // ============================================================================
-  // CORE MEDICATION OPERATIONS
-  // ============================================================================
-
-  /**
-   * Get all medications with optional filtering and pagination
-   */
+  // Core Medication Operations
   async getAll(filters?: MedicationFilters): Promise<MedicationsResponse> {
     return this.mainApi.getAll(filters);
   }
 
-  /**
-   * Get medication by ID
-   */
   async getById(id: string): Promise<Medication> {
     return this.mainApi.getById(id);
   }
 
-  /**
-   * Create new medication in the formulary
-   */
   async create(medicationData: CreateMedicationRequest): Promise<{ medication: Medication }> {
     return this.mainApi.create(medicationData);
   }
 
-  /**
-   * Update medication information
-   */
   async update(id: string, medicationData: Partial<CreateMedicationRequest>): Promise<Medication> {
     return this.mainApi.update(id, medicationData);
   }
 
-  /**
-   * Delete medication from formulary
-   */
   async delete(id: string): Promise<{ id: string }> {
     return this.mainApi.delete(id);
   }
 
-  /**
-   * Search medications by text query
-   */
   async search(query: string, limit?: number): Promise<Medication[]> {
     return this.mainApi.search(query, limit);
   }
 
-  /**
-   * Get medications by category
-   */
   async getByCategory(category: string, limit?: number): Promise<Medication[]> {
     return this.mainApi.getByCategory(category, limit);
   }
 
-  /**
-   * Get controlled substances
-   */
   async getControlledSubstances(schedule?: string): Promise<Medication[]> {
     return this.mainApi.getControlledSubstances(schedule);
   }
 
-  /**
-   * Check medication availability
-   */
   async checkAvailability(id: string): Promise<{ available: boolean; medication?: Medication }> {
     return this.mainApi.checkAvailability(id);
   }
 
-  // ============================================================================
-  // STUDENT MEDICATION OPERATIONS (PLACEHOLDER)
-  // ============================================================================
-
-  /**
-   * Assign medication to student (create prescription)
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
+  // Student Medication Operations
   async assignToStudent(assignmentData: StudentMedicationFormData): Promise<StudentMedication> {
-    throw new Error('Student medication assignment not yet implemented in refactored API');
+    return this.studentMedicationApi.assignToStudent(assignmentData);
   }
 
-  /**
-   * Get administration logs for a student
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
-  async getStudentLogs(studentId: string, page?: number, limit?: number): Promise<StudentMedicationsResponse> {
-    throw new Error('Student medication logs not yet implemented in refactored API');
-  }
-
-  /**
-   * Deactivate student medication
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async deactivateStudentMedication(studentMedicationId: string, reason?: string): Promise<StudentMedication> {
-    throw new Error('Student medication deactivation not yet implemented in refactored API');
+    return this.studentMedicationApi.deactivateStudentMedication(studentMedicationId, reason);
   }
 
-  // ============================================================================
-  // ADMINISTRATION OPERATIONS (PLACEHOLDER)
-  // ============================================================================
-
-  /**
-   * Log medication administration
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
+  // Administration Operations
   async logAdministration(logData: MedicationAdministrationData): Promise<MedicationLog> {
-    throw new Error('Medication administration logging not yet implemented in refactored API');
+    return this.administrationApi.logAdministration(logData);
   }
 
-  /**
-   * Alias for logAdministration (backward compatibility)
-   * 
-   * @deprecated Use logAdministration() - will be removed
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
+  async getStudentLogs(studentId: string, page?: number, limit?: number): Promise<StudentMedicationsResponse> {
+    return this.administrationApi.getStudentLogs(studentId, page, limit);
+  }
+
   async administer(logData: MedicationAdministrationData): Promise<MedicationLog> {
-    return this.logAdministration(logData);
+    return this.administrationApi.administer(logData);
   }
 
-  // ============================================================================
-  // INVENTORY OPERATIONS (PLACEHOLDER)
-  // ============================================================================
-
-  /**
-   * Get medication inventory with alerts
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
+  // Inventory Operations
   async getInventory(): Promise<InventoryResponse> {
-    throw new Error('Inventory operations not yet implemented in refactored API');
+    return this.inventoryApi.getInventory();
   }
 
-  /**
-   * Add medication to inventory
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async addToInventory(inventoryData: CreateInventoryRequest): Promise<InventoryItem> {
-    throw new Error('Inventory operations not yet implemented in refactored API');
+    return this.inventoryApi.addToInventory(inventoryData);
   }
 
-  /**
-   * Update inventory quantity
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async updateInventoryQuantity(id: string, updateData: UpdateInventoryRequest): Promise<InventoryItem> {
-    throw new Error('Inventory operations not yet implemented in refactored API');
+    return this.inventoryApi.updateInventoryQuantity(id, updateData);
   }
 
-  /**
-   * Alias for updateInventoryQuantity (backward compatibility)
-   * 
-   * @deprecated Use updateInventoryQuantity() - will be removed
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async updateInventory(id: string, updateData: UpdateInventoryRequest): Promise<InventoryItem> {
-    return this.updateInventoryQuantity(id, updateData);
+    return this.inventoryApi.updateInventory(id, updateData);
   }
 
-  // ============================================================================
-  // SCHEDULING OPERATIONS (PLACEHOLDER)
-  // ============================================================================
-
-  /**
-   * Get medication schedule for date range
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
+  // Schedule and Monitoring Operations
   async getSchedule(startDate?: string, endDate?: string, nurseId?: string): Promise<StudentMedication[]> {
-    throw new Error('Scheduling operations not yet implemented in refactored API');
+    return this.scheduleApi.getSchedule(startDate, endDate, nurseId);
   }
 
-  /**
-   * Get medication reminders for specific date
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async getReminders(date?: string): Promise<MedicationReminder[]> {
-    throw new Error('Reminder operations not yet implemented in refactored API');
+    return this.scheduleApi.getReminders(date);
   }
 
-  /**
-   * Get medication statistics
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async getStats(): Promise<MedicationStats> {
-    throw new Error('Statistics operations not yet implemented in refactored API');
+    return this.scheduleApi.getStats();
   }
 
-  /**
-   * Get medication alerts
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async getAlerts(): Promise<MedicationAlertsResponse> {
-    throw new Error('Alert operations not yet implemented in refactored API');
+    return this.scheduleApi.getAlerts();
   }
 
-  /**
-   * Get medication form options
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async getFormOptions(): Promise<MedicationFormOptions> {
-    throw new Error('Form options not yet implemented in refactored API');
+    return this.scheduleApi.getFormOptions();
   }
 
-  // ============================================================================
-  // ADVERSE REACTION OPERATIONS (PLACEHOLDER)
-  // ============================================================================
-
-  /**
-   * Report adverse reaction
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
+  // Adverse Reaction Operations
   async reportAdverseReaction(reactionData: AdverseReactionData | AdverseReactionFormData): Promise<AdverseReaction> {
-    throw new Error('Adverse reaction reporting not yet implemented in refactored API');
+    return this.adverseReactionsApi.reportAdverseReaction(reactionData);
   }
 
-  /**
-   * Get adverse reactions
-   * 
-   * @deprecated Implementation moved to separate module (not yet created)
-   * @throws {Error} Always throws - not implemented in this refactor
-   */
   async getAdverseReactions(medicationId?: string, studentId?: string): Promise<AdverseReaction[]> {
-    throw new Error('Adverse reaction retrieval not yet implemented in refactored API');
+    return this.adverseReactionsApi.getAdverseReactions(medicationId, studentId);
   }
 }
 
@@ -355,23 +211,18 @@ import { apiClient } from '../../core/ApiClient';
  * Singleton MedicationsApi instance
  *
  * Pre-configured with the default apiClient. Use this for all production code.
- * 
+ *
  * @constant {MedicationsApi}
  *
  * @example
  * ```typescript
  * import { medicationsApi } from '@/services/modules/medications';
  *
- * // Core medication operations are fully functional
+ * // All medication operations are fully functional
  * const medications = await medicationsApi.getAll();
  * const medication = await medicationsApi.getById('med-id');
- * 
- * // Other operations will throw errors indicating they need implementation
- * try {
- *   await medicationsApi.logAdministration(data); // Throws error
- * } catch (error) {
- *   console.log(error.message); // "Medication administration logging not yet implemented"
- * }
+ * await medicationsApi.logAdministration(data);
+ * const inventory = await medicationsApi.getInventory();
  * ```
  */
 export const medicationsApi = createMedicationsApi(apiClient);

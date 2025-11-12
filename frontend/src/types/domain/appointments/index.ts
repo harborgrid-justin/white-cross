@@ -158,7 +158,12 @@ export type {
   
   // Search types
   AdvancedSearchCriteria,
-  AppointmentSearchResults
+  AppointmentSearchResults,
+
+  // Analytics types
+  TrendDataPoint,
+  StudentNoShowStat,
+  DailyUtilizationStat
 } from './api';
 
 // Re-export commonly used enums

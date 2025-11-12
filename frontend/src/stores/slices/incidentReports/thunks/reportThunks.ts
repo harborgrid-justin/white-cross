@@ -1,9 +1,9 @@
 /**
- * Incident Reports Store - Async Thunks
- * 
- * Redux async thunks for incident reports operations
- * 
- * @module stores/slices/incidentReports/thunks
+ * Incident Reports Store - Report CRUD Thunks
+ *
+ * Redux async thunks for incident report CRUD operations
+ *
+ * @module stores/slices/incidentReports/thunks/reportThunks
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -13,13 +13,11 @@ import type {
   UpdateIncidentReportRequest,
   IncidentReportFilters,
   IncidentSearchParams,
-  CreateWitnessStatementRequest,
-  CreateFollowUpActionRequest,
 } from '@/types/domain/incidents';
 import toast from 'react-hot-toast';
 import debug from 'debug';
 
-const log = debug('whitecross:incident-reports-thunks');
+const log = debug('whitecross:incident-reports-thunks:reports');
 
 /**
  * Fetch incident reports with pagination and filters.
@@ -333,212 +331,6 @@ export const searchIncidentReports = createAsyncThunk(
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to search incident reports';
       log('Error searching incident reports:', error);
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-/**
- * Fetch witness statements for incident.
- *
- * Retrieves all witness statements associated with the specified incident report.
- * Includes statement content, witness information, timestamps, and verification status.
- *
- * @async
- * @function fetchWitnessStatements
- *
- * @param {string} incidentReportId - Incident report unique identifier
- *
- * @returns {Promise<WitnessStatement[]>} Array of witness statements
- *
- * @throws {Error} When incident not found or user lacks permissions
- *
- * @remarks
- * Witness statements are immutable once marked as verified. This ensures
- * audit trail integrity and prevents tampering with evidence.
- *
- * @example
- * ```typescript
- * // Load witness statements for incident detail view
- * dispatch(fetchWitnessStatements('incident-123'));
- * ```
- */
-export const fetchWitnessStatements = createAsyncThunk(
-  'incidentReports/fetchWitnessStatements',
-  async (incidentReportId: string, { rejectWithValue }) => {
-    try {
-      log('Fetching witness statements for incident:', incidentReportId);
-      const response = await incidentsApi.getWitnessStatements(incidentReportId);
-      return response.statements;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch witness statements';
-      log('Error fetching witness statements:', error);
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-/**
- * Create witness statement.
- *
- * Records statement from student, staff member, parent, or other witness.
- * Captures statement content, witness information, and contact details.
- *
- * @async
- * @function createWitnessStatement
- *
- * @param {CreateWitnessStatementRequest} data - Witness statement data
- * @param {string} data.incidentReportId - Related incident ID
- * @param {string} data.witnessName - Name of witness providing statement
- * @param {('STUDENT'|'STAFF'|'PARENT'|'OTHER')} data.witnessType - Type of witness
- * @param {string} data.statement - Statement content
- * @param {string} [data.contactInfo] - Witness contact information
- *
- * @returns {Promise<WitnessStatement>} Created witness statement
- *
- * @throws {Error} When validation fails or API request fails
- *
- * @remarks
- * ## Verification Workflow
- *
- * 1. Statement is created in PENDING status
- * 2. Administrator reviews statement for completeness
- * 3. Administrator marks statement as VERIFIED
- * 4. Verified statements become immutable (audit trail preservation)
- *
- * ## Digital Signatures
- *
- * For legal compliance, witness statements can include digital signatures.
- * This provides non-repudiation and authenticity verification.
- *
- * @example
- * ```typescript
- * // Add teacher witness statement
- * dispatch(createWitnessStatement({
- *   incidentReportId: 'incident-123',
- *   witnessName: 'Jane Doe',
- *   witnessType: 'STAFF',
- *   statement: 'I observed the student fall from the swing...',
- *   contactInfo: 'jane.doe@school.edu'
- * }));
- * ```
- */
-export const createWitnessStatement = createAsyncThunk(
-  'incidentReports/createWitnessStatement',
-  async (data: CreateWitnessStatementRequest, { rejectWithValue }) => {
-    try {
-      log('Creating witness statement:', data);
-      const response = await incidentsApi.addWitnessStatement(data);
-      toast.success('Witness statement added successfully');
-      return response.statement;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add witness statement';
-      log('Error creating witness statement:', error);
-      toast.error(errorMessage);
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-/**
- * Fetch follow-up actions for incident.
- *
- * Retrieves all follow-up actions associated with the specified incident report.
- * Includes action descriptions, assignments, priorities, due dates, and completion status.
- *
- * @async
- * @function fetchFollowUpActions
- *
- * @param {string} incidentReportId - Incident report unique identifier
- *
- * @returns {Promise<FollowUpAction[]>} Array of follow-up actions
- *
- * @throws {Error} When incident not found or user lacks permissions
- *
- * @remarks
- * Follow-up actions support assignment tracking and automated escalation
- * for overdue items. Completion status is tracked with notes and outcomes.
- *
- * @example
- * ```typescript
- * // Load follow-up actions for incident detail view
- * dispatch(fetchFollowUpActions('incident-123'));
- * ```
- */
-export const fetchFollowUpActions = createAsyncThunk(
-  'incidentReports/fetchFollowUpActions',
-  async (incidentReportId: string, { rejectWithValue }) => {
-    try {
-      log('Fetching follow-up actions for incident:', incidentReportId);
-      const response = await incidentsApi.getFollowUpActions(incidentReportId);
-      return response.actions;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch follow-up actions';
-      log('Error fetching follow-up actions:', error);
-      return rejectWithValue(errorMessage);
-    }
-  }
-);
-
-/**
- * Create follow-up action.
- *
- * Creates trackable action item with assignment, priority, and due date.
- * Actions can be assigned to staff members with automatic notification.
- *
- * @async
- * @function createFollowUpAction
- *
- * @param {CreateFollowUpActionRequest} data - Follow-up action data
- * @param {string} data.incidentReportId - Related incident ID
- * @param {string} data.description - Action description
- * @param {string} [data.assignedTo] - User ID of assigned staff member
- * @param {('LOW'|'MEDIUM'|'HIGH'|'URGENT')} data.priority - Action priority
- * @param {string} [data.dueDate] - Due date (ISO 8601)
- *
- * @returns {Promise<FollowUpAction>} Created follow-up action
- *
- * @throws {Error} When validation fails or API request fails
- *
- * @remarks
- * ## Assignment Notification
- *
- * When an action is assigned to a staff member, they receive:
- * - Email notification with action details
- * - In-app notification
- * - Calendar event (if due date specified)
- *
- * ## Escalation Rules
- *
- * Overdue actions trigger automatic escalation:
- * - 1 day overdue: Reminder to assignee
- * - 3 days overdue: Notification to supervisor
- * - 7 days overdue: Notification to administrator
- *
- * @example
- * ```typescript
- * // Create urgent follow-up action with assignment
- * dispatch(createFollowUpAction({
- *   incidentReportId: 'incident-123',
- *   description: 'Schedule parent meeting to discuss incident',
- *   assignedTo: 'user-789',
- *   priority: 'URGENT',
- *   dueDate: '2025-01-20T17:00:00Z'
- * }));
- * ```
- */
-export const createFollowUpAction = createAsyncThunk(
-  'incidentReports/createFollowUpAction',
-  async (data: CreateFollowUpActionRequest, { rejectWithValue }) => {
-    try {
-      log('Creating follow-up action:', data);
-      const response = await incidentsApi.addFollowUpAction(data);
-      toast.success('Follow-up action created successfully');
-      return response.action;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create follow-up action';
-      log('Error creating follow-up action:', error);
-      toast.error(errorMessage);
       return rejectWithValue(errorMessage);
     }
   }

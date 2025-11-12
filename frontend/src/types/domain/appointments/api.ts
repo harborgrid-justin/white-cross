@@ -480,3 +480,42 @@ export interface AppointmentSearchResults {
     }>;
   };
 }
+
+// =====================
+// ANALYTICS TYPES
+// =====================
+
+/**
+ * Trend Data Point
+ * Data point for appointment trends over time
+ */
+export interface TrendDataPoint {
+  date: string; // ISO 8601 date
+  count: number;
+  type?: AppointmentType;
+  status?: AppointmentStatus;
+}
+
+/**
+ * Student No-Show Statistics
+ * Statistics about student no-show rates
+ */
+export interface StudentNoShowStat {
+  studentId: string;
+  studentName: string;
+  noShowCount: number;
+  totalAppointments: number;
+  rate: number; // Percentage (0-100)
+}
+
+/**
+ * Daily Utilization Statistics
+ * Statistics about daily appointment slot utilization
+ */
+export interface DailyUtilizationStat {
+  date: string; // ISO 8601 date
+  totalSlots: number;
+  bookedSlots: number;
+  availableSlots: number;
+  utilizationRate: number; // Percentage (0-100)
+}

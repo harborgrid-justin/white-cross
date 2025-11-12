@@ -24,7 +24,7 @@
  * ```typescript
  * 'use client';
  * import { useAppSelector, useAppDispatch } from '@/stores/hooks';
- * import { fetchStudents } from '@/stores/slices/studentsSlice';
+ * import { fetchStudents } from '@/stores/slices/students';
  *
  * function StudentList() {
  *   // Fully typed selector with autocomplete
@@ -62,7 +62,7 @@ import type { RootState, AppDispatch } from './store';
  * @example
  * ```typescript
  * import { useAppDispatch } from '@/stores/hooks';
- * import { addStudent, fetchStudents } from '@/stores/slices/studentsSlice';
+ * import { addStudent, fetchStudents } from '@/stores/slices/students';
  *
  * function MyComponent() {
  *   const dispatch = useAppDispatch();
@@ -150,7 +150,7 @@ export const useAppDispatch = () => useDispatch<AppDispatch>();
  * @example
  * ```typescript
  * // Using with selector functions
- * import { selectAllStudents } from '@/stores/slices/studentsSlice';
+ * import { selectAllStudents } from '@/stores/slices/students';
  *
  * function StudentList() {
  *   // Use predefined selector for cleaner code

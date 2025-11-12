@@ -11,7 +11,7 @@ import {
   selectStudentFilters,
   selectStudentSort,
   type StudentUIState,
-} from '@/stores/slices/studentsSlice';
+} from '@/stores/slices/students';
 import type { StudentFilters } from '@/types/student.types';
 
 /**
