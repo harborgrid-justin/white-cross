@@ -1,10 +1,32 @@
 /**
- * Monitoring Service Exports
+ * Monitoring Service Module
  *
- * Centralized export for all monitoring and observability services
+ * Modular monitoring functionality for the White Cross platform
  */
 
+// Core service
+export { MonitoringService, monitoringService } from './MonitoringService';
+
+// Component managers
+export { SentryManager } from './SentryManager';
+export { ErrorTrackingManager } from './ErrorTrackingManager';
+
+// Individual services for advanced usage
 export { MetricsService, metricsService } from './MetricsService';
+export { HealthCheckService, healthCheckService } from './HealthCheckService';
+export { ErrorTracker, errorTracker } from './ErrorTracker';
+export { Logger, logger, log } from './Logger';
+export { PerformanceMonitor, performanceMonitor } from './PerformanceMonitor';
+
+// Types
+export type {
+  MonitoringConfig,
+  ErrorContext,
+  MonitoringEvent,
+  ErrorCategory,
+} from './types';
+
+// Legacy type exports for backward compatibility
 export type {
   MetricPoint,
   MetricsConfig,
@@ -16,7 +38,6 @@ export type {
   PerformanceMetrics,
 } from './MetricsService';
 
-export { HealthCheckService, healthCheckService } from './HealthCheckService';
 export type {
   HealthCheckResult,
   ServiceHealthCheck,
@@ -24,19 +45,14 @@ export type {
   HealthCheckProvider,
 } from './HealthCheckService';
 
-export { ErrorTracker, errorTracker } from './ErrorTracker';
 export type {
-  ErrorContext,
   ErrorTrackerConfig,
   ErrorEvent,
-  ErrorCategory,
   Breadcrumb,
 } from './ErrorTracker';
 
-export { Logger, logger, log } from './Logger';
 export type { LogLevel, LogEntry, LogContext, LoggerConfig, LogTransport } from './Logger';
 
-export { PerformanceMonitor, performanceMonitor } from './PerformanceMonitor';
 export type {
   WebVitalsMetric,
   PerformanceMetric,
@@ -45,41 +61,11 @@ export type {
   PerformanceMonitorConfig,
 } from './PerformanceMonitor';
 
-/**
- * Initialize all monitoring services
- */
-export async function initializeMonitoring(config?: {
-  metrics?: Partial<import('./MetricsService').MetricsConfig>;
-  health?: Partial<import('./HealthCheckService').HealthCheckConfig>;
-  errors?: Partial<import('./ErrorTracker').ErrorTrackerConfig>;
-  logger?: Partial<import('./Logger').LoggerConfig>;
-  performance?: Partial<import('./PerformanceMonitor').PerformanceMonitorConfig>;
-}): Promise<void> {
-  try {
-    logger.info('Initializing monitoring infrastructure');
-
-    // Initialize error tracker first to catch initialization errors
-    await errorTracker.initialize();
-
-    // Initialize health checks
-    await healthCheckService.checkNow();
-
-    // Metrics service and performance monitor are already initialized as singletons
-
-    logger.info('Monitoring infrastructure initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize monitoring:', error);
-    throw error;
-  }
+// Legacy exports for backward compatibility
+export async function initializeMonitoring(): Promise<void> {
+  return monitoringService.initialize();
 }
 
-/**
- * Cleanup all monitoring services
- */
 export function destroyMonitoring(): void {
-  metricsService.destroy();
-  healthCheckService.destroy();
-  errorTracker.destroy();
-  performanceMonitor.destroy();
-  logger.destroy();
+  monitoringService.destroy();
 }
