@@ -101,3 +101,4 @@ export interface DeliveryStatusUpdate {
 }
 
 export * from './conversation.types';
+export * from './message-response.types';
