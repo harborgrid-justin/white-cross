@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { DiscoveryCacheService } from '@/services/discovery-cache.service';
+import { DiscoveryCacheService } from '../services/discovery-cache.service';
 import { CacheConfig } from '../interfaces/cache-config.interface';
 import { CACHE_CONFIG_KEY } from '../decorators/cache-config.decorator';
 import * as crypto from 'crypto';

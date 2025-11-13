@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Barcode Service
- * @module stude@/services/student-barcode.service
+ * @module services/student/student-barcode.service
  * @description Barcode scanning and verification for student identification
  */
 

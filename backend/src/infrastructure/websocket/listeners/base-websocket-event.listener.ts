@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { WebSocketService } from '@/services/websocket.service';
+import { WebSocketService } from '../websocket.service';
 
 /**
  * Base class for WebSocket event listeners

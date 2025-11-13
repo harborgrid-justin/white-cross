@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student CRUD Service
- * @module stude@/services/student-crud.service
+ * @module services/student/student-crud.service
  * @description Core CRUD operations for student management
  *
  * This service handles:

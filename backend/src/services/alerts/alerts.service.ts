@@ -17,7 +17,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { CreateAlertDto } from '@/alerts/dto';
+import { CreateAlertDto } from './dto';
 import { Alert, AlertStatus, AlertPreferences } from '@/database';
 import { Op } from 'sequelize';
 import { BaseService } from '@/common/base';

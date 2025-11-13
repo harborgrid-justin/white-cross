@@ -26,15 +26,15 @@ import {
   ImportConfigurationsDto,
   UpdateConfigurationDto,
 } from './dto';
-import { ConfigCrudService } from '@/services/config-crud.service';
-import { ConfigValidationService, ConfigurationValidationResult } from '@/services/config-validation.service';
-import { ConfigHistoryService } from '@/services/config-history.service';
-import { ConfigImportExportService } from '@/services/config-import-export.service';
-import { ConfigStatisticsService } from '@/services/config-statistics.service';
+import { ConfigCrudService } from './config-crud.service';
+import { ConfigValidationService, ConfigurationValidationResult } from './config-validation.service';
+import { ConfigHistoryService } from './config-history.service';
+import { ConfigImportExportService } from './config-import-export.service';
+import { ConfigStatisticsService } from './config-statistics.service';
 
 import { BaseService } from '@/common/base';
 // Re-export validation result interface
-export { ConfigurationValidationResult } from '@/services/config-validation.service';
+export { ConfigurationValidationResult } from './config-validation.service';
 
 @Injectable()
 export class ConfigurationService extends BaseService {

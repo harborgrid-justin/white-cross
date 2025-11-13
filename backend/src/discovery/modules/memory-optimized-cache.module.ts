@@ -1,8 +1,8 @@
 import { DynamicModule, Injectable, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
-import { MemoryOptimizedCacheService } from '@/services/memory-optimized-cache.service';
-import { CacheEvictionService } from '@/services/cache-eviction.service';
-import { MemoryMonitorService } from '@/services/memory-monitor.service';
+import { MemoryOptimizedCacheService } from '../services/memory-optimized-cache.service';
+import { CacheEvictionService } from '../services/cache-eviction.service';
+import { MemoryMonitorService } from '../services/memory-monitor.service';
 import { SmartCacheInterceptor } from './interceptors/smart-cache.interceptor';
 import { MemoryThresholdGuard } from './guards/memory-threshold.guard';
 

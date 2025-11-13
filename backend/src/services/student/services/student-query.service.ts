@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Query Service
- * @module stude@/services/student-query.service
+ * @module services/student/student-query.service
  * @description Handles search, filtering, and batch query operations
  */
 

@@ -7,7 +7,7 @@
 import { Logger } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket } from '../interfaces';
-import { RateLimiterService } from '@/services/rate-limiter.service';
+import { RateLimiterService } from '../services/rate-limiter.service';
 
 /**
  * Common WebSocket utilities for handlers

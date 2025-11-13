@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Waitlist Service
- * @module stude@/services/student-waitlist.service
+ * @module services/student/student-waitlist.service
  * @description Handles student waitlist management operations
  */
 

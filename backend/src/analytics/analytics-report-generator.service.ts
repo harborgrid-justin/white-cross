@@ -19,8 +19,8 @@ import {
 
 import { BaseReportGeneratorService } from '@/analytics/services/base-report-generator.service';
 import { ReportDataCollectorService } from '@/analytics/services/report-data-collector.service';
-import { ReportFormatterService } from '@/services/report-formatter.service';
-import { HealthInsightsService } from '@/services/health-insights.service';
+import { ReportFormatterService } from './services/report-formatter.service';
+import { HealthInsightsService } from './services/health-insights.service';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

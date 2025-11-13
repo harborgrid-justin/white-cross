@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Validation Service
- * @module stude@/services/student-validation.service
+ * @module services/student/student-validation.service
  * @description Handles all validation logic for student operations
  */
 
