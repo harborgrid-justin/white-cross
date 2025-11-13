@@ -1,8 +1,8 @@
 import { DynamicModule, Injectable, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
-import { SmartGarbageCollectionService } from '@/services/smart-garbage-collection.service';
-import { MemoryLeakDetectionService } from '@/services/memory-leak-detection.service';
-import { GCOptimizationService } from '@/services/gc-optimization.service';
+import { SmartGarbageCollectionService } from './services/smart-garbage-collection.service';
+import { MemoryLeakDetectionService } from './services/memory-leak-detection.service';
+import { GCOptimizationService } from './services/gc-optimization.service';
 import { MemoryPressureInterceptor } from './interceptors/memory-pressure.interceptor';
 import { GCSchedulerGuard } from './guards/gc-scheduler.guard';
 

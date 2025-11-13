@@ -19,7 +19,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AlertCategory, AlertSeverity } from '@/services/alerts';
+import { AlertCategory, AlertSeverity } from '../../../services/alerts';
 
 /**
  * Email priority levels

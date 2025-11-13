@@ -15,7 +15,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
-import { FollowUpStatus } from '@/services/clinical/enums/follow-up-status.enum';
+import { FollowUpStatus } from '../../services/clinical/enums/follow-up-status.enum';
 
 export interface FollowUpAppointmentAttributes {
   id: string;

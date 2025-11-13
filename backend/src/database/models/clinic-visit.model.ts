@@ -15,7 +15,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
-import { VisitDisposition } from '@/services/clinical/enums/visit-disposition.enum';
+import { VisitDisposition } from '../../services/clinical/enums/visit-disposition.enum';
 
 export interface ClinicVisitAttributes {
   id: string;

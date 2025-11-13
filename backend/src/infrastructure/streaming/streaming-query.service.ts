@@ -26,7 +26,7 @@ import {
 } from 'sequelize';
 import { Readable, Transform } from 'stream';
 import { EventEmitter } from 'events';
-import { StreamingMetrics } from '@/services/database/operations/interfaces';
+import { StreamingMetrics } from '../../database/interfaces';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

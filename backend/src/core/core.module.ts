@@ -18,10 +18,10 @@ import { Global, Module, Optional, ValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 
 // Import audit module for exception filter
-import { AuditModule } from '@/services/audit';
+import { AuditModule } from '../services/audit';
 
 // Guards
-import { RolesGuard } from '@/services/auth';
+import { RolesGuard } from '../services/auth';
 
 // Interceptors
 // Filters

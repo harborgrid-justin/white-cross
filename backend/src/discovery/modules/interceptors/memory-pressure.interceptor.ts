@@ -2,8 +2,8 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { SmartGarbageCollectionService } from '@/services/smart-garbage-collection.service';
-import { GCOptimizationService } from '@/services/gc-optimization.service';
+import { SmartGarbageCollectionService } from '../services/smart-garbage-collection.service';
+import { GCOptimizationService } from '../services/gc-optimization.service';
 import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
 interface MemoryPressureConfig {

@@ -16,7 +16,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 // Re-export enums for convenience
-export { AccommodationType } from '@/services/chronic-condition/enums';
+export { AccommodationType } from '../../services/chronic-condition/enums';
 
 /**
  * Chronic condition status indicating management phase and clinical state.

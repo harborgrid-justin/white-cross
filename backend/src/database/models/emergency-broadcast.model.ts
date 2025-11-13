@@ -16,7 +16,7 @@ import {
   CommunicationChannel,
   EmergencyPriority,
   EmergencyType,
-} from '@/services/communication/emergency-broadcast/emergency-broadcast.enums';
+} from '../../services/communication/emergency-broadcast/emergency-broadcast.enums';
 
 export interface EmergencyBroadcastAttributes {
   id: string;

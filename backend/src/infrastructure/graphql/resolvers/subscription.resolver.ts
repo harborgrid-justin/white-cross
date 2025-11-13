@@ -34,7 +34,7 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../pubsub/pubsub.module';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '@/services/auth';
+import { Roles } from '../../../services/auth';
 import { UserRole } from '@/database';
 import { AlertDto, HealthRecordDto, StudentDto, VitalsDto } from '../dto';
 

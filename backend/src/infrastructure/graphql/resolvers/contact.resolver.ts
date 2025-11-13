@@ -12,7 +12,7 @@
 import { Args, Context, ID, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '@/services/auth';
+import { Roles } from '../../../services/auth';
 import { Contact, UserRole } from '@/database';
 import {
   ContactDto,
@@ -25,8 +25,8 @@ import {
   DeleteResponseDto,
   StudentDto,
 } from '../dto';
-import { ContactService } from '@/services/communication/contact';
-import { ContactType as DomainContactType } from '@/services/communication/contact/enums/contact-type.enum';
+import { ContactService } from '../../../services/communication/contact';
+import { ContactType as DomainContactType } from '../../../services/communication/contact/enums/contact-type.enum';
 import type { GraphQLContext } from '../types/context.interface';
 
 

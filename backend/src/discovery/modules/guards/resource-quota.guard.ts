@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { DynamicResourcePoolService } from '@/services/dynamic-resource-pool.service';
+import { DynamicResourcePoolService } from '../services/dynamic-resource-pool.service';
 import { AuthenticatedRequest } from '../types/resource.types';
 
 interface ResourceQuotaConfig {

@@ -12,7 +12,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { ProtocolStatus } from '@/services/clinical/enums/protocol-status.enum';
+import { ProtocolStatus } from '../../services/clinical/enums/protocol-status.enum';
 
 export interface ClinicalProtocolAttributes {
   id: string;

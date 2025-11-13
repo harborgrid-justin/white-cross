@@ -28,7 +28,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/services/auth';
+import { JwtAuthGuard } from '../../services/auth';
 import { HealthRecordService } from '../health-record.service';
 import { HealthRecordCreateDto } from '../dto/create-health-record.dto';
 import { HealthRecordUpdateDto } from '../dto/update-health-record.dto';

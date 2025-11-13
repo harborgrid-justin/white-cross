@@ -21,15 +21,15 @@ import { CreateAlertDto } from './dto';
 import { Alert, AlertStatus, AlertPreferences } from '@/database';
 import { Op } from 'sequelize';
 import { BaseService } from '@/common/base';
-import { AlertDeliveryService } from '@/services/alert-delivery.service';
-import { AlertPreferencesService } from '@/services/alert-preferences.service';
-import { AlertStatisticsService, AlertStatistics } from '@/services/alert-statistics.service';
-import { AlertRetryService } from '@/services/alert-retry.service';
+import { AlertDeliveryService } from './services/alert-delivery.service';
+import { AlertPreferencesService } from './services/alert-preferences.service';
+import { AlertStatisticsService, AlertStatistics } from './services/alert-statistics.service';
+import { AlertRetryService } from './services/alert-retry.service';
 import { AlertNotFoundException } from './exceptions/alert.exceptions';
 
 // Re-export common interfaces and enums
 export { AlertStatus } from '@/database';
-export { AlertStatistics } from '@/services/alert-statistics.service';
+export { AlertStatistics } from './services/alert-statistics.service';
 
 @Injectable()
 export class AlertsService extends BaseService {
