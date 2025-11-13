@@ -33,7 +33,7 @@ import { AddWaitlistDto } from './dto/add-waitlist.dto';
 import { WaitlistStatusDto } from './dto/waitlist-status.dto';
 import { PaginatedResponse, StudentDataExport, StudentStatistics } from './types';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Student Service (Facade)
  *

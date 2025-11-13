@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { MessageTemplateLibraryService } from '../message-template-library.service';
 import { CreateMessageTemplateDto, MessageTemplateResponseDto, RenderTemplateDto } from '../dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Message Templates')
 @Controller('enterprise-features/message-templates')
 @ApiBearerAuth()

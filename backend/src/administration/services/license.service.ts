@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { License } from '../entities/license.entity';
 import { District } from '../entities/district.entity';
 import { AuditService } from './audit.service';

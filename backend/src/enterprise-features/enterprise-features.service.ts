@@ -13,7 +13,7 @@ import { BulkMessagingService } from './bulk-messaging.service';
 import { LanguageTranslationService } from './language-translation.service';
 import { CustomReportBuilderService } from './custom-report-builder.service';
 import { AnalyticsDashboardService } from './analytics-dashboard.service';
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 import {
   WaitlistEntry,
   RecurringTemplate,

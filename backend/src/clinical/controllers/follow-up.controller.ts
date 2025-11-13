@@ -6,7 +6,7 @@ import { UpdateFollowUpDto } from '../dto/follow-up/update-follow-up.dto';
 import { CompleteFollowUpDto } from '../dto/follow-up/complete-follow-up.dto';
 import { FollowUpFiltersDto } from '../dto/follow-up/follow-up-filters.dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Follow-up Appointments')
 @ApiBearerAuth()
 @Controller('clinical/follow-ups')

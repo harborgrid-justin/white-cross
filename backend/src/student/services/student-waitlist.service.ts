@@ -12,7 +12,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { Student } from '@/database';
 import { RequestContextService } from '@/shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { AddWaitlistDto } from '../dto/add-waitlist.dto';
 import { WaitlistStatusDto } from '../dto/waitlist-status.dto';
 

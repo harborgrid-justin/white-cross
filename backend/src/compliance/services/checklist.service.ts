@@ -3,7 +3,7 @@ import { ChecklistRepository } from '../repositories/checklist.repository';
 import { CreateChecklistDto, QueryChecklistDto, UpdateChecklistDto } from '../dto/checklist.dto';
 import { ChecklistItemStatus } from '../../database/models/compliance-checklist-item.model';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ChecklistService extends BaseService {
   constructor(private readonly checklistRepository: ChecklistRepository) {}

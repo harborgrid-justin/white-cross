@@ -9,7 +9,7 @@ import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 import { MemoryMetrics, PoolMetrics } from '../types/metrics.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class SystemMetricsService extends BaseService {
   private readonly MAX_HISTORY_POINTS = 1440; // 24 hours at 1 min intervals

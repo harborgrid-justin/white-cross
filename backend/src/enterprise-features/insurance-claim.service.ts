@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InsuranceClaim, InsuranceClaimStatus } from './enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS, INSURANCE_CONSTANTS } from './enterprise-features-constants';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class InsuranceClaimService extends BaseService {
   private claims: InsuranceClaim[] = []; // In production, this would be a database

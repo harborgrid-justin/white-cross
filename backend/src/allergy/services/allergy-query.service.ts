@@ -19,7 +19,7 @@ import { AllergySeverity } from '../../common/enums';
 import { AllergyFiltersDto } from '../dto/allergy-filters.dto';
 import { PaginationDto } from '../dto/pagination.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface PaginatedAllergyResults {
   allergies: Allergy[];
   total: number;

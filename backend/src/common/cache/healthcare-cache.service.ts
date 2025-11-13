@@ -15,8 +15,8 @@ import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
 
-import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 // Healthcare Cache Configuration

@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BudgetService } from './budget.service';
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 import {
   BudgetTransactionFiltersDto,
   CreateBudgetCategoryDto,

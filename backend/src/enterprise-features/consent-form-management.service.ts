@@ -5,7 +5,7 @@ import { ConsentValidationHelper } from './helpers/consent-validation.helper';
 import { ConsentTemplateHelper } from './helpers/consent-template.helper';
 import { SignatureHelper } from './helpers/signature.helper';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ConsentFormManagementService extends BaseService {
   private consentForms: ConsentForm[] = [];

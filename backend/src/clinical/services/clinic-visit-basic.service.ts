@@ -7,7 +7,7 @@ import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
 import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Clinic Visit Basic Service
  * Handles basic CRUD operations for clinic visits

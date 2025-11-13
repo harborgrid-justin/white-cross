@@ -12,7 +12,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 // Local type definitions to avoid import issues
 interface JwtSecurityOptions {
   secret?: string;

@@ -4,7 +4,7 @@ import { Sequelize } from 'sequelize';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { PermissionInstance, PermissionModel, SequelizeModelClass } from '../types/sequelize-models.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * System Initialization Service
  *

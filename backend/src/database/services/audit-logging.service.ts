@@ -11,7 +11,7 @@ import { AuditAction, isPHIEntity } from '../types/database.enums';
 import { AuditLog, AuditSeverity, ComplianceType } from '../models/audit-log.model';
 import { AuditHelperService } from './audit-helper.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Audit Logging Service
  *

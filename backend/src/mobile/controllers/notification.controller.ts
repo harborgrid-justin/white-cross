@@ -5,7 +5,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { NotificationService } from '../services/notification.service';
 import { SendNotificationDto } from '../dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Notification Controller
  * Handles push notification operations

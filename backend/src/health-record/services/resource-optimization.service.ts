@@ -14,17 +14,17 @@ import { ResourceMonitor, ResourceAlert } from './resource-monitor.service';
 import { ResourceOptimizationEngine, OptimizationRecommendation } from './resource-optimization-engine.service';
 import { ResourceReporter } from './resource-reporter.service';
 
-import { BaseService } from '../../../common/base';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 export interface ResourceOptimizationPlan {

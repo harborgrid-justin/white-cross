@@ -31,7 +31,7 @@ import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { UpdateAppointmentDto } from '../dto/update-appointment.dto';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Core Appointment Controller
  *

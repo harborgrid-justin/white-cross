@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { SystemConfig } from '../../database/models/system-config.model';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ConfigStatisticsService extends BaseService {
   constructor(

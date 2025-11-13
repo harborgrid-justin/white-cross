@@ -7,7 +7,7 @@ import {
   AnalyticsMedicationOrchestratorService,
   AnalyticsAppointmentOrchestratorService,
 } from '@/analytics/services';
-import { BaseService } from '../common/base/base.service';
+import { BaseService } from '@/common/base';
 import { AnalyticsGenerateCustomReportDto } from './dto/custom-reports.dto';
 import { GetAdminDashboardQueryDto } from './dto/dashboard.dto';
 import { GetAppointmentTrendsQueryDto } from './dto/appointment-analytics.dto';

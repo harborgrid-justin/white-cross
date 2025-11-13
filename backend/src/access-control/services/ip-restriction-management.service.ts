@@ -7,7 +7,7 @@ import { AccessControlCreateIpRestrictionDto, IpRestrictionType } from '../dto/c
 import { IpRestrictionCheckResult } from '../interfaces/ip-restriction-check.interface';
 import { IpRestrictionInstance, SequelizeModelClass } from '../types/sequelize-models.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * IP Restriction Management Service
  *

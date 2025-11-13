@@ -15,7 +15,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from './cache.service';
 import { RateLimitConfig, RateLimitStatus } from './cache.interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Rate limit context
  */

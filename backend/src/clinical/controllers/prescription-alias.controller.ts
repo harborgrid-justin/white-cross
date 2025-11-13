@@ -2,7 +2,7 @@ import { All, Controller, Req, Res } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Prescription Alias Controller
  *

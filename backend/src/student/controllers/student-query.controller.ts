@@ -17,7 +17,7 @@ import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@/auth';
 import { StudentService } from '../student.service';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Student Query Controller
  *

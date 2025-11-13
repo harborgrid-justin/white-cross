@@ -8,7 +8,7 @@ import { HealthTrendsReport } from '../interfaces/report-types.interface';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
 import { AllergySeverity, HealthRecordType } from '../../common/enums';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Health Reports Service
  * Handles health trend analysis, chronic condition tracking, and allergy reporting

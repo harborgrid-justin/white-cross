@@ -7,7 +7,7 @@ import {
 } from '../dto/create-security-incident.dto';
 import { LogLoginAttemptDto } from '../dto/log-login-attempt.dto';
 import { SecurityStatistics } from '../interfaces/security-statistics.interface';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import {
   LoginAttemptInstance,
   PaginationResult,

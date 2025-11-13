@@ -802,7 +802,7 @@ export function createAuthenticationService(
  * @example
  * // Default import
  * import authService from './authentication.service';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
  * const service = authService.createAuthenticationService(config);
  */
 export default {

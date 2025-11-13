@@ -30,7 +30,7 @@ import {
 } from './dto';
 import { ContactType } from './enums';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Contacts')
 @ApiBearerAuth()
 @Controller('contacts')

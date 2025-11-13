@@ -29,7 +29,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Rate limit configuration for a specific event type
  */

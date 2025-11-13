@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac } from 'crypto';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import {
   HealthRecordUpdatedPayload,
   isHealthRecordUpdatedPayload,

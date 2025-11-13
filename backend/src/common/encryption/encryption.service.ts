@@ -14,7 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { promisify } from 'util';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 // Promisify crypto functions
 const scrypt = promisify(crypto.scrypt);
 const randomBytes = promisify(crypto.randomBytes);

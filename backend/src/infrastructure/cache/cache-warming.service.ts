@@ -16,17 +16,17 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { CacheService } from './cache.service';
 import { CacheEvent, CacheWarmingStrategy } from './cache.interfaces';
 
-import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 /**

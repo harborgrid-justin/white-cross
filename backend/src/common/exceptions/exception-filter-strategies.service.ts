@@ -34,8 +34,8 @@ import { Request, Response } from 'express';
 import { QueryFailedError, EntityNotFoundError } from 'typeorm';
 import { ValidationError } from 'class-validator';
 
-import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 // ============================================================================

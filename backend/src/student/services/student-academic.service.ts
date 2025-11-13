@@ -14,7 +14,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Student } from '@/database';
 import { AcademicTranscriptService } from '@/academic-transcript';
 import { RequestContextService } from '@/shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { AcademicHistoryDto } from '../dto/academic-history.dto';
 import { BulkGradeTransitionDto } from '../dto/bulk-grade-transition.dto';
 import { GraduatingStudentsDto } from '../dto/graduating-students.dto';

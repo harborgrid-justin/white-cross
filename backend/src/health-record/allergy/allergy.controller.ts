@@ -21,7 +21,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole   } from "../../database/models";
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Allergy Management Controller
  *

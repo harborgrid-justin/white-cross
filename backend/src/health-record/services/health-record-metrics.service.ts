@@ -17,17 +17,17 @@ import { EnterpriseMetricsService } from '../../shared/enterprise/services/enter
 import { ComplianceLevel, HealthRecordOperation } from '../interfaces/health-record-types';
 import { HealthMetricSnapshot   } from "../../database/models";
 
-import { BaseService } from '../../../common/base';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 export interface HealthRecordMetricSnapshot {

@@ -22,7 +22,7 @@ import type { AuthConfig } from './auth.config';
 import type { SecurityConfig } from './security.config';
 import type { RedisConfig } from './redis.config';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Main application configuration service
  * Provides type-safe access to all configuration namespaces

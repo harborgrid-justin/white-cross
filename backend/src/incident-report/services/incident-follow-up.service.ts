@@ -8,7 +8,7 @@ import { IncidentValidationService } from './incident-validation.service';
 import { ActionPriority } from '../enums/action-priority.enum';
 import { ActionStatus } from '../enums/action-status.enum';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class IncidentFollowUpService extends BaseService {
   constructor(

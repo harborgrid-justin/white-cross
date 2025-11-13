@@ -8,7 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { InventoryNotificationService, DisposalRecord } from './inventory-notification.service';
 
 @Injectable()

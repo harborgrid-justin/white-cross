@@ -7,7 +7,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheConfig, CacheStats, ICacheManager } from '../interfaces/cache/cache-manager.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()

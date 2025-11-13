@@ -11,7 +11,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { col, fn, Op, Sequelize } from 'sequelize';
-import { BaseService } from '../common/base/base.service';
+import { BaseService } from '@/common/base';
 import {
   ChartDataPointDto,
   DashboardChartDataDto,

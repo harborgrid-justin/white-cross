@@ -8,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CountryCode, isValidPhoneNumber, parsePhoneNumber, PhoneNumber as LibPhoneNumber } from 'libphonenumber-js';
 import { PhoneNumberType, PhoneNumberValidationResult } from '../dto/phone-number.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Phone Number Validator Service
  * Provides comprehensive phone number validation and formatting for international numbers

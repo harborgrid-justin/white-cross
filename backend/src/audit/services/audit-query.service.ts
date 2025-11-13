@@ -5,7 +5,7 @@ import { AuditLog } from '@/database';
 import { IPaginatedResult } from '../interfaces/paginated-result.interface';
 import { AuditLogFilters, AuditLogSearchCriteria } from '../types/audit.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * AuditQueryService - Advanced querying and filtering for audit logs
  *

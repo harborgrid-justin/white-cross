@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { DeviceToken } from '../entities';
 import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Device Token Service
  *

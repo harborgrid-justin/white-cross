@@ -16,7 +16,7 @@ import { QueryAnalyzerService } from './query-analyzer.service';
 import { SlowQueryDetectorService } from './slow-query-detector.service';
 import { N1QueryDetectorService } from './n1-query-detector.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class PerformanceReporterService extends BaseService {
   // Performance targets

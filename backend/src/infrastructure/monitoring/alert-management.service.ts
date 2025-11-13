@@ -8,7 +8,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import {
   Alert,
   AlertConfig,

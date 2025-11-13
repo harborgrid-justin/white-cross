@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface BackupMetadata { id: string; type: string; timestamp: Date; size: number; location: string; checksum: string; }
 export interface RestoreOptions { pointInTime?: Date; tables?: string[]; validateOnly?: boolean; }
 

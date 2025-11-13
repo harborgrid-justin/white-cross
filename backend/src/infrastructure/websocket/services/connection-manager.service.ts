@@ -9,7 +9,7 @@ import { Server } from 'socket.io';
 import { AuthenticatedSocket } from '../interfaces';
 import { ConnectionConfirmedDto } from '../dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ConnectionManagerService extends BaseService {
   /**

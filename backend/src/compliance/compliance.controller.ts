@@ -56,7 +56,7 @@ import {
 } from './dto/violation.dto';
 import { QueryStatisticsDto } from './dto/statistics.dto';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('compliance')
 @ApiBearerAuth()
 @Controller('compliance')

@@ -16,7 +16,7 @@ import { OfflineSyncWatermarkService } from './offline-sync-watermark.service';
 import { OfflineSyncQueueService } from './offline-sync-queue.service';
 import { OfflineSyncConflictService } from './offline-sync-conflict.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Offline Sync Service - Main orchestrator for offline data synchronization
  *

@@ -5,7 +5,7 @@
  */
 
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
 import * as Handlebars from 'handlebars';
@@ -13,17 +13,17 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { EmailTemplate } from './dto/email.dto';
 
-import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 /**

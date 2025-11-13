@@ -19,7 +19,7 @@ import * as paginationBuilders from './swagger/responses/pagination-builders';
 import * as fileBuilders from './swagger/responses/file-builders';
 import * as headerUtilities from './swagger/responses/header-utilities';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 // Re-export all response builders for backward compatibility
 export * from './swagger/responses';
 

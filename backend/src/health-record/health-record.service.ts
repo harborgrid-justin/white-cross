@@ -17,7 +17,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 import { HealthRecord   } from "../../database/models";
 import { Allergy   } from "../../database/models";
 import { ChronicCondition   } from "../../database/models";

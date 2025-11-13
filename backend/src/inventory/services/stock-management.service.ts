@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
 import { StockAdjustmentDto } from '../dto/stock-adjustment.dto';

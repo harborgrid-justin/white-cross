@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Alert } from '@/database';
 import { Op } from 'sequelize';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface AlertStatistics {
   totalAlerts: number;
   bySeverity: Record<string, number>;

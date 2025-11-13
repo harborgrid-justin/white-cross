@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, Logger, NotFoundExc
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BudgetCategory, BudgetTransaction } from '@/database';
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 import {
   BudgetRecommendationDto,
   BudgetRecommendationType,

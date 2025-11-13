@@ -4,7 +4,7 @@ import { IntegrationConfig, IntegrationStatus } from '../../database/models/inte
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface IntegrationSyncResult {
   success: boolean;
   recordsProcessed: number;

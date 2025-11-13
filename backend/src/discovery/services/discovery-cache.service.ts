@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheEntry, CacheStats } from '../interfaces/cache-config.interface';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class DiscoveryCacheService extends BaseService {
   private cache = new Map<string, CacheEntry>();

@@ -14,7 +14,7 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { Model, ModelCtor } from 'sequelize-typescript';
 import * as crypto from 'crypto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 export interface CacheOptions {

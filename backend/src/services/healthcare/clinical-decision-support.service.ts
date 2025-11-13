@@ -7,7 +7,7 @@ import { Medication   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 import { Student   } from "../../database/models";
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Clinical Decision Support Service
  *

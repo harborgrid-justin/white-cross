@@ -7,7 +7,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AiSearchService } from './ai-search.service';
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 import {
   AdvancedSearchCriteriaDto,
   AnalyticsPeriod,

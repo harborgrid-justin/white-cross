@@ -18,7 +18,7 @@ import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.
 import { AdvancedFeaturesScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationAdministrationDto } from './dto/verify-medication-administration.dto';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class AdvancedFeaturesService extends BaseService {
   // ==================== Screening Service Methods ====================

@@ -8,7 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { AuditLog, AuditSeverity } from '../models/audit-log.model';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Interface for audit statistics
  */

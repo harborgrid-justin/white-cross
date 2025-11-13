@@ -32,7 +32,7 @@ import { ConfigHistoryService } from './services/config-history.service';
 import { ConfigImportExportService } from './services/config-import-export.service';
 import { ConfigStatisticsService } from './services/config-statistics.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 // Re-export validation result interface
 export { ConfigurationValidationResult } from './services/config-validation.service';
 

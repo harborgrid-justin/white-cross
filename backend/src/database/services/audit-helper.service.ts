@@ -8,7 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { AuditAction, isPHIEntity, SENSITIVE_FIELDS } from '../types/database.enums';
 import { AuditSeverity, ComplianceType } from '../models/audit-log.model';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Audit Helper Service
  *

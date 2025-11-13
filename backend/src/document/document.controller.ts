@@ -19,7 +19,7 @@ import { SignDocumentDto } from './dto/sign-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { CurrentUser, IpAddress } from '@/auth/decorators';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Document Controller
  * Handles all document management REST endpoints with Swagger documentation

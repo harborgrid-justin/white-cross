@@ -93,7 +93,7 @@ import {
 } from '@nestjs/core';
 import { randomUUID } from 'crypto';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Provider token type for injection
  */

@@ -6,7 +6,7 @@ import { StatisticsService } from './services/analytics/statistics.service';
 import { ComplianceService } from './services/analytics/compliance.service';
 import { ExportService } from './services/analytics/export.service';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Analytics Dashboard Service
  * Provides real-time analytics and health trends

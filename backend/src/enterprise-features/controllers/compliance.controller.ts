@@ -4,7 +4,7 @@ import { HipaaComplianceService } from '../hipaa-compliance.service';
 import { RegulationTrackingService } from '../regulation-tracking.service';
 import { GenerateComplianceReportDto, HIPAAComplianceCheckResponseDto, RegulationUpdateResponseDto } from '../dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Compliance & Regulations')
 @Controller('enterprise-features')
 @ApiBearerAuth()

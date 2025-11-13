@@ -10,7 +10,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PIIDetectionResult, PIIType } from '../interfaces/security.interfaces';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class PIIDetectionService extends BaseService {
   // PII detection patterns

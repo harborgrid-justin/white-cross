@@ -8,7 +8,7 @@ import { PaginationDto } from './dto/pagination.dto';
 import { UpdateCarePlanDto } from './dto/update-care-plan.dto';
 import { AccommodationType } from './enums/accommodation-type.enum';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 /**
  * ChronicConditionController
  *

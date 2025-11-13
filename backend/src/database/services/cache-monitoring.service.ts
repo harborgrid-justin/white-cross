@@ -13,7 +13,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryCacheService } from './query-cache.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 export interface ServiceCacheStats {
   serviceName: string;
   totalQueries: number;

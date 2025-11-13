@@ -6,7 +6,7 @@ import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.d
 import { UpdateTreatmentPlanDto } from '../dto/treatment/update-treatment-plan.dto';
 import { TreatmentPlanFiltersDto } from '../dto/treatment/treatment-plan-filters.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Treatment Plan Service
  * Manages treatment plans for students including CRUD operations and status management

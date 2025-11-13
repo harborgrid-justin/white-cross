@@ -7,7 +7,7 @@
  */
 
 import { Injectable, Inject } from '@nestjs/common';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { PerformanceEntry } from './interfaces/metrics.interface';
 

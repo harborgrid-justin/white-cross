@@ -120,7 +120,7 @@
  */
 
 import { Logger, Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import {
   Model,
   ModelCtor,

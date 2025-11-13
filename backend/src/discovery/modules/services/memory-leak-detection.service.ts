@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { ProviderMetadata } from '../types/resource.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface LeakSuspect {
   providerName: string;
   memoryGrowthRate: number; // MB per minute

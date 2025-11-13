@@ -15,7 +15,7 @@ import * as VacuumMaintenance from './vacuum-maintenance.service';
 import * as BloatDetection from './bloat-detection.service';
 import * as CacheOptimization from './cache-optimization.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Injectable service class wrapping all optimization utilities
  */

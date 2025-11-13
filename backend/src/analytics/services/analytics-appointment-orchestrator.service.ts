@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GetAppointmentTrendsQueryDto } from '../dto/appointment-analytics.dto';
 import { GetNoShowRateQueryDto } from '../dto/appointment-analytics.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 interface AppointmentByType {
   type: string;
   count: number;

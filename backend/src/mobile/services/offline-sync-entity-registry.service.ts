@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { SyncEntityType } from '../enums';
 import { IEntitySyncService } from './offline-sync-types.interface';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Entity Registry Service
  * Manages registration and retrieval of entity services for sync operations

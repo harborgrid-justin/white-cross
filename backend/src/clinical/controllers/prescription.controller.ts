@@ -7,7 +7,7 @@ import { FillPrescriptionDto } from '../dto/prescription/fill-prescription.dto';
 import { PrescriptionFiltersDto } from '../dto/prescription/prescription-filters.dto';
 import { Prescription } from '../../database/models/prescription.model';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Prescriptions')
 @ApiBearerAuth()
 @Controller('clinical/prescriptions')

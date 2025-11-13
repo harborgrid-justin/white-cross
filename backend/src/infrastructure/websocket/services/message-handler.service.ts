@@ -12,7 +12,7 @@ import { MessageEventDto, MessageDeliveryDto, ReadReceiptDto, TypingIndicatorDto
 import { RateLimiterService } from './rate-limiter.service';
 import { WebSocketUtilities } from '../shared/websocket-utilities';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class MessageHandlerService extends BaseService {
   constructor(private readonly rateLimiter: RateLimiterService) {}

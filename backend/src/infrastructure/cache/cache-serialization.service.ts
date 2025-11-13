@@ -15,7 +15,7 @@ import { promisify } from 'util';
 import { CacheConfigService } from './cache.config';
 import type { CacheOptions } from './cache.interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
 

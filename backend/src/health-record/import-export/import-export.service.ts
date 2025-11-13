@@ -15,7 +15,7 @@ import { ChronicCondition   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 import { ClinicVisit   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ImportExportService extends BaseService {
   // Supported formats

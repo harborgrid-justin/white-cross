@@ -34,7 +34,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================

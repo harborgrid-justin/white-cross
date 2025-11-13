@@ -13,7 +13,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { BaseController } from '../common/base/base-controller';
+import { BaseController } from '@/common/base';
 import { DashboardService } from './dashboard.service';
 import {
   DashboardChartDataDto,

@@ -23,7 +23,7 @@ import { Request, Response } from 'express';
 import * as winston from 'winston';
 import { Counter, Histogram, register } from 'prom-client';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 // ============================================================================
 // STRUCTURED ERROR TYPES
 // ============================================================================

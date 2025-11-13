@@ -7,7 +7,7 @@ import { CreateMessageTemplateDto } from '../dto/create-message-template.dto';
 import { EmergencyAlertDto } from '../dto/emergency-alert.dto';
 import { UpdateMessageTemplateDto } from '../dto/update-message-template.dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Communication')
 @ApiBearerAuth()
 @Controller('communication')

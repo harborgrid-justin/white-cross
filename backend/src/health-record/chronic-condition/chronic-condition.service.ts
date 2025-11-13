@@ -11,7 +11,7 @@ import { Op } from 'sequelize';
 import { ChronicCondition, ConditionStatus   } from "../../database/models";
 import { Student   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ChronicConditionService extends BaseService {
   constructor(

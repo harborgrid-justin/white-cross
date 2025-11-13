@@ -33,7 +33,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { UserStatisticsDto } from './dto/user-statistics.dto';
 import { UserRole } from '@/user/enums';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')

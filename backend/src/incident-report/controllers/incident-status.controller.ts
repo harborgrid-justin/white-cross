@@ -15,7 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { IncidentStatusService } from '../services/incident-status.service';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Incident Status Controller
  *

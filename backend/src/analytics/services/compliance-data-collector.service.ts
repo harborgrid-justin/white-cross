@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { Student } from '../../student/entities/student.entity';
 import { HealthRecord } from '../../health-record/entities/health-record.entity';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Compliance Data Collector Service
  *

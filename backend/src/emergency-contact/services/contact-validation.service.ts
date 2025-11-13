@@ -13,7 +13,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { EmergencyContact } from '../../database/models/emergency-contact.model';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ContactValidationService extends BaseService {
   /**

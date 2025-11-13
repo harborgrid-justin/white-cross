@@ -5,7 +5,7 @@ import { IncidentReport } from '@/database';
 import { IncidentSeverity } from '../enums/incident-severity.enum';
 import { IncidentType } from '../enums/incident-type.enum';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class IncidentStatisticsService extends BaseService {
   constructor(

@@ -44,7 +44,7 @@ import { CostTrackerService } from './services/cost-tracker.service';
 import { SMS_QUEUE_NAME } from './processors/sms-queue.processor';
 import { SmsSenderService } from './services/sms-sender.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * SMS Service class
  * Orchestrates all SMS operations with comprehensive error handling and monitoring

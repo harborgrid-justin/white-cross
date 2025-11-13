@@ -8,7 +8,7 @@ import { UpdateFollowUpDto } from '../dto/follow-up/update-follow-up.dto';
 import { CompleteFollowUpDto } from '../dto/follow-up/complete-follow-up.dto';
 import { FollowUpFiltersDto } from '../dto/follow-up/follow-up-filters.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class FollowUpService extends BaseService {
   constructor(

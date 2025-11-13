@@ -6,7 +6,7 @@ import { RecordVitalsDto } from '../dto/vitals/record-vitals.dto';
 import { UpdateVitalsDto } from '../dto/vitals/update-vitals.dto';
 import { VitalsFiltersDto } from '../dto/vitals/vitals-filters.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class VitalSignsService extends BaseService {
   constructor(

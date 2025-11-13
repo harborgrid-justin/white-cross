@@ -18,7 +18,7 @@ import { CacheStorageService } from './cache-storage.service';
 import type { InvalidationPattern } from './cache.interfaces';
 import { CacheEvent } from './cache.interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Service responsible for cache invalidation operations
  */

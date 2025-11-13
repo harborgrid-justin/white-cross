@@ -14,7 +14,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface NotificationChannel {
   success: boolean;
   messageId?: string;

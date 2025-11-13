@@ -4,7 +4,7 @@ import { IntegrationLog } from '../../database/models/integration-log.model';
 import { IntegrationConfig } from '../../database/models/integration-config.model';
 import type { PaginationMeta } from '../types/pagination.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Error detail for integration log
  */

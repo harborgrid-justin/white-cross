@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Condition Analytics Service
  * Handles health condition normalization, categorization, and analysis

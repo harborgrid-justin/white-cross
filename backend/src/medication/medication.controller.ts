@@ -21,7 +21,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { BaseController } from '../common/base/base-controller';
+import { BaseController } from '@/common/base';
 import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
 import { MedicationService } from './services/medication.service';
 import { CreateMedicationDto } from './dto/create-medication.dto';

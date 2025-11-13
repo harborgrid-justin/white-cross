@@ -5,7 +5,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { Student } from '../database/models/student.model';
 import { BulkTransitionResultDto, TransitionResultDto } from './dto';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Automated Grade Transition Workflow Service
  * Handles automatic grade transitions at year-end

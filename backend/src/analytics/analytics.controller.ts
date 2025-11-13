@@ -11,7 +11,7 @@ import { GetIncidentsByLocationQueryDto, GetIncidentTrendsQueryDto } from './dto
 import { GetMedicationAdherenceQueryDto, GetMedicationUsageQueryDto } from './dto/medication-analytics.dto';
 import { GetReportParamDto, GetReportQueryDto } from './dto/report-generation.dto';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Analytics Controller
  * Comprehensive health metrics, analytics, and reporting endpoints

@@ -24,7 +24,7 @@ import { BroadcastPriorityService } from './broadcast-priority.service';
 import { BroadcastRecipientService } from './broadcast-recipient.service';
 import { BroadcastDeliveryService } from './broadcast-delivery.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class BroadcastManagementService extends BaseService {
   constructor(

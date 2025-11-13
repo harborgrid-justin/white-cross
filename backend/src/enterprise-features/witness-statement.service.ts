@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WitnessStatement, CaptureMethod, WitnessRole } from './enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS, WITNESS_CONSTANTS } from './enterprise-features-constants';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class WitnessStatementService extends BaseService {
   private statements: WitnessStatement[] = []; // In production, this would be a database

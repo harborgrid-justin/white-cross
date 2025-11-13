@@ -16,8 +16,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 
-import { BaseService } from '../common/base';
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 // Configuration Interfaces

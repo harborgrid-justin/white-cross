@@ -17,7 +17,7 @@ import { CreateDistrictDto, DistrictQueryDto, UpdateDistrictDto } from './dto/di
 import { CreateLicenseDto, LicenseQueryDto, UpdateLicenseDto } from './dto/license.dto';
 import { CreateSchoolDto, SchoolQueryDto, UpdateSchoolDto } from './dto/school.dto';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 /**
  * AdministrationController
  *

@@ -9,7 +9,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { VaccinationsService } from './vaccinations.service';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('vaccinations')
 @Controller('vaccinations')
 @UseGuards(JwtAuthGuard)

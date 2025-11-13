@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { StudentHealthMetrics, RiskAssessment, HealthMetricsData } from '../analytics-interfaces';
 
 @Injectable()

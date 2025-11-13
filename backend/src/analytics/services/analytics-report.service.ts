@@ -5,7 +5,7 @@ import { TimePeriod } from '../enums/time-period.enum';
 import { AnalyticsGenerateCustomReportDto } from '../dto/custom-reports.dto';
 import { GetReportQueryDto } from '../dto/report-generation.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 interface GeneratedReport {
   id: string;
   reportName?: string;

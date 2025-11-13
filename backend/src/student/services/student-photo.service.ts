@@ -14,7 +14,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Student } from '@/database';
 import { RequestContextService } from '@/shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { SearchPhotoDto } from '../dto/search-photo.dto';
 import { UploadPhotoDto } from '../dto/upload-photo.dto';
 

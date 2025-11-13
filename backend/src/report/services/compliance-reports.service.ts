@@ -6,7 +6,7 @@ import { AuditLog } from '../../database/models/audit-log.model';
 import { ComplianceReport } from '../interfaces/report-types.interface';
 import { BaseReportDto } from '../dto/base-report.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Compliance Reports Service
  * Handles HIPAA compliance reporting and regulatory audit trails

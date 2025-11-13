@@ -9,7 +9,7 @@ import { IncidentNotificationService } from './incident-notification.service';
 import { IncidentValidationService } from './incident-validation.service';
 import { IncidentSeverity } from '../enums/incident-severity.enum';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class IncidentCoreService extends BaseService {
   constructor(

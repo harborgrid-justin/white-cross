@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryMetrics, QueryExecution } from '../types/query-monitor.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class QueryAnalyzerService extends BaseService {
   // Configuration

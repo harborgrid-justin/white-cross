@@ -20,8 +20,8 @@ import { ResourceMonitorService } from './services/resource-monitor.service';
 import { ExternalServiceMonitorService } from './services/external-service-monitor.service';
 import { HealthAnalyzerService } from './services/health-analyzer.service';
 
-import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()

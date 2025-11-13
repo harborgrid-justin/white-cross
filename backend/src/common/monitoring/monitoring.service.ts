@@ -7,7 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { HealthCheckService, HealthIndicatorResult } from '@nestjs/terminus';
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 import {
   IAPMetricsProvider,
   MetricData,

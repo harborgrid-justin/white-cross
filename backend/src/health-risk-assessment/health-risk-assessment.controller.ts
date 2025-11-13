@@ -7,7 +7,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { BaseController } from '../common/base/base-controller';
+import { BaseController } from '@/common/base';
 import { HealthRiskAssessmentService } from './health-risk-assessment.service';
 import { HealthRiskScoreDto, HighRiskQueryDto, HighRiskStudentDto } from './dto';
 

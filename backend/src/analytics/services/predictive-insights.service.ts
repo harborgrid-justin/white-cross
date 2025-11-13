@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TimePeriod } from '../enums/time-period.enum';

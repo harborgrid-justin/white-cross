@@ -7,7 +7,7 @@
 import { Sequelize, QueryTypes } from 'sequelize';
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 export interface ConnectionMetrics { active: number; idle: number; waiting: number; total: number; maxConnections: number; }
 export interface QueryMetrics { query: string; avgTime: number; maxTime: number; minTime: number; calls: number; rows: number; }
 export interface ResourceMetrics { cpuUsage: number; memoryUsage: number; diskIO: number; networkIO: number; }

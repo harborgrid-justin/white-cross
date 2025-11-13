@@ -5,7 +5,7 @@ import { CreateNoteDto } from '../dto/note/create-note.dto';
 import { UpdateNoteDto } from '../dto/note/update-note.dto';
 import { NoteFiltersDto } from '../dto/note/note-filters.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ClinicalNoteService extends BaseService {
   constructor(

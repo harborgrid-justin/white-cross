@@ -19,7 +19,7 @@ import { Student } from '../../database/models/student.model';
 import { User, UserRole } from '../../database/models/user.model';
 import { QueryCacheService } from '../../database/services/query-cache.service';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { StudentBulkUpdateDto } from '../dto/bulk-update.dto';
 import { StudentFilterDto } from '../dto/student-filter.dto';

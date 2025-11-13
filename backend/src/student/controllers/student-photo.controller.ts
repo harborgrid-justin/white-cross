@@ -21,7 +21,7 @@ import { StudentService } from '../student.service';
 import { SearchPhotoDto } from '../dto/search-photo.dto';
 import { UploadPhotoDto } from '../dto/upload-photo.dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Student Photo Controller
  *

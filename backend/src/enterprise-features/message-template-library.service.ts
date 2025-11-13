@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MessageTemplate } from './enterprise-features-interfaces';
 import { TemplateValidationHelper } from './helpers/template-validation.helper';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class MessageTemplateLibraryService extends BaseService {
   private messageTemplates: MessageTemplate[] = [];

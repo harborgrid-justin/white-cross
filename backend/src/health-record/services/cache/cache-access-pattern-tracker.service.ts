@@ -14,7 +14,7 @@ import {
 } from './cache-interfaces';
 import { CACHE_CONSTANTS, CACHE_EVENTS } from './cache-constants';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class CacheAccessPatternTrackerService extends BaseService {
   private readonly accessPatterns = new Map<string, AccessPattern>();

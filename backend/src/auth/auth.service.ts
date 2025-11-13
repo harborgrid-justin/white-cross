@@ -15,7 +15,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User, UserCreationAttributes, UserRole } from '@/database';
-import { BaseService } from '../common/base/base.service';
+import { BaseService } from '@/common/base';
 import { AuthChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';

@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import {
   AnalyticsReportType,
   AnalyticsTimePeriod,

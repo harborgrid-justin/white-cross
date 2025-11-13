@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ExternalServiceHealthInfo } from '../types/health-check.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ExternalServiceMonitorService extends BaseService {
   /**

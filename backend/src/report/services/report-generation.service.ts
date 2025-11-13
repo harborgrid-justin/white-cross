@@ -13,7 +13,7 @@ import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
 import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 import { BaseReportDto } from '../dto/base-report.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Report Generation Service
  * Main orchestrator for report generation across all report types

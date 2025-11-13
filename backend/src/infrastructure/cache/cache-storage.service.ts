@@ -20,7 +20,7 @@ import type { CacheOptions } from './cache.interfaces';
 import { CacheEvent } from './cache.interfaces';
 import { Cleanup, MemorySensitive } from '@/discovery/modules';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * L1 (memory) cache entry structure
  */

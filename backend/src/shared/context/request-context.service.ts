@@ -18,7 +18,7 @@ import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 import { randomUUID } from 'crypto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * User context interface
  * Represents the authenticated user making the request

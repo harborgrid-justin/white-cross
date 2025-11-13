@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { col, fn, Op } from 'sequelize';
 import { AuditLog } from '@/database';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import {
   ActionDistributionQueryResult,
   AuditDashboard,

@@ -16,7 +16,7 @@ import {
 import { IncidentReadService } from '../services/incident-read.service';
 import { IncidentStatisticsService } from '../services/incident-statistics.service';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Incident Query Controller
  *

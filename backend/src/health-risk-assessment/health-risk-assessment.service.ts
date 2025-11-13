@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 
 // Import Sequelize models
 import { Student } from '../database/models/student.model';

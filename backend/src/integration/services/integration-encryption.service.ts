@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class IntegrationEncryptionService extends BaseService {
   private readonly ALGORITHM = 'aes-256-gcm';

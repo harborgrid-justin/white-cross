@@ -5,7 +5,7 @@ import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
 import { Medication   } from "../../database/models";
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('medications')
 @ApiBearerAuth()
 @Controller('medications')

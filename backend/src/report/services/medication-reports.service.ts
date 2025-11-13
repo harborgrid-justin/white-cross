@@ -7,7 +7,7 @@ import { StudentMedication } from '../../database/models/student-medication.mode
 import { MedicationUsageReport } from '../interfaces/report-types.interface';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Medication Reports Service
  * Handles medication usage analysis, compliance tracking, and adverse reaction monitoring

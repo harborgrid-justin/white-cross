@@ -14,7 +14,7 @@ import { CacheConfigService } from './cache.config';
 import { CacheConnectionService } from './cache-connection.service';
 import type { CacheOptions } from './cache.interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Service responsible for advanced cache operations
  */

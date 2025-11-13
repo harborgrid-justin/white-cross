@@ -8,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { AlertPreferences, DeliveryChannel } from '@/database';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class AlertPreferencesService extends BaseService {
   constructor(

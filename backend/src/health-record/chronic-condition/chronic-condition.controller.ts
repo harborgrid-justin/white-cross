@@ -5,7 +5,7 @@ import { CreateChronicConditionDto } from './dto/create-chronic-condition.dto';
 import { UpdateChronicConditionDto } from './dto/update-chronic-condition.dto';
 import { ChronicCondition   } from "../../database/models";
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()
 @Controller('chronic-conditions')

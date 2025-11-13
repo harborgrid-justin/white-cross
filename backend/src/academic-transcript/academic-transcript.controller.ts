@@ -12,7 +12,7 @@ import { AcademicGenerateReportDto } from './dto/generate-report.dto';
 import { SyncSISDto } from './dto/sync-sis.dto';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Academic Transcript Controller
  *

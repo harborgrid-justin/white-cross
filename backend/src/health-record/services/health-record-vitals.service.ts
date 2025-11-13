@@ -17,7 +17,7 @@ import { HealthRecord } from '../../database/models';
 import { GrowthDataPoint } from '../interfaces/pagination.interface';
 import { VitalSigns } from '../interfaces/vital-signs.interface';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * HealthRecordVitalsService
  *

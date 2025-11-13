@@ -14,7 +14,7 @@ import {
 } from '../dto';
 import { ContactPriority, VerificationStatus } from '../enums';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class EmergencyContactService extends BaseService {
   constructor(

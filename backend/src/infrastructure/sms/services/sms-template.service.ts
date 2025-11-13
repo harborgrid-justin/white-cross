@@ -7,7 +7,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateSmsTemplateDto, SmsTemplateType } from '../dto/sms-template.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * SMS Template interface
  */

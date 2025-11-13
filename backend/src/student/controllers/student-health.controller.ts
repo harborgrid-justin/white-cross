@@ -21,7 +21,7 @@ import { StudentService } from '../student.service';
 import { MentalHealthRecordsDto } from '../dto/mental-health-records.dto';
 import { StudentHealthRecordsDto } from '../dto/student-health-records.dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Student Health Controller
  *

@@ -11,7 +11,7 @@ import {
 import { NotificationPlatformService } from './notification-platform.service';
 import { DeviceTokenService } from './device-token.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Notification Delivery Service
  *

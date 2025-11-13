@@ -8,7 +8,7 @@ import { EncryptionService } from '../../infrastructure/encryption/encryption.se
 import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import {
   SendDirectMessageResponse,
   SendGroupMessageResponse,

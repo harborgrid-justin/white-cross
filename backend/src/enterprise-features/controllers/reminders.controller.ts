@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { ReminderSchedulerService } from '../reminder-scheduler.service';
 import { CustomizeReminderPreferencesDto, ReminderScheduleResponseDto, ScheduleRemindersDto } from '../dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Appointment Reminders')
 @Controller('enterprise-features/reminders')
 @ApiBearerAuth()

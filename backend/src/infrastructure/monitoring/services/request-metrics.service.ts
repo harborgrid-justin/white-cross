@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RequestMetrics } from '../types/metrics.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class RequestMetricsService extends BaseService {
   constructor() {

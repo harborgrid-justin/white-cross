@@ -9,7 +9,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { LogEntry, LogQueryParams } from './interfaces/metrics.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * LogAggregationService
  *

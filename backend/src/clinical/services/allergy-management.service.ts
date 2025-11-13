@@ -10,7 +10,7 @@ import { StudentDrugAllergy } from '../entities/student-drug-allergy.entity';
 import { DrugCatalogService } from './drug-catalog.service';
 import { AddAllergyDto, UpdateAllergyDto } from '../types/drug-interaction.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class AllergyManagementService extends BaseService {
   constructor(

@@ -8,7 +8,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Request context interface
  */

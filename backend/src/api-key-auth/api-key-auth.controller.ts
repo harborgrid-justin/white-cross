@@ -9,7 +9,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../database/models/user.model';
 import type { Request as ExpressRequest } from 'express';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 interface AuthenticatedRequest extends ExpressRequest {
   user: {
     id: string;

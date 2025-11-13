@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Student } from '@/database';
 import { TransferStudentDto } from '../dto/transfer-student.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Student Status Service
  *

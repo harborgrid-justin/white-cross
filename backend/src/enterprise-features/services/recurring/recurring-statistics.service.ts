@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RecurringTemplate } from '../../enterprise-features-interfaces';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Statistics Service
  * Handles statistics calculations for recurring appointments

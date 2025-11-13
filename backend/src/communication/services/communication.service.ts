@@ -5,7 +5,7 @@ import { CreateMessageTemplateDto } from '../dto/create-message-template.dto';
 import { EmergencyAlertDto } from '../dto/emergency-alert.dto';
 import { MessageDeliveryStatusResult } from '../interfaces/index';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class CommunicationService extends BaseService {
   async createMessageTemplate(dto: CreateMessageTemplateDto): Promise<any> {

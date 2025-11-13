@@ -11,7 +11,7 @@ import { QueueName, JobPriority } from '../enums';
 import { QueueJobOptions } from '../interfaces';
 import { BaseQueueService } from './base-queue.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Scheduled job configuration
  */

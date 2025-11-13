@@ -13,7 +13,7 @@ import {
 import { CACHE_CONSTANTS } from './cache-constants';
 import { CacheMetricsCollectorService } from './cache-metrics-collector.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class CacheHealthMonitorService extends BaseService {
   private readonly alerts: CacheAlert[] = [];

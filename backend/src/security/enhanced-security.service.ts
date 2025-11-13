@@ -21,7 +21,7 @@ import { EnhancedAuditService } from './services/audit.service';
 import { PIIDetectionService } from './services/pii-detection.service';
 import { EnhancedThreatDetectionService } from './services/enhanced-threat-detection.service';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 // Re-export interfaces for backward compatibility
 export * from './interfaces/security.interfaces';
 

@@ -9,7 +9,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 import {
   AnalyticsTimePeriod,
   TrendData,

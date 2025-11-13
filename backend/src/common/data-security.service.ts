@@ -14,7 +14,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as crypto from 'crypto';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 /**
  * PII (Personally Identifiable Information) field types
  */

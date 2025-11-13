@@ -23,7 +23,7 @@ import { NotificationResultDto } from '../dto/notification-result.dto';
 import { NotificationDeliveryService } from './notification-delivery.service';
 import { ContactManagementService } from './contact-management.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class NotificationOrchestrationService extends BaseService {
   constructor(

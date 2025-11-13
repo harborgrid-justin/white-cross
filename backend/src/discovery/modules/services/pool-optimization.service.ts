@@ -3,7 +3,7 @@ import { DiscoveryService, Reflector } from '@nestjs/core';
 import { DynamicResourcePoolService, PoolStats } from './dynamic-resource-pool.service';
 import { ResourceMonitorService } from './resource-monitor.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface OptimizationStrategy {
   name: string;
   priority: number;

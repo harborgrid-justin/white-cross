@@ -10,7 +10,7 @@ import { Op } from 'sequelize';
 import { DrugCatalog } from '../entities/drug-catalog.entity';
 import { DrugInteraction } from '../entities/drug-interaction.entity';
 import { StudentDrugAllergy } from '../entities/student-drug-allergy.entity';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import {
   InteractionResult,
   InteractionCheckDto,

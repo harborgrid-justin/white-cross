@@ -16,7 +16,7 @@ import { PHIAccessLogger } from '../phi-access-logger.service';
 import { InMemoryCacheEntry, ComplianceLevel } from './cache-interfaces';
 import { CacheEntry as CacheEntryModel   } from "../../database/models";
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class L3CacheService extends BaseService {
   private stats = { hits: 0, misses: 0, queryTime: 0, size: 0 };

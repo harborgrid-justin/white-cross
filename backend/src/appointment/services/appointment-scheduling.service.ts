@@ -15,7 +15,7 @@ import {
 } from '../../database/models/appointment.model';
 import { User } from '../../database/models/user.model';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Appointment Scheduling Service
  *

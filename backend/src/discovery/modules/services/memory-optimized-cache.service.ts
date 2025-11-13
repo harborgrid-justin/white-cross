@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { CacheableData, MemoryCacheOptions } from '../types/resource.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface CacheProviderConfig {
   ttl: number;
   maxSize: number;

@@ -10,7 +10,7 @@ import { Op } from 'sequelize';
 import { IncidentReport } from '@/database';
 import { IncidentFiltersDto } from '../dto/incident-filters.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Incident Read Service
  *

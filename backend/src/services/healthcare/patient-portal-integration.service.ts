@@ -7,7 +7,7 @@ import { Medication   } from "../../database/models";
 import { Appointment   } from "../../database/models";
 import { Message   } from "../../database/models";
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Patient Portal Integration Service
  *

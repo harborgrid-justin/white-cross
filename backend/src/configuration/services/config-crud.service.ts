@@ -10,7 +10,7 @@ import { Op } from 'sequelize';
 import { ConfigCategory, ConfigScope, SystemConfig } from '../../database/models/system-config.model';
 import { CreateConfigurationDto, FilterConfigurationDto } from '../dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ConfigCrudService extends BaseService {
   constructor(

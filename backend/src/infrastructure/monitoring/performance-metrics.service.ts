@@ -11,7 +11,7 @@ import { CacheMetricsService } from './services/cache-metrics.service';
 import { SystemMetricsService } from './services/system-metrics.service';
 import { PerformanceAnalyzerService } from './services/performance-analyzer.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 
 @Injectable()
 export class PerformanceMetricsService extends BaseService implements OnModuleInit, OnModuleDestroy {

@@ -10,7 +10,7 @@ import { RecipientDeliveryStatus } from '../emergency-broadcast.interfaces';
 import { CommunicationService } from '../../communication/services/communication.service';
 import { BroadcastRecipient } from './broadcast-recipient.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 interface DeliveryResult {
   success: boolean;
   error?: string;

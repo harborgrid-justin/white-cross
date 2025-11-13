@@ -16,7 +16,7 @@ import { VitalSigns   } from "../../database/models";
 import { ClinicVisit   } from "../../database/models";
 import { School   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class StatisticsService extends BaseService {
   constructor(

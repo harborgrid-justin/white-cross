@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from "../../common/base";
+import { BaseService } from '@/common/base';
 import { MedicationRepository } from '../medication.repository';
 import { CreateMedicationDto } from '../dto/create-medication.dto';
 import { DeactivateMedicationDto } from '../dto/deactivate-medication.dto';

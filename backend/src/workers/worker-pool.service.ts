@@ -21,8 +21,8 @@ import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
 import type { WorkerInfo, WorkerPoolOptions, WorkerPoolStats, WorkerTask } from './worker-pool.interfaces';
-import { BaseService } from '../common/base';
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import {

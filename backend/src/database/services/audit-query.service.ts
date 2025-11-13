@@ -9,7 +9,7 @@ import { Op } from 'sequelize';
 import { AuditAction } from '../types/database.enums';
 import { AuditLog, AuditSeverity, ComplianceType } from '../models/audit-log.model';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Interface for audit log query filters
  */

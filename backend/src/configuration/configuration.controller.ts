@@ -10,7 +10,7 @@ import {
 } from './dto';
 import { ConfigCategory } from '../administration/enums/administration.enums';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 /**
  * Configuration Controller
  *

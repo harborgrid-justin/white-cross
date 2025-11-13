@@ -8,7 +8,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VaccinationService } from './vaccination.service';
 import { CreateVaccinationDto } from './dto/create-vaccination.dto';
-import { BaseController } from '../../common/base';
+import { BaseController } from '@/common/base';
 import {
   BatchImportResponseDto,
   BatchVaccinationDto,

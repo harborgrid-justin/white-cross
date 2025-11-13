@@ -4,7 +4,7 @@ import { TimePeriod } from '../enums/time-period.enum';
 import { GetIncidentTrendsQueryDto } from '../dto/incident-analytics.dto';
 import { GetIncidentsByLocationQueryDto } from '../dto/incident-analytics.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 interface IncidentTrendsResponse {
   trends: unknown;
   byType: unknown;

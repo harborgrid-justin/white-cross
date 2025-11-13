@@ -11,17 +11,17 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { CacheStrategyOrchestratorService } from './cache/cache-strategy-orchestrator.service';
 import { CacheOptimizationService } from './cache/cache-optimization.service';
-import { BaseService } from '../../../common/base';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import {

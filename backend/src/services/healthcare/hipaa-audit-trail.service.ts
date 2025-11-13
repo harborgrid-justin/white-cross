@@ -5,7 +5,7 @@ import { AuditLog, ComplianceType, AuditSeverity   } from "../../database/models
 import { User   } from "../../database/models";
 import { Patient   } from "../../database/models";
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * HIPAA Audit Trail Service
  *

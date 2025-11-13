@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DashboardMetric, HealthTrendData } from '../../enterprise-features-interfaces';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Metrics Service
  * Handles real-time metrics and health trends

@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EvidenceFile, EvidenceSecurityLevel } from './enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS, EVIDENCE_CONSTANTS } from './enterprise-features-constants';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class PhotoVideoEvidenceService extends BaseService {
   private evidenceFiles: EvidenceFile[] = []; // In production, this would be a database

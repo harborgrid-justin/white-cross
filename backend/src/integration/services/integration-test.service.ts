@@ -5,7 +5,7 @@ import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 import type { IntegrationTestDetails } from '../types/test-details.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface IntegrationTestResult {
   success: boolean;
   message: string;

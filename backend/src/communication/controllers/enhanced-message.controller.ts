@@ -40,7 +40,7 @@ import { SearchMessagesDto } from '../dto/search-messages.dto';
 import { MarkAsReadDto, MarkConversationAsReadDto } from '../dto/mark-as-read.dto';
 import { AddParticipantDto, UpdateParticipantDto } from '../dto/conversation-participant.dto';
 
-import { BaseController } from '../../../common/base';
+import { BaseController } from '@/common/base';
 /**
  * EnhancedMessageController
  *

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HIPAAComplianceCheck } from './enterprise-features-interfaces';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class HipaaComplianceService extends BaseService {
   private complianceChecks: HIPAAComplianceCheck[] = [];

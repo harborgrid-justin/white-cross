@@ -22,7 +22,7 @@ import { ImportResults } from '../interfaces/health-record-types';
 import { HealthRecordStatistics } from '../interfaces/health-record-types';
 import { PaginatedHealthRecords } from '../interfaces/pagination.interface';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * HealthRecordSummaryService
  *

@@ -19,7 +19,7 @@ import { Op } from 'sequelize';
 import { AuditLog, AuditSeverity } from '@/database';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 export interface BreachAlert {
   id: string;
   type:

@@ -20,7 +20,7 @@ import {
 } from '../../database/models/appointment-reminder.model';
 import { Appointment } from '../../database/models/appointment.model';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Reminder Service
  *

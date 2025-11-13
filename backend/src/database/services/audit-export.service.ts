@@ -7,7 +7,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AuditLog } from '../models/audit-log.model';
 import { AuditQueryService, AuditLogFilters } from './audit-query.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Audit Export Service
  *

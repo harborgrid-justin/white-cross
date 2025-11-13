@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TimePeriod } from '../enums/time-period.enum';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Date Range Service
  * Handles all date and time period calculations for analytics

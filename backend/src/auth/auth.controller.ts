@@ -21,7 +21,7 @@ import { OAuthService } from './services/oauth.service';
 import { PasswordResetService } from './services/password-reset.service';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController extends BaseController {

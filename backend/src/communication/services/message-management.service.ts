@@ -5,7 +5,7 @@ import { EncryptionService } from '../../infrastructure/encryption/encryption.se
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { EditMessageResponse } from '../types/message-response.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * MessageManagementService
  *

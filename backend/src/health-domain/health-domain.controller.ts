@@ -17,7 +17,7 @@ import {
   VaccinationFiltersDto,
 } from './dto';
 import { ExemptionFilterDto, HealthDomainCreateExemptionDto, UpdateExemptionDto } from './dto/exemption.dto';
-import { BaseController } from '../common/base';
+import { BaseController } from '@/common/base';
 import {
   CheckContraindicationsDto,
   GetCatchUpScheduleDto,

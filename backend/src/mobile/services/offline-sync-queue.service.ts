@@ -7,7 +7,7 @@ import { QueueSyncActionDto } from '../dto';
 import { SyncPriority, SyncStatus } from '../enums';
 import { SyncStatistics } from './offline-sync-types.interface';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Queue Management Service
  * Handles sync queue operations and statistics

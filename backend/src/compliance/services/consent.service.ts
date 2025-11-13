@@ -11,7 +11,7 @@ import { ConsentSignature } from '../../database/models/consent-signature.model'
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
 import { COMPLIANCE_ERRORS, ComplianceUtils } from '../utils/index';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 export interface CreateConsentFormData {
   type: ConsentType;
   title: string;

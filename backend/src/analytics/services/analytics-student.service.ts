@@ -4,7 +4,7 @@ import { Appointment, HealthRecord, MedicationLog } from '@/database';
 import { Op } from 'sequelize';
 import { GetStudentHealthMetricsQueryDto } from '../dto/health-metrics.dto';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Analytics Student Service
  *

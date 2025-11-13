@@ -13,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { EncryptionOptions } from '../interfaces/security.interfaces';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class EnhancedEncryptionService extends BaseService {
   private readonly defaultAlgorithm = 'aes-256-gcm';

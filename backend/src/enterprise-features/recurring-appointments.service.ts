@@ -9,7 +9,7 @@ import { RecurringTemplateService } from './services/recurring/recurring-templat
 import { RecurringGenerationService } from './services/recurring/recurring-generation.service';
 import { RecurringStatisticsService } from './services/recurring/recurring-statistics.service';
 
-import { BaseService } from '../common/base';
+import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()

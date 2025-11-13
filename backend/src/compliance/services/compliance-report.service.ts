@@ -9,7 +9,7 @@ import {
 import { ComplianceStatus } from '../entities/compliance-report.entity';
 import { ExecutionContext } from '../../database/types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class ComplianceReportService extends BaseService {
   constructor(

@@ -12,7 +12,7 @@ import { ComplianceReportBuilderService } from './compliance-report-builder.serv
 import { ComplianceReportExporterService } from './compliance-report-exporter.service';
 import { ComplianceReportPersistenceService } from './compliance-report-persistence.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Compliance Report Generation Service
  *

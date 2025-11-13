@@ -10,7 +10,7 @@ import { literal, Op } from 'sequelize';
 import { DrugCatalog } from '../entities/drug-catalog.entity';
 import { AddDrugDto, UpdateDrugDto, BulkImportResult } from '../types/drug-interaction.types';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 @Injectable()
 export class DrugCatalogService extends BaseService {
   constructor(

@@ -4,7 +4,7 @@ import { TimeSeriesDataPoint } from '../interfaces/health-analytics.interfaces';
 import { HealthRecord } from '../../database/models/health-record.model';
 import { DateRangeService } from './date-range.service';
 
-import { BaseService } from '../../../common/base';
+import { BaseService } from '@/common/base';
 /**
  * Trend Calculation Service
  * Provides statistical analysis and trend calculation methods
