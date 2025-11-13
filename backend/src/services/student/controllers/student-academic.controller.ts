@@ -15,7 +15,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/services/auth';
+import { JwtAuthGuard } from '../../auth';
 import { StudentService } from '../student.service';
 import { AcademicHistoryDto } from '../dto/academic-history.dto';
 import { ImportTranscriptDto } from '../dto/import-transcript.dto';

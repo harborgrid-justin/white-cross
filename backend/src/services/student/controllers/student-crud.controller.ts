@@ -19,7 +19,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/services/auth';
+import { JwtAuthGuard } from '../../auth';
 import { StudentService } from '../student.service';
 import type { PaginatedResponse } from '../types';
 import { CreateStudentDto } from '../dto/create-student.dto';

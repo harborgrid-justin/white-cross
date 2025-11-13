@@ -12,7 +12,7 @@ import {
 } from './services';
 import { DeviceController, NotificationController, SyncController } from './controllers';
 import { DeviceToken, PushNotification, SyncConflict, SyncQueueItem } from './entities';
-import { AuthModule } from '@/services/auth';
+import { AuthModule } from '../auth';
 
 /**
  * Mobile Module

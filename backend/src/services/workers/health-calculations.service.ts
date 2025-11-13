@@ -35,7 +35,7 @@ import {
   MemoryMonitoring,
   MemorySensitive,
   ResourcePool,
-} from '@/discovery/modules';
+} from '../../discovery/modules';
 
 /**
  * Input for single BMI calculation

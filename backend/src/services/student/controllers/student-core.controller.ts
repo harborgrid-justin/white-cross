@@ -30,7 +30,7 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth';
 import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
-import { StudentCrudService } from '@/services/student-crud.service';
+import { StudentCrudService } from '../services/student-crud.service';
 import type { PaginatedResponse } from '../types';
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { StudentFilterDto } from '../dto/student-filter.dto';
