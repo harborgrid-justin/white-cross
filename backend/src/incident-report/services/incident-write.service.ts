@@ -14,7 +14,7 @@ import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
 import { IncidentNotificationService } from './incident-notification.service';
 import { IncidentValidationService } from './incident-validation.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Incident Write Service
  *

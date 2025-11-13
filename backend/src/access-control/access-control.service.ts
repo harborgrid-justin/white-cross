@@ -16,7 +16,7 @@ import { AccessControlCreateIncidentDto } from './dto/create-security-incident.d
 import { IpRestrictionCheckResult } from './interfaces/ip-restriction-check.interface';
 import { SecurityStatistics } from './interfaces/security-statistics.interface';
 import { UserPermissionsResult } from './interfaces/user-permissions-result.interface';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 import {
   IpRestrictionInstance,
   LoginAttemptInstance,

@@ -9,7 +9,7 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FeaturesService } from './features.service';
 import { ToggleFeatureDto } from '@/features/dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 @ApiTags('features')
 @Controller('features')
 // @ApiBearerAuth()

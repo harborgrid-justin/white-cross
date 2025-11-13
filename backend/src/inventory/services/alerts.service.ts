@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
 import { AlertSeverity, AlertSummaryDto, AlertType, InventoryAlertDto } from '../dto/inventory-alert.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 interface StockQueryResult {
   id: string;
   name: string;

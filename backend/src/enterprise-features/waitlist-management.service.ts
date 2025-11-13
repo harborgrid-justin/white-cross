@@ -12,7 +12,7 @@ import {
 } from './enterprise-features-interfaces';
 import { WAITLIST_CONSTANTS, ENTERPRISE_CONSTANTS } from './enterprise-features-constants';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 @Injectable()
 export class WaitlistManagementService extends BaseService {
   private waitlist: WaitlistEntry[] = []; // In production, this would be a database

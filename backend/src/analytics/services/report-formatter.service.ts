@@ -6,7 +6,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ReportFormatterService extends BaseService {
   /**

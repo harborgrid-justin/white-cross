@@ -10,7 +10,7 @@ import {
 import { IncidentReport } from '../../database/models/incident-report.model';
 import { DateRangeService } from './date-range.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Incident Analytics Service
  * Provides comprehensive incident analysis and reporting

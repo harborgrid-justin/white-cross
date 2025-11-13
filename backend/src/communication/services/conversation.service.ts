@@ -13,7 +13,7 @@ import { CreateConversationResult } from '../types/conversation.types';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * ConversationService
  *

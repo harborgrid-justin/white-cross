@@ -27,7 +27,7 @@ import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
 import { EmergencyContactUpdateDto } from './dto/update-emergency-contact.dto';
 import { EmergencyVerifyContactDto } from './dto/verify-contact.dto';
 import { NotificationDto } from './dto/notification.dto';
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 import { 
   ControllerUtilities, 
   ApiTagsAndAuth,

@@ -6,7 +6,7 @@ import { IncidentReport } from '../../database/models/incident-report.model';
 import { IncidentStatisticsReport } from '../interfaces/report-types.interface';
 import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Incident Reports Service
  * Handles incident statistics, safety analytics, and compliance monitoring

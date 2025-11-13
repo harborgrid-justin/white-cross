@@ -7,7 +7,7 @@ import { Patient   } from "../../database/models";
 import { User   } from "../../database/models";
 import { Op } from 'sequelize';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Patient Consent Management Service
  *

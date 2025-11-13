@@ -11,7 +11,7 @@ import { SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { UpdateConfigurationDto } from '../dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ConfigHistoryService extends BaseService {
   constructor(

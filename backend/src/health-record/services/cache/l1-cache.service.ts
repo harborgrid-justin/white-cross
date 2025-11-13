@@ -12,7 +12,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ComplianceLevel } from '../../interfaces/health-record-types';
 import { InMemoryCacheEntry, CacheTier, CacheOperationResult } from './cache-interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class L1CacheService extends BaseService {
   // L1 Cache: In-memory storage

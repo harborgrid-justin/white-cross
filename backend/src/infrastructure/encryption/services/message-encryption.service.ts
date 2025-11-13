@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Inject } from '@nestjs/common';
-import { BaseService } from '../../shared/base/BaseService';
+import { BaseService } from "../../common/base";
 import { LoggerService } from '../../shared/logging/logger.service';
 import { EncryptedMessage, DecryptionResult, EncryptionOptions } from '../types/encryption.types';
 import { CryptoService } from './crypto.service';

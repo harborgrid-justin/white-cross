@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags }
 import { ClinicalProtocolService } from '../services/clinical-protocol.service';
 import { ProtocolFiltersDto } from '../dto/protocol/protocol-filters.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 @ApiTags('Clinical - Protocols')
 @ApiBearerAuth()
 @Controller('clinical/protocols')

@@ -6,7 +6,7 @@ import { ValidationResult, AuditRequest, SanitizableData } from '../types/audit.
 import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
 import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * AuditUtilsService - Utility functions and helpers for audit operations
  *

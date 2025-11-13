@@ -8,7 +8,7 @@
 import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { BaseService } from '../../shared/base/BaseService';
+import { BaseService } from "../../common/base";
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Allergy, AllergySeverity, AllergyType   } from "../../database/models";
 import { Student   } from "../../database/models";

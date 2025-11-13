@@ -6,7 +6,7 @@ import { RateLimiterService } from './services/rate-limiter.service';
 import { CreateIntegrationDto } from './dto/create-integration.dto';
 import { UpdateIntegrationDto } from './dto/update-integration.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 @ApiTags('Integrations')
 @ApiBearerAuth()
 @Controller('integrations')

@@ -13,11 +13,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthRecord   } from "../../database/models";
+import { HealthRecord } from '../../database/models';
 import { GrowthDataPoint } from '../interfaces/pagination.interface';
 import { VitalSigns } from '../interfaces/vital-signs.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * HealthRecordVitalsService
  *
@@ -58,21 +58,15 @@ export class HealthRecordVitalsService extends BaseService {
     // Extract growth data points
     const growthData: GrowthDataPoint[] = records
       .map((record) => {
-        const height = record.metadata?.height
-          ? parseFloat(record.metadata.height)
-          : undefined;
-        const weight = record.metadata?.weight
-          ? parseFloat(record.metadata.weight)
-          : undefined;
+        const height = record.metadata?.height ? parseFloat(record.metadata.height) : undefined;
+        const weight = record.metadata?.weight ? parseFloat(record.metadata.weight) : undefined;
 
         // Calculate BMI if both height and weight available
         let bmi: number | undefined;
         if (height && weight) {
           // BMI = weight (kg) / (height (m))^2
           const heightInMeters = height / 100;
-          bmi = parseFloat(
-            (weight / (heightInMeters * heightInMeters)).toFixed(1),
-          );
+          bmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
         }
 
         return {
@@ -83,9 +77,7 @@ export class HealthRecordVitalsService extends BaseService {
           recordType: record.recordType,
         };
       })
-      .filter(
-        (point) => point.height !== undefined || point.weight !== undefined,
-      );
+      .filter((point) => point.height !== undefined || point.weight !== undefined);
 
     // PHI Access Audit Log
     this.logInfo(
@@ -101,10 +93,7 @@ export class HealthRecordVitalsService extends BaseService {
    * @param limit - Number of records to retrieve
    * @returns Array of recent vital signs
    */
-  async getRecentVitals(
-    studentId: string,
-    limit: number = 10,
-  ): Promise<VitalSigns[]> {
+  async getRecentVitals(studentId: string, limit: number = 10): Promise<VitalSigns[]> {
     const records = await this.healthRecordModel.findAll({
       where: {
         studentId,

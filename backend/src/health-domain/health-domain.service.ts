@@ -25,7 +25,7 @@ import { StatisticsService } from '../health-record/statistics/statistics.servic
 import { ImportExportService } from '../health-record/import-export/import-export.service';
 import { ValidationService } from '../health-record/validation/validation.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 /**
  * Main Health Domain Service
  * Orchestrates all health-related operations including records, allergies,

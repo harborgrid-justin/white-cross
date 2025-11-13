@@ -5,7 +5,7 @@ import { PushNotification } from '../entities';
 import { NotificationStatus } from '../enums';
 import { NotificationDeliveryService } from './notification-delivery.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Notification Scheduler Service
  *

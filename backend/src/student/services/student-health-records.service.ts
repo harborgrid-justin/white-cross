@@ -12,7 +12,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
 import { RequestContextService } from '@/shared/context/request-context.service';
-import { BaseService } from '@/shared/base/base.service';
+import { BaseService } from "../../common/base";
 
 /**
  * Student Health Records Service

@@ -4,7 +4,7 @@ import { StudentMedication } from '../database/models/student-medication.model';
 import { Medication } from '../database/models/medication.model';
 import { DrugInteractionDto, InteractionCheckResultDto, InteractionSeverity } from './dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 /**
  * Medication Interaction Checker Service
  * Checks for drug-drug interactions and contraindications

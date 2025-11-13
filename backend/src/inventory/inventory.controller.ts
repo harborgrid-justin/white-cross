@@ -14,7 +14,7 @@ import { CreateInventoryTransactionDto } from './dto/create-inventory-transactio
 import { PurchaseOrderStatus } from './entities/purchase-order.entity';
 import { AlertSeverity, AlertType } from './dto/inventory-alert.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 @ApiTags('inventory')
 @Controller('inventory')
 @ApiBearerAuth()

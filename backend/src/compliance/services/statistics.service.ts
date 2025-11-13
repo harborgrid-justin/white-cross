@@ -5,7 +5,7 @@ import { PolicyRepository } from '../repositories/policy.repository';
 import { ViolationRepository } from '../repositories/violation.repository';
 import { QueryStatisticsDto } from '../dto/statistics.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class StatisticsService extends BaseService {
   constructor(

@@ -9,7 +9,7 @@ import { Contact } from '../../database/models/contact.model';
 import { ContactQueryDto, CreateContactDto, UpdateContactDto } from '../dto';
 import { ContactType } from '../enums';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ContactService extends BaseService {
   constructor(

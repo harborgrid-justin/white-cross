@@ -13,7 +13,7 @@ import { BulkCancelDto } from '../dto/statistics.dto';
 import { AppointmentEntity } from '../entities/appointment.entity';
 import { AppointmentValidation } from '../validators/appointment-validation';
 import { AppointmentStatus } from '../dto/update-appointment.dto';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,

@@ -3,7 +3,7 @@ import { CacheEntry, CacheStatisticsResult } from '../types/user-context.types';
 
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Permission Cache Service
  *

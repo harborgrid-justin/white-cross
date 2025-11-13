@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { AuditLog } from '../entities/audit-log.entity';
 import { AuditAction } from '../enums/administration.enums';
 import { AuditQueryDto } from '../dto/audit.dto';

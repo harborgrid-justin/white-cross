@@ -5,7 +5,7 @@ import { TrendDirection } from '../enums/trend-direction.enum';
 import { GetMedicationUsageQueryDto } from '../dto/medication-analytics.dto';
 import { GetMedicationAdherenceQueryDto } from '../dto/medication-analytics.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 interface MedicationTrend {
   medicationName: string;
   category: string;

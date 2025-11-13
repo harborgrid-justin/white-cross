@@ -2,7 +2,7 @@ import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 import {
   GenerateImmunizationReportDto,
   GenerateIncidentReportDto,

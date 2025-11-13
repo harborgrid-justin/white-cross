@@ -30,7 +30,7 @@ import { BroadcastDeliveryService } from './services/broadcast-delivery.service'
 import { BroadcastManagementService } from './services/broadcast-management.service';
 import { BroadcastTemplateService } from './services/broadcast-template.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 @Injectable()
 export class EmergencyBroadcastService extends BaseService {
   constructor(

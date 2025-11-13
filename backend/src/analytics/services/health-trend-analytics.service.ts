@@ -21,7 +21,7 @@ import { HealthMetricsAnalyzerService } from './health-metrics-analyzer.service'
 import { IncidentAnalyticsService } from './incident-analytics.service';
 import { PredictiveInsightsService } from './predictive-insights.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Health Trend Analytics Service
  * Main orchestration service for population health analytics and trend analysis

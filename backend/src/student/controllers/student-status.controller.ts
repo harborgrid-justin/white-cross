@@ -20,7 +20,7 @@ import { StudentStatusService } from '../services/student-status.service';
 import { TransferStudentDto } from '../dto/transfer-student.dto';
 import { Student } from '@/database';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Student Status Controller
  *

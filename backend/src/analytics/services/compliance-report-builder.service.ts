@@ -3,7 +3,7 @@ import { ComplianceStatus } from '../enums/compliance-status.enum';
 import { ReportFormat } from '../enums/report-format.enum';
 import { ReportStatus } from '../enums/report-status.enum';
 import { ReportType } from '../enums/report-type.enum';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   ComplianceReport,
   Finding,

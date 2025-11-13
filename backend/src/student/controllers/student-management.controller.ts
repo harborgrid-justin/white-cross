@@ -27,7 +27,7 @@ import { StudentService } from '../student.service';
 import { StudentBulkUpdateDto } from '../dto/bulk-update.dto';
 import { TransferStudentDto } from '../dto/transfer-student.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Student Management Controller
  *

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateVitalsDto } from './dto/create-vitals.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 export interface VitalSigns {
   heartRate?: number;
   bloodPressure?: {

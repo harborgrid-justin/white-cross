@@ -12,17 +12,17 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthRecord   } from "../../database/models";
-import { Allergy   } from "../../database/models";
-import { Student   } from "../../database/models";
-import { ChronicCondition   } from "../../database/models";
-import { Vaccination   } from "../../database/models";
+import { HealthRecord } from '../../database/models';
+import { Allergy } from '../../database/models';
+import { Student } from '../../database/models';
+import { ChronicCondition } from '../../database/models';
+import { Vaccination } from '../../database/models';
 import { HealthSummary } from '../interfaces/pagination.interface';
 import { ImportResults } from '../interfaces/health-record-types';
 import { HealthRecordStatistics } from '../interfaces/health-record-types';
 import { PaginatedHealthRecords } from '../interfaces/pagination.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * HealthRecordSummaryService
  *
@@ -84,10 +84,7 @@ export class HealthRecordSummaryService extends BaseService {
     // Count records by type using Sequelize aggregation
     const recordCounts: Record<string, number> = {};
     const countsByType = (await this.healthRecordModel.findAll({
-      attributes: [
-        'recordType',
-        [this.healthRecordModel.sequelize!.fn('COUNT', '*'), 'count'],
-      ],
+      attributes: ['recordType', [this.healthRecordModel.sequelize.fn('COUNT', '*'), 'count']],
       where: { studentId },
       group: ['recordType'],
       raw: true,
@@ -98,9 +95,7 @@ export class HealthRecordSummaryService extends BaseService {
     });
 
     // PHI Access Audit Log
-    this.logInfo(
-      `PHI Access: Health summary retrieved for student ${studentId}`,
-    );
+    this.logInfo(`PHI Access: Health summary retrieved for student ${studentId}`);
 
     return {
       student,
@@ -143,14 +138,13 @@ export class HealthRecordSummaryService extends BaseService {
     }
 
     // Execute query with pagination
-    const { rows: records, count: total } =
-      await this.healthRecordModel.findAndCountAll({
-        where: whereClause,
-        include: [{ model: this.studentModel, as: 'student' }],
-        order: [['recordDate', 'DESC']],
-        limit,
-        offset,
-      });
+    const { rows: records, count: total } = await this.healthRecordModel.findAndCountAll({
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+      limit,
+      offset,
+    });
 
     // PHI Access Audit Log
     this.logInfo(
@@ -203,9 +197,7 @@ export class HealthRecordSummaryService extends BaseService {
     });
 
     // PHI Access Audit Log
-    this.logInfo(
-      `PHI Export: Complete health history exported for student ${studentId}`,
-    );
+    this.logInfo(`PHI Export: Complete health history exported for student ${studentId}`);
 
     return {
       exportDate: new Date(),
@@ -234,10 +226,7 @@ export class HealthRecordSummaryService extends BaseService {
    * @param importData - Import data structure
    * @returns Import operation results
    */
-  async importHealthRecords(
-    studentId: string,
-    importData: any,
-  ): Promise<ImportResults> {
+  async importHealthRecords(studentId: string, importData: any): Promise<ImportResults> {
     const results: ImportResults = {
       imported: 0,
       skipped: 0,
@@ -262,9 +251,7 @@ export class HealthRecordSummaryService extends BaseService {
           });
           results.imported++;
         } catch (error) {
-          results.errors.push(
-            `Failed to import health record: ${error.message}`,
-          );
+          results.errors.push(`Failed to import health record: ${error.message}`);
           results.skipped++;
         }
       }
@@ -383,9 +370,7 @@ export class HealthRecordSummaryService extends BaseService {
     });
 
     if (!healthRecord) {
-      throw new NotFoundException(
-        `Health record for student ${studentId} not found`,
-      );
+      throw new NotFoundException(`Health record for student ${studentId} not found`);
     }
 
     // Get additional related data

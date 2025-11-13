@@ -9,7 +9,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@ne
 import { ReminderService } from '../services/reminder.service';
 import { ReminderProcessingResultDto } from '../dto/reminder.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Reminder Controller
  *

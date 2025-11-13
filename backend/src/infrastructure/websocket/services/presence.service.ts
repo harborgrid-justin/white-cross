@@ -9,7 +9,7 @@ import { WebSocketGateway } from '../websocket.gateway';
 import { BroadcastService } from './broadcast.service';
 import { PresenceData, UserPresence } from '../types/websocket.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class PresenceService extends BaseService {
   constructor(

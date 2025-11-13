@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { MessageTemplate } from '../../database/models/message-template.model';
 import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class TemplateService extends BaseService {
   constructor(

@@ -6,7 +6,7 @@ import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
 import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Clinic Visit Controller
  * REST API for clinic visit workflow and tracking

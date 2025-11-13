@@ -5,7 +5,7 @@ import { InventoryItem } from '../database/models/inventory-item.model';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from './dto/update-inventory-item.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 @Injectable()
 export class InventoryService extends BaseService {
   constructor(

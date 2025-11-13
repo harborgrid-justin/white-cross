@@ -5,7 +5,7 @@ import { CreateWitnessStatementDto } from '../dto/create-witness-statement.dto';
 import { UpdateWitnessStatementDto } from '../dto/update-witness-statement.dto';
 import { IncidentValidationService } from './incident-validation.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class IncidentWitnessService extends BaseService {
   constructor(

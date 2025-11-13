@@ -29,7 +29,7 @@ import { StudentService } from '../student.service';
 import { AddToWaitlistDto } from '../dto/add-to-waitlist.dto';
 import { WaitlistPriorityDto } from '../dto/waitlist-priority.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Student Waitlist Controller
  *

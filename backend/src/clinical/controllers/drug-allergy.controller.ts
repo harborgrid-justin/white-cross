@@ -4,7 +4,7 @@ import { DrugInteractionService } from '../services/drug-interaction.service';
 import { AddAllergyDto } from '../dto/drug/add-allergy.dto';
 import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Drug Allergy Controller
  * Handles student drug allergy operations

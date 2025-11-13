@@ -4,7 +4,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 import { TemplateService } from '../services/template.service';
 import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 @ApiTags('Message Templates')
 @ApiBearerAuth()
 @Controller('templates')

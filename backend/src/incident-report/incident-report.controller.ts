@@ -24,7 +24,7 @@ import { IncidentFiltersDto } from './dto/incident-filters.dto';
 import { UpdateFollowUpActionDto } from './dto/update-follow-up-action.dto';
 import { UpdateIncidentReportDto } from './dto/update-incident-report.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 @ApiTags('incident-report')
 @Controller('incident-report')
 @ApiBearerAuth()

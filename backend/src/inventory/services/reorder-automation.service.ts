@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryStockManagementService } from './stock-management.service';
 

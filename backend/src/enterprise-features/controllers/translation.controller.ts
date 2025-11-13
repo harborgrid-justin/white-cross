@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { LanguageTranslationService } from '../language-translation.service';
 import { DetectLanguageDto, TranslateBulkMessagesDto, TranslateMessageDto } from '../dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 @ApiTags('Language Translation')
 @Controller('enterprise-features/translate')
 @ApiBearerAuth()

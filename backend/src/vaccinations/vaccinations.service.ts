@@ -8,7 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { RequestContextService } from '../shared/context/request-context.service';
-import { BaseService } from '../shared/base/base.service';
+import { BaseService } from "../common/base";
 import { Student } from '../database/models/student.model';
 import { Vaccination } from '../database/models/vaccination.model';
 

@@ -15,7 +15,7 @@ import { Op } from 'sequelize';
 import { Student, User } from '@/database';
 import { QueryCacheService } from '@/database/services';
 import { RequestContextService } from '@/shared/context/request-context.service';
-import { BaseService } from '@/shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { StudentFilterDto } from '../dto/student-filter.dto';
 import { PaginatedResponse } from '../types';
 

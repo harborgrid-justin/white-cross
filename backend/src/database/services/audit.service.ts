@@ -57,7 +57,7 @@ export type { AuditLogFilters, AuditLogQueryOptions, AuditStatistics, Compliance
  * This service delegates to specialized services for separation of concerns
  */
 @Injectable()
-export class AuditService implements IAuditLogger {
+export class AuditService extends BaseService implements IAuditLogger {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,

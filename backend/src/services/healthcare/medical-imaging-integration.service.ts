@@ -5,7 +5,7 @@ import { Student   } from "../../database/models";
 import { HealthRecord   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Medical Imaging Integration Service
  *

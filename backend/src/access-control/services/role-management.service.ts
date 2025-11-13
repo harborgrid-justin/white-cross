@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { InjectConnection } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { AuditService } from '../../database/services/audit.service';
 import { ExecutionContext } from '../../database/types/execution-context.interface';
 import { PermissionCacheService } from './permission-cache.service';

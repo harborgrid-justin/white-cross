@@ -17,7 +17,7 @@ import { EmergencyContact } from '../../database/models/emergency-contact.model'
 import { Student } from '../../database/models/student.model';
 import { ContactPriority } from '../../contact/enums';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 export interface ContactStatistics {
   totalContacts: number;
   studentsWithoutContacts: number;

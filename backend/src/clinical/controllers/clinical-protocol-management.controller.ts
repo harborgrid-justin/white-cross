@@ -5,7 +5,7 @@ import { CreateProtocolDto } from '../dto/protocol/create-protocol.dto';
 import { UpdateProtocolDto } from '../dto/protocol/update-protocol.dto';
 import { ActivateProtocolDto } from '../dto/protocol/activate-protocol.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 @ApiTags('Clinical - Protocols')
 @ApiBearerAuth()
 @Controller('clinical/protocols')

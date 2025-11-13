@@ -6,7 +6,7 @@
 
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { AcademicRecord } from '../interfaces/academic-record.interface';
 import { AcademicTranscriptRepository } from '../../database/repositories/impl/academic-transcript.repository';
 import { StudentRepository } from '../../database/repositories/impl/student.repository';

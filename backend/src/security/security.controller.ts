@@ -13,7 +13,7 @@ import { IpCheckDto } from './dto/ip-restriction.dto';
 import { SecurityCreateIpRestrictionDto } from './dto/ip-restriction.dto';
 import { UpdateIpRestrictionDto } from './dto/ip-restriction.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 /**
  * Security Controller
  * Manages security features including IP restrictions, incidents, and sessions

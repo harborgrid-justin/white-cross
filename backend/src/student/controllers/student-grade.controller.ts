@@ -11,7 +11,7 @@ import { StudentService } from '../student.service';
 import { GradeTransitionDto } from '../dto/grade-transition.dto';
 import { GraduationDto } from '../dto/graduation.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Student Grade Controller
  *

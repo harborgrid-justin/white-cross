@@ -44,7 +44,7 @@ export interface SlowQuery {
 }
 
 @Injectable()
-export class QueryLoggerService implements OnModuleInit {
+export class QueryLoggerService extends BaseService implements OnModuleInit {
   // Configuration
   private readonly SLOW_QUERY_THRESHOLD = 500; // 500ms
   private readonly N_PLUS_ONE_THRESHOLD = 10; // Number of similar queries in short time

@@ -5,7 +5,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { NotificationService } from '../services/notification.service';
 import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Device Controller
  * Handles mobile device registration and management

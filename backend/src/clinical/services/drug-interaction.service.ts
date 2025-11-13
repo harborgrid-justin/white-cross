@@ -10,7 +10,7 @@ import { DrugInteraction } from '../entities/drug-interaction.entity';
 import { DrugCatalogService } from './drug-catalog.service';
 import { InteractionCheckerService } from './interaction-checker.service';
 import { AllergyManagementService } from './allergy-management.service';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   InteractionResult,
   InteractionCheckDto,

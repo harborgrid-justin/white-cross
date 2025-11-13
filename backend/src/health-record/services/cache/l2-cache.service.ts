@@ -15,7 +15,7 @@ import { ComplianceLevel } from '../../interfaces/health-record-types';
 import { PHIAccessLogger } from '../phi-access-logger.service';
 import { InMemoryCacheEntry, CacheOperationResult } from './cache-interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class L2CacheService extends BaseService {
   // L2 cache metrics

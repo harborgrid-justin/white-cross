@@ -15,7 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { AppointmentStatusService } from '../services/appointment-status.service';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Appointment Status Controller
  *

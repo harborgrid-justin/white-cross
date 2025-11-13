@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Alert, DeliveryLog } from '@/database';
 import { AlertDeliveryService } from './alert-delivery.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class AlertRetryService extends BaseService {
   constructor(

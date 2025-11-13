@@ -4,7 +4,7 @@ import { literal, Op } from 'sequelize';
 import { AuditLog } from '@/database';
 import { ComplianceReport, PHIAccessSummary } from '../types/audit.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * ComplianceReportingService - HIPAA compliance reporting
  *

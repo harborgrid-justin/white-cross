@@ -16,7 +16,7 @@ import {
 import { AppointmentQueryService } from '../services/appointment-query.service';
 import { DateRangeDto } from '../dto/statistics.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Appointment Query Controller
  *

@@ -6,7 +6,7 @@ import { ChronicCondition, Student } from '@/database';
 import { AttendanceCorrelationReport } from '../interfaces/report-types.interface';
 import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Attendance Reports Service
  * Handles attendance correlation analysis with health visits, incidents, and appointments

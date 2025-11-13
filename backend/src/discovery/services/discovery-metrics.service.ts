@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HistogramEntry, MetricsSnapshot } from '../interfaces/metrics.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class DiscoveryMetricsService extends BaseService {
   private counters = new Map<string, Map<string, number>>();

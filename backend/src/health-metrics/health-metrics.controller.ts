@@ -9,7 +9,7 @@ import { GetAlertsQueryDto } from './dto/get-alerts-query.dto';
 import { GetTrendsQueryDto } from './dto/get-trends-query.dto';
 import { GetDepartmentQueryDto } from './dto/get-department-query.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 @ApiTags('Health Metrics')
 @ApiBearerAuth()
 @Controller('health-metrics')

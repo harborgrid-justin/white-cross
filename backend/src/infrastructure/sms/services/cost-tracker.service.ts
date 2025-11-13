@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CostAnalyticsQueryDto, SmsCostAnalyticsDto, SmsCostEntryDto } from '../dto/cost-tracking.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Cost entry with internal tracking
  */

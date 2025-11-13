@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { ProviderMetadata, SmartGCOptions } from '../types/resource.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 export interface GcProviderConfig {
   priority: 'low' | 'normal' | 'high';
   cleanupStrategy: 'standard' | 'aggressive' | 'custom';

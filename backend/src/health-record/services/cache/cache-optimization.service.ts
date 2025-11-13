@@ -15,7 +15,7 @@ import { L1CacheService } from './l1-cache.service';
 import { L2CacheService } from './l2-cache.service';
 import { L3CacheService } from './l3-cache.service';
 import { CacheAccessPatternTrackerService } from './cache-access-pattern-tracker.service';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   AccessPattern,
   CacheWarmingResult,

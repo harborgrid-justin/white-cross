@@ -17,7 +17,7 @@ import { CreateAllergyDto } from '../dto/create-allergy.dto';
 import { AllergyUpdateDto } from '../dto/update-allergy.dto';
 import { Student } from '../../student/models/student.model';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class AllergyCrudService extends BaseService {
   constructor(

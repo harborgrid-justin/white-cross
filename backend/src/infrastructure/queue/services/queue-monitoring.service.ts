@@ -10,7 +10,7 @@ import { QueueName } from '../enums';
 import { QueueHealth, QueueMetrics, FailedJobInfo } from '../interfaces';
 import { BaseQueueService } from './base-queue.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Alert configuration
  */

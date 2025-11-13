@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RecurringTemplate } from '../../enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS } from '../../enterprise-features-constants';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Template Service
  * Handles CRUD operations for recurring appointment templates

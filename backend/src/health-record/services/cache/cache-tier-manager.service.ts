@@ -16,7 +16,7 @@ import {
 } from './cache-interfaces';
 import { CACHE_CONSTANTS } from './cache-constants';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class CacheTierManagerService extends BaseService {
   private readonly l1Cache = new Map<string, InMemoryCacheEntry>();

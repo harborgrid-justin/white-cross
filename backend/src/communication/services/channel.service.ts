@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MessageType } from '../enums/message-type.enum';
 import { ChannelSendData, ChannelSendResult } from '../interfaces/index';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ChannelService extends BaseService {
   async sendViaChannel(

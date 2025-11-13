@@ -99,7 +99,7 @@ import {
   alerts: true,
 })
 @Injectable()
-export class CacheService implements OnModuleInit, OnModuleDestroy {
+export class CacheService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private stats: {
     hits: number;
     misses: number;

@@ -1,6 +1,6 @@
 ﻿import { BadRequestException, Injectable } from '@nestjs/common';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 
 /**
  * UserManagementService

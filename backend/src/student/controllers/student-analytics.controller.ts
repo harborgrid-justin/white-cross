@@ -12,7 +12,7 @@ import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentService } from '../student.service';
 import type { StudentDataExport, StudentStatistics } from '../types';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Student Analytics Controller
  *

@@ -5,7 +5,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { OfflineSyncService } from '../services/offline-sync.service';
 import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Sync Controller
  * Handles offline data synchronization

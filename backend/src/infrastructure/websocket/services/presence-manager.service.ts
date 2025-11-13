@@ -9,7 +9,7 @@ import { Server } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket } from '../interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 export interface PresenceStatus {
   status: 'online' | 'offline' | 'away';
   lastSeen: string;

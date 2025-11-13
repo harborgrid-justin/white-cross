@@ -18,7 +18,7 @@ import { Student   } from "../../database/models";
 import { PaginatedHealthRecords } from '../interfaces/pagination.interface';
 import { BulkDeleteResults } from '../interfaces/health-record-types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * HealthRecordCrudService
  *

@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Student } from '../../database/models/student.model';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { StudentScanBarcodeDto } from '../dto/scan-barcode.dto';
 import { VerifyMedicationDto } from '../dto/verify-medication.dto';
 

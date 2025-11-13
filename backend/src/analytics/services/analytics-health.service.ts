@@ -9,7 +9,7 @@ import { GetHealthTrendsQueryDto } from '../dto/analytics-query.dto';
 import { GetStudentHealthMetricsQueryDto } from '../dto/health-metrics.dto';
 import { GetSchoolMetricsQueryDto } from '../dto/health-metrics.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 type MedicationStatus = 'PENDING' | 'ADMINISTERED' | 'MISSED' | 'REFUSED';
 type AppointmentStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 type DatePeriod = { startDate: Date; endDate: Date };

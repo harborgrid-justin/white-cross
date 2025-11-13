@@ -9,11 +9,11 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import compression from 'compression';
-import { RedisIoAdapter } from '@/infrastructure/websocket';
+import { RedisIoAdapter } from './infrastructure/websocket';
 import { AppConfigService } from './config';
 import { LoggerService } from './shared/logging/logger.service';
 import { SentryService } from './infrastructure/monitoring/sentry.service';
-import { HipaaExceptionFilter } from '@/common/exceptions/filters';
+import { HipaaExceptionFilter } from './common/exceptions/filters';
 import { createSwaggerConfig, addGlobalSchemas } from './config/swagger.config';
 
 // Global logger for bootstrap errors

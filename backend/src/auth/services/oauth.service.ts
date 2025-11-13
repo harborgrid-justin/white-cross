@@ -8,7 +8,7 @@ import { OAuthProfile } from '../dto/oauth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { JwtPayload } from '../strategies/jwt.strategy';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class OAuthService extends BaseService {
   private readonly accessTokenExpiry = '15m';

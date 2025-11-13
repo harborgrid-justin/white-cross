@@ -11,7 +11,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuditLogEntry, AuditCategory } from '../interfaces/security.interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class EnhancedAuditService extends BaseService {
   private auditLog: AuditLogEntry[] = [];

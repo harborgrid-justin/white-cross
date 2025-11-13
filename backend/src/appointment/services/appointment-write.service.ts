@@ -34,7 +34,7 @@ import {
 } from '../../database/models/appointment-waitlist.model';
 import { User } from '../../database/models/user.model';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Appointment Write Service
  *

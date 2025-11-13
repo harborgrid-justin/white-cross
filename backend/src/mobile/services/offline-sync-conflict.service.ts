@@ -12,7 +12,7 @@ import {
 } from './offline-sync-types.interface';
 import { OfflineSyncEntityRegistryService } from './offline-sync-entity-registry.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Conflict Resolution Service
  * Handles conflict detection and resolution for offline sync

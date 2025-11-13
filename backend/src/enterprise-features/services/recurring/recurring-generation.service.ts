@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RecurringTemplate, RecurrenceFrequency } from '../../enterprise-features-interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Generation Service
  * Handles appointment generation from recurring templates

@@ -6,7 +6,7 @@ import { IPaginatedResult } from '../interfaces/paginated-result.interface';
 import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
 import { PHIAccessLogFilters } from '../types/audit.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * PHIAccessService - HIPAA compliant PHI access logging
  *

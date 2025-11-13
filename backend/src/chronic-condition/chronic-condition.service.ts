@@ -9,7 +9,7 @@ import { PaginationDto } from './dto/pagination.dto';
 import { ChronicConditionSearchResult } from './interfaces/chronic-condition-search-result.interface';
 import { ChronicConditionStatistics } from './interfaces/chronic-condition-statistics.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 /**
  * ChronicConditionService
  *

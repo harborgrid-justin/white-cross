@@ -9,7 +9,7 @@ import {
   SecurityIncidentType,
 } from '../dto/create-security-incident.dto';
 import { UserPermissionsResult } from '../interfaces/user-permissions-result.interface';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   PermissionModel,
   RolePermissionModel,

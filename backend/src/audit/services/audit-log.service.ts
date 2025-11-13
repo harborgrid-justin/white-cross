@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { AuditAction, AuditLog, AuditSeverity, ComplianceType } from '@/database';
 import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * AuditLogService - Core audit logging functionality
  *

@@ -18,7 +18,7 @@ import { AllergySeverity } from '../../common/enums';
 import { AllergyCrudService } from './allergy-crud.service';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 export interface DrugAllergyConflict {
   hasConflict: boolean;
   conflictingAllergies: Allergy[];

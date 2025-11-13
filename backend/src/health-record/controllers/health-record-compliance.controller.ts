@@ -21,7 +21,7 @@ import { HealthRecordAuditInterceptor } from '../interceptors/health-record-audi
 import { HealthRecordCacheInterceptor } from '../interceptors/health-record-cache.interceptor';
 import { HealthRecordRateLimitGuard } from '../guards/health-record-rate-limit.guard';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Health Record Compliance Controller
  *

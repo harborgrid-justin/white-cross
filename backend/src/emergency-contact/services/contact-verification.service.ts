@@ -21,7 +21,7 @@ import { EmergencyContact } from '../../database/models/emergency-contact.model'
 import { VerificationStatus } from '../../contact/enums';
 import { NotificationDeliveryService } from './notification-delivery.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ContactVerificationService extends BaseService {
   constructor(

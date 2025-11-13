@@ -11,7 +11,7 @@ import { StudentService } from '../student.service';
 import { GenerateBarcodeDto } from '../dto/generate-barcode.dto';
 import { VerifyBarcodeDto } from '../dto/verify-barcode.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Student Barcode Controller
  *

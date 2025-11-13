@@ -11,7 +11,7 @@ import { ConflictException, Injectable, NotFoundException, UnauthorizedException
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { RequestContextService } from '../shared/context/request-context.service';
-import { BaseService } from '../shared/base/base.service';
+import { BaseService } from "../common/base";
 import { User } from '@/user/entities';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

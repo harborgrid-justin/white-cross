@@ -18,7 +18,7 @@ import {
 } from '../types/message-response.types';
 import { MarkAsReadResult, UnreadCountResult } from '../types/index';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * EnhancedMessageService
  *

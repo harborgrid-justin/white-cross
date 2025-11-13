@@ -11,7 +11,7 @@ import { IncidentFilterDto } from '../dto/security-incident.dto';
 import { SecurityCreateIncidentDto } from '../dto/security-incident.dto';
 import { UpdateIncidentStatusDto } from '../dto/security-incident.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Security Incident Service
  * Handles detection, logging, and response to security incidents

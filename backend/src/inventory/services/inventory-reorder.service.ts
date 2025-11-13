@@ -8,7 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { ReorderSuggestion } from './inventory-notification.service';
 
 export interface UsageStatistics {

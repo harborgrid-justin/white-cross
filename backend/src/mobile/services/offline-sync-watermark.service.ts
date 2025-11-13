@@ -4,7 +4,7 @@ import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
 import { SyncEntityType } from '../enums';
 import { SyncWatermark } from './offline-sync-types.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Watermark Service
  * Manages sync watermarks for incremental synchronization

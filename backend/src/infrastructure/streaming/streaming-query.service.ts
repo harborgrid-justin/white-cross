@@ -71,7 +71,7 @@ export interface RealtimeSubscriptionConfig {
  * Provides memory-efficient streaming operations for large datasets
  */
 @Injectable()
-export class StreamingQueryService extends EventEmitter {
+export class StreamingQueryService extends BaseService {
   constructor(
     @InjectConnection()
     private readonly sequelize: Sequelize,

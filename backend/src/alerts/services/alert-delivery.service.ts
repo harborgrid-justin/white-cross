@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { Alert, DeliveryChannel, DeliveryLog } from '@/database';
 import { AlertDeliveryException } from '../exceptions/alert.exceptions';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class AlertDeliveryService extends BaseService {
   constructor(

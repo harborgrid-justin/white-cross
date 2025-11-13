@@ -5,7 +5,7 @@ import { ExportOptionsDto } from '../dto/export-options.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Report Export Service
  * Orchestrates export operations across different formats

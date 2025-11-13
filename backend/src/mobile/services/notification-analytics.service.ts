@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { PushNotification } from '../entities';
 import { NotificationCategory, NotificationStatus } from '../enums';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Notification Analytics Service
  *

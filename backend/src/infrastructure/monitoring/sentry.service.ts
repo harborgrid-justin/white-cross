@@ -14,7 +14,7 @@
  */
 
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
-import { BaseService } from '../../shared/base/BaseService';
+import { BaseService } from '../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import * as Sentry from '@sentry/node';
 import { ConfigService } from '@nestjs/config';
@@ -58,7 +58,7 @@ import { Inject } from '@nestjs/common';
  * }
  */
 @Injectable()
-export class SentryService implements OnModuleInit {
+export class SentryService extends BaseService implements OnModuleInit {
   private isInitialized = false;
 
   constructor(

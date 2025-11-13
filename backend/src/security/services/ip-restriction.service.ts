@@ -7,7 +7,7 @@ import { IPRestrictionRule } from '../interfaces/ip-restriction-rule.interface';
 import { SecurityCreateIpRestrictionDto } from '../dto/ip-restriction.dto';
 import { UpdateIpRestrictionDto } from '../dto/ip-restriction.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * IP Restriction Service
  * Manages IP whitelisting, blacklisting, and geolocation-based access control

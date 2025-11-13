@@ -4,7 +4,7 @@ import autoTable from 'jspdf-autotable';
 import { ReportFormat } from '../enums/report-format.enum';
 import { ComplianceReport } from '../interfaces/compliance-report.interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Compliance Report Exporter Service
  *

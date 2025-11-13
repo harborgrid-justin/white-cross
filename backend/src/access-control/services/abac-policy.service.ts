@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   AbacCondition,
   AbacContext,

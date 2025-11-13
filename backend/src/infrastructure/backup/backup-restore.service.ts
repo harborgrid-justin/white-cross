@@ -77,7 +77,7 @@ export interface ValidationResult {
  * Enterprise Backup & Restore Service
  */
 @Injectable()
-export class BackupRestoreService extends EventEmitter {
+export class BackupRestoreService extends BaseService {
   private activeBackups = new Map<string, BackupMetadata>();
   private drPlans = new Map<string, DRPlan>();
 

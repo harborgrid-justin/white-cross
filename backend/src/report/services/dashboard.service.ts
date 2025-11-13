@@ -10,7 +10,7 @@ import { ChronicCondition } from '../../database/models/chronic-condition.model'
 import { ConditionStatus } from '../../chronic-condition/enums';
 import { DashboardMetrics } from '../interfaces/report-types.interface';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Dashboard Service
  * Provides real-time dashboard metrics and operational statistics

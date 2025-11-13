@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nes
 import { WaitlistManagementService } from '../waitlist-management.service';
 import { AddToWaitlistDto, AutoFillFromWaitlistDto, WaitlistEntryResponseDto } from '../dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 @ApiTags('Waitlist Management')
 @Controller('enterprise-features/waitlist')
 @ApiBearerAuth()

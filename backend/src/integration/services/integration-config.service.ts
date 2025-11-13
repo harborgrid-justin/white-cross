@@ -8,7 +8,7 @@ import { IntegrationValidationService } from './integration-validation.service';
 import { IntegrationEncryptionService } from './integration-encryption.service';
 import { IntegrationLogService } from './integration-log.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Integration Configuration Service
  * Handles CRUD operations for integration configurations

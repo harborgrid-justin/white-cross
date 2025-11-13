@@ -6,7 +6,7 @@ import { ActionPriority } from '../enums/action-priority.enum';
 import { ActionStatus } from '../enums/action-status.enum';
 import { IncidentType } from '../enums/incident-type.enum';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class IncidentValidationService extends BaseService {
   /**

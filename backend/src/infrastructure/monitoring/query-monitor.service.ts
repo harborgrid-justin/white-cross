@@ -33,7 +33,7 @@ import { BaseService } from '../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()
-export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
+export class QueryMonitorService extends BaseService implements OnModuleInit, OnModuleDestroy {
   // Monitoring state
   private isMonitoring = false;
   private reportInterval: NodeJS.Timeout | null = null;

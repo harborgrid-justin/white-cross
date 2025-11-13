@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { PurchaseOrder, PurchaseOrderStatus } from '../../database/models/purchase-order.model';
 import { PurchaseOrderItem } from '../../database/models/purchase-order-item.model';
 import { Vendor } from '../../database/models/vendor.model';

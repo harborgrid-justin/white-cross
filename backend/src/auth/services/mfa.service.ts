@@ -7,7 +7,7 @@ import * as crypto from 'crypto';
 import { User   } from "../../database/models";
 import { MfaSetupResponseDto, MfaStatusDto } from '../dto/mfa.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class MfaService extends BaseService {
   private readonly appName = 'White Cross Healthcare';

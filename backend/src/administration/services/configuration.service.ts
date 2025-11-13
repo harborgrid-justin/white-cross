@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { ConfigCategory, SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { ConfigurationDto } from '../dto/configuration.dto';

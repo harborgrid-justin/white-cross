@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { AnalyticsDashboardService } from '../analytics-dashboard.service';
 import { DashboardMetricResponseDto } from '../dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 @ApiTags('Analytics Dashboard')
 @Controller('enterprise-features/analytics')
 @ApiBearerAuth()

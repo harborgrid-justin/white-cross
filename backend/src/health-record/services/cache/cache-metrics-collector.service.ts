@@ -13,7 +13,7 @@ import {
 } from './cache-interfaces';
 import { CACHE_CONSTANTS, CACHE_EVENTS } from './cache-constants';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class CacheMetricsCollectorService extends BaseService {
   private readonly metrics: CacheMetrics = this.initializeMetrics();

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Inject } from '@nestjs/common';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { PDFDocument, rgb } from 'pdf-lib';
-import { BaseService } from '../shared/base/BaseService';
+import { BaseService } from "../../common/base";
 import { LoggerService } from '../shared/logging/logger.service';
 import {
   GenerateImmunizationReportDto,

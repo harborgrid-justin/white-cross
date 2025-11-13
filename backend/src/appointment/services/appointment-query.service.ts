@@ -21,7 +21,7 @@ import {
 import { User } from '../../database/models/user.model';
 import { AppointmentSchedulingService } from './appointment-scheduling.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Appointment Query Service
  *

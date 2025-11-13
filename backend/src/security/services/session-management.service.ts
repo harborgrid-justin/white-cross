@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { SessionEntity } from '../entities/session.entity';
 import { randomBytes } from 'crypto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Session Management Service
  * Manages user sessions for security tracking and concurrent session limits

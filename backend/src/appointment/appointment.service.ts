@@ -17,7 +17,7 @@
 
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { RequestContextService } from '../shared/context/request-context.service';
-import { BaseService } from '../shared/base/base.service';
+import { BaseService } from "../common/base";
 import { AppConfigService } from '../config/app-config.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { AppointmentStatus, UpdateAppointmentDto } from './dto/update-appointment.dto';

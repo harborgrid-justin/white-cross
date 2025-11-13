@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { BaseService } from '../common/base/base.service';
+import { BaseService } from '../common/base';
 
 // Import Sequelize models
 import { Student } from '../database/models/student.model';
@@ -97,10 +97,7 @@ export class HealthRiskAssessmentService extends BaseService {
 
       return assessment;
     } catch (error) {
-      this.logError(
-        `Error calculating health risk score for student ${studentId}`,
-        error.stack,
-      );
+      this.logError(`Error calculating health risk score for student ${studentId}`, error.stack);
       throw error;
     }
   }

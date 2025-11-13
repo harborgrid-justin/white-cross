@@ -10,7 +10,7 @@ import { FilterConfigurationDto, ImportConfigurationsDto } from '../dto';
 import { ConfigCrudService } from './config-crud.service';
 import { ConfigValidationService } from './config-validation.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ConfigImportExportService extends BaseService {
   constructor(

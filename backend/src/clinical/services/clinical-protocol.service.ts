@@ -8,7 +8,7 @@ import { UpdateProtocolDto } from '../dto/protocol/update-protocol.dto';
 import { ActivateProtocolDto } from '../dto/protocol/activate-protocol.dto';
 import { ProtocolFiltersDto } from '../dto/protocol/protocol-filters.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ClinicalProtocolService extends BaseService {
   constructor(

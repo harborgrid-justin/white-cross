@@ -10,7 +10,7 @@ import { AuthenticatedSocket } from '../interfaces';
 import { ConversationEventDto } from '../dto';
 import { RateLimiterService } from './rate-limiter.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class ConversationHandlerService extends BaseService {
   constructor(private readonly rateLimiter: RateLimiterService) {}

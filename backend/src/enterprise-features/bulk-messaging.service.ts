@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BulkMessage } from './enterprise-features-interfaces';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 @Injectable()
 export class BulkMessagingService extends BaseService {
   private bulkMessages: BulkMessage[] = [];

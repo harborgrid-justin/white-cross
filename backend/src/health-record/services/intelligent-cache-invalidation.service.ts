@@ -18,17 +18,17 @@ import { AuditLog, AuditSeverity, ComplianceType   } from "../../database/models
 import { AuditAction } from '../../database/types/database.enums';
 import { ComplianceLevel } from '../interfaces/health-record-types';
 
-import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
+import { BaseService } from '../../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 export interface CacheDependency {

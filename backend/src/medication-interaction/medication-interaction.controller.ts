@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@ne
 import { MedicationInteractionService } from './medication-interaction.service';
 import { CheckNewMedicationDto, InteractionCheckResultDto } from './dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 /**
  * Medication Interaction Controller
  * Provides endpoints for checking drug-drug interactions

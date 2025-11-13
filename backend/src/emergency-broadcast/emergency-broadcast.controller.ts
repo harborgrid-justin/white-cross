@@ -18,7 +18,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmergencyBroadcastService } from './emergency-broadcast.service';
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 import {
   BroadcastStatusResponseDto,
   CancelBroadcastDto,

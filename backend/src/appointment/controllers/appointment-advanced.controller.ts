@@ -22,7 +22,7 @@ import { CreateRecurringAppointmentDto } from '../dto/recurring.dto';
 import { BulkCancelDto } from '../dto/statistics.dto';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../../../common/base';
 /**
  * Appointment Advanced Operations Controller
  *

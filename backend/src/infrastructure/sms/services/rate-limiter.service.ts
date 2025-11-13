@@ -8,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitStatusDto } from '../dto/rate-limit.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Rate Limiter Service
  * Implements sliding window rate limiting using in-memory storage (can be upgraded to Redis)

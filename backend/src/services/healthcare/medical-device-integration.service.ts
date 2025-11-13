@@ -6,7 +6,7 @@ import { HealthRecord   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 import { DeviceReading   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Medical Device Integration Service
  *

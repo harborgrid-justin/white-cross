@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { User   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 interface PasswordResetToken {
   token: string;
   userId: string;

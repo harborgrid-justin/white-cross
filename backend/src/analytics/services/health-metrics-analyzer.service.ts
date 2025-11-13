@@ -18,7 +18,7 @@ import { DateRangeService } from './date-range.service';
 import { TrendCalculationService } from './trend-calculation.service';
 import { ConditionAnalyticsService } from './condition-analytics.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Health Metrics Analyzer Service
  * Analyzes population health metrics and generates comprehensive summaries

@@ -4,7 +4,7 @@ import { Message } from '../../database/models/message.model';
 import { MessageDelivery } from '../../database/models/message-delivery.model';
 import { SendMessageDto } from '../dto/send-message.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class MessageService extends BaseService {
   constructor(

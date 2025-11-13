@@ -8,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EmergencyType } from '../emergency-broadcast.enums';
 import { EmergencyTemplateDto } from '../dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class BroadcastTemplateService extends BaseService {
   /**

@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationLog } from '../../database/models/integration-log.model';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 export interface IntegrationStatistics {
   totalIntegrations: number;
   activeIntegrations: number;

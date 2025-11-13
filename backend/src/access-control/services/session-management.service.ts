@@ -6,7 +6,7 @@ import { ExecutionContext } from '../../database/types/execution-context.interfa
 import { CreateSessionDto } from '../dto/create-session.dto';
 import { SessionInstance, SequelizeModelClass } from '../types/sequelize-models.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Session Management Service
  *

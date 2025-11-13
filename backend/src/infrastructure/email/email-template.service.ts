@@ -5,7 +5,7 @@
  */
 
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
-import { BaseService } from '../../shared/base/BaseService';
+import { BaseService } from "../../common/base";
 import { LoggerService } from '../../shared/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
 import * as Handlebars from 'handlebars';

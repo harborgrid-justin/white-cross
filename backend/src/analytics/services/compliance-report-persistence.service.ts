@@ -9,7 +9,7 @@ import { ReportType } from '../enums/report-type.enum';
 import { ComplianceReport } from '../interfaces/compliance-report.interfaces';
 import { AnalyticsReport } from '../entities/analytics-report.entity';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Compliance Report Persistence Service
  *

@@ -20,7 +20,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 export interface SearchFilters {
   dataTypes?: string[];
   dateRange?: { start?: Date; end?: Date };

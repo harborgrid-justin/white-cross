@@ -6,7 +6,7 @@ import { Appointment   } from "../../database/models";
 import { Message   } from "../../database/models";
 import { HealthRecord   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Telemedicine Session Manager Service
  *

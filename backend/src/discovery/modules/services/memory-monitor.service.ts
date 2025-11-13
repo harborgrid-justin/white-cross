@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 export interface MemoryMonitorOptions {
   checkInterval: number; // seconds
   warningThreshold: number; // MB

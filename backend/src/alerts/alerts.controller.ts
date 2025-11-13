@@ -24,7 +24,7 @@ import { CurrentUser } from '@/auth/decorators';
 import { AlertsService } from './alerts.service';
 import { AlertFilterDto, AlertsUpdatePreferencesDto, CreateAlertDto } from '@/alerts/dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 @ApiTags('alerts')
 @Controller('alerts')
 @UseGuards(JwtAuthGuard)

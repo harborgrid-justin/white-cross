@@ -8,7 +8,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { WebSocketGateway } from '../websocket.gateway';
 import { BroadcastMessageDto } from '../types/websocket.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class BroadcastService extends BaseService {
   constructor(private readonly websocketGateway: WebSocketGateway) {}

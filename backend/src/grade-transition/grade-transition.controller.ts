@@ -4,7 +4,7 @@ import { GradeTransitionService } from './grade-transition.service';
 import { BulkTransitionDto, BulkTransitionResultDto, TransitionStudentDto } from './dto';
 import { Student } from '../student/entities/student.entity';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 /**
  * Grade Transition Controller
  * Handles API endpoints for automated grade transitions

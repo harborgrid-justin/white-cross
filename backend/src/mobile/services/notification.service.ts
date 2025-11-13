@@ -6,7 +6,7 @@ import { DeviceTokenService } from './device-token.service';
 import { NotificationAnalyticsService } from './notification-analytics.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
 import { NotificationSchedulerService } from './notification-scheduler.service';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   NotificationTemplate,
   NotificationTemplateService,

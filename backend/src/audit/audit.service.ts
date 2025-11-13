@@ -10,7 +10,7 @@ import { IAuditLogEntry } from './interfaces/audit-log-entry.interface';
 import { IPHIAccessLog } from './interfaces/phi-access-log.interface';
 import { AuditLogFilters, AuditLogSearchCriteria, AuditRequest, PHIAccessLogFilters, ValidationResult } from './types/audit.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 /**
  * Unified Audit Service Facade
  *

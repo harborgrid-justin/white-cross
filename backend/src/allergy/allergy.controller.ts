@@ -32,7 +32,7 @@ import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { VerifyAllergyDto } from './dto/verify-allergy.dto';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 @ApiTags('Allergies')
 @ApiBearerAuth()
 @Controller('allergy')

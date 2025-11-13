@@ -32,7 +32,7 @@ import { PermissionsGuard } from './guards/permissions.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Permissions } from './decorators/permissions.decorator';
 
-import { BaseController } from '../../common/base';
+import { BaseController } from '../common/base';
 /**
  * Access Control Controller
  *

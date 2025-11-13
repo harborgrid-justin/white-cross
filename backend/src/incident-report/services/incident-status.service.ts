@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { IncidentReport } from '@/database';
 import { IncidentNotificationService } from './incident-notification.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Incident Status Service
  *

@@ -7,7 +7,7 @@ import { IntegrationStatisticsService } from './integration-statistics.service';
 import { CreateIntegrationDto } from '../dto/create-integration.dto';
 import { UpdateIntegrationDto } from '../dto/update-integration.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Main Integration Service (Facade Pattern)
  * Provides a unified interface to all integration functionality

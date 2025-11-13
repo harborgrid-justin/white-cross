@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { LoginAttemptEntity } from '../entities/login-attempt.entity';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Threat Detection Service
  * Detects various security threats including SQL injection, XSS, brute force, etc.

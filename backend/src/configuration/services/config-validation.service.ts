@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigValueType, SystemConfig } from '../../database/models/system-config.model';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Configuration Validation Result Interface
  */

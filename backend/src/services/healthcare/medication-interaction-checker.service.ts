@@ -6,7 +6,7 @@ import { DrugInteraction   } from "../../database/models";
 import { Student   } from "../../database/models";
 import { HealthRecord   } from "../../database/models";
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Medication Interaction Checker Service
  *

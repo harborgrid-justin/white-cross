@@ -9,7 +9,7 @@ import { UpdateDocumentDto } from './dto/update-document.dto';
 import { Op, Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 /**
  * Document Service - Main orchestrator for all document operations
  * Implements HIPAA-compliant document management with comprehensive audit trails

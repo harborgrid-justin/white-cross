@@ -8,7 +8,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   AppointmentWaitlist,
   WaitlistPriority,

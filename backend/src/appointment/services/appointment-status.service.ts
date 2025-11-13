@@ -16,7 +16,7 @@ import {
 import { AppointmentStatus } from '../dto/update-appointment.dto';
 import { AppointmentEntity } from '../entities/appointment.entity';
 import { AppointmentValidation } from '../validators/appointment-validation';
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,

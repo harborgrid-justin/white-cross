@@ -6,7 +6,7 @@ import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import * as crypto from 'crypto';
 import { AppConfigService } from '../config/app-config.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../common/base';
 /**
  * API Key Authentication Service
  *

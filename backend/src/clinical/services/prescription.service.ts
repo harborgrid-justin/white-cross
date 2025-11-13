@@ -8,7 +8,7 @@ import { UpdatePrescriptionDto } from '../dto/prescription/update-prescription.d
 import { FillPrescriptionDto } from '../dto/prescription/fill-prescription.dto';
 import { PrescriptionFiltersDto } from '../dto/prescription/prescription-filters.dto';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Prescription Service
  * Manages medication prescriptions including creation, filling, and tracking

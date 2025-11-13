@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { BaseService } from "../../common/base";
 import { BackupQueryDto, CreateBackupDto } from '../dto/backup.dto';
 import { BackupStatus, BackupType } from '../enums/administration.enums';
 
