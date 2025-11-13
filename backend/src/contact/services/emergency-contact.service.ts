@@ -5,7 +5,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { EmergencyContact } from '../../database/models/emergency-contact.model';
+import { EmergencyContact } from '@/database/models';
 import {
   ContactCreateEmergencyDto,
   ContactUpdateEmergencyDto,

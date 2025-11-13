@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
-import { SyncConflict } from '../../database/models/sync-conflict.model';
+import { SyncQueueItem } from '@/database/models';
+import { SyncConflict } from '@/database/models';
 import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
 import { ConflictResolution, SyncActionType } from '../enums';
 import {

@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TimePeriod } from '../enums/time-period.enum';
 import { PredictiveInsight } from '../interfaces/health-analytics.interfaces';
-import { HealthRecord } from '../../database/models/health-record.model';
+import { HealthRecord } from '@/database/models';
 import { DateRangeService } from './date-range.service';
 import { TrendCalculationService } from './trend-calculation.service';
 

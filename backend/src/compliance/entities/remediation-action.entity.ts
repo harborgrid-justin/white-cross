@@ -8,4 +8,4 @@ export {
   RemediationAction,
   RemediationPriority,
   RemediationStatus,
-} from '../../database/models/remediation-action.model';
+} from '@/database/models';

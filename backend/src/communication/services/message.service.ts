@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Message } from '../../database/models/message.model';
-import { MessageDelivery } from '../../database/models/message-delivery.model';
+import { Message } from '@/database/models';
+import { MessageDelivery } from '@/database/models';
 import { SendMessageDto } from '../dto/send-message.dto';
 
 import { BaseService } from '@/common/base';

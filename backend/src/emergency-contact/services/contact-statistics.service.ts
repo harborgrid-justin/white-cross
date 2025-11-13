@@ -13,8 +13,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, QueryTypes } from 'sequelize';
-import { EmergencyContact } from '../../database/models/emergency-contact.model';
-import { Student } from '../../database/models/student.model';
+import { EmergencyContact } from '@/database/models';
+import { Student } from '@/database/models';
 import { ContactPriority } from '../../contact/enums';
 
 import { BaseService } from '@/common/base';

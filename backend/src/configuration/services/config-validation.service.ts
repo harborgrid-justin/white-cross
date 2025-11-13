@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigValueType, SystemConfig } from '../../database/models/system-config.model';
+import { ConfigValueType, SystemConfig } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**

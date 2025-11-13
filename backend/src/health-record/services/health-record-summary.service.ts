@@ -12,11 +12,11 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthRecord } from '../../database/models';
-import { Allergy } from '../../database/models';
-import { Student } from '../../database/models';
-import { ChronicCondition } from '../../database/models';
-import { Vaccination } from '../../database/models';
+import { HealthRecord } from '@/database/models';
+import { Allergy } from '@/database/models';
+import { Student } from '@/database/models';
+import { ChronicCondition } from '@/database/models';
+import { Vaccination } from '@/database/models';
 import { HealthSummary } from '../interfaces/pagination.interface';
 import { ImportResults } from '../interfaces/health-record-types';
 import { HealthRecordStatistics } from '../interfaces/health-record-types';

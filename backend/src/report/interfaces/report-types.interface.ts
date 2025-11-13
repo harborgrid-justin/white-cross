@@ -4,11 +4,11 @@
  */
 
 import { AllergySeverity, HealthRecordType } from '../../common/enums';
-import { MedicationLog } from '../../database/models/medication-log.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { Student } from '../../database/models/student.model';
-import { AuditLog } from '../../database/models/audit-log.model';
+import { MedicationLog } from '@/database/models';
+import { IncidentReport } from '@/database/models';
+import { ChronicCondition } from '@/database/models';
+import { Student } from '@/database/models';
+import { AuditLog } from '@/database/models';
 import { OutputFormat, ReportStatus } from '../constants/report.constants';
 
 /**

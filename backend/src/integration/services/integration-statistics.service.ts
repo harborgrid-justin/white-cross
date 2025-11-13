@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
-import { IntegrationLog } from '../../database/models/integration-log.model';
+import { IntegrationConfig, IntegrationStatus } from '@/database/models';
+import { IntegrationLog } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 export interface IntegrationStatistics {

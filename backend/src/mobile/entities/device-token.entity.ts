@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { DeviceToken } from '../../database/models/device-token.model';
+export { } from '@/database/models';

@@ -14,7 +14,7 @@ import { Op } from 'sequelize';
 import * as crypto from 'crypto';
 import { PHIAccessLogger } from '../phi-access-logger.service';
 import { InMemoryCacheEntry, ComplianceLevel } from './cache-interfaces';
-import { CacheEntry as CacheEntryModel   } from "../../database/models";
+import { CacheEntry as CacheEntryModel } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 @Injectable()
@@ -140,9 +140,7 @@ export class L3CacheService extends BaseService {
         });
       }
 
-      this.logDebug(
-        `L3 cache entry stored: ${cacheKey}, size: ${entry.size} bytes, TTL: ${ttl}s`,
-      );
+      this.logDebug(`L3 cache entry stored: ${cacheKey}, size: ${entry.size} bytes, TTL: ${ttl}s`);
     } catch (error) {
       this.logError(`L3 cache set failed for key ${key}:`, error);
     }

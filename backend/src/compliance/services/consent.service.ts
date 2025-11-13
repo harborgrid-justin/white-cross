@@ -6,8 +6,8 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { ConsentForm, ConsentType } from '../../database/models/consent-form.model';
-import { ConsentSignature } from '../../database/models/consent-signature.model';
+import { ConsentForm, ConsentType } from '@/database/models';
+import { ConsentSignature } from '@/database/models';
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
 import { COMPLIANCE_ERRORS, ComplianceUtils } from '../utils/index';
 

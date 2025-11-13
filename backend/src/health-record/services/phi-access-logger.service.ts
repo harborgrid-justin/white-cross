@@ -12,9 +12,9 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { AuditLog, AuditSeverity, ComplianceType   } from "../../database/models";
+import { AuditLog, AuditSeverity, ComplianceType   } from '@/database/models';
 import { AuditAction } from '../../database/types/database.enums';
-import { PhiDisclosureAudit   } from "../../database/models";
+import { PhiDisclosureAudit   } from '@/database/models';
 
 export interface PHIAccessLogEntry {
   correlationId: string;

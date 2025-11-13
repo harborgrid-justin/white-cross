@@ -10,7 +10,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Vaccination, Student  } from "../../database/models";
+import { Vaccination, Student  } from '@/database/models';
 import { CDC_CVX_CODES, SCHOOL_REQUIREMENTS } from './vaccination.constants';
 import {
   ComplianceReport,

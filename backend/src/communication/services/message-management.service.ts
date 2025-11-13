@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Message } from '../../database/models/message.model';
+import { Message } from '@/database/models';
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { EditMessageResponse } from '../types/message-response.types';

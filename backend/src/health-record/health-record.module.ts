@@ -62,13 +62,13 @@ import { MedicationModule } from './medication/medication.module';
 import { ScreeningModule } from './screening/screening.module';
 
 // Models
-import { HealthRecord   } from "../../database/models";
-import { Allergy   } from "../../database/models";
-import { Student   } from "../../database/models";
-import { ChronicCondition   } from "../../database/models";
-import { Vaccination   } from "../../database/models";
-import { Medication   } from "../../database/models";
-import { CacheEntry   } from "../../database/models";
+import { HealthRecord   } from '@/database/models';
+import { Allergy   } from '@/database/models';
+import { Student   } from '@/database/models';
+import { ChronicCondition   } from '@/database/models';
+import { Vaccination   } from '@/database/models';
+import { Medication   } from '@/database/models';
+import { CacheEntry   } from '@/database/models';
 
 /**
  * Health Record Module

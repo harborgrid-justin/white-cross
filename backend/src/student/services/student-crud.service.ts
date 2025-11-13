@@ -15,8 +15,8 @@ import { ConflictException, Injectable, NotFoundException, Optional } from '@nes
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize, Transaction } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Student } from '../../database/models/student.model';
-import { User, UserRole } from '../../database/models/user.model';
+import { Student } from '@/database/models';
+import { User, UserRole } from '@/database/models';
 import { QueryCacheService } from '../../database/services/query-cache.service';
 import { RequestContextService } from '../../shared/context/request-context.service';
 import { BaseService } from '@/common/base';

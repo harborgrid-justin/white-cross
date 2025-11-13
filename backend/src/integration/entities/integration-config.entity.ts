@@ -8,4 +8,4 @@ export {
   IntegrationConfig,
   IntegrationType,
   IntegrationStatus,
-} from '../../database/models/integration-config.model';
+} from '@/database/models';

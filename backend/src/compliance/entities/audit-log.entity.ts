@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { AuditLog } from '../../database/models/audit-log.model';
+export { } from '@/database/models';

@@ -4,10 +4,10 @@ import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { RequestContextService } from '../../shared/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { PurchaseOrder, PurchaseOrderStatus } from '../../database/models/purchase-order.model';
-import { PurchaseOrderItem } from '../../database/models/purchase-order-item.model';
-import { Vendor } from '../../database/models/vendor.model';
-import { InventoryItem } from '../../database/models/inventory-item.model';
+import { PurchaseOrder, PurchaseOrderStatus } from '@/database/models';
+import { PurchaseOrderItem } from '@/database/models';
+import { Vendor } from '@/database/models';
+import { InventoryItem } from '@/database/models';
 import { CreatePurchaseOrderDto } from '../dto/create-purchase-order.dto';
 
 @Injectable()

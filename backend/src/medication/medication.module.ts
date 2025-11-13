@@ -4,8 +4,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MedicationController } from './medication.controller';
 import { MedicationService } from './services/medication.service';
 import { MedicationRepository } from './medication.repository';
-import { StudentMedication } from '../database/models/student-medication.model';
-import { Medication } from '../database/models/medication.model';
+import { StudentMedication } from '@/database/models';
+import { Medication } from '@/database/models';
 import { AuditModule } from '../audit/audit.module';
 
 /**

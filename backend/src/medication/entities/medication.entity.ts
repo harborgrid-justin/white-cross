@@ -7,15 +7,15 @@
 export {
   Medication,
   Medication as MedicationEntity,
-} from '../../database/models/medication.model';
+} from '@/database/models';
 
-export { StudentMedication } from '../../database/models/student-medication.model';
+export { } from '@/database/models';
 
-export type { MedicationAttributes } from '../../database/models/medication.model';
+export { } from '@/database/models';
 
 // Import for local interface definitions
-import type { MedicationAttributes as MedicationAttrs } from '../../database/models/medication.model';
-import type { StudentMedication } from '../../database/models/student-medication.model';
+import type { MedicationAttributes as MedicationAttrs } from '@/database/models';
+import type { StudentMedication } from '@/database/models';
 
 /**
  * Medication list item with student context

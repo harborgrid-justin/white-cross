@@ -7,4 +7,4 @@
 export {
   InventoryTransaction,
   InventoryTransactionType,
-} from '../../database/models/inventory-transaction.model';
+} from '@/database/models';

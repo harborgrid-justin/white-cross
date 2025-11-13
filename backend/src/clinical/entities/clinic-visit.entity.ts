@@ -5,4 +5,4 @@
  */
 
 // Re-export the Sequelize model
-export { ClinicVisit } from '../../database/models/clinic-visit.model';
+export { } from '@/database/models';

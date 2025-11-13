@@ -14,7 +14,7 @@ import { MessageDelivery,
   RecipientType,
   DeliveryStatus,
   DeliveryChannelType,
-  } from "../../database/models";
+  } from '@/database/models';
 
 interface MedicationReminder {
   id: string;

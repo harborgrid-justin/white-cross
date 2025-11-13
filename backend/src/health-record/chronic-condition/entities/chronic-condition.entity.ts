@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { ChronicCondition  } from "../../database/models";
+export { } from '@/database/models';

@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { ConsentSignature } from '../../database/models/consent-signature.model';
+export { } from '@/database/models';

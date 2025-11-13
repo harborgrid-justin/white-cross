@@ -1,10 +1,10 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { ConsentForm, ConsentType   } from "../../database/models";
-import { ConsentSignature   } from "../../database/models";
-import { Patient   } from "../../database/models";
-import { User   } from "../../database/models";
+import { ConsentForm, ConsentType   } from '@/database/models';
+import { ConsentSignature   } from '@/database/models';
+import { Patient   } from '@/database/models';
+import { User   } from '@/database/models';
 import { Op } from 'sequelize';
 
 import { BaseService } from '@/common/base';

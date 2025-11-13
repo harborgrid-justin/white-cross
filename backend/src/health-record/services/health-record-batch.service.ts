@@ -14,8 +14,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthRecord   } from "../../database/models";
-import { Student   } from "../../database/models";
+import { HealthRecord   } from '@/database/models';
+import { Student   } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**

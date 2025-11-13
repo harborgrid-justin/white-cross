@@ -9,8 +9,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
 import { AppointmentEntity, PaginatedResponse } from '../entities/appointment.entity';
-import { Appointment } from '../../database/models/appointment.model';
-import { User } from '../../database/models/user.model';
+import { Appointment } from '@/database/models';
+import { User } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**

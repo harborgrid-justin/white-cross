@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { PolicyDocument, PolicyDocumentAttributes } from '../../database/models/policy-document.model';
+import { PolicyDocument, PolicyDocumentAttributes } from '@/database/models';
 import {
   PolicyAcknowledgment,
   PolicyAcknowledgmentAttributes,
-} from '../../database/models/policy-acknowledgment.model';
+} from '@/database/models';
 
 @Injectable()
 export class PolicyRepository {

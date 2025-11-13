@@ -8,27 +8,12 @@
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, Inject } from '@nestjs/common';
 import { CacheStrategyOrchestratorService } from './cache/cache-strategy-orchestrator.service';
 import { CacheOptimizationService } from './cache/cache-optimization.service';
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import {
-  CacheMetrics,
-  AccessPattern,
-  ComplianceLevel,
-} from './cache/cache-interfaces';
+import { CacheMetrics, AccessPattern, ComplianceLevel } from './cache/cache-interfaces';
 
 /**
  * Advanced Cache Strategy Service - Facade Pattern
@@ -38,7 +23,7 @@ import {
  * while using the improved modular architecture.
  */
 @Injectable()
-export class CacheStrategyService implements OnModuleDestroy {
+export class CacheStrategyService extends BaseService implements OnModuleDestroy {
   constructor(
     @Inject(LoggerService) logger: LoggerService,
     private readonly orchestrator: CacheStrategyOrchestratorService,
@@ -77,10 +62,7 @@ export class CacheStrategyService implements OnModuleDestroy {
   /**
    * Intelligent cache invalidation with dependency tracking
    */
-  async invalidate(
-    pattern: string | string[],
-    reason: string = 'manual',
-  ): Promise<void> {
+  async invalidate(pattern: string | string[], reason: string = 'manual'): Promise<void> {
     await this.orchestrator.invalidate(pattern, reason);
   }
 

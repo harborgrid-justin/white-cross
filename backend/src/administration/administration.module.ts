@@ -3,15 +3,15 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { AdministrationController } from './administration.controller';
 
 // Import Sequelize models
-import { District } from '../database/models/district.model';
-import { School } from '../database/models/school.model';
-import { License } from '../database/models/license.model';
-import { SystemConfig } from '../database/models/system-config.model';
-import { ConfigurationHistory } from '../database/models/configuration-history.model';
-import { AuditLog } from '../database/models/audit-log.model';
-import { BackupLog } from '../database/models/backup-log.model';
-import { PerformanceMetric } from '../database/models/performance-metric.model';
-import { TrainingModule } from '../database/models/training-module.model';
+import { District } from '@/database/models';
+import { School } from '@/database/models';
+import { License } from '@/database/models';
+import { SystemConfig } from '@/database/models';
+import { ConfigurationHistory } from '@/database/models';
+import { AuditLog } from '@/database/models';
+import { BackupLog } from '@/database/models';
+import { PerformanceMetric } from '@/database/models';
+import { TrainingModule } from '@/database/models';
 
 // Import all services
 import { AuditService } from './services/audit.service';

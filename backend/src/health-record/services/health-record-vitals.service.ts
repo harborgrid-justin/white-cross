@@ -13,7 +13,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthRecord } from '../../database/models';
+import { HealthRecord } from '@/database/models';
 import { GrowthDataPoint } from '../interfaces/pagination.interface';
 import { VitalSigns } from '../interfaces/vital-signs.interface';
 

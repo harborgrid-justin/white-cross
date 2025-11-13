@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { ClinicVisit } from '../../database/models/clinic-visit.model';
+import { ClinicVisit } from '@/database/models';
 import { VisitDisposition } from '../enums/visit-disposition.enum';
 import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';

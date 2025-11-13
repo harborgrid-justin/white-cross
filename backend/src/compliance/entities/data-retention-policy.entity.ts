@@ -8,4 +8,4 @@ export {
   DataRetentionPolicy,
   DataRetentionCategory,
   RetentionStatus,
-} from '../../database/models/data-retention-policy.model';
+} from '@/database/models';

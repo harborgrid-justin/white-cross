@@ -3,8 +3,8 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 
 // Models
-import { IntegrationConfig } from '../database/models/integration-config.model';
-import { IntegrationLog } from '../database/models/integration-log.model';
+import { IntegrationConfig } from '@/database/models';
+import { IntegrationLog } from '@/database/models';
 
 // Services
 import { IntegrationService } from './services/integration.service';

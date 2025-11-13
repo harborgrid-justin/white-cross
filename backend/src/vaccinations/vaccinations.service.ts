@@ -9,8 +9,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { RequestContextService } from '../shared/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { Student } from '../database/models/student.model';
-import { Vaccination } from '../database/models/vaccination.model';
+import { Student } from '@/database/models';
+import { Vaccination } from '@/database/models';
 
 @Injectable()
 export class VaccinationsService extends BaseService {

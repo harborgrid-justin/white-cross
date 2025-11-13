@@ -26,4 +26,4 @@ export enum Gender {
  */
 
 // Re-export the Sequelize model
-export { Student } from '../../database/models/student.model';
+export { } from '@/database/models';

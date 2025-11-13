@@ -9,10 +9,10 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Op } from 'sequelize';
 import { HealthDataCacheService } from './health-data-cache.service';
-import { Student   } from "../../database/models";
-import { Vaccination   } from "../../database/models";
-import { Allergy   } from "../../database/models";
-import { ChronicCondition   } from "../../database/models";
+import { Student   } from '@/database/models';
+import { Vaccination   } from '@/database/models';
+import { Allergy   } from '@/database/models';
+import { ChronicCondition   } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

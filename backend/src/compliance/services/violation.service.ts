@@ -7,8 +7,8 @@ import {
   UpdateRemediationDto,
   UpdateViolationDto,
 } from '../dto/violation.dto';
-import { ViolationStatus } from '../../database/models/compliance-violation.model';
-import { RemediationStatus } from '../../database/models/remediation-action.model';
+import { ViolationStatus } from '@/database/models';
+import { RemediationStatus } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 @Injectable()

@@ -6,7 +6,7 @@ import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { UserRole } from '../database/models/user.model';
+import { UserRole } from '@/database/models';
 import type { Request as ExpressRequest } from 'express';
 
 import { BaseController } from '@/common/base';

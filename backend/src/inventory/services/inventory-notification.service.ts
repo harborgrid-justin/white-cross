@@ -14,7 +14,7 @@ import {
   RecipientType,
   DeliveryStatus,
   DeliveryChannelType,
-} from '../../database/models/message-delivery.model';
+} from '@/database/models';
 import { InventoryAlert } from './inventory-alert.service';
 
 export interface ReorderSuggestion {

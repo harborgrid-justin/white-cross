@@ -17,7 +17,7 @@ import {
 import type { IAuditLogger  } from "../../interfaces";
 import { sanitizeSensitiveData  } from "../../interfaces";
 import type { ICacheManager  } from "../../interfaces";
-import { VitalSigns    } from "../../database/models";
+import { VitalSigns    } from '@/database/models';
 import { ExecutionContext, QueryOptions   } from "../../database/types";
 
 @Injectable()

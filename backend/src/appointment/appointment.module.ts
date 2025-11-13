@@ -30,10 +30,10 @@ import { AppointmentStatisticsService } from './services/appointment-statistics.
 import { AppointmentRecurringService } from './services/appointment-recurring.service';
 import { WaitlistService } from './services/waitlist.service';
 import { ReminderService } from './services/reminder.service';
-import { Appointment } from '../database/models/appointment.model';
-import { AppointmentReminder } from '../database/models/appointment-reminder.model';
-import { AppointmentWaitlist } from '../database/models/appointment-waitlist.model';
-import { User } from '../database/models/user.model';
+import { Appointment } from '@/database/models';
+import { AppointmentReminder } from '@/database/models';
+import { AppointmentWaitlist } from '@/database/models';
+import { User } from '@/database/models';
 import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
 import { EmailModule } from '../infrastructure/email/email.module';
 import { AppConfigService } from '../config/app-config.service';

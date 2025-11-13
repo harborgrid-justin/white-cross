@@ -8,4 +8,4 @@ export {
   ComplianceChecklistItem,
   ComplianceCategory,
   ChecklistItemStatus,
-} from '../../database/models/compliance-checklist-item.model';
+} from '@/database/models';

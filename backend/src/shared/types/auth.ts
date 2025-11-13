@@ -4,7 +4,7 @@
  * @description Type definitions for authenticated users and authorization
  */
 
-import { UserRole } from '../../database/models/user.model';
+import { UserRole } from '@/database/models';
 
 /**
  * Authenticated User Interface

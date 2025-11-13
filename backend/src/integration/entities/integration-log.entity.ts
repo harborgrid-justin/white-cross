@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { IntegrationLog } from '../../database/models/integration-log.model';
+export { } from '@/database/models';

@@ -17,7 +17,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
-import { User, UserRole   } from "../../database/models";
+import { User, UserRole   } from '@/database/models';
 
 describe('AuthService (CRITICAL SECURITY)', () => {
   let service: AuthService;

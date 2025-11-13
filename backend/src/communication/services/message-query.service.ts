@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
-import { Message } from '../../database/models/message.model';
-import { MessageRead } from '../../database/models/message-read.model';
-import { ConversationParticipant } from '../../database/models/conversation-participant.model';
+import { Message } from '@/database/models';
+import { MessageRead } from '@/database/models';
+import { ConversationParticipant } from '@/database/models';
 import { MessagePaginationDto } from '../dto/message-pagination.dto';
 import { SearchMessagesDto } from '../dto/search-messages.dto';
 import { MarkAsReadDto } from '../dto/mark-as-read.dto';

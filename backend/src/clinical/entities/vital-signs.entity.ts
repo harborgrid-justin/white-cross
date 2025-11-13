@@ -10,4 +10,4 @@
  */
 
 // Re-export the Sequelize model
-export { VitalSigns } from '../../database/models/vital-signs.model';
+export { } from '@/database/models';

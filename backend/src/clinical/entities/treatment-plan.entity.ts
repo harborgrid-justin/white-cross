@@ -9,4 +9,4 @@
  */
 
 // Re-export the Sequelize model
-export { TreatmentPlan } from '../../database/models/treatment-plan.model';
+export { } from '@/database/models';

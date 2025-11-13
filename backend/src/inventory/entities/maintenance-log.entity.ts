@@ -7,4 +7,4 @@
 export {
   MaintenanceLog,
   MaintenanceType,
-} from '../../database/models/maintenance-log.model';
+} from '@/database/models';

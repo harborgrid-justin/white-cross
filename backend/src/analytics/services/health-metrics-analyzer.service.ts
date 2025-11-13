@@ -11,9 +11,9 @@ import {
   MedicationTrend,
   PopulationHealthSummary,
 } from '../interfaces/health-analytics.interfaces';
-import { Student } from '../../database/models/student.model';
-import { HealthRecord } from '../../database/models/health-record.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
+import { Student } from '@/database/models';
+import { HealthRecord } from '@/database/models';
+import { IncidentReport } from '@/database/models';
 import { DateRangeService } from './date-range.service';
 import { TrendCalculationService } from './trend-calculation.service';
 import { ConditionAnalyticsService } from './condition-analytics.service';

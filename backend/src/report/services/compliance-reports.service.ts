@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
+import { AuditLog } from '@/database/models';
 import { ComplianceReport } from '../interfaces/report-types.interface';
 import { BaseReportDto } from '../dto/base-report.dto';
 

@@ -20,7 +20,7 @@ import {
   Student,
   School,
   User,
-} from '../database/models';
+} from '@/database/models';
 
 import {
   AnalyticsTimePeriod,

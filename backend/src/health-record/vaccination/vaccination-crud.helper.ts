@@ -7,9 +7,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Vaccination   } from "../../database/models";
-import { Student   } from "../../database/models";
-import { ComplianceStatus } from '../../interfaces/vaccination.interface';
+import { Vaccination } from '@/database/models';
+import { Student } from '@/database/models';
+import { ComplianceStatus } from '../interfaces/vaccination.interface';
 import { CreateVaccinationDto, CreateExemptionDto, BatchImportResult } from './vaccination.dto';
 
 @Injectable()
@@ -55,10 +55,7 @@ export class VaccinationCrudHelper {
    * @param exemptionDto - Exemption data
    * @returns Created exemption record
    */
-  async createExemption(
-    studentId: string,
-    exemptionDto: CreateExemptionDto,
-  ): Promise<Vaccination> {
+  async createExemption(studentId: string, exemptionDto: CreateExemptionDto): Promise<Vaccination> {
     const student = await this.studentModel.findByPk(studentId);
     if (!student) {
       throw new NotFoundException('Student not found');

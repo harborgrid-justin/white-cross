@@ -17,4 +17,4 @@
  */
 
 // Re-export the Sequelize model for backward compatibility
-export { HealthRecord  } from "../../database/models";
+export { } from '@/database/models';

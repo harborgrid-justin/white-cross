@@ -17,7 +17,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { AllergySeverity, AllergyType   } from "../../database/models";
+import { AllergySeverity, AllergyType   } from '@/database/models';
 
 export class CreateAllergyDto {
   @ApiProperty({

@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { MessageTemplate } from '../../database/models/message-template.model';
+import { MessageTemplate } from '@/database/models';
 import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
 
 import { BaseService } from '@/common/base';

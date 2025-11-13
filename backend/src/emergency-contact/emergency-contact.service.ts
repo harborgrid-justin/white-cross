@@ -20,7 +20,7 @@
  * - NotificationQueueService: Queue processing and lifecycle
  */
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { EmergencyContact } from '../database/models/emergency-contact.model';
+import { EmergencyContact } from '@/database/models';
 import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
 import { EmergencyContactUpdateDto } from './dto/update-emergency-contact.dto';
 import { NotificationDto } from './dto/notification.dto';

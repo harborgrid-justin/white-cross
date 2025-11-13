@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
-import { User   } from "../../database/models";
+import { User   } from '@/database/models';
 
 export interface JwtPayload {
   sub: string; // user id

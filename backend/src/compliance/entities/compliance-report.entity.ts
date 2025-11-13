@@ -8,4 +8,4 @@ export {
   ComplianceReport,
   ComplianceReportType,
   ComplianceStatus,
-} from '../../database/models/compliance-report.model';
+} from '@/database/models';

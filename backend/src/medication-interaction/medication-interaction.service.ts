@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { StudentMedication } from '../database/models/student-medication.model';
-import { Medication } from '../database/models/medication.model';
+import { StudentMedication } from '@/database/models';
+import { Medication } from '@/database/models';
 import { DrugInteractionDto, InteractionCheckResultDto, InteractionSeverity } from './dto';
 
 import { BaseService } from '@/common/base';

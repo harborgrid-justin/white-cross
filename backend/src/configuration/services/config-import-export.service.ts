@@ -5,7 +5,7 @@
  */
 
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { SystemConfig } from '../../database/models/system-config.model';
+import { SystemConfig } from '@/database/models';
 import { FilterConfigurationDto, ImportConfigurationsDto } from '../dto';
 import { ConfigCrudService } from './config-crud.service';
 import { ConfigValidationService } from './config-validation.service';

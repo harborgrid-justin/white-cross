@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { StudentMedication, StudentMedicationAttributes } from '../database/models/student-medication.model';
-import { Student } from '../database/models/student.model';
-import { Medication } from '../database/models/medication.model';
+import { StudentMedication, StudentMedicationAttributes } from '@/database/models';
+import { Student } from '@/database/models';
+import { Medication } from '@/database/models';
 import { ListMedicationsQueryDto } from './dto/list-medications-query.dto';
 import { QueryCacheService } from '../database/services/query-cache.service';
 

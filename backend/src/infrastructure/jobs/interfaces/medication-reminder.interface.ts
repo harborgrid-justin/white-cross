@@ -3,7 +3,7 @@
  *
  * Extracted from medication-reminder.processor.ts for better modularity
  */
-import { RecipientType   } from "../../database/models";
+import { RecipientType   } from '@/database/models';
 
 /**
  * Medication reminder with scheduling and status information

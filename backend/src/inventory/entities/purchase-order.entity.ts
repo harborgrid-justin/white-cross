@@ -7,4 +7,4 @@
 export {
   PurchaseOrder,
   PurchaseOrderStatus,
-} from '../../database/models/purchase-order.model';
+} from '@/database/models';

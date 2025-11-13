@@ -14,7 +14,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { HealthRecordMetricsService } from './health-record-metrics.service';
 import { PHIAccessLogger } from './phi-access-logger.service';
 import { CacheStrategyService } from './cache-strategy.service';
-import { AuditLog, AuditSeverity, ComplianceType   } from "../../database/models";
+import { AuditLog, AuditSeverity, ComplianceType   } from '@/database/models';
 import { AuditAction } from '../../database/types/database.enums';
 import { ComplianceLevel } from '../interfaces/health-record-types';
 

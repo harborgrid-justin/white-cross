@@ -6,27 +6,15 @@
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Inject } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ResourceMetricsCollector, ResourceMetrics } from './resource-metrics-collector.service';
 import { ResourceMonitor, ResourceAlert } from './resource-monitor.service';
 import { ResourceOptimizationEngine, OptimizationRecommendation } from './resource-optimization-engine.service';
 import { ResourceReporter } from './resource-reporter.service';
-
-import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
 export interface ResourceOptimizationPlan {
   planId: string;
   name: string;
@@ -41,7 +29,7 @@ export interface ResourceOptimizationPlan {
 }
 
 @Injectable()
-export class ResourceOptimizationService implements OnModuleDestroy {
+export class ResourceOptimizationService extends BaseService implements OnModuleDestroy {
   private resourceHistory: ResourceMetrics[] = [];
   private alerts: Map<string, ResourceAlert> = new Map();
   private recommendations: Map<string, OptimizationRecommendation> = new Map();

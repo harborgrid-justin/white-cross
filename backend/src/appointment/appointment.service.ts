@@ -32,7 +32,7 @@ import {
 } from './dto/statistics.dto';
 import { CreateRecurringAppointmentDto } from './dto/recurring.dto';
 import { AppointmentEntity, AvailabilitySlot, PaginatedResponse } from './entities/appointment.entity';
-import { AppointmentType as ModelAppointmentType } from '../database/models/appointment.model';
+import { AppointmentType as ModelAppointmentType } from '@/database/models';
 
 // Import all specialized services
 import { AppointmentReadService } from './services/appointment-read.service';

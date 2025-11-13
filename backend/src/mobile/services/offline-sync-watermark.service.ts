@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
+import { SyncQueueItem } from '@/database/models';
 import { SyncEntityType } from '../enums';
 import { SyncWatermark } from './offline-sync-types.interface';
 

@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { InventoryItem } from '../../database/models/inventory-item.model';
+export { } from '@/database/models';

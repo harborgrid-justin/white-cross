@@ -4,12 +4,12 @@
  */
 
 // Re-export the Sequelize model and types
-export { SyncConflict } from '../../database/models/sync-conflict.model';
+export { } from '@/database/models';
 
 export type {
   SyncStatus,
   ConflictVersion,
-} from '../../database/models/sync-conflict.model';
+} from '@/database/models';
 
 // Re-export ConflictResolution from sync-queue-item model
-export { ConflictResolution } from '../../database/models/sync-queue-item.model';
+export { } from '@/database/models';

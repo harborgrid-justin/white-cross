@@ -23,7 +23,7 @@ import type { Request } from 'express';
 
 // Execution Context
 import { createExecutionContext } from '../database/types/execution-context.interface';
-import { UserRole } from '../database/models/user.model';
+import { UserRole } from '@/database/models';
 
 // Services
 import { AuditService } from './services/audit.service';

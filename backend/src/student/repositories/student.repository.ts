@@ -6,8 +6,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Student } from '../../database/models/student.model';
-import { User } from '../../database/models/user.model';
+import { Student } from '@/database/models';
+import { User } from '@/database/models';
 import { BaseRepository, BaseRepositoryConfig } from '../../shared/base/base.repository';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { QueryCacheService } from '../../database/services/query-cache.service';

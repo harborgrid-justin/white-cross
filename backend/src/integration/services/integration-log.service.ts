@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IntegrationLog } from '../../database/models/integration-log.model';
-import { IntegrationConfig } from '../../database/models/integration-config.model';
+import { IntegrationLog } from '@/database/models';
+import { IntegrationConfig } from '@/database/models';
 import type { PaginationMeta } from '../types/pagination.types';
 
 import { BaseService } from '@/common/base';

@@ -7,7 +7,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { ConfigCategory, ConfigScope, SystemConfig } from '../../database/models/system-config.model';
+import { ConfigCategory, ConfigScope, SystemConfig } from '@/database/models';
 import { CreateConfigurationDto, FilterConfigurationDto } from '../dto';
 
 import { BaseService } from '@/common/base';

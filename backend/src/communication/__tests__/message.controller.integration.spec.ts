@@ -4,7 +4,7 @@ import request from 'supertest';
 import { MessageController } from '../controllers/message.controller';
 import { MessageService } from '../services/message.service';
 import { MessageCategory, MessagePriority, MessageType, RecipientType } from '../dto/send-message.dto';
-import { DeliveryChannelType, DeliveryStatus } from '../../database/models/message-delivery.model';
+import { DeliveryChannelType, DeliveryStatus } from '@/database/models';
 
 describe('MessageController Integration Tests (e2e)', () => {
   let app: INestApplication;

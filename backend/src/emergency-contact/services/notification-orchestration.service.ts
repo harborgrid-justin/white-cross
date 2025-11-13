@@ -17,7 +17,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { EmergencyContact } from '../../database/models/emergency-contact.model';
+import { EmergencyContact } from '@/database/models';
 import { NotificationDto } from '../dto/notification.dto';
 import { NotificationResultDto } from '../dto/notification-result.dto';
 import { NotificationDeliveryService } from './notification-delivery.service';

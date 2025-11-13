@@ -5,7 +5,7 @@ import { CreatePrescriptionDto } from '../dto/prescription/create-prescription.d
 import { UpdatePrescriptionDto } from '../dto/prescription/update-prescription.dto';
 import { FillPrescriptionDto } from '../dto/prescription/fill-prescription.dto';
 import { PrescriptionFiltersDto } from '../dto/prescription/prescription-filters.dto';
-import { Prescription } from '../../database/models/prescription.model';
+import { Prescription } from '@/database/models';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Prescriptions')

@@ -5,8 +5,8 @@
  */
 
 import { Request } from 'express';
-import { Message } from '../../database/models/message.model';
-import { DeliveryChannelType, DeliveryStatus } from '../../database/models/message-delivery.model';
+import { Message } from '@/database/models';
+import { DeliveryChannelType, DeliveryStatus } from '@/database/models';
 
 /**
  * Authenticated request with user context

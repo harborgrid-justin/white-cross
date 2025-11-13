@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { Vendor } from '../../database/models/vendor.model';
+export { } from '@/database/models';

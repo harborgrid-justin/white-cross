@@ -33,7 +33,7 @@ import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';
-import { ConversationType } from '../../database/models/conversation.model';
+import { ConversationType } from '@/database/models';
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { MessagePaginationDto } from '../dto/message-pagination.dto';
 import { SearchMessagesDto } from '../dto/search-messages.dto';

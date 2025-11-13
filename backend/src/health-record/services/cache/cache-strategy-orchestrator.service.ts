@@ -8,7 +8,7 @@
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HealthRecordMetricsService } from '../health-record-metrics.service';
 import { L1CacheService } from './l1-cache.service';
@@ -17,18 +17,7 @@ import { L3CacheService } from './l3-cache.service';
 import { CacheOptimizationService } from './cache-optimization.service';
 import { CacheAccessPatternTrackerService } from './cache-access-pattern-tracker.service';
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
+import { LoggerService } from '../../../shared/logging/logger.service';
 import {
   InMemoryCacheEntry,
   CacheTier,
@@ -49,7 +38,7 @@ import {
  * - HIPAA-compliant cache management
  */
 @Injectable()
-export class CacheStrategyOrchestratorService implements OnModuleDestroy {
+export class CacheStrategyOrchestratorService extends BaseService implements OnModuleDestroy {
   constructor(
     @Inject(LoggerService) logger: LoggerService,
     private readonly metricsService: HealthRecordMetricsService,
@@ -166,7 +155,8 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
         accessCount: 1,
         lastAccessed: new Date(),
         compliance,
-        encrypted: compliance === ComplianceLevel.PHI || compliance === ComplianceLevel.SENSITIVE_PHI,
+        encrypted:
+          compliance === ComplianceLevel.PHI || compliance === ComplianceLevel.SENSITIVE_PHI,
         tags,
         size: dataSize,
         tier: this.determineBestTier(key, dataSize, compliance),
@@ -285,11 +275,7 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
   /**
    * Promote data to L1 cache
    */
-  private async promoteToL1<T>(
-    key: string,
-    data: T,
-    compliance: ComplianceLevel,
-  ): Promise<void> {
+  private async promoteToL1<T>(key: string, data: T, compliance: ComplianceLevel): Promise<void> {
     const entry: InMemoryCacheEntry<T> = {
       data,
       timestamp: new Date(),
@@ -323,11 +309,7 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
   /**
    * Determine best tier for caching based on data characteristics
    */
-  private determineBestTier(
-    key: string,
-    dataSize: number,
-    compliance: ComplianceLevel,
-  ): CacheTier {
+  private determineBestTier(key: string, dataSize: number, compliance: ComplianceLevel): CacheTier {
     // PHI data should prefer L1 for faster access and better security
     if (compliance === ComplianceLevel.PHI || compliance === ComplianceLevel.SENSITIVE_PHI) {
       return dataSize < 1024 * 10 ? CacheTier.L1 : CacheTier.L2; // < 10KB goes to L1
@@ -443,11 +425,7 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
   /**
    * Record cache set metrics
    */
-  private recordCacheSet(
-    tier: CacheTier,
-    responseTime: number,
-    dataSize: number,
-  ): void {
+  private recordCacheSet(tier: CacheTier, responseTime: number, dataSize: number): void {
     this.metricsService.recordCacheMetrics('SET', tier as any, responseTime);
   }
 

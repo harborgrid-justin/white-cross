@@ -9,4 +9,4 @@
  */
 
 // Re-export the Sequelize model
-export { Prescription } from '../../database/models/prescription.model';
+export { } from '@/database/models';

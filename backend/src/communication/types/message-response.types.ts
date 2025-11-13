@@ -5,8 +5,8 @@
  * eliminating the use of 'any' types and improving type safety.
  */
 
-import { Message } from '../../database/models/message.model';
-import { Conversation } from '../../database/models/conversation.model';
+import { Message } from '@/database/models';
+import { Conversation } from '@/database/models';
 
 /**
  * Queue status information for message delivery

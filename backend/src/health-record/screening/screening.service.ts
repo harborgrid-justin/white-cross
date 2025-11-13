@@ -9,7 +9,7 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
-import { HealthScreeningAttributes   } from "../../database/models";
+import { HealthScreeningAttributes   } from '@/database/models';
 
 @Injectable()
 export class ScreeningService extends BaseService {

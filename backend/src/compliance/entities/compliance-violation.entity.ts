@@ -9,4 +9,4 @@ export {
   ViolationType,
   ViolationSeverity,
   ViolationStatus,
-} from '../../database/models/compliance-violation.model';
+} from '@/database/models';

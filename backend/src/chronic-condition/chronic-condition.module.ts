@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ChronicConditionService } from './chronic-condition.service';
 import { ChronicConditionController } from './chronic-condition.controller';
-import { ChronicCondition } from '../database/models/chronic-condition.model';
+import { ChronicCondition } from '@/database/models';
 
 /**
  * ChronicConditionModule

@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Medication   } from "../../database/models";
+import { Medication   } from '@/database/models';
 import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
 import { Op } from 'sequelize';

@@ -6,4 +6,4 @@
  */
 
 // Re-export the Sequelize model
-export { ConfigurationHistory } from '../../database/models/configuration-history.model';
+export { } from '@/database/models';

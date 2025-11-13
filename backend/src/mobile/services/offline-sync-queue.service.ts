@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
-import { SyncConflict } from '../../database/models/sync-conflict.model';
+import { SyncQueueItem } from '@/database/models';
+import { SyncConflict } from '@/database/models';
 import { QueueSyncActionDto } from '../dto';
 import { SyncPriority, SyncStatus } from '../enums';
 import { SyncStatistics } from './offline-sync-types.interface';

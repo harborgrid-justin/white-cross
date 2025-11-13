@@ -15,7 +15,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Op } from 'sequelize';
 import { HealthRecordMetricsService } from './health-record-metrics.service';
 import { PHIAccessLogger } from './phi-access-logger.service';
-import { MetricType, PerformanceMetric   } from "../../database/models";
+import { MetricType, PerformanceMetric   } from '@/database/models';
 import { ComplianceLevel } from '../interfaces/health-record-types';
 
 export interface QueryMetrics {

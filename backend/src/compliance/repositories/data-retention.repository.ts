@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { DataRetentionPolicy, DataRetentionPolicyAttributes } from '../../database/models/data-retention-policy.model';
+import { DataRetentionPolicy, DataRetentionPolicyAttributes } from '@/database/models';
 
 @Injectable()
 export class DataRetentionRepository {

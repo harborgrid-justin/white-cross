@@ -3,8 +3,8 @@
  * @module communication/types/conversation
  */
 
-import { Conversation } from '../../database/models/conversation.model';
-import { ConversationParticipant } from '../../database/models/conversation-participant.model';
+import { Conversation } from '@/database/models';
+import { ConversationParticipant } from '@/database/models';
 
 /**
  * Result of conversation creation

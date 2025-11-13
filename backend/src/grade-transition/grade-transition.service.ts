@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Student } from '../database/models/student.model';
+import { Student } from '@/database/models';
 import { BulkTransitionResultDto, TransitionResultDto } from './dto';
 
 import { BaseService } from '@/common/base';

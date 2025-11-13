@@ -13,14 +13,14 @@
  * Re-export of Sequelize model for backward compatibility
  */
 
-import { AppointmentStatus, AppointmentType } from '../../database/models/appointment.model';
+import { AppointmentStatus, AppointmentType } from '@/database/models';
 
 // Re-export the Sequelize model and enums
 export {
   Appointment,
   AppointmentType,
   AppointmentStatus,
-} from '../../database/models/appointment.model';
+} from '@/database/models';
 
 /**
  * Represents an available time slot for appointment scheduling

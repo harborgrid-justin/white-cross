@@ -8,4 +8,4 @@ export {
   PolicyDocument,
   PolicyCategory,
   PolicyStatus,
-} from '../../database/models/policy-document.model';
+} from '@/database/models';

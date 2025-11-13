@@ -19,7 +19,7 @@ import type { IAuditLogger  } from "../../interfaces";
 import { sanitizeSensitiveData  } from "../../interfaces";
 import type { ICacheManager  } from "../../interfaces";
 import { QueryOptions   } from "../../database/types";
-import { LabResults    } from "../../database/models";
+import { LabResults    } from '@/database/models';
 
 @Injectable()
 export class LabResultsRepository

@@ -22,12 +22,12 @@ import { EnhancedMessageService } from '../services/enhanced-message.service';
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { KeyManagementService } from '../../infrastructure/encryption/key-management.service';
 import { CacheService } from '../../infrastructure/cache/cache.service';
-import { Message } from '../../database/models/message.model';
-import { MessageDelivery } from '../../database/models/message-delivery.model';
-import { MessageRead } from '../../database/models/message-read.model';
-import { MessageReaction } from '../../database/models/message-reaction.model';
-import { Conversation } from '../../database/models/conversation.model';
-import { ConversationParticipant } from '../../database/models/conversation-participant.model';
+import { Message } from '@/database/models';
+import { MessageDelivery } from '@/database/models';
+import { MessageRead } from '@/database/models';
+import { MessageReaction } from '@/database/models';
+import { Conversation } from '@/database/models';
+import { ConversationParticipant } from '@/database/models';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 
 describe('Encryption Integration Tests', () => {

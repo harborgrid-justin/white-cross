@@ -24,11 +24,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StudentService } from '../student.service';
 import { getConnectionToken, getModelToken } from '@nestjs/sequelize';
-import { Student } from '../../database/models/student.model';
-import { User } from '../../database/models/user.model';
+import { Student } from '@/database/models';
+import { User } from '@/database/models';
 import { UserRole } from '../../user/enums/user-role.enum';
-import { HealthRecord } from '../../database/models/health-record.model';
-import { MentalHealthRecord } from '../../database/models/mental-health-record.model';
+import { HealthRecord } from '@/database/models';
+import { MentalHealthRecord } from '@/database/models';
 import { AcademicTranscriptService } from '../../academic-transcript/academic-transcript.service';
 import { QueryCacheService } from '../../database/services/query-cache.service';
 import { AppConfigService } from '../../config/app-config.service';

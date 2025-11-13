@@ -7,7 +7,7 @@ import {
   ChartData,
   IncidentTrend,
 } from '../interfaces/health-analytics.interfaces';
-import { IncidentReport } from '../../database/models/incident-report.model';
+import { IncidentReport } from '@/database/models';
 import { DateRangeService } from './date-range.service';
 
 import { BaseService } from '@/common/base';

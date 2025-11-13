@@ -7,8 +7,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
-import { SystemConfig } from '../../database/models/system-config.model';
-import { ConfigurationHistory } from '../../database/models/configuration-history.model';
+import { SystemConfig } from '@/database/models';
+import { ConfigurationHistory } from '@/database/models';
 import { UpdateConfigurationDto } from '../dto';
 
 import { BaseService } from '@/common/base';

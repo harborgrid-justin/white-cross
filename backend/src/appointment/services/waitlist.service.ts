@@ -13,7 +13,7 @@ import {
   AppointmentWaitlist,
   WaitlistPriority,
   WaitlistStatus,
-} from '../../database/models/appointment-waitlist.model';
+} from '@/database/models';
 
 /**
  * Waitlist Service

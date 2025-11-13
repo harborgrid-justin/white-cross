@@ -17,8 +17,8 @@
  */
 
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ConfigCategory, SystemConfig } from '../database/models/system-config.model';
-import { ConfigurationHistory } from '../database/models/configuration-history.model';
+import { ConfigCategory, SystemConfig } from '@/database/models';
+import { ConfigurationHistory } from '@/database/models';
 import {
   ConfigurationBulkUpdateDto,
   CreateConfigurationDto,

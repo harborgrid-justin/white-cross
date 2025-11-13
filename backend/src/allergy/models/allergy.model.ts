@@ -13,9 +13,4 @@
  */
 
 // Re-export the canonical Allergy model and related types from database models
-export {
-  Allergy,
-  AllergyType,
-  AllergySeverity,
-  type AllergyAttributes,
-} from '../../database/models/allergy.model';
+export { Allergy, AllergyType, AllergySeverity, type AllergyAttributes } from '@/database/models';

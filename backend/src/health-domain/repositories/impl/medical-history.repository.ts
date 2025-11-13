@@ -18,7 +18,7 @@ import type { IAuditLogger  } from "../../interfaces";
 import { sanitizeSensitiveData  } from "../../interfaces";
 import type { ICacheManager  } from "../../interfaces";
 import { QueryOptions   } from "../../database/types";
-import { MedicalHistory    } from "../../database/models";
+import { MedicalHistory    } from '@/database/models';
 
 @Injectable()
 export class MedicalHistoryRepository

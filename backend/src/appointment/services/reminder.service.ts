@@ -17,8 +17,8 @@ import { ReminderProcessingResultDto } from '../dto/reminder.dto';
 import {
   AppointmentReminder,
   ReminderStatus,
-} from '../../database/models/appointment-reminder.model';
-import { Appointment } from '../../database/models/appointment.model';
+} from '@/database/models';
+import { Appointment } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ComplianceReport, ComplianceReportAttributes } from '../../database/models/compliance-report.model';
-import { ComplianceChecklistItem } from '../../database/models/compliance-checklist-item.model';
+import { ComplianceReport, ComplianceReportAttributes } from '@/database/models';
+import { ComplianceChecklistItem } from '@/database/models';
 
 @Injectable()
 export class ComplianceReportRepository {

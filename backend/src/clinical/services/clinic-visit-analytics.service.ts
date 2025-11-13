@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { ClinicVisit } from '../../database/models/clinic-visit.model';
+import { ClinicVisit } from '@/database/models';
 import { VisitStatistics } from '../interfaces/visit-statistics.interface';
 import { StudentVisitSummary } from '../interfaces/student-visit-summary.interface';
 

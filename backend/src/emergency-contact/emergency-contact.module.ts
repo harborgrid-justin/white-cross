@@ -25,8 +25,8 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
 // Models
-import { EmergencyContact } from '../database/models/emergency-contact.model';
-import { Student } from '../database/models/student.model';
+import { EmergencyContact } from '@/database/models';
+import { Student } from '@/database/models';
 
 // Main Service (Facade)
 import { EmergencyContactService } from './emergency-contact.service';

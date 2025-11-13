@@ -11,7 +11,7 @@
  * invalid contact information from being stored in the system.
  */
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { EmergencyContact } from '../../database/models/emergency-contact.model';
+import { EmergencyContact } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 @Injectable()

@@ -7,7 +7,7 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Student } from '../../database/models/student.model';
+import { Student } from '@/database/models';
 import { RequestContextService } from '../../shared/context/request-context.service';
 import { BaseService } from '@/common/base';
 import { StudentScanBarcodeDto } from '../dto/scan-barcode.dto';

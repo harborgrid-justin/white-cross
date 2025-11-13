@@ -13,7 +13,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RolesGuard } from '../roles.guard';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { UserRole   } from "../../database/models";
+import { UserRole   } from '@/database/models';
 
 describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
   let guard: RolesGuard;

@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { SystemConfig } from '../../database/models/system-config.model';
+import { SystemConfig } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 @Injectable()

@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
-import { SyncConflict } from '../../database/models/sync-conflict.model';
+import { SyncQueueItem } from '@/database/models';
+import { SyncConflict } from '@/database/models';
 import { ResolveConflictDto } from '../dto';
 import { ConflictResolution, SyncActionType, SyncStatus } from '../enums';
 import {

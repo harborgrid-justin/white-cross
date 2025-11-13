@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { Message } from '../database/models/message.model';
-import { MessageTemplate } from '../database/models/message-template.model';
-import { MessageDelivery } from '../database/models/message-delivery.model';
-import { MessageRead } from '../database/models/message-read.model';
-import { MessageReaction } from '../database/models/message-reaction.model';
-import { Conversation } from '../database/models/conversation.model';
-import { ConversationParticipant } from '../database/models/conversation-participant.model';
+import { Message } from '@/database/models';
+import { MessageTemplate } from '@/database/models';
+import { MessageDelivery } from '@/database/models';
+import { MessageRead } from '@/database/models';
+import { MessageReaction } from '@/database/models';
+import { Conversation } from '@/database/models';
+import { ConversationParticipant } from '@/database/models';
 
 // Infrastructure Modules
 import { EncryptionModule } from '../infrastructure/encryption/encryption.module';

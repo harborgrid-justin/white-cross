@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TrendDirection } from '../enums/trend-direction.enum';
 import { TimeSeriesDataPoint } from '../interfaces/health-analytics.interfaces';
-import { HealthRecord } from '../../database/models/health-record.model';
+import { HealthRecord } from '@/database/models';
 import { DateRangeService } from './date-range.service';
 
 import { BaseService } from '@/common/base';

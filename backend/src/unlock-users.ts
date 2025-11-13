@@ -5,7 +5,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { User } from './database/models/user.model';
+import { User } from '@/database/models';
 import { Op } from 'sequelize';
 
 async function unlockUsers() {

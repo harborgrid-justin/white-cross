@@ -10,4 +10,4 @@
  */
 
 // Re-export the Sequelize model
-export { ClinicalNote } from '../../database/models/clinical-note.model';
+export { } from '@/database/models';

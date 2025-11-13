@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Conversation, ConversationType } from '../../database/models/conversation.model';
-import { ConversationParticipant } from '../../database/models/conversation-participant.model';
-import { Message } from '../../database/models/message.model';
+import { Conversation, ConversationType } from '@/database/models';
+import { ConversationParticipant } from '@/database/models';
+import { Message } from '@/database/models';
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';

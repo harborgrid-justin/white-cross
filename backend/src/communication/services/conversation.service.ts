@@ -1,14 +1,14 @@
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
-import { Conversation, ConversationType } from '../../database/models/conversation.model';
-import { ConversationParticipant, ParticipantRole } from '../../database/models/conversation-participant.model';
+import { Conversation, ConversationType } from '@/database/models';
+import { ConversationParticipant, ParticipantRole } from '@/database/models';
 import {
   AddParticipantDto,
   ParticipantRole as ParticipantRoleEnum,
   UpdateParticipantDto,
 } from '../dto/conversation-participant.dto';
-import { Message } from '../../database/models/message.model';
+import { Message } from '@/database/models';
 import { CreateConversationResult } from '../types/conversation.types';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';

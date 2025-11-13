@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { WitnessStatement } from '../../database/models/witness-statement.model';
+export { } from '@/database/models';

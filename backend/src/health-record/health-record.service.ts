@@ -18,10 +18,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { HealthRecord   } from "../../database/models";
-import { Allergy   } from "../../database/models";
-import { ChronicCondition   } from "../../database/models";
-import { Vaccination   } from "../../database/models";
+import { HealthRecord   } from '@/database/models';
+import { Allergy   } from '@/database/models';
+import { ChronicCondition   } from '@/database/models';
+import { Vaccination   } from '@/database/models';
 import { BulkDeleteResults } from './interfaces/health-record-types';
 import { GrowthDataPoint } from './interfaces/pagination.interface';
 import { HealthRecordStatistics } from './interfaces/health-record-types';

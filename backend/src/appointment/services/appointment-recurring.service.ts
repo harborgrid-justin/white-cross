@@ -17,11 +17,11 @@ import { BaseService } from '@/common/base';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
-} from '../../database/models/appointment.model';
+} from '@/database/models';
 import {
   AppointmentReminder,
   ReminderStatus,
-} from '../../database/models/appointment-reminder.model';
+} from '@/database/models';
 
 /**
  * Appointment Recurring Service

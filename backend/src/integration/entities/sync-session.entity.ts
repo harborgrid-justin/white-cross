@@ -8,4 +8,4 @@ export {
   SyncSession,
   SyncStatus,
   SyncDirection,
-} from '../../database/models/sync-session.model';
+} from '@/database/models';

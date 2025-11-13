@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { HealthRecordChronicConditionController } from './chronic-condition.controller';
 import { ChronicConditionService } from './chronic-condition.service';
-import { ChronicCondition   } from "../../database/models";
-import { Student   } from "../../database/models";
+import { ChronicCondition   } from '@/database/models';
+import { Student   } from '@/database/models';
 
 @Module({
   imports: [SequelizeModule.forFeature([ChronicCondition, Student])],

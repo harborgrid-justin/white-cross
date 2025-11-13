@@ -5,4 +5,4 @@
  */
 
 // Re-export the Sequelize model
-export { PhiDisclosureAudit } from '../../database/models/phi-disclosure-audit.model';
+export { } from '@/database/models';

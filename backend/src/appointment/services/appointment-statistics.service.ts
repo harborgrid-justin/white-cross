@@ -13,8 +13,8 @@ import { AppointmentEntity } from '../entities/appointment.entity';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
-} from '../../database/models/appointment.model';
-import { User } from '../../database/models/user.model';
+} from '@/database/models';
+import { User } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**

@@ -14,8 +14,8 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
 // Import Sequelize models
-import { SystemConfig } from '../database/models/system-config.model';
-import { ConfigurationHistory } from '../database/models/configuration-history.model';
+import { SystemConfig } from '@/database/models';
+import { ConfigurationHistory } from '@/database/models';
 
 // Services
 import { ConfigurationService } from './services/configuration.service';

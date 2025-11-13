@@ -12,7 +12,7 @@ export {
   AuditLog,
   ComplianceType,
   AuditSeverity,
-} from '../../database/models/audit-log.model';
+} from '@/database/models';
 
 // Also export AuditAction enum from administration enums
 export { AuditAction } from '../../administration/enums/administration.enums';

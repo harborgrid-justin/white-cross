@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
-import { User   } from "../../database/models";
+import { User   } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 interface EmailVerificationToken {

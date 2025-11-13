@@ -23,16 +23,16 @@ import { AppointmentStatusTransitions } from '../validators/status-transitions';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
-} from '../../database/models/appointment.model';
+} from '@/database/models';
 import {
   AppointmentReminder,
   ReminderStatus,
-} from '../../database/models/appointment-reminder.model';
+} from '@/database/models';
 import {
   AppointmentWaitlist,
   WaitlistStatus,
-} from '../../database/models/appointment-waitlist.model';
-import { User } from '../../database/models/user.model';
+} from '@/database/models';
+import { User } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**

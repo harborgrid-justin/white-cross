@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { PolicyAcknowledgment } from '../../database/models/policy-acknowledgment.model';
+export { } from '@/database/models';

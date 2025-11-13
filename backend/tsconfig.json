@@ -15,7 +15,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@/test/*": ["test/*"],
-      "@/common/base": ["src/common/base"]
+      "@/common/base": ["src/common/base"],
+      "@/database/models": ["src/database/models"]
     },
     "incremental": true,
     "skipLibCheck": true,

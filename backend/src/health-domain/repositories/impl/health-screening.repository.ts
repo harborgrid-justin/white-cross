@@ -18,7 +18,7 @@ import type { IAuditLogger  } from "../../interfaces";
 import { sanitizeSensitiveData  } from "../../interfaces";
 import type { ICacheManager  } from "../../interfaces";
 import { QueryOptions   } from "../../database/types";
-import { HealthScreening    } from "../../database/models";
+import { HealthScreening    } from '@/database/models';
 
 @Injectable()
 export class HealthScreeningRepository

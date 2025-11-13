@@ -6,6 +6,6 @@
  */
 
 // Re-export the Sequelize model and enum
-export { PerformanceMetric } from '../../database/models/performance-metric.model';
+export { } from '@/database/models';
 
 export { MetricType } from '../enums/administration.enums';

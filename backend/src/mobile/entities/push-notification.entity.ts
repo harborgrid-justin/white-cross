@@ -4,9 +4,9 @@
  */
 
 // Re-export the Sequelize model and interfaces
-export { PushNotification } from '../../database/models/push-notification.model';
+export { } from '@/database/models';
 
 export type {
   NotificationAction,
   NotificationDeliveryResult,
-} from '../../database/models/push-notification.model';
+} from '@/database/models';

@@ -7,7 +7,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { User } from '../../database/models/user.model';
+import { User } from '@/database/models';
 import {
   AppointmentStartedEvent,
   AppointmentCompletedEvent,
@@ -20,7 +20,7 @@ import { BaseService } from '@/common/base';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
-} from '../../database/models/appointment.model';
+} from '@/database/models';
 
 /**
  * Appointment Status Service

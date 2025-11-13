@@ -11,7 +11,7 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { User } from '../../database/models/user.model';
+import { User } from '@/database/models';
 
 /**
  * Student gender enumeration

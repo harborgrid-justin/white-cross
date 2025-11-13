@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { AuditLog, ComplianceType, AuditSeverity   } from "../../database/models";
-import { User   } from "../../database/models";
-import { Patient   } from "../../database/models";
+import { AuditLog, ComplianceType, AuditSeverity   } from '@/database/models';
+import { User   } from '@/database/models';
+import { Patient   } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**

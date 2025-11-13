@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
-import { MedicationLog } from '../../database/models/medication-log.model';
-import { StudentMedication } from '../../database/models/student-medication.model';
+import { MedicationLog } from '@/database/models';
+import { StudentMedication } from '@/database/models';
 import { MedicationUsageReport } from '../interfaces/report-types.interface';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
 

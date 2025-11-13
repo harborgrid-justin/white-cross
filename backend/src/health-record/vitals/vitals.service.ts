@@ -10,8 +10,8 @@ import { BaseService } from '@/common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { VitalSigns   } from "../../database/models";
-import { Student   } from "../../database/models";
+import { VitalSigns   } from '@/database/models';
+import { Student   } from '@/database/models';
 
 @Injectable()
 export class VitalsService extends BaseService {

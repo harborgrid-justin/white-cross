@@ -24,6 +24,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@/test/(.*)$': '<rootDir>/test/$1',
     '^@/common/base$': '<rootDir>/src/common/base',
+    '^@/database/models$': '<rootDir>/src/database/models',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^test/(.*)$': '<rootDir>/test/$1',
   },
