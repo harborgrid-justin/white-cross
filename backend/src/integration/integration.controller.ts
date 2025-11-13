@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { IntegrationService } from '@/services/integration.service';
-import { CircuitBreakerService } from '@/services/circuit-breaker.service';
-import { RateLimiterService } from '@/services/rate-limiter.service';
+import { IntegrationService } from './services/integration.service';
+import { CircuitBreakerService } from './services/circuit-breaker.service';
+import { RateLimiterService } from './services/rate-limiter.service';
 import { CreateIntegrationDto } from './dto/create-integration.dto';
 import { UpdateIntegrationDto } from './dto/update-integration.dto';
 

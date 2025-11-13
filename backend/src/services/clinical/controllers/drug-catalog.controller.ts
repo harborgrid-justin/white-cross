@@ -1,6 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DrugInteractionService } from '@/services/drug-interaction.service';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { DrugInteractionService } from '../services/drug-interaction.service';
 import { DrugSearchDto } from '../dto/drug/drug-search.dto';
 import { AddDrugDto } from '../dto/drug/add-drug.dto';
 import { UpdateDrugDto } from '../dto/drug/update-drug.dto';
@@ -14,9 +21,7 @@ import { BaseController } from '@/common/base';
 @ApiBearerAuth()
 @Controller('clinical/drugs')
 export class DrugCatalogController extends BaseController {
-  constructor(
-    private readonly drugInteractionService: DrugInteractionService,
-  ) {}
+  constructor(private readonly drugInteractionService: DrugInteractionService) {}
 
   /**
    * Search drugs by name or brand
@@ -25,10 +30,7 @@ export class DrugCatalogController extends BaseController {
   @ApiOperation({ summary: 'Search drugs by name or brand' })
   @ApiResponse({ status: 200, description: 'Drugs found successfully' })
   async searchDrugs(@Body() searchDto: DrugSearchDto) {
-    return this.drugInteractionService.searchDrugs(
-      searchDto.query,
-      searchDto.limit,
-    );
+    return this.drugInteractionService.searchDrugs(searchDto.query, searchDto.limit);
   }
 
   /**
@@ -73,10 +75,7 @@ export class DrugCatalogController extends BaseController {
   @ApiParam({ name: 'id', description: 'Drug ID' })
   @ApiResponse({ status: 200, description: 'Drug updated successfully' })
   @ApiResponse({ status: 404, description: 'Drug not found' })
-  async updateDrug(
-    @Param('id') id: string,
-    @Body() updateDrugDto: UpdateDrugDto,
-  ) {
+  async updateDrug(@Param('id') id: string, @Body() updateDrugDto: UpdateDrugDto) {
     return this.drugInteractionService.updateDrug(id, updateDrugDto);
   }
 

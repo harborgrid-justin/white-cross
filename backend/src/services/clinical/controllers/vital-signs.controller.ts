@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { VitalSignsService } from '@/services/vital-signs.service';
+import { VitalSignsService } from '../services/vital-signs.service';
 import { RecordVitalsDto } from '../dto/vitals/record-vitals.dto';
 import { UpdateVitalsDto } from '../dto/vitals/update-vitals.dto';
 import { VitalsFiltersDto } from '../dto/vitals/vitals-filters.dto';
