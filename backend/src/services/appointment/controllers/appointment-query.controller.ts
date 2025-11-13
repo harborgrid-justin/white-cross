@@ -13,7 +13,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AppointmentQueryService } from '@/services/appointment-query.service';
+import { AppointmentQueryService } from '../services/appointment-query.service';
 import { DateRangeDto } from '../dto/statistics.dto';
 
 import { BaseController } from '@/common/base';

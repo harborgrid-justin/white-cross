@@ -28,7 +28,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { JwtAuthGuard } from '@/services/auth';
+import { JwtAuthGuard } from '../../auth';
 import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentCrudService } from '@/services/student-crud.service';
 import type { PaginatedResponse } from '../types';

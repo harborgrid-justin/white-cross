@@ -12,7 +12,7 @@ import {
   PdfGenerateCustomReportDto,
   SignPdfDto,
   WatermarkPdfDto,
-} from '@/pdf/dto';
+} from './dto';
 
 /**
  * PDF Controller

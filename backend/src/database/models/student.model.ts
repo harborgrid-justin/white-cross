@@ -425,7 +425,7 @@ export class Student
 
       // Import the helper function dynamically to avoid circular dependencies
       const { logModelPHIFieldChanges } = await import(
-        '@/services/model-audit-helper.service.js'
+        '../services/model-audit-helper.service.js'
       );
 
       // Get the transaction if available

@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { ThreatDetectionService } from '@/services/threat-detection.service';
+import { ThreatDetectionService } from '../services/threat-detection.service';
 import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 
 /**

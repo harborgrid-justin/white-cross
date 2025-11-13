@@ -16,7 +16,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { literal, Op } from 'sequelize';
 
-import { PrescriptionStatus } from '@/services/clinical/enums/prescription-status.enum';
+import { PrescriptionStatus } from '../../services/clinical/enums/prescription-status.enum';
 
 export interface PrescriptionAttributes {
   id: string;

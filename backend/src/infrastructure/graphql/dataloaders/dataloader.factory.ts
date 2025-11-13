@@ -21,7 +21,7 @@ import { MedicationService } from '../../../services/medication';
 import { HealthRecordService } from '@/health-record';
 import { EmergencyContactService } from '../../../services/communication/emergency-contact';
 import { ChronicConditionService } from '../../../services/chronic-condition';
-import { IncidentCoreService } from '@/incident-report';
+import { IncidentCoreService } from '../../../incident-report';
 import { AllergyService } from '@/health-record/allergy';
 import type {
   Allergy,

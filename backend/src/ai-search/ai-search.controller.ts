@@ -16,7 +16,7 @@ import {
   SearchQueryDto,
   SemanticSearchDto,
   SimilarCasesDto,
-} from '@/ai-search/dto';
+} from './dto';
 
 @ApiTags('AI Search')
 @Controller('ai-search')

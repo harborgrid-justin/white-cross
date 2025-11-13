@@ -18,7 +18,7 @@ import { CacheConnectionService } from './cache-connection.service';
 import { CacheSerializationService } from './cache-serialization.service';
 import type { CacheOptions } from './cache.interfaces';
 import { CacheEvent } from './cache.interfaces';
-import { Cleanup, MemorySensitive } from '@/discovery/modules';
+import { Cleanup, MemorySensitive } from '../../discovery/modules';
 
 import { BaseService } from '@/common/base';
 /**

@@ -31,8 +31,8 @@ import {
   StudentStatusService,
 } from './services';
 import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
-import { AcademicTranscriptModule } from '@/services/academic-transcript';
-import { AuditModule } from '@/services/audit';
+import { AcademicTranscriptModule } from '../academic-transcript';
+import { AuditModule } from '../audit';
 
 /**
  * Student Module

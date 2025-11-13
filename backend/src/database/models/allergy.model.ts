@@ -299,7 +299,7 @@ export class Allergy
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
       const { logModelPHIAccess } = await import(
-        '@/services/model-audit-helper.service.js'
+        '../services/model-audit-helper.service.js'
       );
       const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
       await logModelPHIAccess(
@@ -333,7 +333,7 @@ export class Allergy
     if (instance.epiPenExpiration && instance.epiPenExpiration < new Date()) {
       // Log expired EpiPen validation for HIPAA audit trail
       const { logModelPHIAccess } = await import(
-        '@/services/model-audit-helper.service.js'
+        '../services/model-audit-helper.service.js'
       );
       await logModelPHIAccess(
         'Allergy',

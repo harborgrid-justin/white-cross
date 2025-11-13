@@ -1,6 +1,6 @@
 import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ConfigCategory, ConfigScope, ConfigValueType } from '@/services/administration/enums/administration.enums';
+import { ConfigCategory, ConfigScope, ConfigValueType } from '../../services/administration/enums/administration.enums';
 
 /**
  * DTO for creating a new configuration

@@ -52,7 +52,7 @@ import {
   MemoryMonitoring,
   MemorySensitive,
   ResourcePool,
-} from '@/discovery/modules';
+} from '../../discovery/modules';
 
 /**
  * Redis cache service with multi-tier support

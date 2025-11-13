@@ -6,7 +6,7 @@ import {
   AnalyticsIncidentOrchestratorService,
   AnalyticsMedicationOrchestratorService,
   AnalyticsAppointmentOrchestratorService,
-} from '@/analytics/services';
+} from './services';
 import { BaseService } from '@/common/base';
 import { AnalyticsGenerateCustomReportDto } from './dto/custom-reports.dto';
 import { GetAdminDashboardQueryDto } from './dto/dashboard.dto';

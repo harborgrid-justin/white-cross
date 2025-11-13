@@ -27,7 +27,7 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable, SetMetad
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UserRole } from '@/database';
-import { StudentService } from '@/services/student';
+import { StudentService } from '../../../services/student';
 import { HealthRecordService } from '@/health-record';
 
 /**

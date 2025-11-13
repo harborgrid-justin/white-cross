@@ -15,7 +15,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
-import { InteractionSeverity } from '@/services/clinical/enums/interaction-severity.enum';
+import { InteractionSeverity } from '../../services/clinical/enums/interaction-severity.enum';
 
 export interface DrugInteractionAttributes {
   id: string;

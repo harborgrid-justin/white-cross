@@ -11,7 +11,7 @@ import { ComplianceService } from './compliance.service';
 import { DatabaseModule } from '../database/database.module';
 
 // Services
-import { AuditService } from '@/services/audit/audit.service';
+import { AuditService } from '../services/audit/audit.service';
 import { ConsentService } from './services/consent.service';
 import { ComplianceReportService } from './services/compliance-report.service';
 import { ChecklistService } from './services/checklist.service';

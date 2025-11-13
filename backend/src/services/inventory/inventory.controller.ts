@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
-import { StockManagementService } from '@/services/stock-management.service';
-import { AlertsService } from '@/services/alerts.service';
+import { StockManagementService } from './services/stock-management.service';
+import { AlertsService } from './services/alerts.service';
 import { PurchaseOrderService } from '@/services/purchase-order.service';
 import { ReorderAutomationService } from '@/services/reorder-automation.service';
 import { TransactionService } from '@/services/transaction.service';

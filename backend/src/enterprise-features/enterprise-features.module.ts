@@ -17,9 +17,9 @@ import { AnalyticsController } from './controllers/analytics.controller';
 import { EnterpriseFeaturesService } from './enterprise-features.service';
 import { WaitlistManagementService } from './waitlist-management.service';
 import { RecurringAppointmentsService } from './recurring-appointments.service';
-import { RecurringTemplateService } from '@/services/recurring/recurring-template.service';
-import { RecurringGenerationService } from '@/services/recurring/recurring-generation.service';
-import { RecurringStatisticsService } from '@/services/recurring/recurring-statistics.service';
+import { RecurringTemplateService } from './services/recurring/recurring-template.service';
+import { RecurringGenerationService } from './services/recurring/recurring-generation.service';
+import { RecurringStatisticsService } from './services/recurring/recurring-statistics.service';
 import { ReminderSchedulerService } from './reminder-scheduler.service';
 import { PhotoVideoEvidenceService } from './photo-video-evidence.service';
 import { WitnessStatementService } from './witness-statement.service';
@@ -32,10 +32,10 @@ import { BulkMessagingService } from './bulk-messaging.service';
 import { LanguageTranslationService } from './language-translation.service';
 import { CustomReportBuilderService } from './custom-report-builder.service';
 import { AnalyticsDashboardService } from './analytics-dashboard.service';
-import { MetricsService } from '@/services/analytics/metrics.service';
-import { StatisticsService } from '@/services/analytics/statistics.service';
-import { ComplianceService } from '@/services/analytics/compliance.service';
-import { ExportService } from '@/services/analytics/export.service';
+import { MetricsService } from './services/analytics/metrics.service';
+import { StatisticsService } from './services/analytics/statistics.service';
+import { ComplianceService } from './services/analytics/compliance.service';
+import { ExportService } from './services/analytics/export.service';
 
 @Module({
   imports: [EventEmitterModule.forRoot()],

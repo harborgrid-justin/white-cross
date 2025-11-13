@@ -17,8 +17,8 @@ import {
   AnalyticsOperationResult,
 } from './types/analytics-report.types';
 
-import { BaseReportGeneratorService } from '@/analytics/services/base-report-generator.service';
-import { ReportDataCollectorService } from '@/analytics/services/report-data-collector.service';
+import { BaseReportGeneratorService } from './services/base-report-generator.service';
+import { ReportDataCollectorService } from './services/report-data-collector.service';
 import { ReportFormatterService } from './services/report-formatter.service';
 import { HealthInsightsService } from './services/health-insights.service';
 

@@ -32,7 +32,7 @@ import {
   AppointmentUpdatedEvent,
   WaitlistEntryAddedEvent,
   WaitlistSlotAvailableEvent,
-} from '@/appointment/events';
+} from '../../../services/appointment/events';
 
 /**
  * WebSocket payload for appointment events

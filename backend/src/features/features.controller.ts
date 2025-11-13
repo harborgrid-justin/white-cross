@@ -7,7 +7,7 @@
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FeaturesService } from './features.service';
-import { ToggleFeatureDto } from '@/features/dto';
+import { ToggleFeatureDto } from './dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('features')

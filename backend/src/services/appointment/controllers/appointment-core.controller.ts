@@ -25,7 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AppointmentReadService } from '@/services/appointment-read.service';
+import { AppointmentReadService } from '../services/appointment-read.service';
 import { AppointmentWriteService } from '@/services/appointment-write.service';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { UpdateAppointmentDto } from '../dto/update-appointment.dto';

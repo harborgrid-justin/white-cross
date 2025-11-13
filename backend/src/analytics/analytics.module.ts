@@ -29,7 +29,7 @@ import {
   AnalyticsIncidentOrchestratorService,
   AnalyticsMedicationOrchestratorService,
   AnalyticsAppointmentOrchestratorService,
-} from '@/analytics/services';
+} from './services';
 import {
   HealthRecordRepository,
   IncidentReportRepository,

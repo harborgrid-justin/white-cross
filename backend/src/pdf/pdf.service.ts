@@ -11,7 +11,7 @@ import {
   GenerateStudentHealthSummaryDto,
   PdfGenerateCustomReportDto,
   WatermarkPdfDto,
-} from '@/pdf/dto';
+} from './dto';
 
 // Extend jsPDF with autoTable
 declare module 'jspdf' {

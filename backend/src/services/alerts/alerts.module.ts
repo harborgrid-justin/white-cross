@@ -4,7 +4,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { AlertsService } from './alerts.service';
 import { AlertsController } from './alerts.controller';
 import { Alert, AlertPreferences, DeliveryLog } from '@/database';
-import { AuthModule } from '@/services/auth';
+import { AuthModule } from '../auth';
 
 @Module({
   imports: [

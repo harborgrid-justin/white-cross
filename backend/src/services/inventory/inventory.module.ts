@@ -14,9 +14,9 @@ import { InventoryReorderService } from './services/inventory-reorder.service';
 import { InventoryReportService } from './services/inventory-report.service';
 import { InventoryDisposalService } from './services/inventory-disposal.service';
 import { InventoryStockManagementService } from './services/stock-management.service';
-import { InventoryPurchaseOrderService } from '@/services/purchase-order.service';
-import { InventoryTransactionService } from '@/services/transaction.service';
-import { InventoryReorderAutomationService } from '@/services/reorder-automation.service';
+import { InventoryPurchaseOrderService } from './services/purchase-order.service';
+import { InventoryTransactionService } from './services/transaction.service';
+import { InventoryReorderAutomationService } from './services/reorder-automation.service';
 
 @Module({
   imports: [

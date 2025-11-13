@@ -30,7 +30,7 @@ import {
   AppointmentRescheduledEvent,
   AppointmentStartedEvent,
   AppointmentUpdatedEvent,
-} from '@/appointment/events';
+} from '../../../services/appointment/events';
 
 /**
  * WebSocket Appointment Events Listener

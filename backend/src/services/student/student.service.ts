@@ -6,14 +6,14 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { StudentCrudService } from '@/services/student-crud.service';
-import { StudentQueryService } from '@/services/student-query.service';
-import { StudentHealthRecordsService } from '@/services/student-health-records.service';
-import { StudentAcademicService } from '@/services/student-academic.service';
-import { StudentPhotoService } from '@/services/student-photo.service';
-import { StudentBarcodeService } from '@/services/student-barcode.service';
-import { StudentWaitlistService } from '@/services/student-waitlist.service';
-import { StudentValidationService } from '@/services/student-validation.service';
+import { StudentCrudService } from './services/student-crud.service';
+import { StudentQueryService } from './services/student-query.service';
+import { StudentHealthRecordsService } from './services/student-health-records.service';
+import { StudentAcademicService } from './services/student-academic.service';
+import { StudentPhotoService } from './services/student-photo.service';
+import { StudentBarcodeService } from './services/student-barcode.service';
+import { StudentWaitlistService } from './services/student-waitlist.service';
+import { StudentValidationService } from './services/student-validation.service';
 import { Student } from '@/database';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
