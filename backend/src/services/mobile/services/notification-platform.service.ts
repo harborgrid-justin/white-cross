@@ -1,14 +1,9 @@
 import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DeviceToken } from '@/database/models/device-token.model';
-import { PushNotification } from '@/database/models/push-notification.model';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+import { DeviceToken } from '../../../database/models/device-token.model';
+import { PushNotification } from '../../../database/models/push-notification.model';
+import { BaseService } from '../../../common/base';
+import { LoggerService } from '../../../common/logging/logger.service';
 import {
   NotificationCategory,
   NotificationPlatform,
@@ -73,7 +68,7 @@ export interface PlatformDeliveryResult {
  * This service encapsulates all platform-specific logic and configuration.
  */
 @Injectable()
-export class NotificationPlatformService implements OnModuleInit {
+export class NotificationPlatformService extends BaseService implements OnModuleInit {
   // Platform clients (initialized when dependencies are installed)
   private firebaseMessaging: any = null;
   private apnsProvider: any = null;

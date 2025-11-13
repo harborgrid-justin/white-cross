@@ -1,10 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { DeviceToken } from '@/database/models/device-token.model';
+import { DeviceToken } from '../../../database/models/device-token.model';
 import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 
-import { BaseService } from '@/common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Device Token Service
  *

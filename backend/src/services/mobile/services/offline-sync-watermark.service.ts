@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { SyncQueueItem } from '@/database/models';
+import { SyncQueueItem } from '../../../database/models';
 import { SyncEntityType } from '../enums';
 import { SyncWatermark } from './offline-sync-types.interface';
 
-import { BaseService } from '@/common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Watermark Service
  * Manages sync watermarks for incremental synchronization

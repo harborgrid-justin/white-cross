@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { DeviceToken } from '@/database/models/device-token.model';
-import { PushNotification } from '@/database/models/push-notification.model';
+import { DeviceToken } from '../../../database/models/device-token.model';
+import { PushNotification } from '../../../database/models/push-notification.model';
 import { SendNotificationDto } from '../dto';
 import {
   DeliveryStatus,
@@ -12,7 +12,7 @@ import {
 import { NotificationPlatformService } from './notification-platform.service';
 import { DeviceTokenService } from './device-token.service';
 
-import { BaseService } from '@/common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Notification Delivery Service
  *

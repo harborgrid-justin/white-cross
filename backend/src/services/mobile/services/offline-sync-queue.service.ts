@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { SyncQueueItem } from '@/database/models';
-import { SyncConflict } from '@/database/models';
+import { SyncQueueItem } from '../../../database/models';
+import { SyncConflict } from '../../../database/models';
 import { QueueSyncActionDto } from '../dto';
 import { SyncPriority, SyncStatus } from '../enums';
 import { SyncStatistics } from './offline-sync-types.interface';
 
-import { BaseService } from '@/common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Queue Management Service
  * Handles sync queue operations and statistics

@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { SyncQueueItem } from '@/database/models';
-import { SyncConflict } from '@/database/models';
+import { SyncQueueItem } from '../../../database/models';
+import { SyncConflict } from '../../../database/models';
 import { ResolveConflictDto } from '../dto';
 import { ConflictResolution, SyncActionType, SyncStatus } from '../enums';
 import {
@@ -12,7 +12,7 @@ import {
 } from './offline-sync-types.interface';
 import { OfflineSyncEntityRegistryService } from './offline-sync-entity-registry.service';
 
-import { BaseService } from '@/common/base';
+import { BaseService } from '../../../common/base';
 /**
  * Conflict Resolution Service
  * Handles conflict detection and resolution for offline sync
