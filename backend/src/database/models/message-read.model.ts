@@ -14,6 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
+import type { User } from './user.model';
 
 /**
  * MessageRead attributes interface
@@ -128,7 +129,7 @@ export class MessageRead extends Model<
     foreignKey: 'userId',
     as: 'user',
   })
-  declare user?: any;
+  declare user?: User;
 
   @Column({
     type: DataType.DATE,

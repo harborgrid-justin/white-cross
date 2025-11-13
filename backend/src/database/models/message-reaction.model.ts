@@ -14,6 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
+import type { User } from './user.model';
 
 /**
  * MessageReaction attributes interface
@@ -131,7 +132,7 @@ export class MessageReaction extends Model<
     foreignKey: 'userId',
     as: 'user',
   })
-  declare user?: any;
+  declare user?: User;
 
   @Column({
     type: DataType.DATE,

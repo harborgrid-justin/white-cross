@@ -15,6 +15,11 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
+import type { Conversation } from './conversation.model';
+import type { MessageDelivery } from './message-delivery.model';
+import type { MessageReaction } from './message-reaction.model';
+import type { MessageRead } from './message-read.model';
+import type { User } from './user.model';
 
 export enum MessagePriority {
   LOW = 'LOW',
@@ -232,31 +237,31 @@ export class Message extends Model<
     foreignKey: 'senderId',
     as: 'sender',
   })
-  declare sender?: any;
+  declare sender?: User;
 
   @BelongsTo(() => require('./conversation.model').Conversation, {
     foreignKey: 'conversationId',
     as: 'conversation',
   })
-  declare conversation?: any;
+  declare conversation?: Conversation;
 
   @HasMany(() => require('./message-read.model').MessageRead, {
     foreignKey: 'messageId',
     as: 'messageReads',
   })
-  declare messageReads?: any[];
+  declare messageReads?: MessageRead[];
 
   @HasMany(() => require('./message-reaction.model').MessageReaction, {
     foreignKey: 'messageId',
     as: 'messageReactions',
   })
-  declare messageReactions?: any[];
+  declare messageReactions?: MessageReaction[];
 
   @HasMany(() => require('./message-delivery.model').MessageDelivery, {
     foreignKey: 'messageId',
     as: 'messageDeliveries',
   })
-  declare messageDeliveries?: any[];
+  declare messageDeliveries?: MessageDelivery[];
 
   @Column({
     type: DataType.UUID,

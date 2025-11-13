@@ -1,14 +1,32 @@
 [
   {
     "id": 1,
-    "title": "Fix TypeScript errors in backend/src",
-    "description": "In backend/src address any typescript errors",
+    "title": "Analyze and optimize backend/src/database models",
+    "description": "Review backend/src/database/models for any TypeScript errors, missing indexes, or relationship issues. Ensure all models follow best practices for Sequelize ORM and have proper type definitions. Focus on improving query performance and data integrity.",
     "status": "open"
   },
   {
     "id": 2,
-    "title": "Fix TypeScript import/export errors in backend/src",
-    "description": "In backend/src address any typescript import/export errors",
+    "title": "Review and improve backend/src/middleware security",
+    "description": "Audit backend/src/middleware for security vulnerabilities, especially in authentication, authorization, and validation middleware. Ensure HIPAA compliance, proper error handling, and that all PHI access is logged appropriately. Check for rate limiting and CSRF protection.",
+    "status": "open"
+  },
+  {
+    "id": 3,
+    "title": "Optimize backend/src/services API integration",
+    "description": "Review backend/src/services and backend/src/integrations for efficient API patterns. Look for opportunities to implement caching, batch processing, and better error handling. Ensure services follow the repository pattern and have proper dependency injection.",
+    "status": "open"
+  },
+  {
+    "id": 4,
+    "title": "Enhance backend/src/health-record domain logic",
+    "description": "Analyze backend/src/health-record module for business logic improvements. Ensure proper validation of health data, audit logging for PHI access, and compliance with healthcare regulations. Review DTOs, controllers, and services for completeness and error handling.",
+    "status": "open"
+  },
+  {
+    "id": 5,
+    "title": "Improve backend/src error handling and logging",
+    "description": "Review backend/src/errors and logging patterns across the application. Implement consistent error handling middleware, structured logging with appropriate log levels, and ensure sensitive data is never logged. Add health check endpoints and improve observability.",
     "status": "open"
   }
 ]
