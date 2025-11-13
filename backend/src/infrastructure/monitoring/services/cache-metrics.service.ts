@@ -7,9 +7,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheMetrics, CacheOperation } from '../types/metrics.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class CacheMetricsService extends BaseService {
+  constructor() {
+    super('CacheMetricsService');
+  }
+
   private cacheMetrics: CacheMetrics = {
     hits: 0,
     misses: 0,

@@ -7,9 +7,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, WhereOptions } from 'sequelize';
 import { BaseRepository, RepositoryError } from '../base/base.repository';
-import type { IAuditLogger  } from "../../../backend/src/database/interfaces";
-import { sanitizeSensitiveData  } from "../../../backend/src/database/interfaces";
-import type { ICacheManager  } from "../../../backend/src/database/interfaces";
+import type { IAuditLogger  } from "../../interfaces";
+import { sanitizeSensitiveData  } from "../../interfaces";
+import type { ICacheManager  } from "../../interfaces";
 import { QueryOptions } from '../../types';
 import { MedicationLog } from '../../models/medication-log.model';
 

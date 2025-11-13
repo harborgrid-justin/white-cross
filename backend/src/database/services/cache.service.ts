@@ -8,20 +8,10 @@ import { ConfigService } from '@nestjs/config';
 import { CacheConfig, CacheStats, ICacheManager } from '../interfaces/cache/cache-manager.interface';
 
 import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()
-export class CacheService implements ICacheManager {
+export class CacheService extends BaseService implements ICacheManager {
   private readonly cache: Map<string, { value: any; expiry: number }>;
   private stats: { hits: number; misses: number };
   private readonly config: CacheConfig;

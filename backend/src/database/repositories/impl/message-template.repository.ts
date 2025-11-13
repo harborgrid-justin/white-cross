@@ -5,9 +5,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { BaseRepository } from '../base/base.repository';
-import type { IAuditLogger  } from "../../../backend/src/database/interfaces";
-import { sanitizeSensitiveData  } from "../../../backend/src/database/interfaces";
-import type { ICacheManager  } from "../../../backend/src/database/interfaces";
+import type { IAuditLogger  } from "../../interfaces";
+import { sanitizeSensitiveData  } from "../../interfaces";
+import type { ICacheManager  } from "../../interfaces";
 
 export interface MessageTemplateAttributes {
   id: string;

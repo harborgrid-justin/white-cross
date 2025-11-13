@@ -10,7 +10,7 @@ import { RequestMetricsService } from './request-metrics.service';
 import { CacheMetricsService } from './cache-metrics.service';
 import { SystemMetricsService } from './system-metrics.service';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class PerformanceAnalyzerService extends BaseService {
   private readonly MAX_HISTORY_POINTS = 1440; // 24 hours at 1 min intervals
@@ -21,7 +21,9 @@ export class PerformanceAnalyzerService extends BaseService {
     private readonly requestMetrics: RequestMetricsService,
     private readonly cacheMetrics: CacheMetricsService,
     private readonly systemMetrics: SystemMetricsService,
-  ) {}
+  ) {
+    super('PerformanceAnalyzerService');
+  }
 
   /**
    * Record performance summary

@@ -15,7 +15,6 @@ import { Model, ModelCtor } from 'sequelize-typescript';
 import * as crypto from 'crypto';
 
 import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 export interface CacheOptions {
@@ -37,7 +36,7 @@ export interface CacheStats {
 }
 
 @Injectable()
-export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
+export class QueryCacheService extends BaseService implements OnModuleInit, OnModuleDestroy {
   // Local in-memory cache
   private localCache = new Map<string, { data: any; expires: number }>();
 

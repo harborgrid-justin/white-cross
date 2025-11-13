@@ -14,6 +14,7 @@ import { AppConfigService } from './config';
 import { LoggerService } from './shared/logging/logger.service';
 import { SentryService } from './infrastructure/monitoring/sentry.service';
 import { HipaaExceptionFilter } from '@/common/exceptions/filters';
+import { createSwaggerConfig, addGlobalSchemas } from './config/swagger.config';
 
 // Global logger for bootstrap errors
 const bootstrapLogger = new LoggerService();
@@ -337,8 +338,6 @@ async function bootstrap() {
   }
 
   // Swagger API Documentation
-  import { createSwaggerConfig, addGlobalSchemas } from './config/swagger.config';
-
   const config = createSwaggerConfig();
 
   const document = SwaggerModule.createDocument(app, config, {

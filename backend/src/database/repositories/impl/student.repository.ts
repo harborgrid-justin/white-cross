@@ -13,9 +13,9 @@ import {
   StudentAttributes,
   UpdateStudentDTO,
 } from '../interfaces/student.repository.interface';
-import type { IAuditLogger  } from "../../../backend/src/database/interfaces";
-import { sanitizeSensitiveData  } from "../../../backend/src/database/interfaces";
-import type { ICacheManager  } from "../../../backend/src/database/interfaces";
+import type { IAuditLogger  } from "../../interfaces";
+import { sanitizeSensitiveData  } from "../../interfaces";
+import type { ICacheManager  } from "../../interfaces";
 import { ExecutionContext, QueryOptions } from '../../types';
 import { Student } from '../../models/student.model';
 

@@ -31,7 +31,7 @@ const SENSITIVE_FIELDS = [
 ];
 
 @Injectable()
-export class WsTransformInterceptor implements NestInterceptor {
+export class WsTransformInterceptor extends BaseInterceptor implements NestInterceptor {
   /**
    * Intercepts and transforms WebSocket responses
    *

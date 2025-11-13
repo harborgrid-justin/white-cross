@@ -20,20 +20,10 @@ import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
 
 import { BaseService } from '../../common/base';
-import { BaseService } from '../../common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()
-export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
+export class TokenBlacklistService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private redisClient: Redis | null = null;
   private readonly BLACKLIST_PREFIX = 'token:blacklist:';
 

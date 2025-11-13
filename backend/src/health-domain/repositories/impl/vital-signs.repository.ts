@@ -14,9 +14,9 @@ import {
   UpdateVitalSignsDTO,
   VitalSignsAttributes,
 } from '../interfaces/vital-signs.repository.interface';
-import type { IAuditLogger  } from "../../../backend/src/database/interfaces";
-import { sanitizeSensitiveData  } from "../../../backend/src/database/interfaces";
-import type { ICacheManager  } from "../../../backend/src/database/interfaces";
+import type { IAuditLogger  } from "../../interfaces";
+import { sanitizeSensitiveData  } from "../../interfaces";
+import type { ICacheManager  } from "../../interfaces";
 import { VitalSigns    } from "../../database/models";
 import { ExecutionContext, QueryOptions   } from "../../database/types";
 

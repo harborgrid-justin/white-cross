@@ -7,9 +7,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RequestMetrics } from '../types/metrics.types';
 
-import { BaseService } from '../../common/base';
+import { BaseService } from '../../../common/base';
 @Injectable()
 export class RequestMetricsService extends BaseService {
+  constructor() {
+    super('RequestMetricsService');
+  }
+
   private readonly MAX_ENDPOINT_METRICS = 500;
   private requestMetrics = new Map<string, RequestMetrics>();
   private requestDurations: number[] = [];

@@ -1,6 +1,6 @@
 /**
  * Base Repository Service - Database operations with caching and optimization
- * 
+ *
  * Provides optimized database operations with intelligent caching,
  * query optimization, and transaction management for repository patterns.
  */
@@ -35,12 +35,12 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
     queriesExecuted: 0,
     cacheHits: 0,
     cacheMisses: 0,
-    averageQueryTime: 0
+    averageQueryTime: 0,
   };
-  
+
   constructor(
     @Optional() @Inject('SEQUELIZE') protected readonly sequelize?: Sequelize,
-    context?: string
+    context?: string,
   ) {
     super(context);
   }
@@ -51,14 +51,14 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
   protected async executeQuery<R>(
     operation: string,
     queryFn: () => Promise<R>,
-    cacheOptions: CacheOptions = {}
+    cacheOptions: CacheOptions = {},
   ): Promise<R> {
     const startTime = Date.now();
     const cacheKey = cacheOptions.key || `${this.model.name}:${operation}:${Date.now()}`;
-    
+
     // Check cache first
     if (cacheOptions.enabled !== false && this.cache.has(cacheKey)) {
-      const cached = this.cache.get(cacheKey)!;
+      const cached = this.cache.get(cacheKey);
       if (cached.expiry > new Date()) {
         this.metrics.cacheHits++;
         this.logDebug(`Cache hit for ${operation}`);
@@ -72,12 +72,12 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
       // Execute query
       const result = await queryFn();
       const queryTime = Date.now() - startTime;
-      
+
       // Update metrics
       this.metrics.queriesExecuted++;
       this.metrics.cacheMisses++;
-      this.metrics.averageQueryTime = 
-        (this.metrics.averageQueryTime * (this.metrics.queriesExecuted - 1) + queryTime) / 
+      this.metrics.averageQueryTime =
+        (this.metrics.averageQueryTime * (this.metrics.queriesExecuted - 1) + queryTime) /
         this.metrics.queriesExecuted;
 
       // Cache result if enabled
@@ -101,7 +101,7 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
   protected async findWithOptimization(
     options: any = {},
     cacheOptions: CacheOptions = {},
-    queryOpt: QueryOptimization = {}
+    queryOpt: QueryOptimization = {},
   ): Promise<T[]> {
     return this.executeQuery(
       'findWithOptimization',
@@ -119,7 +119,7 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
 
         return await this.model.findAll(queryOptions);
       },
-      cacheOptions
+      cacheOptions,
     );
   }
 
@@ -129,20 +129,17 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
   protected async executeBatchOperation<R>(
     operation: string,
     batchFn: (transaction: Transaction) => Promise<R>,
-    useTransaction: boolean = true
+    useTransaction: boolean = true,
   ): Promise<R> {
-    return this.executeWithLogging(
-      `batch ${operation}`,
-      async () => {
-        if (useTransaction && this.sequelize) {
-          return await this.sequelize.transaction(async (transaction) => {
-            return await batchFn(transaction);
-          });
-        } else {
-          return await batchFn(null as any);
-        }
+    return this.executeWithLogging(`batch ${operation}`, async () => {
+      if (useTransaction && this.sequelize) {
+        return await this.sequelize.transaction(async (transaction) => {
+          return await batchFn(transaction);
+        });
+      } else {
+        return await batchFn(null as any);
       }
-    );
+    });
   }
 
   /**
@@ -150,41 +147,38 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
    */
   protected async bulkUpsert(
     records: Partial<T>[],
-    options: any = {}
+    options: any = {},
   ): Promise<{ created: number; updated: number; errors: any[] }> {
-    return this.executeBatchOperation(
-      'bulkUpsert',
-      async (transaction) => {
-        const results = { created: 0, updated: 0, errors: [] as any[] };
-        
-        for (const record of records) {
-          try {
-            const [instance, created] = await this.model.upsert(record as any, {
-              ...options,
-              transaction,
-              returning: true
-            });
-            
-            if (created) {
-              results.created++;
-            } else {
-              results.updated++;
-            }
-          } catch (error: any) {
-            results.errors.push({
-              record,
-              error: error.message
-            });
+    return this.executeBatchOperation('bulkUpsert', async (transaction) => {
+      const results = { created: 0, updated: 0, errors: [] as any[] };
+
+      for (const record of records) {
+        try {
+          const [instance, created] = await this.model.upsert(record as any, {
+            ...options,
+            transaction,
+            returning: true,
+          });
+
+          if (created) {
+            results.created++;
+          } else {
+            results.updated++;
           }
+        } catch (error: any) {
+          results.errors.push({
+            record,
+            error: error.message,
+          });
         }
-        
-        this.logInfo(
-          `Bulk upsert completed: ${results.created} created, ${results.updated} updated, ${results.errors.length} errors`
-        );
-        
-        return results;
       }
-    );
+
+      this.logInfo(
+        `Bulk upsert completed: ${results.created} created, ${results.updated} updated, ${results.errors.length} errors`,
+      );
+
+      return results;
+    });
   }
 
   /**
@@ -193,22 +187,22 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
   protected async findWithComplexFilters(
     filters: Record<string, any>,
     pagination: { page: number; limit: number },
-    sorting: { field: string; direction: 'ASC' | 'DESC' }[]
+    sorting: { field: string; direction: 'ASC' | 'DESC' }[],
   ): Promise<{ rows: T[]; count: number; metadata: any }> {
     return this.executeQuery(
       'findWithComplexFilters',
       async () => {
         const whereClause = this.buildWhereClause(filters);
-        const orderClause = sorting.map(sort => [sort.field, sort.direction]);
+        const orderClause = sorting.map((sort) => [sort.field, sort.direction]);
         const { page, limit } = pagination;
         const offset = (page - 1) * limit;
 
         const { rows, count } = await this.model.findAndCountAll({
           where: whereClause,
-          order: orderClause,
+          order: orderClause as any,
           limit,
           offset,
-          distinct: true
+          distinct: true,
         });
 
         return {
@@ -220,11 +214,15 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
             totalItems: count,
             itemsPerPage: limit,
             appliedFilters: Object.keys(filters),
-            sortingFields: sorting.map(s => s.field)
-          }
+            sortingFields: sorting.map((s) => s.field),
+          },
         };
       },
-      { enabled: true, ttl: 300, key: `complex:${JSON.stringify({ filters, pagination, sorting })}` }
+      {
+        enabled: true,
+        ttl: 300,
+        key: `complex:${JSON.stringify({ filters, pagination, sorting })}`,
+      },
     );
   }
 
@@ -272,10 +270,8 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
    */
   protected clearCache(pattern?: string): void {
     if (pattern) {
-      const keysToDelete = Array.from(this.cache.keys()).filter(key => 
-        key.includes(pattern)
-      );
-      keysToDelete.forEach(key => this.cache.delete(key));
+      const keysToDelete = Array.from(this.cache.keys()).filter((key) => key.includes(pattern));
+      keysToDelete.forEach((key) => this.cache.delete(key));
       this.logDebug(`Cleared ${keysToDelete.length} cache entries matching pattern: ${pattern}`);
     } else {
       this.cache.clear();
@@ -298,7 +294,7 @@ export abstract class BaseRepositoryService<T extends Model> extends BaseService
       queriesExecuted: 0,
       cacheHits: 0,
       cacheMisses: 0,
-      averageQueryTime: 0
+      averageQueryTime: 0,
     });
   }
 }
