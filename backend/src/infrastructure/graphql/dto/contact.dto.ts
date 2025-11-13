@@ -7,7 +7,21 @@
 import { Field, ID, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { PaginationDto } from './pagination.dto';
-import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength
+} from 'class-validator';
+import {
+  BaseHealthcareInputDto,
+  BaseHealthcareUpdateInputDto,
+  BaseHealthcareFilterInputDto
+} from './base/base-healthcare.dto';
 
 /**
  * Contact Type Enum for GraphQL
@@ -117,19 +131,7 @@ export class ContactListResponseDto {
  * Contact Input for Create Mutation
  */
 @InputType()
-export class ContactInputDto {
-  @Field()
-  @IsString()
-  @MinLength(1, { message: 'First name must not be empty' })
-  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
-  firstName: string;
-
-  @Field()
-  @IsString()
-  @MinLength(1, { message: 'Last name must not be empty' })
-  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
-  lastName: string;
-
+export class ContactInputDto extends BaseHealthcareInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsEmail({}, { message: 'Invalid email format' })
@@ -206,11 +208,6 @@ export class ContactInputDto {
   @IsOptional()
   customFields?: Record<string, unknown>;
 
-  @Field({ nullable: true, defaultValue: true })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
@@ -222,21 +219,7 @@ export class ContactInputDto {
  * Contact Update Input for Update Mutation
  */
 @InputType()
-export class ContactUpdateInputDto {
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MinLength(1, { message: 'First name must not be empty' })
-  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
-  firstName?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MinLength(1, { message: 'Last name must not be empty' })
-  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
-  lastName?: string;
-
+export class ContactUpdateInputDto extends BaseHealthcareUpdateInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsEmail({}, { message: 'Invalid email format' })
@@ -316,11 +299,6 @@ export class ContactUpdateInputDto {
 
   @Field({ nullable: true })
   @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
-  @Field({ nullable: true })
-  @IsOptional()
   @IsString()
   @MaxLength(1000, { message: 'Notes must not exceed 1000 characters' })
   notes?: string;
@@ -330,21 +308,15 @@ export class ContactUpdateInputDto {
  * Contact Filter Input for Queries
  */
 @InputType()
-export class ContactFilterInputDto {
+export class ContactFilterInputDto extends BaseHealthcareFilterInputDto {
   @Field(() => ContactType, { nullable: true })
   type?: ContactType;
 
   @Field(() => [ContactType], { nullable: true })
   types?: ContactType[];
 
-  @Field({ nullable: true })
-  isActive?: boolean;
-
   @Field(() => ID, { nullable: true })
   relationTo?: string;
-
-  @Field({ nullable: true })
-  search?: string;
 }
 
 /**

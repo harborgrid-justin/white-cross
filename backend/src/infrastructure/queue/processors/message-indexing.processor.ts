@@ -27,71 +27,40 @@ export class MessageIndexingProcessor extends BaseQueueProcessor {
    */
   @Process('index-message')
   async processIndexing(job: Job<IndexingJobDto>): Promise<JobResult> {
-    const startTime = Date.now();
-    this.logger.log(`Processing ${job.data.operation} indexing for message ${job.data.messageId}`);
+    return this.executeJobWithCommonHandling(
+      job,
+      { messageId: job.data.messageId, operation: job.data.operation },
+      async () => {
+        await job.progress({
+          percentage: 30,
+          step: `${job.data.operation} index`,
+        } as JobProgress);
 
-    try {
-      await job.progress({
-        percentage: 30,
-        step: `${job.data.operation} index`,
-      } as JobProgress);
+        // TODO: Implement search indexing (Elasticsearch, Algolia, or similar)
+        switch (job.data.operation) {
+          case 'index':
+            await this.indexMessage(job.data);
+            break;
+          case 'update':
+            await this.updateMessageIndex(job.data);
+            break;
+          case 'delete':
+            await this.deleteMessageIndex(job.data.messageId);
+            break;
+        }
 
-      // TODO: Implement search indexing (Elasticsearch, Algolia, or similar)
-      switch (job.data.operation) {
-        case 'index':
-          await this.indexMessage(job.data);
-          break;
-        case 'update':
-          await this.updateMessageIndex(job.data);
-          break;
-        case 'delete':
-          await this.deleteMessageIndex(job.data.messageId);
-          break;
-      }
+        await job.progress({
+          percentage: 100,
+          step: 'Indexing completed',
+        } as JobProgress);
 
-      await job.progress({
-        percentage: 100,
-        step: 'Indexing completed',
-      } as JobProgress);
-
-      const processingTime = Date.now() - startTime;
-      this.logger.log(
-        `Indexing ${job.data.operation} completed for message ${job.data.messageId} (${processingTime}ms)`,
-      );
-
-      return {
-        success: true,
-        data: {
+        return {
           messageId: job.data.messageId,
           operation: job.data.operation,
           indexedAt: new Date(),
-        },
-        metadata: {
-          processingTime,
-          attempts: job.attemptsMade,
-          completedAt: new Date(),
-        },
-      };
-    } catch (error) {
-      const processingTime = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorStack = error instanceof Error ? error.stack : undefined;
-
-      this.logger.error(`Indexing failed: ${errorMessage}`, errorStack);
-
-      return {
-        success: false,
-        error: {
-          message: errorMessage,
-          stack: errorStack,
-        },
-        metadata: {
-          processingTime,
-          attempts: job.attemptsMade,
-          completedAt: new Date(),
-        },
-      };
-    }
+        };
+      },
+    );
   }
 
   private async indexMessage(data: IndexingJobDto): Promise<void> {

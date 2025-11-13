@@ -14,6 +14,11 @@ import { EmergencyContactDto } from './emergency-contact.dto';
 import { ChronicConditionDto } from './chronic-condition.dto';
 import { IncidentReportDto } from './incident-report.dto';
 import { AllergyDto } from './allergy.dto';
+import {
+  BaseHealthcareInputDto,
+  BaseHealthcareUpdateInputDto,
+  BaseHealthcareFilterInputDto
+} from './base/base-healthcare.dto';
 
 /**
  * Gender Enum for GraphQL
@@ -124,28 +129,12 @@ export class StudentListResponseDto {
  * Student Input for Create Mutation
  */
 @InputType()
-export class StudentInputDto {
+export class StudentInputDto extends BaseHealthcareInputDto {
   @Field()
   @IsString()
   @MinLength(1, { message: 'Student number must not be empty' })
   @MaxLength(20, { message: 'Student number must not exceed 20 characters' })
   studentNumber: string;
-
-  @Field()
-  @IsString()
-  @MinLength(1, { message: 'First name must not be empty' })
-  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
-  firstName: string;
-
-  @Field()
-  @IsString()
-  @MinLength(1, { message: 'Last name must not be empty' })
-  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
-  lastName: string;
-
-  @Field()
-  @IsDateString({}, { message: 'Invalid date format for date of birth' })
-  dateOfBirth: Date;
 
   @Field()
   @IsString()
@@ -159,21 +148,10 @@ export class StudentInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @MaxLength(500, { message: 'Photo URL must not exceed 500 characters' })
-  photo?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
   @MaxLength(50, {
     message: 'Medical record number must not exceed 50 characters',
   })
   medicalRecordNum?: string;
-
-  @Field({ nullable: true, defaultValue: true })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
 
   @Field()
   @IsDateString({}, { message: 'Invalid date format for enrollment date' })
@@ -189,32 +167,13 @@ export class StudentInputDto {
  * Student Update Input for Update Mutation
  */
 @InputType()
-export class StudentUpdateInputDto {
+export class StudentUpdateInputDto extends BaseHealthcareUpdateInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
   @MinLength(1, { message: 'Student number must not be empty' })
   @MaxLength(20, { message: 'Student number must not exceed 20 characters' })
   studentNumber?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MinLength(1, { message: 'First name must not be empty' })
-  @MaxLength(50, { message: 'First name must not exceed 50 characters' })
-  firstName?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MinLength(1, { message: 'Last name must not be empty' })
-  @MaxLength(50, { message: 'Last name must not exceed 50 characters' })
-  lastName?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsDateString({}, { message: 'Invalid date format for date of birth' })
-  dateOfBirth?: Date;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -230,21 +189,10 @@ export class StudentUpdateInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
-  @MaxLength(500, { message: 'Photo URL must not exceed 500 characters' })
-  photo?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
   @MaxLength(50, {
     message: 'Medical record number must not exceed 50 characters',
   })
   medicalRecordNum?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -261,12 +209,7 @@ export class StudentUpdateInputDto {
  * Student Filter Input for Queries
  */
 @InputType()
-export class StudentFilterInputDto {
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
+export class StudentFilterInputDto extends BaseHealthcareFilterInputDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
@@ -276,9 +219,4 @@ export class StudentFilterInputDto {
   @IsOptional()
   @IsString()
   nurseId?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  search?: string;
 }

@@ -18,7 +18,9 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { ModuleRef } from '@nestjs/core';
 import { WebSocketService } from '../websocket.service';
+import { BaseWebSocketEventListener } from './base-websocket-event.listener';
 import {
   AppointmentCancelledEvent,
   AppointmentCompletedEvent,
@@ -67,10 +69,13 @@ interface AppointmentWebSocketPayload {
  * - Audit logging of all broadcasts
  */
 @Injectable()
-export class AppointmentWebSocketListener {
-  private readonly logger = new Logger(AppointmentWebSocketListener.name);
-
-  constructor(private readonly websocketService: WebSocketService) {}
+export class AppointmentWebSocketListener extends BaseWebSocketEventListener {
+  constructor(
+    moduleRef: ModuleRef,
+    private readonly websocketService: WebSocketService,
+  ) {
+    super(moduleRef, AppointmentWebSocketListener.name);
+  }
 
   /**
    * Handle Appointment Created Event
@@ -86,12 +91,8 @@ export class AppointmentWebSocketListener {
   async handleAppointmentCreated(
     event: AppointmentCreatedEvent,
   ): Promise<void> {
-    this.logger.log(
-      `Broadcasting appointment created: ${event.appointment.id}`,
-    );
-
-    try {
-      const payload: AppointmentWebSocketPayload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointment.id,
         studentId: event.appointment.studentId,
         nurseId: event.appointment.nurseId,
@@ -100,43 +101,22 @@ export class AppointmentWebSocketListener {
         duration: event.appointment.duration,
         status: event.appointment.status,
         reason: event.appointment.reason,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:created',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:created',
+    );
 
-      // Broadcast to nurse's room
-      await this.websocketService.broadcastToRoom(
-        `user:${event.appointment.nurseId}`,
-        'appointment:created',
-        payload,
-      );
+    const rooms = [
+      `user:${event.appointment.nurseId}`,
+      `student:${event.appointment.studentId}`,
+    ];
 
-      // Broadcast to student's room
-      await this.websocketService.broadcastToRoom(
-        `student:${event.appointment.studentId}`,
-        'appointment:created',
-        payload,
-      );
-
-      // Broadcast to organization room if multi-tenant
-      if (event.context.organizationId) {
-        await this.websocketService.broadcastToRoom(
-          `organization:${event.context.organizationId}`,
-          'appointment:created',
-          payload,
-        );
-      }
-
-      this.logger.log(
-        `Successfully broadcasted appointment created: ${event.appointment.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment created event: ${error.message}`,
-        error.stack,
-      );
-      // Don't throw - event listeners should not fail the main operation
+    // Add organization room if multi-tenant
+    if (event.context.organizationId) {
+      rooms.push(`organization:${event.context.organizationId}`);
     }
+
+    await this.broadcastEvent('appointment:created', event.appointment.id, payload, rooms);
   }
 
   /**
@@ -159,12 +139,8 @@ export class AppointmentWebSocketListener {
       return;
     }
 
-    this.logger.log(
-      `Broadcasting appointment updated: ${event.appointment.id}`,
-    );
-
-    try {
-      const payload: AppointmentWebSocketPayload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointment.id,
         studentId: event.appointment.studentId,
         nurseId: event.appointment.nurseId,
@@ -173,31 +149,17 @@ export class AppointmentWebSocketListener {
         duration: event.appointment.duration,
         status: event.appointment.status,
         reason: event.appointment.reason,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:updated',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:updated',
+    );
 
-      await this.websocketService.broadcastToRoom(
-        `user:${event.appointment.nurseId}`,
-        'appointment:updated',
-        payload,
-      );
+    const rooms = [
+      `user:${event.appointment.nurseId}`,
+      `student:${event.appointment.studentId}`,
+    ];
 
-      await this.websocketService.broadcastToRoom(
-        `student:${event.appointment.studentId}`,
-        'appointment:updated',
-        payload,
-      );
-
-      this.logger.log(
-        `Successfully broadcasted appointment updated: ${event.appointment.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment updated event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('appointment:updated', event.appointment.id, payload, rooms);
   }
 
   /**
@@ -211,42 +173,24 @@ export class AppointmentWebSocketListener {
   async handleAppointmentCancelled(
     event: AppointmentCancelledEvent,
   ): Promise<void> {
-    this.logger.log(
-      `Broadcasting appointment cancelled: ${event.appointmentId}`,
-    );
-
-    try {
-      const payload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointmentId,
         studentId: event.appointment.studentId,
         nurseId: event.appointment.nurseId,
         scheduledAt: event.appointment.scheduledAt.toISOString(),
         reason: event.reason,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:cancelled',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:cancelled',
+    );
 
-      await this.websocketService.broadcastToRoom(
-        `user:${event.appointment.nurseId}`,
-        'appointment:cancelled',
-        payload,
-      );
+    const rooms = [
+      `user:${event.appointment.nurseId}`,
+      `student:${event.appointment.studentId}`,
+    ];
 
-      await this.websocketService.broadcastToRoom(
-        `student:${event.appointment.studentId}`,
-        'appointment:cancelled',
-        payload,
-      );
-
-      this.logger.log(
-        `Successfully broadcasted appointment cancelled: ${event.appointmentId}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment cancelled event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('appointment:cancelled', event.appointmentId, payload, rooms);
   }
 
   /**
@@ -260,43 +204,25 @@ export class AppointmentWebSocketListener {
   async handleAppointmentRescheduled(
     event: AppointmentRescheduledEvent,
   ): Promise<void> {
-    this.logger.log(
-      `Broadcasting appointment rescheduled: ${event.appointment.id}`,
-    );
-
-    try {
-      const payload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointment.id,
         studentId: event.appointment.studentId,
         nurseId: event.appointment.nurseId,
         oldScheduledAt: event.oldScheduledAt.toISOString(),
         newScheduledAt: event.newScheduledAt.toISOString(),
         duration: event.appointment.duration,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:rescheduled',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:rescheduled',
+    );
 
-      await this.websocketService.broadcastToRoom(
-        `user:${event.appointment.nurseId}`,
-        'appointment:rescheduled',
-        payload,
-      );
+    const rooms = [
+      `user:${event.appointment.nurseId}`,
+      `student:${event.appointment.studentId}`,
+    ];
 
-      await this.websocketService.broadcastToRoom(
-        `student:${event.appointment.studentId}`,
-        'appointment:rescheduled',
-        payload,
-      );
-
-      this.logger.log(
-        `Successfully broadcasted appointment rescheduled: ${event.appointment.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment rescheduled event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('appointment:rescheduled', event.appointment.id, payload, rooms);
   }
 
   /**
@@ -310,12 +236,8 @@ export class AppointmentWebSocketListener {
   async handleAppointmentStarted(
     event: AppointmentStartedEvent,
   ): Promise<void> {
-    this.logger.log(
-      `Broadcasting appointment started: ${event.appointment.id}`,
-    );
-
-    try {
-      const payload: AppointmentWebSocketPayload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointment.id,
         studentId: event.appointment.studentId,
         nurseId: event.appointment.nurseId,
@@ -323,31 +245,17 @@ export class AppointmentWebSocketListener {
         scheduledAt: event.appointment.scheduledAt.toISOString(),
         duration: event.appointment.duration,
         status: 'IN_PROGRESS',
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:started',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:started',
+    );
 
-      await this.websocketService.broadcastToRoom(
-        `user:${event.appointment.nurseId}`,
-        'appointment:started',
-        payload,
-      );
+    const rooms = [
+      `user:${event.appointment.nurseId}`,
+      `student:${event.appointment.studentId}`,
+    ];
 
-      await this.websocketService.broadcastToRoom(
-        `student:${event.appointment.studentId}`,
-        'appointment:started',
-        payload,
-      );
-
-      this.logger.log(
-        `Successfully broadcasted appointment started: ${event.appointment.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment started event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('appointment:started', event.appointment.id, payload, rooms);
   }
 
   /**
@@ -361,43 +269,25 @@ export class AppointmentWebSocketListener {
   async handleAppointmentCompleted(
     event: AppointmentCompletedEvent,
   ): Promise<void> {
-    this.logger.log(
-      `Broadcasting appointment completed: ${event.appointment.id}`,
-    );
-
-    try {
-      const payload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointment.id,
         studentId: event.appointment.studentId,
         nurseId: event.appointment.nurseId,
         scheduledAt: event.appointment.scheduledAt.toISOString(),
         completedAt: event.occurredAt.toISOString(),
         followUpRequired: event.followUpRequired,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:completed',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:completed',
+    );
 
-      await this.websocketService.broadcastToRoom(
-        `user:${event.appointment.nurseId}`,
-        'appointment:completed',
-        payload,
-      );
+    const rooms = [
+      `user:${event.appointment.nurseId}`,
+      `student:${event.appointment.studentId}`,
+    ];
 
-      await this.websocketService.broadcastToRoom(
-        `student:${event.appointment.studentId}`,
-        'appointment:completed',
-        payload,
-      );
-
-      this.logger.log(
-        `Successfully broadcasted appointment completed: ${event.appointment.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment completed event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('appointment:completed', event.appointment.id, payload, rooms);
   }
 
   /**
@@ -409,36 +299,20 @@ export class AppointmentWebSocketListener {
    */
   @OnEvent('appointment.no-show')
   async handleAppointmentNoShow(event: AppointmentNoShowEvent): Promise<void> {
-    this.logger.log(
-      `Broadcasting appointment no-show: ${event.appointment.id}`,
-    );
-
-    try {
-      const payload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointment.id,
         studentId: event.appointment.studentId,
         nurseId: event.appointment.nurseId,
         scheduledAt: event.appointment.scheduledAt.toISOString(),
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:no-show',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:no-show',
+    );
 
-      // Primarily notify nurse
-      await this.websocketService.broadcastToRoom(
-        `user:${event.appointment.nurseId}`,
-        'appointment:no-show',
-        payload,
-      );
+    const rooms = [`user:${event.appointment.nurseId}`];
 
-      this.logger.log(
-        `Successfully broadcasted appointment no-show: ${event.appointment.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment no-show event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('appointment:no-show', event.appointment.id, payload, rooms);
   }
 
   /**
@@ -452,37 +326,21 @@ export class AppointmentWebSocketListener {
   async handleAppointmentReminder(
     event: AppointmentReminderEvent,
   ): Promise<void> {
-    this.logger.log(
-      `Broadcasting appointment reminder: ${event.appointment.id}`,
-    );
-
-    try {
-      const payload = {
+    const payload = this.createPayload(
+      {
         appointmentId: event.appointment.id,
         studentId: event.appointment.studentId,
         scheduledAt: event.appointment.scheduledAt.toISOString(),
         hoursBeforeAppointment: event.hoursBeforeAppointment,
         message: event.message,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'appointment:reminder',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'appointment:reminder',
+    );
 
-      // Send push notification to student
-      await this.websocketService.broadcastToRoom(
-        `student:${event.appointment.studentId}`,
-        'appointment:reminder',
-        payload,
-      );
+    const rooms = [`student:${event.appointment.studentId}`];
 
-      this.logger.log(
-        `Successfully broadcasted appointment reminder: ${event.appointment.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast appointment reminder event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('appointment:reminder', event.appointment.id, payload, rooms);
   }
 
   /**
@@ -496,41 +354,20 @@ export class AppointmentWebSocketListener {
   async handleWaitlistEntryAdded(
     event: WaitlistEntryAddedEvent,
   ): Promise<void> {
-    this.logger.log(`Broadcasting waitlist entry added: ${event.studentId}`);
-
-    try {
-      const payload = {
+    const payload = this.createPayload(
+      {
         waitlistEntryId: event.waitlistEntryId,
         studentId: event.studentId,
         preferredDate: event.preferredDate?.toISOString(),
         priority: event.priority,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'waitlist:added',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'waitlist:added',
+    );
 
-      // Broadcast to global waitlist room for staff monitoring
-      await this.websocketService.broadcastToRoom(
-        'waitlist',
-        'waitlist:added',
-        payload,
-      );
+    const rooms = ['waitlist', `student:${event.studentId}`];
 
-      // Notify student
-      await this.websocketService.broadcastToRoom(
-        `student:${event.studentId}`,
-        'waitlist:added',
-        payload,
-      );
-
-      this.logger.log(
-        `Successfully broadcasted waitlist entry added: ${event.waitlistEntryId}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast waitlist entry added event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent('waitlist:added', event.waitlistEntryId, payload, rooms);
   }
 
   /**
@@ -544,35 +381,24 @@ export class AppointmentWebSocketListener {
   async handleWaitlistSlotAvailable(
     event: WaitlistSlotAvailableEvent,
   ): Promise<void> {
-    this.logger.log(
-      `Broadcasting waitlist slot available at ${event.availableSlotTime}`,
-    );
-
-    try {
-      const payload = {
+    const payload = this.createPayload(
+      {
         nurseId: event.nurseId,
         availableSlotTime: event.availableSlotTime.toISOString(),
         duration: event.duration,
         notifiedWaitlistEntryIds: event.notifiedWaitlistEntryIds,
-        timestamp: event.occurredAt.toISOString(),
-        eventType: 'waitlist:slot-available',
-      };
+      },
+      event.occurredAt.toISOString(),
+      'waitlist:slot-available',
+    );
 
-      // Broadcast to waitlist room
-      await this.websocketService.broadcastToRoom(
-        'waitlist',
-        'waitlist:slot-available',
-        payload,
-      );
+    const rooms = ['waitlist'];
 
-      this.logger.log(
-        `Successfully broadcasted waitlist slot available, notified ${event.notifiedWaitlistEntryIds.length} entries`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Failed to broadcast waitlist slot available event: ${error.message}`,
-        error.stack,
-      );
-    }
+    await this.broadcastEvent(
+      'waitlist:slot-available',
+      event.availableSlotTime.toISOString(),
+      payload,
+      rooms,
+    );
   }
 }

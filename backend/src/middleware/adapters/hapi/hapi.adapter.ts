@@ -40,50 +40,33 @@ import {
   IResponse,
   MiddlewareContext,
 } from '../../utils/types/middleware.types';
+import {
+  BaseHttpAdapter,
+  BaseRequestWrapper,
+  BaseResponseWrapper,
+  BaseNextWrapper,
+} from '../base/base-http.adapter';
+import { AdapterUtilities } from '../shared/adapter-utilities';
 
 /**
  * Hapi-specific request wrapper implementing IRequest interface
  */
-export class HapiRequestWrapper implements IRequest {
-  public readonly method: string;
-  public readonly url: string;
-  public readonly path: string;
-  public readonly headers: Record<string, string | string[]>;
-  public readonly query: Record<string, any>;
-  public readonly params: Record<string, any>;
-  public readonly body: any;
-  public readonly ip: string;
-  public readonly userAgent?: string;
-  public readonly correlationId?: string;
-  public readonly sessionId?: string;
-  public readonly user?: any;
-  public readonly metadata: Record<string, any> = {};
-
+export class HapiRequestWrapper extends BaseRequestWrapper {
   constructor(private hapiRequest: Request) {
-    this.method = hapiRequest.method.toUpperCase();
-    this.url = hapiRequest.url.href;
-    this.path = hapiRequest.url.pathname;
-    this.headers = hapiRequest.headers as Record<string, string | string[]>;
-    this.query = hapiRequest.query;
-    this.params = hapiRequest.params;
-    this.body = hapiRequest.payload;
-    this.ip = hapiRequest.info.remoteAddress;
-    this.userAgent = hapiRequest.headers['user-agent'] as string;
-    this.correlationId = hapiRequest.headers['x-correlation-id'] as string;
-    this.sessionId = (hapiRequest as any).yar?.id; // Assuming yar session plugin
-    this.user = (hapiRequest as any).auth?.credentials;
-  }
-
-  getHeader(name: string): string | string[] | undefined {
-    return this.headers[name.toLowerCase()];
-  }
-
-  setMetadata(key: string, value: any): void {
-    this.metadata[key] = value;
-  }
-
-  getMetadata<T = any>(key: string): T | undefined {
-    return this.metadata[key];
+    super(
+      hapiRequest.method.toUpperCase(),
+      hapiRequest.url.href,
+      hapiRequest.url.pathname,
+      hapiRequest.headers as Record<string, string | string[]>,
+      hapiRequest.query,
+      hapiRequest.params,
+      hapiRequest.payload,
+      hapiRequest.info.remoteAddress,
+      hapiRequest.headers['user-agent'] as string,
+      hapiRequest.headers['x-correlation-id'] as string,
+      (hapiRequest as any).yar?.id,
+      (hapiRequest as any).auth?.credentials,
+    );
   }
 
   getRawRequest(): Request {
@@ -94,21 +77,20 @@ export class HapiRequestWrapper implements IRequest {
 /**
  * Hapi-specific response wrapper implementing IResponse interface
  */
-export class HapiResponseWrapper implements IResponse {
-  public statusCode: number = 200;
-  public headers: Record<string, string | string[]> = {};
-  private _headersSent: boolean = false;
+export class HapiResponseWrapper extends BaseResponseWrapper {
   private _responseData: any = null;
 
-  constructor(private hapiToolkit: ResponseToolkit) {}
+  constructor(private hapiToolkit: ResponseToolkit) {
+    super(200);
+  }
 
   setStatus(code: number): this {
-    this.statusCode = code;
+    super.setStatus(code);
     return this;
   }
 
   setHeader(name: string, value: string | string[]): this {
-    this.headers[name] = value;
+    super.setHeader(name, value);
     return this;
   }
 
@@ -117,7 +99,7 @@ export class HapiResponseWrapper implements IResponse {
   }
 
   removeHeader(name: string): this {
-    delete this.headers[name];
+    super.removeHeader(name);
     return this;
   }
 
@@ -169,10 +151,6 @@ export class HapiResponseWrapper implements IResponse {
     }
   }
 
-  get headersSent(): boolean {
-    return this._headersSent;
-  }
-
   getRawResponse(): ResponseToolkit {
     return this.hapiToolkit;
   }
@@ -185,8 +163,10 @@ export class HapiResponseWrapper implements IResponse {
 /**
  * Hapi-specific next function wrapper
  */
-export class HapiNextWrapper implements INextFunction {
-  constructor(private continueFunc: () => any) {}
+export class HapiNextWrapper extends BaseNextWrapper {
+  constructor(private continueFunc: () => any) {
+    super();
+  }
 
   call(error?: Error): void {
     if (error) {
@@ -228,7 +208,7 @@ export class HapiNextWrapper implements INextFunction {
  * await server.register(plugin);
  */
 @Injectable()
-export class HapiMiddlewareAdapter {
+export class HapiMiddlewareAdapter extends BaseHttpAdapter {
   /**
    * Adapts framework-agnostic middleware to Hapi lifecycle extension
    *
@@ -426,27 +406,7 @@ export class HapiMiddlewareAdapter {
    * Sanitizes response data by removing sensitive fields
    */
   static sanitizeResponse(data: any): any {
-    if (!data) return data;
-
-    // Remove common sensitive fields
-    const sensitiveFields = [
-      'ssn',
-      'socialSecurityNumber',
-      'password',
-      'token',
-    ];
-
-    if (typeof data === 'object') {
-      const sanitized = { ...data };
-      sensitiveFields.forEach((field) => {
-        if (sanitized[field]) {
-          delete sanitized[field];
-        }
-      });
-      return sanitized;
-    }
-
-    return data;
+    return BaseHttpAdapter.sanitizeResponse(data);
   }
 
   /**
@@ -509,32 +469,42 @@ export class HapiMiddlewareAdapter {
  * Injectable service for Hapi utility functions
  */
 @Injectable()
-export class HapiMiddlewareUtils {
+export class HapiMiddlewareUtils extends BaseHttpAdapter {
+  /**
+   * Adapts framework-agnostic middleware to Hapi extension
+   * (Required implementation for BaseHttpAdapter)
+   */
+  adapt(middleware: IMiddleware): any {
+    const adapter = new HapiMiddlewareAdapter();
+    return adapter.adaptAsExtension(middleware);
+  }
+
+  /**
+   * Creates healthcare-specific request enhancement plugin
+   * (Required implementation for BaseHttpAdapter)
+   */
+  createHealthcareEnhancer(): Plugin<any> {
+    const adapter = new HapiMiddlewareAdapter();
+    return adapter.createHealthcareEnhancerPlugin();
+  }
+
   /**
    * Extracts correlation ID from Hapi request
    */
   getCorrelationId(request: Request): string {
-    return (
-      (request.headers['x-correlation-id'] as string) ||
-      (request.headers['x-request-id'] as string) ||
-      `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    );
+    return this.extractCorrelationId(request.headers as Record<string, string | string[]>);
   }
 
   /**
    * Sets HIPAA-compliant security headers for Hapi responses
    */
   setSecurityHeaders(h: ResponseToolkit, response: any): any {
-    return response
-      .header('X-Content-Type-Options', 'nosniff')
-      .header('X-Frame-Options', 'DENY')
-      .header('X-XSS-Protection', '1; mode=block')
-      .header(
-        'Strict-Transport-Security',
-        'max-age=31536000; includeSubDomains',
-      )
-      .header('Referrer-Policy', 'strict-origin-when-cross-origin')
-      .header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    const headers = this.getSecurityHeaders();
+    let result = response;
+    Object.entries(headers).forEach(([name, value]) => {
+      result = result.header(name, value);
+    });
+    return result;
   }
 
   /**
@@ -542,29 +512,11 @@ export class HapiMiddlewareUtils {
    */
   getUserContext(request: Request): any {
     const credentials = request.auth?.credentials as any;
-    return {
-      id: credentials?.userId || credentials?.id,
-      role: credentials?.role,
-      permissions: credentials?.permissions || [],
-      facilityId: credentials?.facilityId || request.headers['x-facility-id'],
-      sessionId: (request as any).yar?.id,
-    };
-  }
-
-  /**
-   * Creates error response with HIPAA compliance
-   */
-  createErrorResponse(
-    h: ResponseToolkit,
-    error: Error,
-    statusCode: number = 500,
-  ): any {
-    const sanitizedError =
-      process.env.NODE_ENV === 'development'
-        ? { message: error.message, stack: error.stack }
-        : { message: 'Internal Server Error' };
-
-    return h.response(sanitizedError).code(statusCode).type('application/json');
+    return this.extractUserContext(
+      credentials,
+      request.headers as Record<string, string | string[]>,
+      (request as any).yar?.id,
+    );
   }
 
   /**

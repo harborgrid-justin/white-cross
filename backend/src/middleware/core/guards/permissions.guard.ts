@@ -8,20 +8,18 @@
  * @compliance HIPAA - PHI access permissions trigger audit logging
  */
 
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger, Optional } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import {
-  Permission,
-  type RbacConfig,
-  type UserProfile,
-} from '../types/rbac.types';
-import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../decorators/permissions.decorator';
+import { Permission, type RbacConfig } from '../types/rbac.types';
+import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { RbacPermissionService } from '../services/rbac-permission.service';
+import { BaseAuthorizationGuard } from './base-authorization.guard';
 
 /**
  * Permissions Guard - Fine-grained permission-based authorization
  *
  * @class PermissionsGuard
+ * @extends BaseAuthorizationGuard
  * @implements {CanActivate}
  *
  * @description Enforces permission-based access control on routes decorated with @RequirePermissions().
@@ -38,21 +36,13 @@ import { RbacPermissionService } from '../services/rbac-permission.service';
  * app.useGlobalGuards(new PermissionsGuard(reflector, config));
  */
 @Injectable()
-export class PermissionsGuard implements CanActivate {
-  private readonly logger = new Logger(PermissionsGuard.name);
-  private readonly config: Required<RbacConfig>;
-
+export class PermissionsGuard extends BaseAuthorizationGuard {
   constructor(
-    private readonly reflector: Reflector,
-    private readonly rbacPermissionService: RbacPermissionService,
+    reflector: Reflector,
+    rbacPermissionService: RbacPermissionService,
     @Optional() config?: RbacConfig,
   ) {
-    this.config = {
-      enableHierarchy: true,
-      enableAuditLogging: true,
-      customPermissions: {},
-      ...config,
-    };
+    super(reflector, rbacPermissionService, config);
   }
 
   /**
@@ -63,69 +53,14 @@ export class PermissionsGuard implements CanActivate {
    * @throws {ForbiddenException} When user lacks required permissions
    */
   canActivate(context: ExecutionContext): boolean {
-    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredPermissions = this.getRequiredPermissions(context);
 
     // No permissions required - allow access
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
     }
 
-    const permissionsMode =
-      this.reflector.getAllAndOverride<PermissionsMode>(PERMISSIONS_MODE_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]) || 'all';
-
-    const request = context.switchToHttp().getRequest();
-    const user: UserProfile = request.user;
-
-    if (!user) {
-      throw new ForbiddenException('User not authenticated');
-    }
-
-    // Check permissions based on mode
-    const hasPermission =
-      permissionsMode === 'all'
-        ? this.rbacPermissionService.hasAllPermissions(user, requiredPermissions, this.config)
-        : this.rbacPermissionService.hasAnyPermission(user, requiredPermissions, this.config);
-
-    if (!hasPermission) {
-      const missingPermissions = this.rbacPermissionService.getMissingPermissions(
-        user,
-        requiredPermissions,
-        this.config,
-      );
-
-      if (this.config.enableAuditLogging) {
-        this.rbacPermissionService.logAuthorizationAttempt(
-          'permission',
-          false,
-          user,
-          requiredPermissions,
-          missingPermissions,
-          permissionsMode,
-        );
-      }
-
-      throw new ForbiddenException(
-        `Insufficient permissions. Required (${permissionsMode}): ${requiredPermissions.join(', ')}`,
-      );
-    }
-
-    if (this.config.enableAuditLogging) {
-      this.rbacPermissionService.logAuthorizationAttempt(
-        'permission',
-        true,
-        user,
-        requiredPermissions,
-        [],
-        permissionsMode,
-      );
-    }
-
-    return true;
+    const user = this.getUserFromContext(context);
+    return this.checkPermissions(user, requiredPermissions, context, 'permission');
   }
 }

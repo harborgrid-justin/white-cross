@@ -37,58 +37,38 @@ import {
   HealthcareRequest,
   HealthcareResponse,
   IMiddleware,
-  INextFunction,
   IRequest,
   IResponse,
   MiddlewareContext,
 } from '../../utils/types/middleware.types';
+import {
+  BaseHttpAdapter,
+  BaseRequestWrapper,
+  BaseResponseWrapper,
+  BaseNextWrapper,
+  HealthcareContext,
+} from '../base/base-http.adapter';
+import { AdapterUtilities } from '../shared/adapter-utilities';
 
 /**
  * Express-specific request wrapper implementing IRequest interface
  */
-export class ExpressRequestWrapper implements IRequest {
-  public readonly method: string;
-  public readonly url: string;
-  public readonly path: string;
-  public readonly headers: Record<string, string | string[]>;
-  public readonly query: Record<string, any>;
-  public readonly params: Record<string, any>;
-  public readonly body: any;
-  public readonly ip: string;
-  public readonly userAgent?: string;
-  public readonly correlationId?: string;
-  public readonly sessionId?: string;
-  public readonly user?: any;
-  public readonly metadata: Record<string, any> = {};
-
+export class ExpressRequestWrapper extends BaseRequestWrapper {
   constructor(private expressRequest: Request) {
-    this.method = expressRequest.method;
-    this.url = expressRequest.url;
-    this.path = expressRequest.path;
-    this.headers = expressRequest.headers as Record<string, string | string[]>;
-    this.query = expressRequest.query;
-    this.params = expressRequest.params;
-    this.body = expressRequest.body;
-    this.ip =
-      expressRequest.ip ||
-      expressRequest.connection?.remoteAddress ||
-      'unknown';
-    this.userAgent = expressRequest.get('User-Agent');
-    this.correlationId = expressRequest.get('X-Correlation-ID');
-    this.sessionId = (expressRequest as any).sessionID;
-    this.user = expressRequest.user;
-  }
-
-  getHeader(name: string): string | string[] | undefined {
-    return this.headers[name.toLowerCase()];
-  }
-
-  setMetadata(key: string, value: any): void {
-    this.metadata[key] = value;
-  }
-
-  getMetadata<T = any>(key: string): T | undefined {
-    return this.metadata[key];
+    super(
+      expressRequest.method,
+      expressRequest.url,
+      expressRequest.path,
+      expressRequest.headers as Record<string, string | string[]>,
+      expressRequest.query,
+      expressRequest.params,
+      expressRequest.body,
+      expressRequest.ip || expressRequest.connection?.remoteAddress || 'unknown',
+      expressRequest.get('User-Agent'),
+      expressRequest.get('X-Correlation-ID'),
+      (expressRequest as any).sessionID,
+      expressRequest.user,
+    );
   }
 
   getRawRequest(): Request {
@@ -99,36 +79,29 @@ export class ExpressRequestWrapper implements IRequest {
 /**
  * Express-specific response wrapper implementing IResponse interface
  */
-export class ExpressResponseWrapper implements IResponse {
-  public statusCode: number;
-  public headers: Record<string, string | string[]> = {};
-  private _headersSent: boolean = false;
-
+export class ExpressResponseWrapper extends BaseResponseWrapper {
   constructor(private expressResponse: Response) {
-    this.statusCode = expressResponse.statusCode;
+    super(expressResponse.statusCode);
   }
 
   setStatus(code: number): this {
-    this.statusCode = code;
+    super.setStatus(code);
     this.expressResponse.status(code);
     return this;
   }
 
   setHeader(name: string, value: string | string[]): this {
-    this.headers[name] = value;
+    super.setHeader(name, value);
     this.expressResponse.setHeader(name, value);
     return this;
   }
 
   getHeader(name: string): string | string[] | undefined {
-    return this.expressResponse.getHeader(name) as
-      | string
-      | string[]
-      | undefined;
+    return this.expressResponse.getHeader(name) as string | string[] | undefined;
   }
 
   removeHeader(name: string): this {
-    delete this.headers[name];
+    super.removeHeader(name);
     this.expressResponse.removeHeader(name);
     return this;
   }
@@ -175,8 +148,10 @@ export class ExpressResponseWrapper implements IResponse {
 /**
  * Express-specific next function wrapper
  */
-export class ExpressNextWrapper implements INextFunction {
-  constructor(private expressNext: NextFunction) {}
+export class ExpressNextWrapper extends BaseNextWrapper {
+  constructor(private expressNext: NextFunction) {
+    super();
+  }
 
   call(error?: Error): void {
     this.expressNext(error);
@@ -222,7 +197,7 @@ export class ExpressNextWrapper implements INextFunction {
  * app.use(errorHandler);
  */
 @Injectable()
-export class ExpressMiddlewareAdapter {
+export class ExpressMiddlewareAdapter extends BaseHttpAdapter {
   /**
    * Adapts framework-agnostic middleware to Express RequestHandler
    *
@@ -378,27 +353,7 @@ export class ExpressMiddlewareAdapter {
       };
 
       healthcareRes.sanitizeResponse = function (data: any): any {
-        if (!data) return data;
-
-        // Remove common sensitive fields
-        const sensitiveFields = [
-          'ssn',
-          'socialSecurityNumber',
-          'password',
-          'token',
-        ];
-
-        if (typeof data === 'object') {
-          const sanitized = { ...data };
-          sensitiveFields.forEach((field) => {
-            if (sanitized[field]) {
-              delete sanitized[field];
-            }
-          });
-          return sanitized;
-        }
-
-        return data;
+        return ExpressMiddlewareAdapter.sanitizeResponse(data);
       };
 
       next();
@@ -407,38 +362,56 @@ export class ExpressMiddlewareAdapter {
 }
 
 /**
+ * Static utility methods for Express middleware adapter
+ */
+export namespace ExpressMiddlewareAdapter {
+  /**
+   * Sanitizes response data by removing sensitive fields
+   */
+  export function sanitizeResponse(data: any): any {
+    return BaseHttpAdapter.sanitizeResponse(data);
+  }
+}
+
+/**
  * Express-specific middleware utilities
  * Injectable service for Express utility functions
  */
 @Injectable()
-export class ExpressMiddlewareUtils {
+export class ExpressMiddlewareUtils extends BaseHttpAdapter {
+  /**
+   * Adapts framework-agnostic middleware to Express RequestHandler
+   * (Required implementation for BaseHttpAdapter)
+   */
+  adapt(middleware: IMiddleware): RequestHandler {
+    const adapter = new ExpressMiddlewareAdapter();
+    return adapter.adapt(middleware);
+  }
+
+  /**
+   * Creates healthcare-specific request enhancement middleware
+   * (Required implementation for BaseHttpAdapter)
+   */
+  createHealthcareEnhancer(): RequestHandler {
+    const adapter = new ExpressMiddlewareAdapter();
+    return adapter.createHealthcareEnhancer();
+  }
+
   /**
    * Extracts correlation ID from Express request
    */
   getCorrelationId(req: Request): string {
-    return (
-      req.get('X-Correlation-ID') ||
-      req.get('X-Request-ID') ||
-      `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    );
+    return this.extractCorrelationId(req.headers as Record<string, string | string[]>);
   }
 
   /**
    * Sets HIPAA-compliant security headers for Express responses
    */
   setSecurityHeaders(res: Response): void {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains',
-    );
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader(
-      'Permissions-Policy',
-      'geolocation=(), microphone=(), camera=()',
-    );
+    const headers = this.getSecurityHeaders();
+    Object.entries(headers).forEach(([name, value]) => {
+      res.setHeader(name, value);
+    });
   }
 
   /**
@@ -446,12 +419,10 @@ export class ExpressMiddlewareUtils {
    */
   getUserContext(req: Request): any {
     const user = req.user as any;
-    return {
-      id: user?.userId || user?.id,
-      role: user?.role,
-      permissions: user?.permissions || [],
-      facilityId: user?.facilityId || req.get('X-Facility-ID'),
-      sessionId: (req as any).sessionID,
-    };
+    return this.extractUserContext(
+      user,
+      req.headers as Record<string, string | string[]>,
+      (req as any).sessionID,
+    );
   }
 }

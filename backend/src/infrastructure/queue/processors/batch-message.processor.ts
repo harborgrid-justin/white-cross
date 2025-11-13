@@ -27,75 +27,47 @@ export class BatchMessageProcessor extends BaseQueueProcessor {
    */
   @Process('batch-send')
   async processBatchMessage(job: Job<BatchMessageJobDto>): Promise<JobResult> {
-    const startTime = Date.now();
     const totalRecipients = job.data.recipientIds.length;
-    this.logger.log(`Processing batch message job ${job.id} for ${totalRecipients} recipients`);
 
-    try {
-      const chunkSize = job.data.chunkSize || 10;
-      const chunkDelay = job.data.chunkDelay || 100;
-      let processedCount = 0;
+    return this.executeJobWithCommonHandling(
+      job,
+      { messageId: job.data.batchId, operation: 'batch-send' },
+      async () => {
+        const chunkSize = job.data.chunkSize || 10;
+        const chunkDelay = job.data.chunkDelay || 100;
+        let processedCount = 0;
 
-      // Process recipients in chunks
-      for (let i = 0; i < totalRecipients; i += chunkSize) {
-        const chunk = job.data.recipientIds.slice(i, i + chunkSize);
+        // Process recipients in chunks
+        for (let i = 0; i < totalRecipients; i += chunkSize) {
+          const chunk = job.data.recipientIds.slice(i, i + chunkSize);
 
-        // TODO: Send messages to chunk of recipients
-        await this.sendToRecipients(chunk, job.data);
+          // TODO: Send messages to chunk of recipients
+          await this.sendToRecipients(chunk, job.data);
 
-        processedCount += chunk.length;
-        const percentage = Math.floor((processedCount / totalRecipients) * 100);
+          processedCount += chunk.length;
+          const percentage = Math.floor((processedCount / totalRecipients) * 100);
 
-        await job.progress({
-          percentage,
-          step: 'Sending messages',
-          currentStep: processedCount,
-          totalSteps: totalRecipients,
-        } as JobProgress);
+          await job.progress({
+            percentage,
+            step: 'Sending messages',
+            currentStep: processedCount,
+            totalSteps: totalRecipients,
+          } as JobProgress);
 
-        // Delay between chunks to avoid overwhelming the system
-        if (i + chunkSize < totalRecipients) {
-          await this.delay(chunkDelay);
+          // Delay between chunks to avoid overwhelming the system
+          if (i + chunkSize < totalRecipients) {
+            await this.delay(chunkDelay);
+          }
         }
-      }
 
-      const processingTime = Date.now() - startTime;
-      this.logger.log(`Batch message sent to ${totalRecipients} recipients (${processingTime}ms)`);
-
-      return {
-        success: true,
-        data: {
+        return {
           batchId: job.data.batchId,
           recipientCount: totalRecipients,
           processedCount,
           sentAt: new Date(),
-        },
-        metadata: {
-          processingTime,
-          attempts: job.attemptsMade,
-          completedAt: new Date(),
-        },
-      };
-    } catch (error) {
-      const processingTime = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorStack = error instanceof Error ? error.stack : undefined;
-
-      this.logger.error(`Batch message failed: ${errorMessage}`, errorStack);
-
-      return {
-        success: false,
-        error: {
-          message: errorMessage,
-          stack: errorStack,
-        },
-        metadata: {
-          processingTime,
-          attempts: job.attemptsMade,
-          completedAt: new Date(),
-        },
-      };
-    }
+        };
+      },
+    );
   }
 
   private async sendToRecipients(recipientIds: string[], data: BatchMessageJobDto): Promise<void> {

@@ -10,6 +10,7 @@ import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket } from '../interfaces';
 import { MessageEventDto, MessageDeliveryDto, ReadReceiptDto, TypingIndicatorDto } from '../dto';
 import { RateLimiterService } from './rate-limiter.service';
+import { WebSocketUtilities } from '../shared/websocket-utilities';
 
 @Injectable()
 export class MessageHandlerService {
@@ -30,66 +31,46 @@ export class MessageHandlerService {
     server: Server,
     data: Partial<MessageEventDto>,
   ): Promise<void> {
-    const user = client.user;
-
-    if (!user) {
-      throw new WsException('Authentication required');
-    }
-
-    // Rate limiting check
-    const allowed = await this.rateLimiter.checkLimit(user.userId, 'message:send');
-    if (!allowed) {
-      client.emit('error', {
-        type: 'RATE_LIMIT_EXCEEDED',
-        message: 'Message rate limit exceeded. Please slow down.',
-      });
-      return;
-    }
-
-    try {
-      // Create and validate DTO
-      const messageDto = new MessageEventDto({
+    await WebSocketUtilities.executeWithCommonHandling({
+      client,
+      rateLimiter: this.rateLimiter,
+      logger: this.logger,
+      action: 'message:send',
+      createDto: () => new MessageEventDto({
         ...data,
         type: 'send',
-        senderId: user.userId,
-        organizationId: user.organizationId,
-      });
+        senderId: client.user.userId,
+        organizationId: client.user.organizationId,
+      }),
+      validate: (dto, userId, organizationId) => {
+        return WebSocketUtilities.validateDto(dto, userId, organizationId, client, this.logger, 'message send');
+      },
+      execute: async (messageDto) => {
+        // Broadcast to conversation room
+        const room = WebSocketUtilities.getConversationRoom(messageDto.conversationId);
+        server.to(room).emit('message:send', messageDto.toPayload());
 
-      // Validate sender and organization
-      if (!messageDto.validateSender(user.userId)) {
-        throw new WsException('Invalid sender');
-      }
+        // Send delivery confirmation to sender
+        const deliveryDto = new MessageDeliveryDto({
+          messageId: messageDto.messageId,
+          conversationId: messageDto.conversationId,
+          recipientId: client.user.userId,
+          senderId: client.user.userId,
+          organizationId: client.user.organizationId,
+          status: 'sent',
+        });
 
-      if (!messageDto.validateOrganization(user.organizationId)) {
-        throw new WsException('Invalid organization');
-      }
+        client.emit('message:delivered', deliveryDto.toPayload());
 
-      this.logger.log(
-        `Message sent: ${messageDto.messageId} in conversation ${messageDto.conversationId} by user ${user.userId}`,
-      );
-
-      // Broadcast to conversation room
-      const room = `conversation:${messageDto.conversationId}`;
-      server.to(room).emit('message:send', messageDto.toPayload());
-
-      // Send delivery confirmation to sender
-      const deliveryDto = new MessageDeliveryDto({
-        messageId: messageDto.messageId,
-        conversationId: messageDto.conversationId,
-        recipientId: user.userId,
-        senderId: user.userId,
-        organizationId: user.organizationId,
-        status: 'sent',
-      });
-
-      client.emit('message:delivered', deliveryDto.toPayload());
-    } catch (error) {
-      this.logger.error(`Message send error for user ${user.userId}:`, error);
-      client.emit('error', {
-        type: 'MESSAGE_SEND_FAILED',
-        message: (error as Error).message || 'Failed to send message',
-      });
-    }
+        return { messageId: messageDto.messageId, conversationId: messageDto.conversationId };
+      },
+      onSuccess: (result, dto) => {
+        WebSocketUtilities.logAction(this.logger, 'Message sent', client.user.userId, {
+          messageId: result.messageId,
+          conversationId: result.conversationId,
+        });
+      },
+    });
   }
 
   /**

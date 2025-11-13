@@ -4,7 +4,7 @@
  * @description Handles specialized report generation (student health, compliance)
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -17,11 +17,9 @@ import {
   StudentHealthMetrics,
 } from './types/analytics-report.types';
 
-import {
-  ANALYTICS_CONSTANTS,
-  ANALYTICS_CACHE_KEYS,
-  ANALYTICS_EVENTS,
-} from './analytics-constants';
+import { ANALYTICS_CONSTANTS } from './analytics-constants';
+
+import { BaseReportGeneratorService } from './services/base-report-generator.service';
 
 @Injectable()
 export class SpecializedReportGeneratorService extends BaseReportGeneratorService {

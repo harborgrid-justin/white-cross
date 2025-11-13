@@ -10,20 +10,17 @@
 
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import {
-  Permission,
-  type RbacConfig,
-  type UserProfile,
-  UserRole,
-} from '../types/rbac.types';
+import { Permission, type RbacConfig, type UserProfile, UserRole } from '../types/rbac.types';
 import { ROLES_KEY } from '../../../auth/decorators/roles.decorator';
-import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../decorators/permissions.decorator';
+import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { RbacPermissionService } from '../services/rbac-permission.service';
+import { BaseAuthorizationGuard } from './base-authorization.guard';
 
 /**
  * RBAC Guard - Combined role and permission authorization
  *
  * @class RbacGuard
+ * @extends BaseAuthorizationGuard
  * @implements {CanActivate}
  *
  * @description Enforces both role-based and permission-based access control.
@@ -41,21 +38,13 @@ import { RbacPermissionService } from '../services/rbac-permission.service';
  * app.useGlobalGuards(new RbacGuard(reflector));
  */
 @Injectable()
-export class RbacGuard implements CanActivate {
-  private readonly logger = new Logger(RbacGuard.name);
-  private readonly config: Required<RbacConfig>;
-
+export class RbacGuard extends BaseAuthorizationGuard {
   constructor(
-    private readonly reflector: Reflector,
-    private readonly rbacPermissionService: RbacPermissionService,
+    reflector: Reflector,
+    rbacPermissionService: RbacPermissionService,
     @Optional() config?: RbacConfig,
   ) {
-    this.config = {
-      enableHierarchy: true,
-      enableAuditLogging: true,
-      customPermissions: {},
-      ...config,
-    };
+    super(reflector, rbacPermissionService, config);
   }
 
   /**
@@ -66,15 +55,8 @@ export class RbacGuard implements CanActivate {
    * @throws {ForbiddenException} When user lacks required role or permissions
    */
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
-
-    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.getRequiredRoles(context);
+    const requiredPermissions = this.getRequiredPermissions(context);
 
     // No authorization requirements - allow access
     if (
@@ -84,12 +66,7 @@ export class RbacGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const user: UserProfile = request.user;
-
-    if (!user) {
-      throw new ForbiddenException('User not authenticated');
-    }
+    const user = this.getUserFromContext(context);
 
     // Check role requirements
     if (requiredRoles && requiredRoles.length > 0) {
@@ -110,41 +87,9 @@ export class RbacGuard implements CanActivate {
       }
     }
 
-    // Check permission requirements
+    // Check permission requirements using base class method
     if (requiredPermissions && requiredPermissions.length > 0) {
-      const permissionsMode =
-        this.reflector.getAllAndOverride<PermissionsMode>(
-          PERMISSIONS_MODE_KEY,
-          [context.getHandler(), context.getClass()],
-        ) || 'all';
-
-      const hasPermission =
-        permissionsMode === 'all'
-          ? this.rbacPermissionService.hasAllPermissions(user, requiredPermissions, this.config)
-          : this.rbacPermissionService.hasAnyPermission(user, requiredPermissions, this.config);
-
-      if (!hasPermission) {
-        const missingPermissions = this.rbacPermissionService.getMissingPermissions(
-          user,
-          requiredPermissions,
-          this.config,
-        );
-
-        if (this.config.enableAuditLogging) {
-          this.rbacPermissionService.logAuthorizationAttempt(
-            'permission',
-            false,
-            user,
-            requiredPermissions,
-            missingPermissions,
-            permissionsMode,
-          );
-        }
-
-        throw new ForbiddenException(
-          `Insufficient permissions. Required (${permissionsMode}): ${requiredPermissions.join(', ')}`,
-        );
-      }
+      this.checkPermissions(user, requiredPermissions, context, 'rbac');
     }
 
     if (this.config.enableAuditLogging) {
@@ -157,5 +102,15 @@ export class RbacGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  /**
+   * Get required roles from metadata
+   */
+  private getRequiredRoles(context: ExecutionContext): UserRole[] | undefined {
+    return this.reflector.getAllAndOverride<UserRole[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
   }
 }
