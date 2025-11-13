@@ -456,11 +456,12 @@ Load Avg: {self.system_metrics.load_average[0]:.2f}
 class Monitor:
     """Main monitoring coordinator."""
     
-    def __init__(self):
+    def __init__(self, enable_dashboard: bool = True):
+        self.enable_dashboard = enable_dashboard
         self.metrics_registry = MetricsRegistry()
         self.profiler = PerformanceProfiler()
         self.health_monitor = HealthMonitor()
-        self.dashboard = RichDashboard() if RICH_AVAILABLE else None
+        self.dashboard = RichDashboard() if (RICH_AVAILABLE and enable_dashboard) else None
         
         # Setup structured logging if available
         if STRUCTLOG_AVAILABLE and structlog:
@@ -576,4 +577,4 @@ class Monitor:
 
 
 # Global monitor instance
-monitor = Monitor()
+monitor = Monitor(enable_dashboard=False)

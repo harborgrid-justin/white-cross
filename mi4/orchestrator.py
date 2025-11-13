@@ -363,10 +363,10 @@ Please complete this task efficiently and concisely.
         
         # Build optimized Codex command with all enhancements
         cmd = list(config.codex.command)  # Start with base command
-        
-        # Add workspace directory (main repo + scratchpad)
+
+        # Add workspace directory (main repo)
         cmd.extend(["-C", str(config.base_dir.parent)])  # Main workspace
-        cmd.extend(["--add-dir", str(scratchpad_session.workspace_path)])  # Scratchpad
+        # Note: Scratchpad is already within the main workspace, so it will be accessible
         
         # Add web search if enabled
         if config.codex.enable_web_search:
@@ -396,7 +396,11 @@ The scratchpad will be automatically cleaned up after {config.scratchpad_retenti
         
         # Add prompt to command
         cmd.append(enhanced_prompt)
-        
+
+        # Log the command being executed (without the full prompt)
+        cmd_summary = ' '.join(cmd[:-1]) + ' [prompt]'
+        self.logger.info(f"Executing command for task {task_id}: {cmd_summary}")
+
         async def execute_with_process_pool():
             proc = None
             worker = None
@@ -412,22 +416,30 @@ The scratchpad will be automatically cleaned up after {config.scratchpad_retenti
                     stderr=asyncio.subprocess.PIPE
                 )
                 
-                # Stream output with rate limiting
+                # Stream output and capture all lines
                 output_lines = []
-                async def stream_output(stream, label):
+                error_lines = []
+
+                async def stream_output(stream, label, line_list):
+                    """Stream and log subprocess output."""
                     while True:
                         line = await stream.readline()
                         if not line:
                             break
                         text = line.decode(errors="replace").rstrip("\n")
-                        output_lines.append(text)
-                        if len(output_lines) % 10 == 0:  # Log every 10 lines
-                            self.logger.info(f"[Codex Task {task_id}][{label}] {text}")
+                        line_list.append(text)
+
+                        # Log all output lines to file (debug level)
+                        self.logger.debug(f"[Task {task_id}][{label}] {text}")
+
+                        # Log important lines to console (info level)
+                        if any(keyword in text.lower() for keyword in ['error', 'failed', 'warning', 'success', 'completed']):
+                            self.logger.info(f"[Task {task_id}][{label}] {text}")
                 
                 await asyncio.wait_for(
                     asyncio.gather(
-                        stream_output(proc.stdout, "OUT"),
-                        stream_output(proc.stderr, "ERR")
+                        stream_output(proc.stdout, "OUT", output_lines),
+                        stream_output(proc.stderr, "ERR", error_lines)
                     ),
                     timeout=config.codex.timeout_seconds
                 )
@@ -441,12 +453,16 @@ The scratchpad will be automatically cleaned up after {config.scratchpad_retenti
                 return exit_code, output_lines
                 
             except asyncio.TimeoutError:
-                self.logger.error(f"Task {task_id} timed out after {config.codex.timeout_seconds}s")
+                error_msg = f"Task {task_id} timed out after {config.codex.timeout_seconds}s"
+                self.logger.error(error_msg)
+                self.logger.error(f"Command: {cmd_summary}")
                 if proc:
                     proc.kill()
                 return -1, []
             except Exception as e:
-                self.logger.error(f"Failed to execute Codex task {task_id}: {e}")
+                error_msg = f"Failed to execute Codex task {task_id}: {e}"
+                self.logger.error(error_msg, exc_info=True)
+                self.logger.error(f"Command: {cmd_summary}")
                 if proc:
                     proc.kill()
                 return -1, []
@@ -470,15 +486,6 @@ The scratchpad will be automatically cleaned up after {config.scratchpad_retenti
                     exit_code == 0
                 )
             
-            result = {
-                'task_id': task_id,
-                'success': exit_code == 0,
-                'exit_code': exit_code,
-                'execution_time': execution_time,
-                'output_lines': len(output_lines),
-                'scratchpad_session': scratchpad_session.session_id
-            }
-            
             # Cache successful results in semantic cache
             if exit_code == 0:
                 await semantic_cache.set(
@@ -491,15 +498,28 @@ The scratchpad will be automatically cleaned up after {config.scratchpad_retenti
                     }
                 )
                 self.logger.info(f"💾 Cached result for future semantic lookups")
-            
+
             # Log scratchpad stats
             scratchpad_stats = await scratchpad_manager.get_session_stats(scratchpad_session.session_id)
             if scratchpad_stats:
-                self.logger.info(f"📊 Scratchpad: {scratchpad_stats['total_files']} files, " 
+                self.logger.info(f"📊 Scratchpad: {scratchpad_stats['total_files']} files, "
                                f"{scratchpad_stats['workspace_size_kb']:.1f} KB")
-            
+
             self.logger.info(f"✅ Task {task_id} completed in {execution_time:.2f}s (exit: {exit_code})")
-            return result
+
+            # Return TaskResult object (not dict!)
+            return TaskResult(
+                task_id=str(task_id),
+                success=exit_code == 0,
+                error=None if exit_code == 0 else f"Task failed with exit code {exit_code}",
+                output=full_output[:500] if full_output else None,
+                metadata={
+                    'exit_code': exit_code,
+                    'execution_time': execution_time,
+                    'output_lines': len(output_lines),
+                    'scratchpad_session': scratchpad_session.session_id
+                }
+            )
             
         except Exception as e:
             self.logger.error(f"❌ Circuit breaker prevented task {task_id}: {e}")
@@ -1188,8 +1208,13 @@ async def worker(agent: str, task_queue: asyncio.Queue, tasks_state: List[Dict[s
             task_queue.task_done()
 
 
-async def main():
+async def main(verbose: bool = False):
     """Main orchestrator function with improved error handling and workspace discovery."""
+    # Setup logging first
+    from logging_config import setup_orchestrator_logging
+    setup_orchestrator_logging(verbose=verbose)
+
+    logger.info("🚀 White Cross Orchestrator - Enterprise Python Task Coordinator")
     print("🚀 White Cross Orchestrator - Enterprise Python Task Coordinator")
     print("=" * 65)
     
@@ -1295,11 +1320,23 @@ async def main():
 
 
 if __name__ == "__main__":
+    import argparse
+
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="White Cross Orchestrator - Healthcare Optimization")
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='Enable verbose logging (DEBUG level)')
+    parser.add_argument('--log-file', type=str,
+                       help='Custom log file path (default: orchestrator.log)')
+    args = parser.parse_args()
+
     try:
-        asyncio.run(main())
+        asyncio.run(main(verbose=args.verbose))
     except KeyboardInterrupt:
         print("\nOrchestrator interrupted by user")
+        logger.info("Orchestrator interrupted by user")
         exit(130)
     except Exception as e:
         print(f"\nOrchestrator failed with error: {e}")
+        logger.error(f"Orchestrator failed with error: {e}", exc_info=True)
         exit(1)

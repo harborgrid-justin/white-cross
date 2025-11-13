@@ -57,9 +57,8 @@ class CodexConfig(BaseModel):
     # Optimized command with proper flags from codex --help
     command: List[str] = [
         "codex", "exec",
-        "--full-auto",  # Low-friction sandboxed automatic execution
+        "--full-auto",  # Low-friction sandboxed automatic execution (includes on-failure approval)
         "--sandbox", "workspace-write",  # Safe workspace modifications
-        "--ask-for-approval", "on-failure",  # Only escalate on failures
     ]
     
     # Additional codex options
@@ -91,7 +90,7 @@ class CodexConfig(BaseModel):
 class OrchestrationConfig(BaseModel):
     """Configuration for task orchestration."""
     
-    max_agents: int = Field(default=3, ge=1, le=10)
+    max_agents: int = Field(default=5, ge=1, le=10)
     agent_names: List[str] = ["alpha", "bravo", "charlie", "delta", "echo"]
     
     # Queue management
@@ -164,7 +163,8 @@ class OrchestratorSettings(BaseSettings):
     scratchpad_retention_hours: int = Field(default=24, ge=1, le=168)
     
     class Config:
-        env_file = ".env"
+        # Use absolute path to .env file relative to this config module
+        env_file = str(Path(__file__).parent / ".env")
         env_file_encoding = "utf-8"
         env_nested_delimiter = "__"
         case_sensitive = False
@@ -217,7 +217,43 @@ class OrchestratorSettings(BaseSettings):
 
 def load_settings() -> OrchestratorSettings:
     """Load and validate orchestrator settings."""
-    return OrchestratorSettings()
+    settings = OrchestratorSettings()
+
+    # Validate critical settings
+    env_file_path = Path(__file__).parent / ".env"
+    if not env_file_path.exists():
+        import warnings
+        warnings.warn(
+            f"⚠️  .env file not found at {env_file_path}. "
+            "Some features like LangCache may not work correctly."
+        )
+
+    return settings
+
+
+def validate_environment() -> Dict[str, Any]:
+    """Validate environment configuration and return diagnostics."""
+    env_file_path = Path(__file__).parent / ".env"
+
+    diagnostics = {
+        'env_file_path': str(env_file_path),
+        'env_file_exists': env_file_path.exists(),
+        'config_base_dir': str(settings.base_dir),
+        'langcache_configured': settings.langcache_api_key is not None,
+        'langcache_enabled': settings.langcache_enabled,
+        'openai_configured': settings.openai_api_key is not None,
+        'anthropic_configured': settings.anthropic_api_key is not None,
+        'redis_configured': settings.redis_url is not None,
+    }
+
+    if env_file_path.exists():
+        diagnostics['env_file_size'] = env_file_path.stat().st_size
+        # Read and count non-empty lines
+        with open(env_file_path) as f:
+            lines = [l.strip() for l in f if l.strip() and not l.strip().startswith('#')]
+            diagnostics['env_file_variables'] = len(lines)
+
+    return diagnostics
 
 
 # Global settings instance

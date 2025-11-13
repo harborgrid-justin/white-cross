@@ -100,17 +100,29 @@ class SemanticCache:
         try:
             api_key = config.langcache_api_key
             if not api_key:
-                self.logger.error("LangCache API key not configured")
+                self.logger.error(
+                    "LangCache API key not configured. "
+                    "Please ensure LANGCACHE_API_KEY is set in /workspaces/white-cross/mi4/.env file. "
+                    f"Config base_dir: {config.base_dir}, "
+                    f"Looking for .env at: {config.base_dir / '.env'}"
+                )
                 self.enabled = False
                 return
-            
+
+            self.logger.info(
+                f"Initializing LangCache with server: {config.langcache_server_url}, "
+                f"cache_id: {config.langcache_cache_id}"
+            )
+
             self._lang_cache = LangCache(
                 server_url=config.langcache_server_url,
                 cache_id=config.langcache_cache_id,
                 api_key=api_key,
             )
+
+            self.logger.info("LangCache initialized successfully")
         except Exception as e:
-            self.logger.error(f"Failed to initialize LangCache: {e}")
+            self.logger.error(f"Failed to initialize LangCache: {e}", exc_info=True)
             self.enabled = False
     
     def _normalize_prompt(self, prompt: str) -> str:
@@ -229,11 +241,6 @@ class SemanticCache:
                     response=response,
                     # metadata=metadata  # If supported
                 )
-                save_response = self._lang_cache.set(
-                    prompt=normalized_prompt,
-                    response=response,
-                    # metadata=metadata  # If supported
-                )
                 
                 # Update local cache
                 prompt_hash = hashlib.sha256(normalized_prompt.encode()).hexdigest()[:16]
@@ -295,35 +302,45 @@ class SemanticCache:
         """Remove expired entries from local cache."""
         current_time = time.time()
         max_age_seconds = max_age_hours * 3600
-        
+
         async with self._lock:
             expired_keys = [
                 key for key, entry in self.local_cache.items()
                 if current_time - entry.timestamp > max_age_seconds
             ]
-            
+
             for key in expired_keys:
                 del self.local_cache[key]
+
+            self.logger.info(f"Cleaned up {len(expired_keys)} expired cache entries")
+
+    async def get_similar_prompts(self, prompt: str, limit: int = 5) -> List[str]:
+        """
+        Get similar prompts from cache for discovery.
+
+        Args:
+            prompt: The prompt to find similar prompts for
+            limit: Maximum number of similar prompts to return
+
+        Returns:
+            List of similar prompts
+        """
         try:
             if self._lang_cache is None:
                 return []
-            
+
             search_response = self._lang_cache.search(prompt=prompt)
             if search_response and hasattr(search_response, 'results'):
                 results = search_response.results[:limit]
-                return [getattr(r, 'prompt', '') if hasattr(r, 'prompt') else r.get('prompt', '') if hasattr(r, 'get') else '' for r in results]
+                return [
+                    getattr(r, 'prompt', '') if hasattr(r, 'prompt')
+                    else r.get('prompt', '') if hasattr(r, 'get')
+                    else ''
+                    for r in results
+                ]
         except Exception as e:
             self.logger.error(f"Failed to get similar prompts: {e}")
-            return []
-        
-        try:
-            search_response = self._lang_cache.search(prompt=prompt)
-            if search_response and hasattr(search_response, 'results'):
-                results = search_response.results[:limit]
-                return [getattr(r, 'prompt', '') if hasattr(r, 'prompt') else r.get('prompt', '') if hasattr(r, 'get') else '' for r in results]
-        except Exception as e:
-            self.logger.error(f"Failed to get similar prompts: {e}")
-        
+
         return []
 
 
