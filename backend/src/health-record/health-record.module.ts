@@ -24,17 +24,17 @@ import { HealthRecordService } from './health-record.service';
 import { HealthRecordCrudController, HealthRecordComplianceController } from './controllers';
 
 // Specialized Services (Refactored from main service)
-import { HealthRecordCrudService } from '@/services/health-record-crud.service';
-import { HealthRecordAllergyService } from '@/services/health-record-allergy.service';
-import { HealthRecordChronicConditionService } from '@/services/health-record-chronic-condition.service';
-import { HealthRecordVaccinationService } from '@/services/health-record-vaccination.service';
-import { HealthRecordVitalsService } from '@/services/health-record-vitals.service';
-import { HealthRecordSummaryService } from '@/services/health-record-summary.service';
-import { HealthRecordBatchService } from '@/services/health-record-batch.service';
+import { HealthRecordCrudService } from './services/health-record-crud.service';
+import { HealthRecordAllergyService } from './services/health-record-allergy.service';
+import { HealthRecordChronicConditionService } from './services/health-record-chronic-condition.service';
+import { HealthRecordVaccinationService } from './services/health-record-vaccination.service';
+import { HealthRecordVitalsService } from './services/health-record-vitals.service';
+import { HealthRecordSummaryService } from './services/health-record-summary.service';
+import { HealthRecordBatchService } from './services/health-record-batch.service';
 
 // Enterprise Pattern Services
 import { PHIAccessLogger } from '@/services/phi-access-logger.service';
-import { HealthRecordMetricsService } from '@/services/health-record-metrics.service';
+import { HealthRecordMetricsService } from './services/health-record-metrics.service';
 
 // Analytics Optimization Services (Phase 4)
 import { CacheStrategyService } from '@/services/cache-strategy.service';

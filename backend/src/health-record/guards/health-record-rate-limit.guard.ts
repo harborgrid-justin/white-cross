@@ -11,8 +11,8 @@
 
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { HealthRecordMetricsService } from '@/services/health-record-metrics.service';
-import { PHIAccessLogger } from '@/services/phi-access-logger.service';
+import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
+import { PHIAccessLogger } from '../services/phi-access-logger.service';
 import { HealthRecordRequest } from '../interfaces/health-record-types';
 import { ENTERPRISE_RATE_LIMIT_KEY } from '@/common/enterprise/decorators/enterprise-decorators';
 

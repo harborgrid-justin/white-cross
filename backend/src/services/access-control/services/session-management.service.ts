@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
-import { AuditService } from '@/services/database/audit.service';
+import { AuditService } from '@/database/services/audit.service';
 import { ExecutionContext } from '../../database/types/execution-context.interface';
 import { CreateSessionDto } from '../dto/create-session.dto';
 import { SessionInstance, SequelizeModelClass } from '../types/sequelize-models.types';

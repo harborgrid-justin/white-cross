@@ -8,7 +8,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
-import { HealthDataCacheService } from '@/services/health-data-cache.service';
+import { HealthDataCacheService } from '../services/health-data-cache.service';
 
 export interface CacheInvalidationConfig {
   studentIdPath?: string; // Path to extract student ID from request/response

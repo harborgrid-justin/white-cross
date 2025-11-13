@@ -19,7 +19,7 @@ import type { Request as ExpressRequest } from 'express';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AccessControlService } from './access-control.service';
-import { PermissionCacheService } from '@/services/permission-cache.service';
+import { PermissionCacheService } from './services/permission-cache.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';

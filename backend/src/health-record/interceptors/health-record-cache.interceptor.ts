@@ -14,8 +14,8 @@ import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
 import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
-import { EnterpriseCacheService } from '@/common/enterpri@/services/enterprise-cache.service';
-import { HealthRecordMetricsService } from '@/services/health-record-metrics.service';
+import { EnterpriseCacheService } from '@/common/enterprise/services/enterprise-cache.service';
+import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
 import { ComplianceLevel, HealthRecordRequest } from '../interfaces/health-record-types';
 import { ENTERPRISE_CACHE_KEY } from '@/common/enterprise/decorators/enterprise-decorators';
 
