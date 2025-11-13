@@ -30,7 +30,7 @@ import time
 # Import our modular components
 from config import settings as config
 from monitoring import monitor
-from task_management import coordinator, scheduler, TaskPriority, Task
+from task_management import coordinator, scheduler, TaskPriority, Task, TaskResult
 from repository_discovery import analyzer
 from token_manager import token_manager
 
@@ -339,13 +339,15 @@ Please complete this task efficiently and concisely.
         if cached_response:
             self.cache_hits += 1
             self.logger.info(f"🎯 Semantic Cache HIT for task {task_id}")
-            return {
-                'task_id': task_id,
-                'success': True,
-                'cached': True,
-                'response': cached_response,
-                'execution_time': time.time() - start_time
-            }
+            return TaskResult(
+                task_id=str(task_id),
+                success=True,
+                output=cached_response,
+                metadata={
+                    'cached': True,
+                    'execution_time': time.time() - start_time
+                }
+            )
         
         self.cache_misses += 1
         
@@ -525,11 +527,12 @@ The scratchpad will be automatically cleaned up after {config.scratchpad_retenti
             self.logger.error(f"❌ Circuit breaker prevented task {task_id}: {e}")
             # Clean up scratchpad on failure
             await scratchpad_manager.cleanup_session(scratchpad_session.session_id)
-            return {
-                'task_id': task_id,
-                'success': False,
-                'error': str(e)
-            }
+            return TaskResult(
+                task_id=str(task_id),
+                success=False,
+                error=str(e),
+                metadata={'circuit_breaker_triggered': True}
+            )
     
     async def _register_default_handlers(self):
         """Register default task handlers for common operations."""
