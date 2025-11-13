@@ -21,7 +21,7 @@ import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
-import { TokenBlacklistService } from '@/services/token-blacklist.service';
+import { TokenBlacklistService } from './services/token-blacklist.service';
 import { SafeUser } from './types/auth.types';
 
 @Injectable()

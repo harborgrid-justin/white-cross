@@ -13,7 +13,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IncidentStatusService } from '@/services/incident-status.service';
+import { IncidentStatusService } from '../services/incident-status.service';
 
 import { BaseController } from '@/common/base';
 /**

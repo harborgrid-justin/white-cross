@@ -30,7 +30,7 @@ import { UserRole } from '@/services/user/enums/user-role.enum';
 import { HealthRecord } from '@/database/models';
 import { MentalHealthRecord } from '@/database/models';
 import { AcademicTranscriptService } from '@/services/academic-transcript/academic-transcript.service';
-import { QueryCacheService } from '../../databa@/services/query-cache.service';
+import { QueryCacheService } from '@/services/database/query-cache.service';
 import { AppConfigService } from '@/common/config/app-config.service';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Op } from 'sequelize';

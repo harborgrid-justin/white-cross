@@ -1,6 +1,6 @@
 /**
  * @fileoverview CRUD Operations Service for Database Operations
- * @module databa@/services/operations/crud-operations
+ * @module @/database/services/operations/crud-operations
  * @description Enhanced CRUD operations with audit trails, version control, and soft delete support
  *
  * @version 1.0.0

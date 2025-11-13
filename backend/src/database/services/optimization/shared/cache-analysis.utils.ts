@@ -1,6 +1,6 @@
 /**
  * @fileoverview Shared Database Cache Analysis Utilities
- * @module databa@/services/optimization/shared
+ * @module @/database/services/optimization/shared
  * @description Common cache analysis functions shared between optimization services
  *
  * @version 1.0.0

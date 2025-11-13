@@ -1,6 +1,6 @@
 /**
  * @fileoverview Database Operations Module Index
- * @module databa@/services/operations
+ * @module @/database/services/operations
  * @description Central export point for all database operation services
  *
  * @version 1.0.0

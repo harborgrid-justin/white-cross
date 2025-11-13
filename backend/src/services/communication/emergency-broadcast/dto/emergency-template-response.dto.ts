@@ -3,7 +3,7 @@
  * DTO for emergency template response
  */
 
-import { EmergencyType } from '@/emergency-broadcast';
+import { EmergencyType } from '../emergency-broadcast.enums';
 
 export class EmergencyTemplateDto {
   title: string;

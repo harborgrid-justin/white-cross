@@ -8,7 +8,7 @@ export { AuthModule } from './auth.module';
 
 // Service
 export { AuthService } from './auth.service';
-export { TokenBlacklistService } from '@/services/token-blacklist.service';
+export { TokenBlacklistService } from './services/token-blacklist.service';
 
 // Controller
 export { AuthController } from './auth.controller';

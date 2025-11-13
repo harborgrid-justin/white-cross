@@ -1,6 +1,6 @@
 /**
  * @fileoverview Query Builder Interfaces and Types
- * @module databa@/services/query-builder/interfaces
+ * @module @/database/services/query-builder/interfaces
  * @description Common interfaces and types for query building operations
  *
  * @version 1.0.0

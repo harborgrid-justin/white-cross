@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Strategy Types and Interfaces
- * @module health-reco@/services/cache
+ * @module @/health-record/services/cache
  * @description Consolidated type definitions for multi-tier caching strategy
  *
  * HIPAA CRITICAL - Type definitions for PHI caching compliance

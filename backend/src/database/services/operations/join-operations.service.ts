@@ -1,6 +1,6 @@
 /**
  * @fileoverview Complex Join Operations Service for Database Operations
- * @module databa@/services/operations/join-operations
+ * @module @/database/services/operations/join-operations
  * @description Advanced join operations with CTEs, subqueries, and complex table relationships
  *
  * @version 1.0.0

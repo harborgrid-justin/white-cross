@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { AuditService } from '../../databa@/services/audit.service';
+import { AuditService } from '@/services/database/audit.service';
 import { ExecutionContext } from '../../database/types/execution-context.interface';
 import { PermissionCacheService } from './permission-cache.service';
 import { CreatePermissionDto } from '../dto/create-permission.dto';

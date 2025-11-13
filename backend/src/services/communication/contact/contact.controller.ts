@@ -18,7 +18,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ContactService, EmergencyContactService } from '@/contact/services';
+import { ContactService, EmergencyContactService } from './services';
 import {
   ContactCreateEmergencyDto,
   ContactQueryDto,

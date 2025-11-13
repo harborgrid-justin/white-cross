@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { PHIAccessLogger } from '../health-reco@/services/phi-access-logger.service';
+import { PHIAccessLogger } from '@/health-record/services/phi-access-logger.service';
 import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
 import { AuditLog } from '@/database/models';
 import { PhiDisclosureAudit } from '@/database/models';

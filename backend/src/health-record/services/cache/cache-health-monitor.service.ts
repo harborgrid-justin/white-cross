@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Health Monitor Service
- * @module health-reco@/services/cache
+ * @module @/health-record/services/cache
  * @description Monitors cache health status and manages alerts
  */
 

@@ -1,6 +1,6 @@
 /**
  * @fileoverview L1 Cache Service - In-Memory Cache Operations
- * @module health-reco@/services/cache
+ * @module @/health-record/services/cache
  * @description Fast in-memory caching for hot data with LRU eviction
  *
  * HIPAA CRITICAL - L1 cache for PHI data with memory limits and encryption

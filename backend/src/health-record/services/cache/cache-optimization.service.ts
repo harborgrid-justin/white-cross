@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Optimization Service
- * @module health-reco@/services/cache
+ * @module @/health-record/services/cache
  * @description Handles cache warming, intelligent prefetching, and optimization
  *
  * HIPAA CRITICAL - This service optimizes PHI caching with compliance controls

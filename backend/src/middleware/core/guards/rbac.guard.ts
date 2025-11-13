@@ -13,7 +13,7 @@ import { Reflector } from '@nestjs/core';
 import { Permission, type RbacConfig, type UserProfile, UserRole } from '../types/rbac.types';
 import { ROLES_KEY } from '../../../auth/decorators/roles.decorator';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
-import { RbacPermissionService } from '@/services/rbac-permission.service';
+import { RbacPermissionService } from '../services/rbac-permission.service';
 import { BaseAuthorizationGuard } from './base-authorization.guard';
 
 /**

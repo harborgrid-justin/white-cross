@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Access Pattern Tracker Service
- * @module health-reco@/services/cache
+ * @module @/health-record/services/cache
  * @description Tracks and analyzes cache access patterns for optimization
  */
 

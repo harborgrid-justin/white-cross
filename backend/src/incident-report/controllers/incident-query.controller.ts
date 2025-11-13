@@ -13,8 +13,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IncidentReadService } from '@/services/incident-read.service';
-import { IncidentStatisticsService } from '@/services/incident-statistics.service';
+import { IncidentReadService } from '../services/incident-read.service';
+import { IncidentStatisticsService } from '../services/incident-statistics.service';
 
 import { BaseController } from '@/common/base';
 /**

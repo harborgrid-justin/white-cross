@@ -9,7 +9,7 @@ import {
   CommunicationChannel,
   EmergencyPriority,
   EmergencyType,
-} from '@/emergency-broadcast';
+} from '../emergency-broadcast.enums';
 
 export class EmergencyBroadcastResponseDto {
   id: string;

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Query Builder Module Barrel Export
- * @module databa@/services/query-builder
+ * @module @/database/services/query-builder
  * @description Consolidated exports for all query builder functionality
  * including basic builders, advanced aggregates, unions/subqueries, and optimization
  *
@@ -33,7 +33,7 @@ import { Optimization } from './optimization.service';
  *
  * @example
  * ```typescript
- * import { QueryBuilder } from '@/databa@/services/query-builder';
+ * import { QueryBuilder } from '@/database/services/query-builder';
  *
  * // Use basic builders
  * const whereClause = QueryBuilder.Basic.buildWhereClause(filters);

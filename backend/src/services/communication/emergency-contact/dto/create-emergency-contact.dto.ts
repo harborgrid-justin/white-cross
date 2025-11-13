@@ -18,7 +18,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ContactPriority, NotificationChannel, PreferredContactMethod } from '@/contact';
+import { ContactPriority, NotificationChannel, PreferredContactMethod } from '../../contact/enums';
 
 export class EmergencyContactCreateDto {
   @ApiProperty({

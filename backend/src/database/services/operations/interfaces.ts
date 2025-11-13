@@ -1,6 +1,6 @@
 /**
  * @fileoverview Shared Interfaces and Types for Database Operations
- * @module databa@/services/operations/interfaces
+ * @module @/database/services/operations/interfaces
  * @description Common interfaces, types, and enums used across database operation services
  *
  * @version 1.0.0

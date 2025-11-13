@@ -13,7 +13,7 @@
  *
  * Usage:
  * ```typescript
- * import { withTransactionRetry } from '@/databa@/services/transaction-utility.service';
+ * import { withTransactionRetry } from '@/database/services/transaction-utility.service';
  *
  * await withTransactionRetry(async (transaction) => {
  *   await Model.update(data, { where: { id }, transaction });

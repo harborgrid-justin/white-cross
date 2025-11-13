@@ -1,6 +1,6 @@
 /**
  * @fileoverview Batch Operations Service for Database Operations
- * @module databa@/services/operations/batch-operations
+ * @module @/database/services/operations/batch-operations
  * @description Batch processing operations with parallel execution and intelligent throttling
  *
  * @version 1.0.0

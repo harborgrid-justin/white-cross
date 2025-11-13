@@ -22,8 +22,8 @@ export * from './uow/unit-of-work.interface';
 export * from './uow/sequelize-unit-of-work.service';
 
 // Services
-export * from '@/services/cache.service';
-export { AuditService } from '@/services/audit.service';
+export * from './services/cache.service';
+export { AuditService } from './services/audit.service';
 
 // All Models (exported from centralized index to prevent circular dependencies)
 export * from './models';

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Tier Manager Service
- * @module health-reco@/services/cache
+ * @module @/health-record/services/cache
  * @description Manages multi-tier cache operations (L1, L2, L3)
  */
 

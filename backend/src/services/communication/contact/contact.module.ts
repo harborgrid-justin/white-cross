@@ -11,7 +11,7 @@
  */
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { ContactService, EmergencyContactService } from '@/contact/services';
+import { ContactService, EmergencyContactService } from './services';
 import { ContactController } from './contact.controller';
 import { Contact, EmergencyContact } from '@/database';
 

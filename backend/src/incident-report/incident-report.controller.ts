@@ -12,11 +12,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { IncidentCoreService } from '@/services/incident-core.service';
-import { IncidentFollowUpService } from '@/services/incident-follow-up.service';
-import { IncidentNotificationService } from '@/services/incident-notification.service';
-import { IncidentStatisticsService } from '@/services/incident-statistics.service';
-import { IncidentWitnessService } from '@/services/incident-witness.service';
+import { IncidentCoreService } from './services/incident-core.service';
+import { IncidentFollowUpService } from './services/incident-follow-up.service';
+import { IncidentNotificationService } from './services/incident-notification.service';
+import { IncidentStatisticsService } from './services/incident-statistics.service';
+import { IncidentWitnessService } from './services/incident-witness.service';
 import { CreateFollowUpActionDto } from './dto/create-follow-up-action.dto';
 import { CreateIncidentReportDto } from './dto/create-incident-report.dto';
 import { CreateWitnessStatementDto } from './dto/create-witness-statement.dto';

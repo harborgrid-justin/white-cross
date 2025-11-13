@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Metrics Collector Service
- * @module health-reco@/services/cache
+ * @module @/health-record/services/cache
  * @description Collects and aggregates cache performance metrics
  */
 

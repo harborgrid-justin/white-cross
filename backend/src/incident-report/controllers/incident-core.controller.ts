@@ -14,8 +14,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IncidentReadService } from '@/services/incident-read.service';
-import { IncidentWriteService } from '@/services/incident-write.service';
+import { IncidentReadService } from '../services/incident-read.service';
+import { IncidentWriteService } from '../services/incident-write.service';
 import { CreateIncidentReportDto } from '../dto/create-incident-report.dto';
 import { IncidentFiltersDto } from '../dto/incident-filters.dto';
 import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';

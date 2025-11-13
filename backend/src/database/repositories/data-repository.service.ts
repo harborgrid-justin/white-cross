@@ -144,7 +144,7 @@ import {
   createWithAudit,
   updateWithAudit,
   softDelete,
-} from '@/services/database-operations.service';
+} from '../services/operations/crud-operations.service';
 
 /**
  * Specification interface for query specifications
