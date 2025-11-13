@@ -6,7 +6,7 @@
 import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AllergySeverity } from '../../../common/enums';
-import { AllergenType } from '../entities/allergy.entity';
+import { AllergyType } from '@/database/models';
 
 export class AllergyFiltersDto {
   /**
@@ -27,8 +27,8 @@ export class AllergyFiltersDto {
    * Filter by allergen category
    */
   @IsOptional()
-  @IsEnum(AllergenType)
-  allergenType?: AllergenType;
+  @IsEnum(AllergyType)
+  allergenType?: AllergyType;
 
   /**
    * Filter by verification status
