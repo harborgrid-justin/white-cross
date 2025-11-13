@@ -27,10 +27,14 @@ import { AcademicHistoryDto } from './dto/academic-history.dto';
 import { PerformanceTrendsDto } from './dto/performance-trends.dto';
 import { BulkGradeTransitionDto } from './dto/bulk-grade-transition.dto';
 import { GraduatingStudentsDto } from './dto/graduating-students.dto';
+import { GradeTransitionDto } from './dto/grade-transition.dto';
+import { GraduationDto } from './dto/graduation.dto';
 import { StudentScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationDto } from './dto/verify-medication.dto';
 import { AddWaitlistDto } from './dto/add-waitlist.dto';
 import { WaitlistStatusDto } from './dto/waitlist-status.dto';
+import { GenerateBarcodeDto } from './dto/generate-barcode.dto';
+import { VerifyBarcodeDto } from './dto/verify-barcode.dto';
 import { PaginatedResponse, StudentDataExport, StudentStatistics } from './types';
 
 import { BaseService } from '@/common/base';
@@ -188,6 +192,24 @@ export class StudentService extends BaseService {
     return this.academicService.getGraduatingStudents(query);
   }
 
+  // ==================== Individual Grade Transition Operations ====================
+
+  async advanceStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<any> {
+    return this.academicService.advanceStudentGrade(id, gradeTransitionDto);
+  }
+
+  async retainStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<any> {
+    return this.academicService.retainStudentGrade(id, gradeTransitionDto);
+  }
+
+  async processStudentGraduation(id: string, graduationDto: GraduationDto): Promise<any> {
+    return this.academicService.processStudentGraduation(id, graduationDto);
+  }
+
+  async getGradeTransitionHistory(id: string): Promise<any> {
+    return this.academicService.getGradeTransitionHistory(id);
+  }
+
   // ==================== Barcode Operations (delegated to StudentBarcodeService) ====================
 
   async scanBarcode(scanBarcodeDto: StudentScanBarcodeDto): Promise<any> {
@@ -220,5 +242,21 @@ export class StudentService extends BaseService {
 
   calculateAge(dateOfBirth: Date): number {
     return this.validationService.calculateAge(dateOfBirth);
+  }
+
+  // ==================== Barcode Methods ====================
+
+  /**
+   * Generate barcode for student
+   */
+  async generateStudentBarcode(id: string, generateBarcodeDto: GenerateBarcodeDto): Promise<any> {
+    return await this.barcodeService.generateBarcode(id, generateBarcodeDto);
+  }
+
+  /**
+   * Verify student barcode
+   */
+  async verifyStudentBarcode(verifyBarcodeDto: VerifyBarcodeDto): Promise<any> {
+    return await this.barcodeService.verifyBarcode(verifyBarcodeDto);
   }
 }

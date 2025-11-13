@@ -29,9 +29,13 @@ export * from './performance-trends.dto';
 // Grade Transition DTOs
 export * from './bulk-grade-transition.dto';
 export * from './graduating-students.dto';
+export * from './grade-transition.dto';
+export * from './graduation.dto';
 
 // Barcode Scanning DTOs
 export * from './scan-barcode.dto';
+export * from './generate-barcode.dto';
+export * from './verify-barcode.dto';
 export * from './verify-medication.dto';
 
 // Waitlist Management DTOs

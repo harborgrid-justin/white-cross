@@ -4,4 +4,7 @@
  */
 
 // Re-export the Sequelize model
-export { } from '@/database/models';
+export {
+	InventoryItem,
+	type InventoryItemAttributes,
+} from '@/database/models';

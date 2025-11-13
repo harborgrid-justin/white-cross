@@ -12,12 +12,14 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Student } from '@/database';
-import { AcademicTranscriptService } from '@/academic-transcript';
+import { AcademicTranscriptService } from '@/services/academic-transcript/academic-transcript.service';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
 import { AcademicHistoryDto } from '../dto/academic-history.dto';
 import { BulkGradeTransitionDto } from '../dto/bulk-grade-transition.dto';
 import { GraduatingStudentsDto } from '../dto/graduating-students.dto';
+import { GradeTransitionDto } from '../dto/grade-transition.dto';
+import { GraduationDto } from '../dto/graduation.dto';
 import { ImportTranscriptDto } from '../dto/import-transcript.dto';
 import { PerformanceTrendsDto } from '../dto/performance-trends.dto';
 
@@ -512,6 +514,166 @@ export class StudentAcademicService extends BaseService {
       };
     } catch (error) {
       this.handleError('Failed to retrieve graduating students', error);
+    }
+  }
+
+  /**
+   * Advance student to next grade level
+   */
+  async advanceStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<any> {
+    try {
+      this.validateUUID(id, 'Student ID');
+
+      // Verify student exists
+      const student = await this.studentModel.findByPk(id);
+      if (!student) {
+        throw new NotFoundException(`Student with ID ${id} not found`);
+      }
+
+      const currentGrade = student.grade;
+      const newGrade = gradeTransitionDto.newGrade;
+      const effectiveDate = gradeTransitionDto.effectiveDate ? new Date(gradeTransitionDto.effectiveDate) : new Date();
+
+      // Update student grade
+      student.grade = newGrade;
+      await student.save();
+
+      this.logInfo(
+        `Student advanced: ${id} (${student.firstName} ${student.lastName}) from ${currentGrade} to ${newGrade}`,
+      );
+
+      return {
+        success: true,
+        studentId: id,
+        studentName: `${student.firstName} ${student.lastName}`,
+        previousGrade: currentGrade,
+        newGrade,
+        effectiveDate,
+        reason: gradeTransitionDto.reason,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to advance student grade', error);
+    }
+  }
+
+  /**
+   * Retain student in current grade level
+   */
+  async retainStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<any> {
+    try {
+      this.validateUUID(id, 'Student ID');
+
+      // Verify student exists
+      const student = await this.studentModel.findByPk(id);
+      if (!student) {
+        throw new NotFoundException(`Student with ID ${id} not found`);
+      }
+
+      const currentGrade = student.grade;
+      const effectiveDate = gradeTransitionDto.effectiveDate ? new Date(gradeTransitionDto.effectiveDate) : new Date();
+
+      // Note: Student remains in current grade, but we log the retention
+      this.logInfo(
+        `Student retained: ${id} (${student.firstName} ${student.lastName}) in grade ${currentGrade}`,
+      );
+
+      return {
+        success: true,
+        studentId: id,
+        studentName: `${student.firstName} ${student.lastName}`,
+        grade: currentGrade,
+        effectiveDate,
+        reason: gradeTransitionDto.reason,
+        action: 'retained',
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to retain student grade', error);
+    }
+  }
+
+  /**
+   * Process student graduation
+   */
+  async processStudentGraduation(id: string, graduationDto: GraduationDto): Promise<any> {
+    try {
+      this.validateUUID(id, 'Student ID');
+
+      // Verify student exists
+      const student = await this.studentModel.findByPk(id);
+      if (!student) {
+        throw new NotFoundException(`Student with ID ${id} not found`);
+      }
+
+      const graduationDate = graduationDto.graduationDate ? new Date(graduationDto.graduationDate) : new Date();
+
+      // Update student status to graduated
+      student.grade = 'GRADUATED';
+      student.isActive = false; // Deactivate after graduation
+      await student.save();
+
+      this.logInfo(
+        `Student graduated: ${id} (${student.firstName} ${student.lastName}) on ${graduationDate.toISOString().split('T')[0]}`,
+      );
+
+      return {
+        success: true,
+        studentId: id,
+        studentName: `${student.firstName} ${student.lastName}`,
+        graduationDate,
+        diplomaNumber: graduationDto.diplomaNumber,
+        honors: graduationDto.honors,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to process student graduation', error);
+    }
+  }
+
+  /**
+   * Get grade transition history for a student
+   */
+  async getGradeTransitionHistory(id: string): Promise<any> {
+    try {
+      this.validateUUID(id, 'Student ID');
+
+      // Verify student exists
+      const student = await this.studentModel.findByPk(id);
+      if (!student) {
+        throw new NotFoundException(`Student with ID ${id} not found`);
+      }
+
+      // For now, return basic history - in a real implementation, this would query a grade transition log
+      const history = [
+        {
+          date: student.createdAt,
+          action: 'enrolled',
+          grade: student.grade,
+          reason: 'Initial enrollment',
+        },
+      ];
+
+      this.logInfo(`Grade transition history retrieved for student: ${id}`);
+
+      return {
+        success: true,
+        studentId: id,
+        studentName: `${student.firstName} ${student.lastName}`,
+        currentGrade: student.grade,
+        history,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to retrieve grade transition history', error);
     }
   }
 }
