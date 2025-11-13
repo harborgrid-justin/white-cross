@@ -16,9 +16,9 @@ import { AllergyService } from './allergy.service';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { CheckMedicationConflictsDto, MedicationConflictResponseDto } from './dto/check-conflicts.dto';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '@/services/auth';
+import { RolesGuard } from '@/services/auth';
+import { Roles } from '@/services/auth';
 import { UserRole   } from '@/database/models';
 
 import { BaseController } from '@/common/base';

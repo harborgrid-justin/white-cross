@@ -33,14 +33,14 @@ import { HealthRecordSummaryService } from './services/health-record-summary.ser
 import { HealthRecordBatchService } from './services/health-record-batch.service';
 
 // Enterprise Pattern Services
-import { PHIAccessLogger } from '@/services/phi-access-logger.service';
+import { PHIAccessLogger } from './services/phi-access-logger.service';
 import { HealthRecordMetricsService } from './services/health-record-metrics.service';
 
 // Analytics Optimization Services (Phase 4)
-import { CacheStrategyService } from '@/services/cache-strategy.service';
-import { QueryPerformanceAnalyzer } from '@/services/query-performance-analyzer.service';
-import { IntelligentCacheInvalidationService } from '@/services/intelligent-cache-invalidation.service';
-import { ResourceOptimizationService } from '@/services/resource-optimization.service';
+import { CacheStrategyService } from './services/cache-strategy.service';
+import { QueryPerformanceAnalyzer } from './services/query-performance-analyzer.service';
+import { IntelligentCacheInvalidationService } from './services/intelligent-cache-invalidation.service';
+import { ResourceOptimizationService } from './services/resource-optimization.service';
 
 // Enterprise Pattern Interceptors
 import { HealthRecordAuditInterceptor } from './interceptors/health-record-audit.interceptor';
