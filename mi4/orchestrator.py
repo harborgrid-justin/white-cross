@@ -26,6 +26,7 @@ from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 import json
 import time
+import re
 
 # Import our modular components
 from config import settings as config
@@ -43,9 +44,67 @@ logger = logging.getLogger(__name__)
 
 # Constants
 TASK_FILE = Path("tasks.json")
-WORKSPACES_DIR = Path("workspaces")
-AGENTS = ["agent1", "agent2", "agent3"]
-CODEX_CMD = ["codex", "exec"]
+WORKSPACES_DIR = config.workspaces_dir_path
+AGENTS = config.agent_names
+CODEX_CMD = list(config.codex.command)
+SESSION_STORE_FILE = WORKSPACES_DIR / "codex_sessions.json"
+SESSION_ID_PATTERN = re.compile(r"session id:\s*([0-9a-f-]{36})", re.IGNORECASE)
+
+
+class CodexSessionManager:
+    """Persist and manage Codex session identifiers per agent."""
+
+    def __init__(self, store_path: Path):
+        self._store_path = store_path
+        self._sessions: Dict[str, str] = {}
+        self._lock = asyncio.Lock()
+        self._load_sessions()
+
+    def _load_sessions(self) -> None:
+        """Load session mapping from disk if present."""
+        try:
+            if self._store_path.exists():
+                with self._store_path.open("r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        # Ensure all keys/values are strings
+                        self._sessions = {str(agent): str(session_id) for agent, session_id in data.items()}
+        except Exception as exc:
+            logger.warning(f"Failed to load Codex session cache: {exc}")
+            self._sessions = {}
+
+    def _save_sessions(self) -> None:
+        """Persist session mapping to disk atomically."""
+        try:
+            self._store_path.parent.mkdir(parents=True, exist_ok=True)
+            temp_path = self._store_path.with_suffix(".tmp")
+            with temp_path.open("w", encoding="utf-8") as f:
+                json.dump(self._sessions, f, indent=2, ensure_ascii=False)
+                f.write("\n")
+            temp_path.replace(self._store_path)
+        except Exception as exc:
+            logger.warning(f"Failed to persist Codex session cache: {exc}")
+
+    async def get(self, agent: str) -> Optional[str]:
+        """Return the known session id for this agent, if any."""
+        async with self._lock:
+            return self._sessions.get(agent)
+
+    async def set(self, agent: str, session_id: str) -> None:
+        """Record the session id for an agent and persist."""
+        async with self._lock:
+            self._sessions[agent] = session_id
+            self._save_sessions()
+
+    async def clear(self, agent: str) -> None:
+        """Remove an agent session mapping."""
+        async with self._lock:
+            if agent in self._sessions:
+                del self._sessions[agent]
+                self._save_sessions()
+
+
+codex_sessions = CodexSessionManager(SESSION_STORE_FILE)
 
 
 @dataclass
@@ -1106,7 +1165,7 @@ def mark_task(tasks: List[Dict[str, Any]], task_id: int, **updates) -> None:
 
 
 def ensure_workspaces():
-    WORKSPACES_DIR.mkdir(exist_ok=True)
+    WORKSPACES_DIR.mkdir(parents=True, exist_ok=True)
     for agent in AGENTS:
         (WORKSPACES_DIR / f"agent_{agent}").mkdir(parents=True, exist_ok=True)
 
@@ -1153,9 +1212,14 @@ async def run_codex_for_task(agent: str, task: Dict[str, Any], workspace_context
     prompt = build_prompt_for_task(task, workspace_context)
 
     # Compose the complete command with the prompt as the last argument
-    cmd = CODEX_CMD + [prompt]
+    existing_session = await codex_sessions.get(agent)
+    cmd = list(CODEX_CMD)
+    if existing_session:
+        cmd.extend(["resume", existing_session, prompt])
+    else:
+        cmd.append(prompt)
 
-    print(f"[{agent}][task {task['id']}] Starting in {workspace} with cmd: {' '.join(CODEX_CMD)} [prompt]")
+    print(f"[{agent}][task {task['id']}] Starting in {workspace} with cmd: {' '.join(cmd[:-1])} [prompt]")
 
     proc = await asyncio.create_subprocess_exec(
         *cmd,
@@ -1164,6 +1228,8 @@ async def run_codex_for_task(agent: str, task: Dict[str, Any], workspace_context
         stderr=asyncio.subprocess.PIPE,
     )
 
+    session_capture: Dict[str, Optional[str]] = {"id": None}
+
     async def stream_output(stream, label):
         while True:
             line = await stream.readline()
@@ -1171,6 +1237,9 @@ async def run_codex_for_task(agent: str, task: Dict[str, Any], workspace_context
                 break
             text = line.decode(errors="replace").rstrip("\n")
             print(f"[{agent}][task {task['id']}][{label}] {text}")
+            match = SESSION_ID_PATTERN.search(text)
+            if match:
+                session_capture["id"] = match.group(1)
 
     # Stream stdout and stderr concurrently
     await asyncio.gather(
@@ -1178,7 +1247,19 @@ async def run_codex_for_task(agent: str, task: Dict[str, Any], workspace_context
         stream_output(proc.stderr, "ERR"),
     )
 
-    return await proc.wait()
+    exit_code = await proc.wait()
+
+    detected_session = session_capture.get("id")
+    if detected_session:
+        if detected_session != existing_session:
+            await codex_sessions.set(agent, detected_session)
+            logger.info(f"[{agent}] Stored new Codex session: {detected_session}")
+    elif exit_code != 0 and existing_session:
+        # Clear the session if the run failed before emitting a session id
+        await codex_sessions.clear(agent)
+        logger.warning(f"[{agent}] Cleared Codex session after failed execution")
+
+    return exit_code
 
 
 # ----------------- ORCHESTRATION -----------------
