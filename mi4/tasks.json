@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "Fix TypeScript errors in backend/src",
+    "description": "In backend/src address any typescript errors",
+    "status": "open"
+  },
+  {
+    "id": 2,
+    "title": "Fix TypeScript import/export errors in backend/src",
+    "description": "In backend/src address any typescript import/export errors",
+    "status": "open"
+  }
+]
