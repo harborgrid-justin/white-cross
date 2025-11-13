@@ -5,7 +5,7 @@ import { StudentMedication, StudentMedicationAttributes } from '@/database/model
 import { Student } from '@/database/models';
 import { Medication } from '@/database/models';
 import { ListMedicationsQueryDto } from './dto/list-medications-query.dto';
-import { QueryCacheService } from '@/services/database/query-cache.service';
+import { QueryCacheService } from '@/database/services/query-cache.service';
 
 /**
  * Medication Repository

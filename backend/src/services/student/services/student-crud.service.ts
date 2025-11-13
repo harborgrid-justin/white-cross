@@ -17,7 +17,7 @@ import { Op, Sequelize, Transaction } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Student } from '@/database/models';
 import { User, UserRole } from '@/database/models';
-import { QueryCacheService } from '@/services/database/query-cache.service';
+import { QueryCacheService } from '@/database/services/query-cache.service';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
 import { CreateStudentDto } from '../dto/create-student.dto';

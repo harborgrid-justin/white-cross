@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ClinicalProtocolService } from '@/services/clinical-protocol.service';
+import { ClinicalProtocolService } from '../services/clinical-protocol.service';
 import { CreateProtocolDto } from '../dto/protocol/create-protocol.dto';
 import { UpdateProtocolDto } from '../dto/protocol/update-protocol.dto';
 import { ActivateProtocolDto } from '../dto/protocol/activate-protocol.dto';

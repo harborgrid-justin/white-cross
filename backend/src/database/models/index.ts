@@ -114,7 +114,7 @@ export type { MessageReactionAttributes, MessageReactionCreationAttributes } fro
 export * from './audit-log.model';
 export { PhiDisclosure } from './phi-disclosure.model';
 export * from './phi-disclosure-audit.model';
-export { ComplianceReport } from './compliance-report.model';
+export { ComplianceReport, ComplianceReportType, ComplianceStatus } from './compliance-report.model';
 export * from './compliance-checklist-item.model';
 export * from './compliance-violation.model';
 export * from './policy-acknowledgment.model';

@@ -23,7 +23,7 @@ import {
   CreateBudgetTransactionDto,
   UpdateBudgetCategoryDto,
   UpdateBudgetTransactionDto,
-} from '@/budget/dto';
+} from './dto';
 
 /**
  * Budget Controller

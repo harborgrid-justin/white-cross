@@ -4,10 +4,18 @@
  * Validates all required and optional fields for allergy creation.
  * Ensures data integrity before persisting to database.
  */
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AllergySeverity } from '../../../common/enums';
-import { AllergenType } from '../entities/allergy.entity';
+import { AllergyType } from '../entities/allergy.entity';
 
 export class CreateAllergyDto {
   /**
@@ -26,8 +34,7 @@ export class CreateAllergyDto {
    * Name of allergen (medication, food, environmental substance)
    */
   @ApiProperty({
-    description:
-      'Name of the allergen (medication, food, or environmental substance)',
+    description: 'Name of the allergen (medication, food, or environmental substance)',
     example: 'Peanuts',
     maxLength: 255,
   })
@@ -41,12 +48,12 @@ export class CreateAllergyDto {
    */
   @ApiPropertyOptional({
     description: 'Category of allergen',
-    enum: AllergenType,
-    example: AllergenType.FOOD || 'FOOD',
+    enum: AllergyType,
+    example: AllergyType.FOOD || 'FOOD',
   })
   @IsOptional()
-  @IsEnum(AllergenType)
-  allergenType?: AllergenType;
+  @IsEnum(AllergyType)
+  allergenType?: AllergyType;
 
   /**
    * Clinical severity classification
@@ -64,8 +71,7 @@ export class CreateAllergyDto {
    * Description of allergic reaction symptoms
    */
   @ApiPropertyOptional({
-    description:
-      'Description of allergic reaction symptoms (maximum 1000 characters)',
+    description: 'Description of allergic reaction symptoms (maximum 1000 characters)',
     example: 'Anaphylaxis, hives, difficulty breathing, throat swelling',
     maxLength: 1000,
   })
@@ -80,8 +86,7 @@ export class CreateAllergyDto {
    * Emergency treatment protocol
    */
   @ApiPropertyOptional({
-    description:
-      'Emergency treatment protocol and instructions (maximum 2000 characters)',
+    description: 'Emergency treatment protocol and instructions (maximum 2000 characters)',
     example: 'Administer EpiPen immediately, call 911, monitor airway',
     maxLength: 2000,
   })
@@ -96,8 +101,7 @@ export class CreateAllergyDto {
    * Whether allergy has been clinically verified
    */
   @ApiProperty({
-    description:
-      'Whether the allergy has been clinically verified by a healthcare professional',
+    description: 'Whether the allergy has been clinically verified by a healthcare professional',
     example: true,
     type: Boolean,
   })
@@ -108,8 +112,7 @@ export class CreateAllergyDto {
    * Healthcare professional who verified the allergy
    */
   @ApiPropertyOptional({
-    description:
-      'UUID of the healthcare professional who verified this allergy',
+    description: 'UUID of the healthcare professional who verified this allergy',
     example: '123e4567-e89b-12d3-a456-426614174000',
     format: 'uuid',
   })
@@ -121,8 +124,7 @@ export class CreateAllergyDto {
    * Additional clinical notes
    */
   @ApiPropertyOptional({
-    description:
-      'Additional clinical notes and observations (maximum 5000 characters)',
+    description: 'Additional clinical notes and observations (maximum 5000 characters)',
     example:
       'Patient experienced anaphylaxis during school lunch. Parent confirmed previous diagnosis.',
     maxLength: 5000,

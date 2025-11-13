@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ClinicalNoteService } from '@/services/clinical-note.service';
+import { ClinicalNoteService } from '../services/clinical-note.service';
 import { CreateNoteDto } from '../dto/note/create-note.dto';
 import { UpdateNoteDto } from '../dto/note/update-note.dto';
 import { NoteFiltersDto } from '../dto/note/note-filters.dto';

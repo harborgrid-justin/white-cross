@@ -18,7 +18,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { MedicationController } from '../medication.controller';
-import { MedicationService } from '@/services/medication.service';
+import { MedicationService } from '../services/medication.service';
 import { CreateMedicationDto } from '../dto/create-medication.dto';
 import { DeactivateMedicationDto } from '../dto/deactivate-medication.dto';
 import { ListMedicationsQueryDto } from '../dto/list-medications-query.dto';

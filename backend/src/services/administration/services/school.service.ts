@@ -7,7 +7,7 @@ import { AuditService } from './audit.service';
 import { CreateSchoolDto, SchoolQueryDto, UpdateSchoolDto } from '../dto/school.dto';
 import { AuditAction } from '../enums/administration.enums';
 import { PaginatedResponse, PaginationResult } from '../interfaces/administration.interfaces';
-import { QueryCacheService } from '@/services/database/query-cache.service';
+import { QueryCacheService } from '@/database/services/query-cache.service';
 
 @Injectable()
 export class SchoolService extends BaseService {

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MedicationController } from './medication.controller';
-import { MedicationService } from '@/services/medication.service';
+import { MedicationService } from './services/medication.service';
 import { MedicationRepository } from './medication.repository';
 import { StudentMedication } from '@/database/models';
 import { Medication } from '@/database/models';

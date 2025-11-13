@@ -20,7 +20,7 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { MedicationService } from '@/services/medication.service';
+import { MedicationService } from '../services/medication.service';
 import { MedicationRepository } from '../medication.repository';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BadRequestException, NotFoundException } from '@nestjs/common';

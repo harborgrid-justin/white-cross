@@ -13,7 +13,7 @@ import {
   SpendingTrendDto,
   UpdateBudgetCategoryDto,
   UpdateBudgetTransactionDto,
-} from '@/budget/dto';
+} from './dto';
 
 /**
  * Budget Service

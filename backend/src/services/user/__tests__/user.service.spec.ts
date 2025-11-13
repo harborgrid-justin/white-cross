@@ -22,7 +22,7 @@ import { UserService } from '../user.service';
 import { getModelToken } from '@nestjs/sequelize';
 import { User } from '../entities/user.entity';
 import { UserRole } from '../enums/user-role.enum';
-import { QueryCacheService } from '@/services/database/query-cache.service';
+import { QueryCacheService } from '@/database/services/query-cache.service';
 import { ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Op } from 'sequelize';
 

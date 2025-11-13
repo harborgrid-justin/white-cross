@@ -31,7 +31,7 @@ import { UserFiltersDto } from './dto/user-filters.dto';
 import { UserListResponseDto } from './dto/user-response.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserStatisticsDto } from './dto/user-statistics.dto';
-import { UserRole } from '@/user/enums';
+import { UserRole } from './enums';
 
 import { BaseController } from '@/common/base';
 @ApiTags('users')

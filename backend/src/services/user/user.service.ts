@@ -12,13 +12,13 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { User } from '@/user/entities';
+import { User } from './entities';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserChangePasswordDto } from './dto/change-password.dto';
 import { UserFiltersDto } from './dto/user-filters.dto';
 import { UserStatisticsDto } from './dto/user-statistics.dto';
-import { UserRole } from '@/user/enums';
+import { UserRole } from './enums';
 import { QueryCacheService } from '@/database/services';
 
 @Injectable()

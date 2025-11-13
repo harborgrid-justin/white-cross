@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuditAction } from '../enums/audit-action.enum';
 import { AuditService } from '../audit.service';
-import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
+import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
 /**
  * Audit Interceptor
