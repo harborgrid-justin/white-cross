@@ -32,13 +32,13 @@ import { Student } from '@/database/models';
 import { EmergencyContactService } from './emergency-contact.service';
 
 // Specialized Services
-import { ContactValidationService } from './services/contact-validation.service';
-import { ContactManagementService } from './services/contact-management.service';
-import { NotificationDeliveryService } from './services/notification-delivery.service';
-import { NotificationOrchestrationService } from './services/notification-orchestration.service';
-import { ContactVerificationService } from './services/contact-verification.service';
-import { ContactStatisticsService } from './services/contact-statistics.service';
-import { NotificationQueueService } from './services/notification-queue.service';
+import { ContactValidationService } from '@/services/contact-validation.service';
+import { ContactManagementService } from '@/services/contact-management.service';
+import { NotificationDeliveryService } from '@/services/notification-delivery.service';
+import { NotificationOrchestrationService } from '@/services/notification-orchestration.service';
+import { ContactVerificationService } from '@/services/contact-verification.service';
+import { ContactStatisticsService } from '@/services/contact-statistics.service';
+import { NotificationQueueService } from '@/services/notification-queue.service';
 
 // Controllers
 import { EmergencyContactController } from './emergency-contact.controller';

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Appointment Query Service
- * @module appointment/services/appointment-query.service
+ * @module appointme@/services/appointment-query.service
  * @description Business logic for appointment queries and availability
  */
 

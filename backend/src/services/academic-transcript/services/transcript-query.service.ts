@@ -1,6 +1,6 @@
 /**
  * @fileoverview Transcript Query Service
- * @module academic-transcript/services/transcript-query.service
+ * @module academic-transcri@/services/transcript-query.service
  * @description Service for querying academic transcript data
  */
 

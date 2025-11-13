@@ -2,7 +2,7 @@ import { ExecutionContext, Injectable, UnauthorizedException, Optional } from '@
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
-import { TokenBlacklistService } from '../services/token-blacklist.service';
+import { TokenBlacklistService } from '@/services/token-blacklist.service';
 import { DecodedToken, RequestWithAuth, SafeUser } from '../types/auth.types';
 
 @Injectable()

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Phone Number Validator Service
- * @module infrastructure/sms/services/phone-validator.service
+ * @module infrastructure/s@/services/phone-validator.service
  * @description Validates and normalizes phone numbers using libphonenumber-js
  */
 

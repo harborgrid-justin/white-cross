@@ -35,15 +35,15 @@ import { AppointmentEntity, AvailabilitySlot, PaginatedResponse } from './entiti
 import { AppointmentType as ModelAppointmentType } from '@/database/models';
 
 // Import all specialized services
-import { AppointmentReadService } from './services/appointment-read.service';
-import { AppointmentWriteService } from './services/appointment-write.service';
-import { AppointmentStatusService } from './services/appointment-status.service';
-import { AppointmentQueryService } from './services/appointment-query.service';
-import { AppointmentSchedulingService } from './services/appointment-scheduling.service';
-import { AppointmentStatisticsService } from './services/appointment-statistics.service';
-import { AppointmentRecurringService } from './services/appointment-recurring.service';
-import { WaitlistService } from './services/waitlist.service';
-import { ReminderService } from './services/reminder.service';
+import { AppointmentReadService } from '@/services/appointment-read.service';
+import { AppointmentWriteService } from '@/services/appointment-write.service';
+import { AppointmentStatusService } from '@/services/appointment-status.service';
+import { AppointmentQueryService } from '@/services/appointment-query.service';
+import { AppointmentSchedulingService } from '@/services/appointment-scheduling.service';
+import { AppointmentStatisticsService } from '@/services/appointment-statistics.service';
+import { AppointmentRecurringService } from '@/services/appointment-recurring.service';
+import { WaitlistService } from '@/services/waitlist.service';
+import { ReminderService } from '@/services/reminder.service';
 
 /**
  * Appointment Service Facade

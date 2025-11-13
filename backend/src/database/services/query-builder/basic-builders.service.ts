@@ -1,6 +1,6 @@
 /**
  * @fileoverview Basic Query Builder Functions
- * @module database/services/query-builder/basic-builders
+ * @module databa@/services/query-builder/basic-builders
  * @description Basic query building functions for filters, pagination, and sorting
  *
  * @version 1.0.0

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Appointment Scheduling Service
- * @module appointment/services/appointment-scheduling.service
+ * @module appointme@/services/appointment-scheduling.service
  * @description Business logic for appointment scheduling, availability checking, and conflict detection
  */
 

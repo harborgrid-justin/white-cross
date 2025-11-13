@@ -10,15 +10,15 @@ export { AppointmentModule } from './appointment.module';
 export { AppointmentService } from './appointment.service';
 
 // Specialized services
-export { AppointmentReadService } from './services/appointment-read.service';
-export { AppointmentWriteService } from './services/appointment-write.service';
-export { AppointmentStatusService } from './services/appointment-status.service';
-export { AppointmentQueryService } from './services/appointment-query.service';
-export { AppointmentSchedulingService } from './services/appointment-scheduling.service';
-export { AppointmentStatisticsService } from './services/appointment-statistics.service';
-export { AppointmentRecurringService } from './services/appointment-recurring.service';
-export { WaitlistService } from './services/waitlist.service';
-export { ReminderService } from './services/reminder.service';
+export { AppointmentReadService } from '@/services/appointment-read.service';
+export { AppointmentWriteService } from '@/services/appointment-write.service';
+export { AppointmentStatusService } from '@/services/appointment-status.service';
+export { AppointmentQueryService } from '@/services/appointment-query.service';
+export { AppointmentSchedulingService } from '@/services/appointment-scheduling.service';
+export { AppointmentStatisticsService } from '@/services/appointment-statistics.service';
+export { AppointmentRecurringService } from '@/services/appointment-recurring.service';
+export { WaitlistService } from '@/services/waitlist.service';
+export { ReminderService } from '@/services/reminder.service';
 
 // Controllers
 export { AppointmentCoreController } from './controllers/appointment-core.controller';

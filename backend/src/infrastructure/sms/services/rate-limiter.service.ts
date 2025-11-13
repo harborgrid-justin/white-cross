@@ -1,6 +1,6 @@
 /**
  * @fileoverview Rate Limiter Service
- * @module infrastructure/sms/services/rate-limiter.service
+ * @module infrastructure/s@/services/rate-limiter.service
  * @description Redis-based rate limiting for SMS to prevent abuse and control costs
  */
 

@@ -15,8 +15,8 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { PHIAccessLogger } from '../services/phi-access-logger.service';
-import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
+import { PHIAccessLogger } from '@/services/phi-access-logger.service';
+import { HealthRecordMetricsService } from '@/services/health-record-metrics.service';
 import { HealthRecordAuditInterceptor } from '../interceptors/health-record-audit.interceptor';
 import { HealthRecordCacheInterceptor } from '../interceptors/health-record-cache.interceptor';
 import { HealthRecordRateLimitGuard } from '../guards/health-record-rate-limit.guard';

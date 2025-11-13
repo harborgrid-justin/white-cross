@@ -18,7 +18,7 @@ import { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { CacheModule } from '@nestjs/cache-manager';
-import { EnhancedMessageService } from '../services/enhanced-message.service';
+import { EnhancedMessageService } from '@/services/enhanced-message.service';
 import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
 import { KeyManagementService } from '../../infrastructure/encryption/key-management.service';
 import { CacheService } from '../../infrastructure/cache/cache.service';

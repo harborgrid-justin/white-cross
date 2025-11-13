@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DashboardMetric, HealthTrendData } from './enterprise-features-interfaces';
-import { MetricsService } from './services/analytics/metrics.service';
-import { StatisticsService } from './services/analytics/statistics.service';
-import { ComplianceService } from './services/analytics/compliance.service';
-import { ExportService } from './services/analytics/export.service';
+import { MetricsService } from '@/services/analytics/metrics.service';
+import { StatisticsService } from '@/services/analytics/statistics.service';
+import { ComplianceService } from '@/services/analytics/compliance.service';
+import { ExportService } from '@/services/analytics/export.service';
 
 import { BaseService } from '@/common/base';
 /**

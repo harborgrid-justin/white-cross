@@ -24,23 +24,23 @@ import { HealthRecordService } from './health-record.service';
 import { HealthRecordCrudController, HealthRecordComplianceController } from './controllers';
 
 // Specialized Services (Refactored from main service)
-import { HealthRecordCrudService } from './services/health-record-crud.service';
-import { HealthRecordAllergyService } from './services/health-record-allergy.service';
-import { HealthRecordChronicConditionService } from './services/health-record-chronic-condition.service';
-import { HealthRecordVaccinationService } from './services/health-record-vaccination.service';
-import { HealthRecordVitalsService } from './services/health-record-vitals.service';
-import { HealthRecordSummaryService } from './services/health-record-summary.service';
-import { HealthRecordBatchService } from './services/health-record-batch.service';
+import { HealthRecordCrudService } from '@/services/health-record-crud.service';
+import { HealthRecordAllergyService } from '@/services/health-record-allergy.service';
+import { HealthRecordChronicConditionService } from '@/services/health-record-chronic-condition.service';
+import { HealthRecordVaccinationService } from '@/services/health-record-vaccination.service';
+import { HealthRecordVitalsService } from '@/services/health-record-vitals.service';
+import { HealthRecordSummaryService } from '@/services/health-record-summary.service';
+import { HealthRecordBatchService } from '@/services/health-record-batch.service';
 
 // Enterprise Pattern Services
-import { PHIAccessLogger } from './services/phi-access-logger.service';
-import { HealthRecordMetricsService } from './services/health-record-metrics.service';
+import { PHIAccessLogger } from '@/services/phi-access-logger.service';
+import { HealthRecordMetricsService } from '@/services/health-record-metrics.service';
 
 // Analytics Optimization Services (Phase 4)
-import { CacheStrategyService } from './services/cache-strategy.service';
-import { QueryPerformanceAnalyzer } from './services/query-performance-analyzer.service';
-import { IntelligentCacheInvalidationService } from './services/intelligent-cache-invalidation.service';
-import { ResourceOptimizationService } from './services/resource-optimization.service';
+import { CacheStrategyService } from '@/services/cache-strategy.service';
+import { QueryPerformanceAnalyzer } from '@/services/query-performance-analyzer.service';
+import { IntelligentCacheInvalidationService } from '@/services/intelligent-cache-invalidation.service';
+import { ResourceOptimizationService } from '@/services/resource-optimization.service';
 
 // Enterprise Pattern Interceptors
 import { HealthRecordAuditInterceptor } from './interceptors/health-record-audit.interceptor';
@@ -55,10 +55,10 @@ import { VitalsModule } from './vitals/vitals.module';
 import { SearchModule } from './search/search.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { ImportExportModule } from './import-export/import-export.module';
-import { ChronicConditionModule } from '../services/chronic-condition/chronic-condition.module';
+import { ChronicConditionModule } from '@/services/chronic-condition/chronic-condition.module';
 import { ValidationModule } from './validation/validation.module';
-import { AllergyModule } from '../services/allergy/allergy.module';
-import { MedicationModule } from '../services/medication/medication.module';
+import { AllergyModule } from '@/services/allergy/allergy.module';
+import { MedicationModule } from '@/services/medication/medication.module';
 import { ScreeningModule } from './screening/screening.module';
 
 // Models

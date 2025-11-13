@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DrugInteractionService } from '../services/drug-interaction.service';
+import { DrugInteractionService } from '@/services/drug-interaction.service';
 import { InteractionCheckDto } from '../dto/drug/interaction-check.dto';
 import { AddInteractionDto } from '../dto/drug/add-interaction.dto';
 import { UpdateInteractionDto } from '../dto/drug/update-interaction.dto';

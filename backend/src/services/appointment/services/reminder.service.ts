@@ -1,6 +1,6 @@
 /**
  * @fileoverview Reminder Service
- * @module appointment/services/reminder.service
+ * @module appointme@/services/reminder.service
  * @description Business logic for appointment reminder management
  */
 

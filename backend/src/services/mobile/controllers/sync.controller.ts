@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/co
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { OfflineSyncService } from '../services/offline-sync.service';
+import { OfflineSyncService } from '@/services/offline-sync.service';
 import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
 
 import { BaseController } from '@/common/base';

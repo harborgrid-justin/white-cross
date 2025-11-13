@@ -1,6 +1,6 @@
 /**
  * @fileoverview Appointment Status Service
- * @module appointment/services/appointment-status.service
+ * @module appointme@/services/appointment-status.service
  * @description Business logic for appointment status transitions
  */
 

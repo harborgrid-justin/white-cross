@@ -1,6 +1,6 @@
 /**
  * @fileoverview Enhanced Audit Service
- * @module security/services/audit
+ * @module securi@/services/audit
  * @description Comprehensive audit logging with filtering and retention
  *
  * @version 2.0.0

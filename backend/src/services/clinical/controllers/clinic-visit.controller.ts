@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ClinicVisitBasicService } from '../services/clinic-visit-basic.service';
-import { ClinicVisitAnalyticsService } from '../services/clinic-visit-analytics.service';
+import { ClinicVisitBasicService } from '@/services/clinic-visit-basic.service';
+import { ClinicVisitAnalyticsService } from '@/services/clinic-visit-analytics.service';
 import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
 import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';

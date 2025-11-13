@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cost Tracker Service
- * @module infrastructure/sms/services/cost-tracker.service
+ * @module infrastructure/s@/services/cost-tracker.service
  * @description Tracks SMS costs and provides analytics for budget management
  */
 

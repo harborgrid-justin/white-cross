@@ -18,7 +18,7 @@ import { SystemConfig } from '@/database/models';
 import { ConfigurationHistory } from '@/database/models';
 
 // Services
-import { ConfigurationService } from './services/configuration.service';
+import { ConfigurationService } from '@/services/configuration.service';
 
 // Controllers
 import { ConfigurationController } from './configuration.controller';

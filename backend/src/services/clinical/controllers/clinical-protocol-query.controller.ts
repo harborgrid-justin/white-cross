@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ClinicalProtocolService } from '../services/clinical-protocol.service';
+import { ClinicalProtocolService } from '@/services/clinical-protocol.service';
 import { ProtocolFiltersDto } from '../dto/protocol/protocol-filters.dto';
 
 import { BaseController } from '@/common/base';

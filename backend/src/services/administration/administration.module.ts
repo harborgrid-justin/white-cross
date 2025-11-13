@@ -14,17 +14,17 @@ import { PerformanceMetric } from '@/database/models';
 import { TrainingModule } from '@/database/models';
 
 // Import all services
-import { AuditService } from './services/audit.service';
-import { BackupService } from './services/backup.service';
-import { ConfigurationService } from './services/configuration.service';
-import { DistrictService } from './services/district.service';
-import { SchoolService } from './services/school.service';
-import { LicenseService } from './services/license.service';
-import { PerformanceService } from './services/performance.service';
-import { SettingsService } from './services/settings.service';
-import { SystemHealthService } from './services/system-health.service';
-import { TrainingService } from './services/training.service';
-import { UserManagementService } from './services/user-management.service';
+import { AuditService } from '@/services/audit.service';
+import { BackupService } from '@/services/backup.service';
+import { ConfigurationService } from '@/services/configuration.service';
+import { DistrictService } from '@/services/district.service';
+import { SchoolService } from '@/services/school.service';
+import { LicenseService } from '@/services/license.service';
+import { PerformanceService } from '@/services/performance.service';
+import { SettingsService } from '@/services/settings.service';
+import { SystemHealthService } from '@/services/system-health.service';
+import { TrainingService } from '@/services/training.service';
+import { UserManagementService } from '@/services/user-management.service';
 
 /**
  * AdministrationModule

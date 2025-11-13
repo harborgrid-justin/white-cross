@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nes
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { NotificationService } from '../services/notification.service';
+import { NotificationService } from '@/services/notification.service';
 import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 
 import { BaseController } from '@/common/base';

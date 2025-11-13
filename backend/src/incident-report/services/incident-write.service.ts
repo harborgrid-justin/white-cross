@@ -1,6 +1,6 @@
 /**
  * @fileoverview Incident Write Service
- * @module incident-report/services/incident-write.service
+ * @module incident-repo@/services/incident-write.service
  * @description Business logic for incident report write operations
  */
 

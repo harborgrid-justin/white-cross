@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ReportGenerationService } from '../services/report-generation.service';
-import { ReportExportService } from '../services/report-export.service';
-import { DashboardService } from '../services/dashboard.service';
+import { ReportGenerationService } from '@/services/report-generation.service';
+import { ReportExportService } from '@/services/report-export.service';
+import { DashboardService } from '@/services/dashboard.service';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
 import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';

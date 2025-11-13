@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
-import { AuditService } from '../../database/services/audit.service';
+import { AuditService } from '../../databa@/services/audit.service';
 import { ExecutionContext } from '../../database/types/execution-context.interface';
 import { AccessControlCreateIpRestrictionDto, IpRestrictionType } from '../dto/create-ip-restriction.dto';
 import { IpRestrictionCheckResult } from '../interfaces/ip-restriction-check.interface';

@@ -1,6 +1,6 @@
 /**
  * @fileoverview SMS Template Service
- * @module infrastructure/sms/services/sms-template.service
+ * @module infrastructure/s@/services/sms-template.service
  * @description Manages SMS templates with variable substitution
  */
 

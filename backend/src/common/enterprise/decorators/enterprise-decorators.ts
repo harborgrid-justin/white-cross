@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { EnterpriseCacheConfig } from '../services/enterprise-cache.service';
+import { EnterpriseCacheConfig } from '@/services/enterprise-cache.service';
 
 /**
  * Shared Enterprise Decorators

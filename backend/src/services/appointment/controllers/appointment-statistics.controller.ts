@@ -12,8 +12,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AppointmentStatisticsService } from '../services/appointment-statistics.service';
-import { AppointmentQueryService } from '../services/appointment-query.service';
+import { AppointmentStatisticsService } from '@/services/appointment-statistics.service';
+import { AppointmentQueryService } from '@/services/appointment-query.service';
 import { StatisticsFiltersDto, SearchAppointmentsDto, DateRangeDto } from '../dto/statistics.dto';
 
 import { BaseController } from '@/common/base';

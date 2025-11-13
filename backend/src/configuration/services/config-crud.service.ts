@@ -1,6 +1,6 @@
 /**
  * @fileoverview Configuration CRUD Service
- * @module configuration/services/config-crud.service
+ * @module configurati@/services/config-crud.service
  * @description Handles basic CRUD operations for system configurations
  */
 

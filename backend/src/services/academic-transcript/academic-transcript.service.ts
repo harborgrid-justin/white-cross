@@ -2,7 +2,7 @@
  * @fileoverview Academic Transcript Service
  * @module academic-transcript/academic-transcript.service
  * @description Service for managing academic transcript data and SIS integration
- * Migrated from backend/src/services/academicTranscript
+ * Migrated from backend/s@/services/academicTranscript
  */
 
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';

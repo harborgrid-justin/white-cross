@@ -5,7 +5,7 @@
  * Integrates with existing WebSocket infrastructure to broadcast system health,
  * performance metrics, and admin activity updates to connected admin clients.
  *
- * @module infrastructure/websocket/services/admin-metrics.service
+ * @module infrastructure/websock@/services/admin-metrics.service
  * @category WebSocket Services
  * @requires WebSocketService
  * @requires SystemMonitoringService

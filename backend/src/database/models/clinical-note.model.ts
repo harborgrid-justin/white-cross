@@ -16,7 +16,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 
-import { NoteType } from '../../clinical/enums/note-type.enum';
+import { NoteType } from '@/services/clinical/enums/note-type.enum';
 
 export interface ClinicalNoteAttributes {
   id: string;

@@ -13,7 +13,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { EnterpriseMetricsService } from '@/common/enterprise/services/enterprise-metrics.service';
+import { EnterpriseMetricsService } from '@/common/enterpri@/services/enterprise-metrics.service';
 import { ComplianceLevel, HealthRecordOperation } from '../interfaces/health-record-types';
 import { HealthMetricSnapshot   } from '@/database/models';
 

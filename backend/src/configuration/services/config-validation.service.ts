@@ -1,6 +1,6 @@
 /**
  * @fileoverview Configuration Validation Service
- * @module configuration/services/config-validation.service
+ * @module configurati@/services/config-validation.service
  * @description Handles validation logic for configuration values
  */
 

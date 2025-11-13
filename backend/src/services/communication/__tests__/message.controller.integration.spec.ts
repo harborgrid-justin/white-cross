@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { MessageController } from '../controllers/message.controller';
-import { MessageService } from '../services/message.service';
+import { MessageService } from '@/services/message.service';
 import { MessageCategory, MessagePriority, MessageType, RecipientType } from '../dto/send-message.dto';
 import { DeliveryChannelType, DeliveryStatus } from '@/database/models';
 

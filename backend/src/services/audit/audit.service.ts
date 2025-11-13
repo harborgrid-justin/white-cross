@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { AuditLogService } from './services/audit-log.service';
-import { AuditQueryService } from './services/audit-query.service';
-import { AuditStatisticsService } from './services/audit-statistics.service';
-import { AuditUtilsService } from './services/audit-utils.service';
-import { ComplianceReportingService } from './services/compliance-reporting.service';
-import { PHIAccessService } from './services/phi-access.service';
-import { SecurityAnalysisService } from './services/security-analysis.service';
+import { AuditLogService } from '@/services/audit-log.service';
+import { AuditQueryService } from '@/services/audit-query.service';
+import { AuditStatisticsService } from '@/services/audit-statistics.service';
+import { AuditUtilsService } from '@/services/audit-utils.service';
+import { ComplianceReportingService } from '@/services/compliance-reporting.service';
+import { PHIAccessService } from '@/services/phi-access.service';
+import { SecurityAnalysisService } from '@/services/security-analysis.service';
 import { IAuditLogEntry } from './interfaces/audit-log-entry.interface';
 import { IPHIAccessLog } from './interfaces/phi-access-log.interface';
 import { AuditLogFilters, AuditLogSearchCriteria, AuditRequest, PHIAccessLogFilters, ValidationResult } from './types/audit.types';

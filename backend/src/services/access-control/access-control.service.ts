@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RoleManagementService } from './services/role-management.service';
-import { PermissionManagementService } from './services/permission-management.service';
-import { UserRoleAssignmentService } from './services/user-role-assignment.service';
-import { SessionManagementService } from './services/session-management.service';
-import { SecurityMonitoringService } from './services/security-monitoring.service';
-import { IpRestrictionManagementService } from './services/ip-restriction-management.service';
-import { SystemInitializationService } from './services/system-initialization.service';
+import { RoleManagementService } from '@/services/role-management.service';
+import { PermissionManagementService } from '@/services/permission-management.service';
+import { UserRoleAssignmentService } from '@/services/user-role-assignment.service';
+import { SessionManagementService } from '@/services/session-management.service';
+import { SecurityMonitoringService } from '@/services/security-monitoring.service';
+import { IpRestrictionManagementService } from '@/services/ip-restriction-management.service';
+import { SystemInitializationService } from '@/services/system-initialization.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { CreatePermissionDto } from './dto/create-permission.dto';

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Health Records Service
- * @module student/services/student-health-records.service
+ * @module stude@/services/student-health-records.service
  * @description Handles student health and mental health records access
  */
 

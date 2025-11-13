@@ -10,10 +10,10 @@ import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
 import { SmsService } from './sms.service';
 import { TwilioProvider } from './providers/twilio.provider';
-import { PhoneValidatorService } from './services/phone-validator.service';
-import { SmsTemplateService } from './services/sms-template.service';
-import { RateLimiterService } from './services/rate-limiter.service';
-import { CostTrackerService } from './services/cost-tracker.service';
+import { PhoneValidatorService } from '@/services/phone-validator.service';
+import { SmsTemplateService } from '@/services/sms-template.service';
+import { RateLimiterService } from '@/services/rate-limiter.service';
+import { CostTrackerService } from '@/services/cost-tracker.service';
 import { SMS_QUEUE_NAME, SmsQueueProcessor } from './processors/sms-queue.processor';
 
 @Module({

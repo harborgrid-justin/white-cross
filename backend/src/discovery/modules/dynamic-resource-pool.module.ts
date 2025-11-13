@@ -1,8 +1,8 @@
 import { DynamicModule, Injectable, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService, Reflector } from '@nestjs/core';
-import { DynamicResourcePoolService } from './services/dynamic-resource-pool.service';
-import { ResourceMonitorService } from './services/resource-monitor.service';
-import { PoolOptimizationService } from './services/pool-optimization.service';
+import { DynamicResourcePoolService } from '@/services/dynamic-resource-pool.service';
+import { ResourceMonitorService } from '@/services/resource-monitor.service';
+import { PoolOptimizationService } from '@/services/pool-optimization.service';
 import { ResourceThrottleInterceptor } from './interceptors/resource-throttle.interceptor';
 import { ResourceQuotaGuard } from './guards/resource-quota.guard';
 

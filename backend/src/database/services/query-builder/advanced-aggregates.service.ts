@@ -1,6 +1,6 @@
 /**
  * @fileoverview Advanced Aggregate Query Builder Service
- * @module database/services/query-builder/advanced-aggregates
+ * @module databa@/services/query-builder/advanced-aggregates
  * @description Specialized service for complex aggregation queries including
  * window functions, CTEs, grouped aggregates, and statistical functions
  *

@@ -16,20 +16,20 @@ import {
   ThreatType,
   AuditCategory,
 } from './interfaces/security.interfaces';
-import { EnhancedEncryptionService } from './services/encryption.service';
-import { EnhancedAuditService } from './services/audit.service';
-import { PIIDetectionService } from './services/pii-detection.service';
-import { EnhancedThreatDetectionService } from './services/enhanced-threat-detection.service';
+import { EnhancedEncryptionService } from '@/services/encryption.service';
+import { EnhancedAuditService } from '@/services/audit.service';
+import { PIIDetectionService } from '@/services/pii-detection.service';
+import { EnhancedThreatDetectionService } from '@/services/enhanced-threat-detection.service';
 
 import { BaseService } from '@/common/base';
 // Re-export interfaces for backward compatibility
 export * from './interfaces/security.interfaces';
 
 // Re-export services for backward compatibility
-export { EnhancedEncryptionService } from './services/encryption.service';
-export { EnhancedAuditService } from './services/audit.service';
-export { PIIDetectionService } from './services/pii-detection.service';
-export { EnhancedThreatDetectionService } from './services/enhanced-threat-detection.service';
+export { EnhancedEncryptionService } from '@/services/encryption.service';
+export { EnhancedAuditService } from '@/services/audit.service';
+export { PIIDetectionService } from '@/services/pii-detection.service';
+export { EnhancedThreatDetectionService } from '@/services/enhanced-threat-detection.service';
 
 // ============================================================================
 // MAIN ENHANCED SECURITY SERVICE (Orchestrator)

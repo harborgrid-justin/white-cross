@@ -2,12 +2,12 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 // Import services
-import { DistrictService } from './services/district.service';
-import { SchoolService } from './services/school.service';
-import { LicenseService } from './services/license.service';
-import { ConfigurationService } from './services/configuration.service';
-import { AuditService } from './services/audit.service';
-import { BackupService } from './services/backup.service';
+import { DistrictService } from '@/services/district.service';
+import { SchoolService } from '@/services/school.service';
+import { LicenseService } from '@/services/license.service';
+import { ConfigurationService } from '@/services/configuration.service';
+import { AuditService } from '@/services/audit.service';
+import { BackupService } from '@/services/backup.service';
 
 // Import DTOs
 import { AuditQueryDto } from './dto/audit.dto';

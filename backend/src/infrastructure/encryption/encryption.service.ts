@@ -17,9 +17,9 @@ import {
   EncryptionConfig,
   IEncryptionService,
 } from './types/encryption.types';
-import { CryptoService } from './services/crypto.service';
-import { SessionKeyManagerService } from './services/session-key-manager.service';
-import { MessageEncryptionService } from './services/message-encryption.service';
+import { CryptoService } from '@/services/crypto.service';
+import { SessionKeyManagerService } from '@/services/session-key-manager.service';
+import { MessageEncryptionService } from '@/services/message-encryption.service';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

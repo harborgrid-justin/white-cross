@@ -1,6 +1,6 @@
 /**
  * @fileoverview Analytics Operations Service for Database Operations
- * @module database/services/operations/analytics-operations
+ * @module databa@/services/operations/analytics-operations
  * @description Advanced analytics and aggregation operations for data analysis
  *
  * @version 1.0.0

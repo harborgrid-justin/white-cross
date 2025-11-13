@@ -14,11 +14,11 @@ import { Job } from 'bullmq';
 import { JobType } from '../enums/job-type.enum';
 import { InventoryMaintenanceData } from '../interfaces/job-data.interface';
 import { CacheService } from '@/common/cache/cache.service';
-import { InventoryAlertService } from '../../../inventory/services/inventory-alert.service';
-import { InventoryNotificationService } from '../../../inventory/services/inventory-notification.service';
-import { InventoryReorderService } from '../../../inventory/services/inventory-reorder.service';
-import { InventoryReportService } from '../../../inventory/services/inventory-report.service';
-import { InventoryDisposalService } from '../../../inventory/services/inventory-disposal.service';
+import { InventoryAlertService } from '../../../invento@/services/inventory-alert.service';
+import { InventoryNotificationService } from '../../../invento@/services/inventory-notification.service';
+import { InventoryReorderService } from '../../../invento@/services/inventory-reorder.service';
+import { InventoryReportService } from '../../../invento@/services/inventory-report.service';
+import { InventoryDisposalService } from '../../../invento@/services/inventory-disposal.service';
 
 /**
  * Cache configuration constants

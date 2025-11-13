@@ -11,11 +11,11 @@ import { MicrosoftStrategy } from './strategies/microsoft.strategy';
 import { User } from '@/database';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { EmailVerificationService } from './services/email-verification.service';
-import { MfaService } from './services/mfa.service';
-import { OAuthService } from './services/oauth.service';
-import { PasswordResetService } from './services/password-reset.service';
-import { TokenBlacklistService } from './services/token-blacklist.service';
+import { EmailVerificationService } from '@/services/email-verification.service';
+import { MfaService } from '@/services/mfa.service';
+import { OAuthService } from '@/services/oauth.service';
+import { PasswordResetService } from '@/services/password-reset.service';
+import { TokenBlacklistService } from '@/services/token-blacklist.service';
 
 @Module({
   imports: [

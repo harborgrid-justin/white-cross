@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { TreatmentPlanService } from '../services/treatment-plan.service';
+import { TreatmentPlanService } from '@/services/treatment-plan.service';
 import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.dto';
 import { UpdateTreatmentPlanDto } from '../dto/treatment/update-treatment-plan.dto';
 import { TreatmentPlanFiltersDto } from '../dto/treatment/treatment-plan-filters.dto';

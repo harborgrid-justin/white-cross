@@ -1,6 +1,6 @@
 /**
  * @fileoverview Enhanced Threat Detection Service
- * @module security/services/enhanced-threat-detection
+ * @module securi@/services/enhanced-threat-detection
  * @description Advanced threat detection and auto-mitigation for enhanced security
  *
  * @version 2.0.0

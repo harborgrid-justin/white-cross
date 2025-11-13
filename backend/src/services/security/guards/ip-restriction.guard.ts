@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger } from '@nestjs/common';
-import { IpRestrictionService } from '../services/ip-restriction.service';
+import { IpRestrictionService } from '@/services/ip-restriction.service';
 
 /**
  * IP Restriction Guard

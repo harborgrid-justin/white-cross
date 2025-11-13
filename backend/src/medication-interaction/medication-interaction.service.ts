@@ -9,7 +9,7 @@ import { BaseService } from '@/common/base';
  * Medication Interaction Checker Service
  * Checks for drug-drug interactions and contraindications
  *
- * Migrated from backend/src/services/medicationInteractionService.ts
+ * Migrated from backend/s@/services/medicationInteractionService.ts
  * LOC: 161334FAAD
  */
 

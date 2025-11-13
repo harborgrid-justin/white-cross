@@ -15,7 +15,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Allergy } from '../models/allergy.model';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
 import { AllergyUpdateDto } from '../dto/update-allergy.dto';
-import { Student } from '../../student/models/student.model';
+import { Student } from '@/services/student/models/student.model';
 
 import { BaseService } from '@/common/base';
 @Injectable()

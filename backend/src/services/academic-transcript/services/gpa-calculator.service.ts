@@ -1,6 +1,6 @@
 /**
  * @fileoverview GPA Calculator Service
- * @module academic-transcript/services/gpa-calculator.service
+ * @module academic-transcri@/services/gpa-calculator.service
  * @description Service for calculating Grade Point Average
  */
 

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Academic Service
- * @module student/services/student-academic.service
+ * @module stude@/services/student-academic.service
  * @description Handles academic transcript operations and grade transitions
  */
 

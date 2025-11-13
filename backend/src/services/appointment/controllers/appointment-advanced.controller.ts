@@ -14,10 +14,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AppointmentRecurringService } from '../services/appointment-recurring.service';
-import { AppointmentWriteService } from '../services/appointment-write.service';
-import { AppointmentSchedulingService } from '../services/appointment-scheduling.service';
-import { AppointmentQueryService } from '../services/appointment-query.service';
+import { AppointmentRecurringService } from '@/services/appointment-recurring.service';
+import { AppointmentWriteService } from '@/services/appointment-write.service';
+import { AppointmentSchedulingService } from '@/services/appointment-scheduling.service';
+import { AppointmentQueryService } from '@/services/appointment-query.service';
 import { CreateRecurringAppointmentDto } from '../dto/recurring.dto';
 import { BulkCancelDto } from '../dto/statistics.dto';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';

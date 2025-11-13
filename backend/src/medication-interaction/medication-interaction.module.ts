@@ -11,7 +11,7 @@ import { StudentMedication } from '@/database/models';
  * Module for medication interaction checking with Sequelize integration.
  * Provides drug-drug interaction detection, safety scoring, and recommendations.
  *
- * Migrated from backend/src/services/medicationInteractionService.ts
+ * Migrated from backend/s@/services/medicationInteractionService.ts
  */
 @Module({
   imports: [SequelizeModule.forFeature([Medication, StudentMedication])],

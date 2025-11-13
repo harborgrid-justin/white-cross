@@ -10,7 +10,7 @@
  * - Distributed blacklist using Redis
  * - Fast token lookup for authentication checks
  *
- * @module auth/services/token-blacklist
+ * @module au@/services/token-blacklist
  * @security Token revocation, session management
  */
 

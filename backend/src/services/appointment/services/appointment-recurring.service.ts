@@ -1,6 +1,6 @@
 /**
  * @fileoverview Appointment Recurring Service
- * @module appointment/services/appointment-recurring.service
+ * @module appointme@/services/appointment-recurring.service
  * @description Business logic for recurring appointments and bulk operations
  */
 

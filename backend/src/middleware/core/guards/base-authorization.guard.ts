@@ -6,7 +6,7 @@ import {
   PERMISSIONS_MODE_KEY,
   type PermissionsMode,
 } from '../decorators/permissions.decorator';
-import { RbacPermissionService } from '../services/rbac-permission.service';
+import { RbacPermissionService } from '@/services/rbac-permission.service';
 
 /**
  * Base guard class with shared authorization logic

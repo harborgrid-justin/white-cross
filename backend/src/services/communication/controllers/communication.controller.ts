@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CommunicationService } from '../services/communication.service';
+import { CommunicationService } from '@/services/communication.service';
 import { BroadcastMessageDto } from '../dto/broadcast-message.dto';
 import { CreateMessageDto } from '../dto/create-message.dto';
 import { CreateMessageTemplateDto } from '../dto/create-message-template.dto';

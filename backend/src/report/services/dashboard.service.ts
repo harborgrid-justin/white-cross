@@ -7,7 +7,7 @@ import { StudentMedication } from '@/database/models';
 import { IncidentReport } from '@/database/models';
 import { Allergy } from '@/database/models';
 import { ChronicCondition } from '@/database/models';
-import { ConditionStatus } from '../../chronic-condition/enums';
+import { ConditionStatus } from '@/services/chronic-condition/enums';
 import { DashboardMetrics } from '../interfaces/report-types.interface';
 
 import { BaseService } from '@/common/base';

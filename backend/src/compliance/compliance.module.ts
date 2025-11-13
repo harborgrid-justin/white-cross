@@ -11,14 +11,14 @@ import { ComplianceService } from './compliance.service';
 import { DatabaseModule } from '../database/database.module';
 
 // Services
-import { AuditService } from './services/audit.service';
-import { ConsentService } from './services/consent.service';
-import { ComplianceReportService } from './services/compliance-report.service';
-import { ChecklistService } from './services/checklist.service';
-import { PolicyService } from './services/policy.service';
-import { DataRetentionService } from './services/data-retention.service';
-import { ViolationService } from './services/violation.service';
-import { StatisticsService } from './services/statistics.service';
+import { AuditService } from '@/services/audit.service';
+import { ConsentService } from '@/services/consent.service';
+import { ComplianceReportService } from '@/services/compliance-report.service';
+import { ChecklistService } from '@/services/checklist.service';
+import { PolicyService } from '@/services/policy.service';
+import { DataRetentionService } from '@/services/data-retention.service';
+import { ViolationService } from '@/services/violation.service';
+import { StatisticsService } from '@/services/statistics.service';
 
 // Database Repositories
 import { ComplianceReportRepository } from '../database/repositories/impl/compliance-report.repository';

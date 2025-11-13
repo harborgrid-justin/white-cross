@@ -10,7 +10,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { TreatmentStatus } from '../../clinical/enums/treatment-status.enum';
+import { TreatmentStatus } from '@/services/clinical/enums/treatment-status.enum';
 
 export interface TreatmentPlanAttributes {
   id?: string;

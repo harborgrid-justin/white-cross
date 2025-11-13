@@ -20,7 +20,7 @@ import { VaccinationService } from '../health-record/vaccination/vaccination.ser
 import { AllergyService } from '../health-record/allergy/allergy.service';
 import { HealthDomainController } from './health-domain.controller';
 import { HealthDomainService } from './health-domain.service';
-import { ChronicConditionService } from '../services/chronic-condition/chronic-condition.service';
+import { ChronicConditionService } from '@/services/chronic-condition/chronic-condition.service';
 import { HealthRecordService } from '../health-record/health-record.service';
 import { VitalsService } from '../health-record/vitals/vitals.service';
 import { SearchService } from '../health-record/search/search.service';

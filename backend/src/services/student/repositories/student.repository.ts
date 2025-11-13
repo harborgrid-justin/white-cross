@@ -10,7 +10,7 @@ import { Student } from '@/database/models';
 import { User } from '@/database/models';
 import { BaseRepository, BaseRepositoryConfig } from '@/common/base/base.repository';
 import { LoggerService } from '@/common/logging/logger.service';
-import { QueryCacheService } from '../../database/services/query-cache.service';
+import { QueryCacheService } from '../../databa@/services/query-cache.service';
 
 /**
  * Student Repository

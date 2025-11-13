@@ -6,10 +6,10 @@
 
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { AppConfigService } from '@/config';
-import { BroadcastService } from './services/broadcast.service';
-import { AlertService } from './services/alert.service';
-import { MessageService } from './services/message.service';
-import { PresenceService } from './services/presence.service';
+import { BroadcastService } from '@/services/broadcast.service';
+import { AlertService } from '@/services/alert.service';
+import { MessageService } from '@/services/message.service';
+import { PresenceService } from '@/services/presence.service';
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';

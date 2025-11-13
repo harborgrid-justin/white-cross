@@ -14,10 +14,10 @@ import {
   N1QueryDetection,
   PerformanceAlert,
 } from './types/query-monitor.types';
-import { QueryAnalyzerService } from './services/query-analyzer.service';
-import { SlowQueryDetectorService } from './services/slow-query-detector.service';
-import { N1QueryDetectorService } from './services/n1-query-detector.service';
-import { PerformanceReporterService } from './services/performance-reporter.service';
+import { QueryAnalyzerService } from '@/services/query-analyzer.service';
+import { SlowQueryDetectorService } from '@/services/slow-query-detector.service';
+import { N1QueryDetectorService } from '@/services/n1-query-detector.service';
+import { PerformanceReporterService } from '@/services/performance-reporter.service';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

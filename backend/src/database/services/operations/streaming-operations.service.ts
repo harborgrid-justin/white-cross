@@ -1,6 +1,6 @@
 /**
  * @fileoverview Streaming Operations Service for Database Operations
- * @module database/services/operations/streaming-operations
+ * @module databa@/services/operations/streaming-operations
  * @description Streaming query operations with backpressure handling and cursor pagination
  *
  * @version 1.0.0

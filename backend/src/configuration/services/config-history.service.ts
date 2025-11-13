@@ -1,6 +1,6 @@
 /**
  * @fileoverview Configuration History Service
- * @module configuration/services/config-history.service
+ * @module configurati@/services/config-history.service
  * @description Handles audit trail and history tracking for configuration changes
  */
 

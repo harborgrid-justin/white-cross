@@ -1,6 +1,6 @@
 /**
  * @fileoverview Incident Read Service
- * @module incident-report/services/incident-read.service
+ * @module incident-repo@/services/incident-read.service
  * @description Business logic for reading incident report data
  */
 

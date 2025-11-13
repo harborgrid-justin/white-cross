@@ -17,7 +17,7 @@ import {
   AnalyticsOperationResult,
 } from './types/analytics-report.types';
 
-import { BaseReportGeneratorService } from './services/base-report-generator.service';
+import { BaseReportGeneratorService } from '@/services/base-report-generator.service';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

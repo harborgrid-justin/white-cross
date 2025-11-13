@@ -1,6 +1,6 @@
 /**
  * @fileoverview Incident Status Service
- * @module incident-report/services/incident-status.service
+ * @module incident-repo@/services/incident-status.service
  * @description Business logic for incident report status updates
  */
 

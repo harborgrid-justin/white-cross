@@ -13,7 +13,7 @@ import { EncryptionModule } from '../infrastructure/encryption/encryption.module
 import { MessageQueueModule } from '../infrastructure/queue/message-queue.module';
 
 // Auth Module for JWT and token services
-import { AuthModule } from '../services/auth/auth.module';
+import { AuthModule } from '@/services/auth/auth.module';
 
 // Controllers
 import { MessageController } from './controllers/message.controller';
@@ -22,12 +22,12 @@ import { TemplateController } from './controllers/template.controller';
 import { EnhancedMessageController } from './controllers/enhanced-message.controller';
 
 // Services
-import { MessageService } from './services/message.service';
-import { BroadcastService } from './services/broadcast.service';
-import { TemplateService } from './services/template.service';
-import { CommunicationService } from './services/communication.service';
-import { EnhancedMessageService } from './services/enhanced-message.service';
-import { ConversationService } from './services/conversation.service';
+import { MessageService } from '@/services/message.service';
+import { BroadcastService } from '@/services/broadcast.service';
+import { TemplateService } from '@/services/template.service';
+import { CommunicationService } from '@/services/communication.service';
+import { EnhancedMessageService } from '@/services/enhanced-message.service';
+import { ConversationService } from '@/services/conversation.service';
 
 // Helpers
 import { QueueIntegrationHelper } from './helpers/queue-integration.helper';

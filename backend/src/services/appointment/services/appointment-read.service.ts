@@ -1,6 +1,6 @@
 /**
  * @fileoverview Appointment Read Service
- * @module appointment/services/appointment-read.service
+ * @module appointme@/services/appointment-read.service
  * @description Business logic for reading appointment data
  */
 

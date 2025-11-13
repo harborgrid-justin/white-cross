@@ -15,11 +15,11 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthToken } from './decorators/auth-token.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
-import { EmailVerificationService } from './services/email-verification.service';
-import { MfaService } from './services/mfa.service';
-import { OAuthService } from './services/oauth.service';
-import { PasswordResetService } from './services/password-reset.service';
-import { TokenBlacklistService } from './services/token-blacklist.service';
+import { EmailVerificationService } from '@/services/email-verification.service';
+import { MfaService } from '@/services/mfa.service';
+import { OAuthService } from '@/services/oauth.service';
+import { PasswordResetService } from '@/services/password-reset.service';
+import { TokenBlacklistService } from '@/services/token-blacklist.service';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Authentication')

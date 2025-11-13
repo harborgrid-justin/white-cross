@@ -15,7 +15,7 @@ import { catchError, tap } from 'rxjs/operators';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
-import { PHIAccessLogger } from '../services/phi-access-logger.service';
+import { PHIAccessLogger } from '@/services/phi-access-logger.service';
 import { HealthRecordRequest } from '../interfaces/health-record-types';
 
 export interface AuditTrailEntry {

@@ -1,6 +1,6 @@
 import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ConfigCategory, ConfigScope } from '../../administration/enums/administration.enums';
+import { ConfigCategory, ConfigScope } from '@/services/administration/enums/administration.enums';
 import { Transform } from 'class-transformer';
 
 /**

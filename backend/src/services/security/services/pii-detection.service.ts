@@ -1,6 +1,6 @@
 /**
  * @fileoverview PII Detection Service
- * @module security/services/pii-detection
+ * @module securi@/services/pii-detection
  * @description Detects and masks personally identifiable information
  *
  * @version 2.0.0

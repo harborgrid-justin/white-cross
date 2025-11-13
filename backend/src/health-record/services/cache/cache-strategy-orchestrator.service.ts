@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Strategy Orchestrator Service
- * @module health-record/services/cache
+ * @module health-reco@/services/cache
  * @description Main orchestrator for multi-tier caching strategy
  *
  * HIPAA CRITICAL - This service orchestrates PHI caching across all tiers with compliance controls

@@ -16,18 +16,18 @@ import {
 } from '@/database';
 
 // Services
-import { AllergyManagementService } from './services/allergy-management.service';
-import { ClinicalNoteService } from './services/clinical-note.service';
-import { ClinicalProtocolService } from './services/clinical-protocol.service';
-import { ClinicVisitBasicService } from './services/clinic-visit-basic.service';
-import { ClinicVisitAnalyticsService } from './services/clinic-visit-analytics.service';
-import { DrugCatalogService } from './services/drug-catalog.service';
-import { DrugInteractionService } from './services/drug-interaction.service';
-import { FollowUpService } from './services/follow-up.service';
-import { InteractionCheckerService } from './services/interaction-checker.service';
-import { PrescriptionService } from './services/prescription.service';
-import { TreatmentPlanService } from './services/treatment-plan.service';
-import { VitalSignsService } from './services/vital-signs.service';
+import { AllergyManagementService } from '@/services/allergy-management.service';
+import { ClinicalNoteService } from '@/services/clinical-note.service';
+import { ClinicalProtocolService } from '@/services/clinical-protocol.service';
+import { ClinicVisitBasicService } from '@/services/clinic-visit-basic.service';
+import { ClinicVisitAnalyticsService } from '@/services/clinic-visit-analytics.service';
+import { DrugCatalogService } from '@/services/drug-catalog.service';
+import { DrugInteractionService } from '@/services/drug-interaction.service';
+import { FollowUpService } from '@/services/follow-up.service';
+import { InteractionCheckerService } from '@/services/interaction-checker.service';
+import { PrescriptionService } from '@/services/prescription.service';
+import { TreatmentPlanService } from '@/services/treatment-plan.service';
+import { VitalSignsService } from '@/services/vital-signs.service';
 
 // Controllers
 import { ClinicalNoteController } from './controllers/clinical-note.controller';

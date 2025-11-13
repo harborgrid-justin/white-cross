@@ -1,6 +1,6 @@
 /**
  * @fileoverview Appointment Write Service
- * @module appointment/services/appointment-write.service
+ * @module appointme@/services/appointment-write.service
  * @description Business logic for appointment write operations
  */
 

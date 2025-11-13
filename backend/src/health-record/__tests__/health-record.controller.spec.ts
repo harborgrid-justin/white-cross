@@ -21,8 +21,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { HealthRecordController } from '../health-record.controller';
 import { HealthRecordService } from '../health-record.service';
-import { PHIAccessLogger } from '../services/phi-access-logger.service';
-import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
+import { PHIAccessLogger } from '@/services/phi-access-logger.service';
+import { HealthRecordMetricsService } from '@/services/health-record-metrics.service';
 import { HealthRecordCreateDto } from '../dto/create-health-record.dto';
 import { HealthRecordUpdateDto } from '../dto/update-health-record.dto';
 

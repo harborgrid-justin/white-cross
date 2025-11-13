@@ -12,7 +12,7 @@ import { CanActivate, ExecutionContext, Injectable, Logger, Optional } from '@ne
 import { Reflector } from '@nestjs/core';
 import { Permission, type RbacConfig } from '../types/rbac.types';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
-import { RbacPermissionService } from '../services/rbac-permission.service';
+import { RbacPermissionService } from '@/services/rbac-permission.service';
 import { BaseAuthorizationGuard } from './base-authorization.guard';
 
 /**

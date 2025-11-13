@@ -1,6 +1,6 @@
 /**
  * @fileoverview Configuration Statistics Service
- * @module configuration/services/config-statistics.service
+ * @module configurati@/services/config-statistics.service
  * @description Handles statistics and reporting for configuration data
  */
 

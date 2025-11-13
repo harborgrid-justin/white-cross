@@ -1,6 +1,6 @@
 /**
  * @fileoverview L3 Cache Service - Database-based caching tier
- * @module health-record/services/cache
+ * @module health-reco@/services/cache
  * @description Database result cache with PHI compliance and audit logging
  *
  * HIPAA CRITICAL - This service manages PHI caching in database with compliance controls

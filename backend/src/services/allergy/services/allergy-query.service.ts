@@ -14,7 +14,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Allergy } from '../models/allergy.model';
-import { Student } from '../../student/models/student.model';
+import { Student } from '@/services/student/models/student.model';
 import { AllergySeverity } from '../../common/enums';
 import { AllergyFiltersDto } from '../dto/allergy-filters.dto';
 import { PaginationDto } from '../dto/pagination.dto';

@@ -28,10 +28,10 @@ import {
 } from './dto';
 import { WsJwtAuthGuard } from './guards';
 import { WsExceptionFilter } from './filters/ws-exception.filter';
-import { ConnectionManagerService } from './services/connection-manager.service';
-import { MessageHandlerService } from './services/message-handler.service';
-import { ConversationHandlerService } from './services/conversation-handler.service';
-import { PresenceManagerService } from './services/presence-manager.service';
+import { ConnectionManagerService } from '@/services/connection-manager.service';
+import { MessageHandlerService } from '@/services/message-handler.service';
+import { ConversationHandlerService } from '@/services/conversation-handler.service';
+import { PresenceManagerService } from '@/services/presence-manager.service';
 
 @UseFilters(new WsExceptionFilter())
 @NestWebSocketGateway({

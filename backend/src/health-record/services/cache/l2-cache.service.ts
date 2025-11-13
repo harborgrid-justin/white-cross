@@ -1,6 +1,6 @@
 /**
  * @fileoverview L2 Cache Service - Redis Distributed Cache Operations
- * @module health-record/services/cache
+ * @module health-reco@/services/cache
  * @description Distributed Redis caching with PHI compliance and encryption
  *
  * HIPAA CRITICAL - L2 cache for PHI data with Redis encryption and audit logging

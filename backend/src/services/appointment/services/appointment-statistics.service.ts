@@ -1,6 +1,6 @@
 /**
  * @fileoverview Appointment Statistics Service
- * @module appointment/services/appointment-statistics.service
+ * @module appointme@/services/appointment-statistics.service
  * @description Business logic for appointment statistics, trends, and analytics
  */
 

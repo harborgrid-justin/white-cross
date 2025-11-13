@@ -21,9 +21,9 @@ import {
   MigrationDependency,
   FixtureDefinition,
 } from './types/migration-utilities.types';
-import { TableOperationsService } from './services/table-operations.service';
-import { ColumnOperationsService } from './services/column-operations.service';
-import { DataMigrationService } from './services/data-migration.service';
+import { TableOperationsService } from '@/services/table-operations.service';
+import { ColumnOperationsService } from '@/services/column-operations.service';
+import { DataMigrationService } from '@/services/data-migration.service';
 
 @Injectable()
 export class MigrationUtilitiesService extends BaseService {

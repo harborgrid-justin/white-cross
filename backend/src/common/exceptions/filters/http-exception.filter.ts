@@ -11,7 +11,7 @@ import { ErrorCategory, ErrorLoggingContext, ErrorResponse, ErrorSeverity } from
 import { getErrorCodeCategory } from '../constants/error-codes';
 import { LoggerService } from '@/common/logging/logger.service';
 import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
-import { AuditService } from '../../../audit/audit.service';
+import { AuditService } from '../@/services/audit/audit.service';
 
 /**
  * HTTP Exception Filter

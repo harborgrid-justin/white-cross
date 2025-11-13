@@ -5,9 +5,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 import { RecurringTemplate } from './enterprise-features-interfaces';
-import { RecurringTemplateService } from './services/recurring/recurring-template.service';
-import { RecurringGenerationService } from './services/recurring/recurring-generation.service';
-import { RecurringStatisticsService } from './services/recurring/recurring-statistics.service';
+import { RecurringTemplateService } from '@/services/recurring/recurring-template.service';
+import { RecurringGenerationService } from '@/services/recurring/recurring-generation.service';
+import { RecurringStatisticsService } from '@/services/recurring/recurring-statistics.service';
 
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';

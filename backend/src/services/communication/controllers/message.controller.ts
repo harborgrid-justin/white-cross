@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
 import { AuthenticatedRequest } from '../types/index';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { MessageService } from '../services/message.service';
+import { MessageService } from '@/services/message.service';
 import { SendMessageDto } from '../dto/send-message.dto';
 
 import { BaseController } from '@/common/base';

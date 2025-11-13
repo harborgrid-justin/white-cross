@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DrugInteractionService } from '../services/drug-interaction.service';
+import { DrugInteractionService } from '@/services/drug-interaction.service';
 import { AddAllergyDto } from '../dto/drug/add-allergy.dto';
 import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
 

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Query Optimization Service
- * @module database/services/query-builder/optimization
+ * @module databa@/services/query-builder/optimization
  * @description Specialized service for query optimization, performance tuning,
  * pagination, dynamic queries, and spatial/JSON queries
  *

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Waitlist Service
- * @module appointment/services/waitlist.service
+ * @module appointme@/services/waitlist.service
  * @description Business logic for appointment waitlist management
  */
 

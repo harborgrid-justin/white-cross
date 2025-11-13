@@ -23,12 +23,12 @@ import {
 } from './dto';
 import { EmergencyBroadcastRepository } from '../database/repositories/impl/emergency-broadcast.repository';
 import { StudentRepository } from '../database/repositories/impl/student.repository';
-import { CommunicationService } from '../services/communication.service';
-import { BroadcastPriorityService } from './services/broadcast-priority.service';
-import { BroadcastRecipientService } from './services/broadcast-recipient.service';
-import { BroadcastDeliveryService } from './services/broadcast-delivery.service';
-import { BroadcastManagementService } from './services/broadcast-management.service';
-import { BroadcastTemplateService } from './services/broadcast-template.service';
+import { CommunicationService } from '@/services/communication.service';
+import { BroadcastPriorityService } from '@/services/broadcast-priority.service';
+import { BroadcastRecipientService } from '@/services/broadcast-recipient.service';
+import { BroadcastDeliveryService } from '@/services/broadcast-delivery.service';
+import { BroadcastManagementService } from '@/services/broadcast-management.service';
+import { BroadcastTemplateService } from '@/services/broadcast-template.service';
 
 import { BaseService } from '@/common/base';
 @Injectable()

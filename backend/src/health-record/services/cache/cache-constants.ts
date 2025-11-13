@@ -1,6 +1,6 @@
 /**
  * @fileoverview Cache Strategy Constants
- * @module health-record/services/cache
+ * @module health-reco@/services/cache
  * @description Constants and configuration values for the cache strategy system
  */
 

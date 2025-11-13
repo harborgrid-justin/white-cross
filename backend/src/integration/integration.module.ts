@@ -7,16 +7,16 @@ import { IntegrationConfig } from '@/database/models';
 import { IntegrationLog } from '@/database/models';
 
 // Services
-import { IntegrationService } from './services/integration.service';
-import { IntegrationConfigService } from './services/integration-config.service';
-import { IntegrationTestService } from './services/integration-test.service';
-import { IntegrationSyncService } from './services/integration-sync.service';
-import { IntegrationEncryptionService } from './services/integration-encryption.service';
-import { IntegrationValidationService } from './services/integration-validation.service';
-import { IntegrationLogService } from './services/integration-log.service';
-import { IntegrationStatisticsService } from './services/integration-statistics.service';
-import { CircuitBreakerService } from './services/circuit-breaker.service';
-import { RateLimiterService } from './services/rate-limiter.service';
+import { IntegrationService } from '@/services/integration.service';
+import { IntegrationConfigService } from '@/services/integration-config.service';
+import { IntegrationTestService } from '@/services/integration-test.service';
+import { IntegrationSyncService } from '@/services/integration-sync.service';
+import { IntegrationEncryptionService } from '@/services/integration-encryption.service';
+import { IntegrationValidationService } from '@/services/integration-validation.service';
+import { IntegrationLogService } from '@/services/integration-log.service';
+import { IntegrationStatisticsService } from '@/services/integration-statistics.service';
+import { CircuitBreakerService } from '@/services/circuit-breaker.service';
+import { RateLimiterService } from '@/services/rate-limiter.service';
 
 // Controller
 import { IntegrationController } from './integration.controller';

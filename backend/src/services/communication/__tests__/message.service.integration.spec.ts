@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/sequelize';
-import { MessageService } from '../services/message.service';
+import { MessageService } from '@/services/message.service';
 import { Message } from '@/database/models';
 import { MessageDelivery } from '@/database/models';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';

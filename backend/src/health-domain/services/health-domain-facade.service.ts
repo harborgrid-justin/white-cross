@@ -1,6 +1,6 @@
 /**
  * @fileoverview Health Domain Facade Service
- * @module health-domain/services/health-domain-facade.service
+ * @module health-doma@/services/health-domain-facade.service
  * @description Facade service for health domain operations
  *
  * This facade provides a unified interface to health domain functionality

@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsObject, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AuditAction } from '../../administration/enums/administration.enums';
+import { AuditAction } from '@/services/administration/enums/administration.enums';
 
 /**
  * DTO for creating basic audit log entries

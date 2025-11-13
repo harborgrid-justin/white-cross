@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PrescriptionService } from '../services/prescription.service';
+import { PrescriptionService } from '@/services/prescription.service';
 import { CreatePrescriptionDto } from '../dto/prescription/create-prescription.dto';
 import { UpdatePrescriptionDto } from '../dto/prescription/update-prescription.dto';
 import { FillPrescriptionDto } from '../dto/prescription/fill-prescription.dto';

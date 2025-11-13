@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
-import { DiscoveryMetricsService } from '../services/discovery-metrics.service';
+import { DiscoveryMetricsService } from '@/services/discovery-metrics.service';
 import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 
 @Injectable()

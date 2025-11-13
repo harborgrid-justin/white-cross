@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Photo Service
- * @module student/services/student-photo.service
+ * @module stude@/services/student-photo.service
  * @description Handles student photo management and facial recognition operations
  */
 

@@ -1,6 +1,6 @@
 /**
  * @fileoverview Union and Subquery Builder Service
- * @module database/services/query-builder/unions-subqueries
+ * @module databa@/services/query-builder/unions-subqueries
  * @description Specialized service for complex union queries, subqueries,
  * CTEs, and parameterized raw SQL queries with proper escaping
  *

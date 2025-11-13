@@ -1,6 +1,6 @@
 /**
  * @fileoverview Configuration Import/Export Service
- * @module configuration/services/config-import-export.service
+ * @module configurati@/services/config-import-export.service
  * @description Handles import/export functionality for configuration data
  */
 

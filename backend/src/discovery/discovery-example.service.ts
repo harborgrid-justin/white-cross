@@ -9,8 +9,8 @@ import {
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { ExperimentalFeature } from './decorators/metadata.decorator';
-import { DiscoveryMetricsService } from './services/discovery-metrics.service';
-import { DiscoveryCacheService } from './services/discovery-cache.service';
+import { DiscoveryMetricsService } from '@/services/discovery-metrics.service';
+import { DiscoveryCacheService } from '@/services/discovery-cache.service';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

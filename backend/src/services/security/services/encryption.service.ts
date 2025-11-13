@@ -1,6 +1,6 @@
 /**
  * @fileoverview Enhanced Encryption Service
- * @module security/services/encryption
+ * @module securi@/services/encryption
  * @description Provides AES-256-GCM encryption, key derivation, and hashing
  *
  * @version 2.0.0

@@ -54,13 +54,13 @@ interface HealthRecordFilters {
 }
 
 // Specialized Services
-import { HealthRecordCrudService } from './services/health-record-crud.service';
-import { HealthRecordAllergyService } from './services/health-record-allergy.service';
-import { HealthRecordChronicConditionService } from './services/health-record-chronic-condition.service';
-import { HealthRecordVaccinationService } from './services/health-record-vaccination.service';
-import { HealthRecordVitalsService } from './services/health-record-vitals.service';
-import { HealthRecordSummaryService } from './services/health-record-summary.service';
-import { HealthRecordBatchService } from './services/health-record-batch.service';
+import { HealthRecordCrudService } from '@/services/health-record-crud.service';
+import { HealthRecordAllergyService } from '@/services/health-record-allergy.service';
+import { HealthRecordChronicConditionService } from '@/services/health-record-chronic-condition.service';
+import { HealthRecordVaccinationService } from '@/services/health-record-vaccination.service';
+import { HealthRecordVitalsService } from '@/services/health-record-vitals.service';
+import { HealthRecordSummaryService } from '@/services/health-record-summary.service';
+import { HealthRecordBatchService } from '@/services/health-record-batch.service';
 
 /**
  * HealthRecordService - Unified Facade

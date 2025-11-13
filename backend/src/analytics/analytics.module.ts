@@ -35,11 +35,11 @@ import {
   IncidentReportRepository,
   MedicationLogRepository,
 } from '@/database/repositories/impl';
-import { ComplianceDataCollectorService } from './services/compliance-data-collector.service';
-import { ComplianceMetricsCalculatorService } from './services/compliance-metrics-calculator.service';
-import { ComplianceReportBuilderService } from './services/compliance-report-builder.service';
-import { ComplianceReportExporterService } from './services/compliance-report-exporter.service';
-import { ComplianceReportPersistenceService } from './services/compliance-report-persistence.service';
+import { ComplianceDataCollectorService } from '@/services/compliance-data-collector.service';
+import { ComplianceMetricsCalculatorService } from '@/services/compliance-metrics-calculator.service';
+import { ComplianceReportBuilderService } from '@/services/compliance-report-builder.service';
+import { ComplianceReportExporterService } from '@/services/compliance-report-exporter.service';
+import { ComplianceReportPersistenceService } from '@/services/compliance-report-persistence.service';
 
 /**
  * Analytics Module

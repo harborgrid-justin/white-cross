@@ -1,6 +1,6 @@
 /**
  * @fileoverview Student Status Service
- * @module student/services/student-status.service
+ * @module stude@/services/student-status.service
  * @description Business logic for student status management operations
  */
 

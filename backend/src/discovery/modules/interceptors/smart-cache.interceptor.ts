@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { DiscoveryService, Reflector } from '@nestjs/core';
-import { MemoryOptimizedCacheService } from '../services/memory-optimized-cache.service';
+import { MemoryOptimizedCacheService } from '@/services/memory-optimized-cache.service';
 import { AuthenticatedRequest, CacheableData } from '../types/resource.types';
 import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
