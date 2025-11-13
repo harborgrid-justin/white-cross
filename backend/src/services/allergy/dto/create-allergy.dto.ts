@@ -6,7 +6,7 @@
  */
 import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AllergySeverity } from '../../common/enums';
+import { AllergySeverity } from '../../../common/enums';
 import { AllergenType } from '../entities/allergy.entity';
 
 export class CreateAllergyDto {

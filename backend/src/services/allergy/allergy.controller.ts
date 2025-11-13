@@ -23,9 +23,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AllergyCrudService } from '@/services/allergy-crud.service';
-import { AllergyQueryService } from '@/services/allergy-query.service';
-import { AllergySafetyService } from '@/services/allergy-safety.service';
+import { AllergyCrudService } from './services/allergy-crud.service';
+import { AllergyQueryService } from './services/allergy-query.service';
+import { AllergySafetyService } from './services/allergy-safety.service';
 import { AllergyFiltersDto } from './dto/allergy-filters.dto';
 import { AllergyUpdateDto } from './dto/update-allergy.dto';
 import { CreateAllergyDto } from './dto/create-allergy.dto';

@@ -14,4 +14,4 @@ export { Allergy } from '../models/allergy.model';
 export { AllergenType } from '../models/allergy.model';
 
 // Also export AllergySeverity from common enums for convenience
-export { AllergySeverity } from '../../common/enums';
+export { AllergySeverity } from '../../../common/enums';

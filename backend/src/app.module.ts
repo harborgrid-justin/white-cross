@@ -8,7 +8,7 @@ import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { Redis } from 'ioredis';
-import { DatabaseModule } from '@/database/database.module';
+import { DatabaseModule } from './database/database.module';
 import { AuthModule, JwtAuthGuard, TokenBlacklistService } from '@/services/auth';
 import { AccessControlModule, IpRestrictionGuard } from '@/services/access-control';
 import { CsrfGuard } from './middleware/security';

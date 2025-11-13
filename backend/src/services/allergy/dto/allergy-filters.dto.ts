@@ -5,7 +5,7 @@
  */
 import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
-import { AllergySeverity } from '../../common/enums';
+import { AllergySeverity } from '../../../common/enums';
 import { AllergenType } from '../entities/allergy.entity';
 
 export class AllergyFiltersDto {
