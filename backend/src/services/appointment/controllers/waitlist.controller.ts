@@ -24,7 +24,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { WaitlistService } from '@/services/waitlist.service';
+import { WaitlistService } from '../services/waitlist.service';
 import { BaseController } from '@/common/base';
 import {
   CreateWaitlistEntryDto,
