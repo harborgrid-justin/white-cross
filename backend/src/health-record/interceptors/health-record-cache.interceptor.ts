@@ -14,10 +14,10 @@ import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
 import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
-import { EnterpriseCacheService } from '../../shared/enterprise/services/enterprise-cache.service';
+import { EnterpriseCacheService } from '@/common/enterprise/services/enterprise-cache.service';
 import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
 import { ComplianceLevel, HealthRecordRequest } from '../interfaces/health-record-types';
-import { ENTERPRISE_CACHE_KEY } from '../../shared/enterprise/decorators/enterprise-decorators';
+import { ENTERPRISE_CACHE_KEY } from '@/common/enterprise/decorators/enterprise-decorators';
 
 /**
  * Health Record Cache Interceptor

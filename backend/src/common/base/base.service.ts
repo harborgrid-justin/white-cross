@@ -6,20 +6,20 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { validate as isUUID } from 'uuid';
-import { RequestContextService } from '../../shared/context/request-context.service';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { RequestContextService } from '@/common/context/request-context.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import {
   PaginatedResponse,
   PaginationConstraints,
   PaginationParams,
-} from '../../shared/types/pagination';
+} from '@/database/types/pagination.types';
 import {
   buildPaginationQuery,
   processPaginatedResult,
   validatePaginationParams,
-} from '../../shared/database/pagination';
-import { BulkOperationResult, ServiceResponse, ValidationResult } from '../../shared/types/common';
-import { validateUUID as validateUUIDUtil } from '../../shared/validation/commonValidators';
+} from '@/database/pagination';
+import { BulkOperationResult, ServiceResponse, ValidationResult } from '@/common/types/common';
+import { validateUUID as validateUUIDUtil } from '@/common/validation/commonValidators';
 import { Model, ModelStatic, Op, Sequelize, Transaction } from 'sequelize';
 
 /**

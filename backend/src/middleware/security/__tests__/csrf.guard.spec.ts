@@ -16,7 +16,7 @@ import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CsrfGuard } from '../csrf.guard';
-import { AppConfigService } from '../../../config/app-config.service';
+import { AppConfigService } from '@/common/config/app-config.service';
 
 describe('CsrfGuard', () => {
   let guard: CsrfGuard;

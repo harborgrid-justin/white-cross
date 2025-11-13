@@ -7,7 +7,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { SentryService } from '../../infrastructure/monitoring/sentry.service';
 import { AuthenticatedRequest } from '../types/utility-types';
 import type { Response } from 'express';

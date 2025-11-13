@@ -25,8 +25,8 @@ import {
   DeleteResponseDto,
   StudentDto,
 } from '../dto';
-import { ContactService } from '@/contact';
-import { ContactType as DomainContactType } from '../../../contact/enums/contact-type.enum';
+import { ContactService } from '@/services/communication/contact';
+import { ContactType as DomainContactType } from '../../../services/communication/contact/enums/contact-type.enum';
 import type { GraphQLContext } from '../types/context.interface';
 
 

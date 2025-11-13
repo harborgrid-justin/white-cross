@@ -21,16 +21,16 @@ import { PerformanceReporterService } from './services/performance-reporter.serv
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()
 export class QueryMonitorService extends BaseService implements OnModuleInit, OnModuleDestroy {

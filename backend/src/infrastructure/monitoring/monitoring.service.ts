@@ -30,16 +30,16 @@ import { LogAggregationService } from './log-aggregation.service';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 /**
  * Service interfaces for optional dependencies

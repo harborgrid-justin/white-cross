@@ -7,7 +7,7 @@
 
 import { Column, DataType, Default, Model, PrimaryKey, Scopes, Table } from 'sequelize-typescript';
 import { AuditAction } from '../types/database.enums';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 
 /**
  * Compliance regulation types for audit tracking

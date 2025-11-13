@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Student } from '../../student/entities/student.entity';
-import { HealthRecord } from '../../health-record/entities/health-record.entity';
-
+import { Student, HealthRecord } from '@/database/models';
 import { BaseService } from '@/common/base';
 /**
  * Compliance Data Collector Service
@@ -24,7 +22,13 @@ export class ComplianceDataCollectorService extends BaseService {
     private readonly studentModel: typeof Student,
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
-  ) {}
+  ) {
+    super({
+      serviceName: 'ComplianceDataCollectorService',
+      logger: new Logger(ComplianceDataCollectorService.name),
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Get active students for a school

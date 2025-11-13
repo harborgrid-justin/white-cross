@@ -9,7 +9,7 @@ import type { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { ErrorCategory, ErrorLoggingContext, ErrorResponse, ErrorSeverity } from '../types/error-response.types';
 import { getErrorCodeCategory } from '../constants/error-codes';
-import { LoggerService } from '../../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { SentryService } from '../../../infrastructure/monitoring/sentry.service';
 import { AuditService } from '../../../audit/audit.service';
 

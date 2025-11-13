@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { CacheConfig, CacheStats, ICacheManager } from '../interfaces/cache/cache-manager.interface';
 
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()
 export class CacheService extends BaseService implements ICacheManager {

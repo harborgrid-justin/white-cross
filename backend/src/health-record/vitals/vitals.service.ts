@@ -7,7 +7,7 @@
 
 import { BadRequestException, Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { VitalSigns   } from '@/database/models';

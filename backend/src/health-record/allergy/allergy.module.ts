@@ -4,7 +4,7 @@ import { HealthRecordAllergyController } from './allergy.controller';
 import { AllergyService } from './allergy.service';
 import { Allergy   } from '@/database/models';
 import { Student   } from '@/database/models';
-import { AuthModule } from '../../auth/auth.module';
+import { AuthModule } from '../../services/auth/auth.module';
 
 @Module({
   imports: [SequelizeModule.forFeature([Allergy, Student]), AuthModule],

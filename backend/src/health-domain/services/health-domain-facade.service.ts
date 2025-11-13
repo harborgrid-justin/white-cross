@@ -11,7 +11,7 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { RequestContextService } from '../../shared/context/request-context.service';
+import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
 import {
   AllergyFiltersDto,

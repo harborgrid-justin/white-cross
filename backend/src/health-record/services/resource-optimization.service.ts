@@ -14,7 +14,7 @@ import { ResourceMonitor, ResourceAlert } from './resource-monitor.service';
 import { ResourceOptimizationEngine, OptimizationRecommendation } from './resource-optimization-engine.service';
 import { ResourceReporter } from './resource-reporter.service';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 export interface ResourceOptimizationPlan {
   planId: string;
   name: string;

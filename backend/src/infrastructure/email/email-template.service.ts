@@ -6,7 +6,7 @@
 
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
 import * as Handlebars from 'handlebars';
 import * as fs from 'fs/promises';
@@ -15,16 +15,16 @@ import { EmailTemplate } from './dto/email.dto';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 /**
  * Rendered email content with both HTML and text versions

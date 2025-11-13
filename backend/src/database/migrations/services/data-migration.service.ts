@@ -6,7 +6,7 @@
 
 import { Injectable, Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { QueryInterface, Sequelize, Transaction } from 'sequelize';
 import { DataTransformConfig, SeedDataConfig } from '../types/migration-utilities.types';
 

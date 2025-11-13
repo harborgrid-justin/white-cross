@@ -8,7 +8,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { DashboardModule } from '../src/dashboard/dashboard.module';
+import { DashboardModule } from '../src/services/dashboard/dashboard.module';
 import { DatabaseModule } from '../src/database/database.module';
 
 describe('Dashboard API (E2E)', () => {

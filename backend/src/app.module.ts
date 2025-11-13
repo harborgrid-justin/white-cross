@@ -9,11 +9,11 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { Redis } from 'ioredis';
 import { DatabaseModule } from './database/database.module';
-import { AuthModule, JwtAuthGuard, TokenBlacklistService } from './auth';
-import { AccessControlModule, IpRestrictionGuard } from './access-control';
+import { AuthModule, JwtAuthGuard, TokenBlacklistService } from './services/auth';
+import { AccessControlModule, IpRestrictionGuard } from './services/access-control';
 import { CsrfGuard } from './middleware/security';
 import { HealthRecordModule } from './health-record';
-import { UserModule } from './user';
+import { UserModule } from './services/user';
 
 /**
  * Global Authentication Guard
@@ -42,38 +42,38 @@ import {
 } from './config';
 
 import { AnalyticsModule } from './analytics';
-import { ChronicConditionModule } from './chronic-condition';
+import { ChronicConditionModule } from './services/chronic-condition';
 // import { AllergyModule } from './allergy/allergy.module'; // Already converted to Sequelize
-import { BudgetModule } from './budget';
-import { AdministrationModule } from './administration';
-import { AuditModule } from './audit';
-import { ContactModule } from './contact';
+import { BudgetModule } from './services/budget';
+import { AdministrationModule } from './services/administration';
+import { AuditModule } from './services/audit';
+import { ContactModule } from './services/communication/contact';
 import { ComplianceModule } from './compliance';
-import { ClinicalModule } from './clinical';
+import { ClinicalModule } from './services/clinical';
 import { IncidentReportModule } from './incident-report';
 import { IntegrationModule } from './integration';
 import { IntegrationsModule } from './integrations';
-import { SecurityModule } from './security';
+import { SecurityModule } from './services/security';
 import { ReportModule } from './report';
-import { MobileModule } from './mobile';
+import { MobileModule } from './services/mobile';
 import { PdfModule } from './pdf';
-import { AcademicTranscriptModule } from './academic-transcript';
+import { AcademicTranscriptModule } from './services/academic-transcript';
 import { AiSearchModule } from './ai-search';
-import { AlertsModule } from './alerts';
+import { AlertsModule } from './services/alerts';
 import { FeaturesModule } from './features';
 import { HealthDomainModule } from './health-domain';
 import { InterfacesModule } from './interfaces/interfaces.module';
-import { SharedModule } from './shared/shared.module';
-import { DashboardModule } from './dashboard';
+import { SharedModule } from './common/shared.module';
+import { DashboardModule } from './services/dashboard';
 import { AdvancedFeaturesModule } from './advanced-features';
 import { ConfigurationModule } from './configuration';
-import { EmergencyBroadcastModule } from './emergency-broadcast';
+import { EmergencyBroadcastModule } from './services/communication/emergency-broadcast';
 import { GradeTransitionModule } from './grade-transition';
 import { EnterpriseFeaturesModule } from './enterprise-features';
 import { HealthMetricsModule } from './health-metrics';
 import { MedicationInteractionModule } from './medication-interaction';
 import { HealthRiskAssessmentModule } from './health-risk-assessment';
-import { EmergencyContactModule } from './emergency-contact';
+import { EmergencyContactModule } from './services/communication/emergency-contact';
 import { EmailModule } from './infrastructure/email';
 import { SmsModule } from './infrastructure/sms';
 import { MonitoringModule } from './infrastructure/monitoring';
@@ -81,15 +81,15 @@ import { JobsModule } from './infrastructure/jobs';
 import { WebSocketModule } from './infrastructure/websocket';
 import { GraphQLModule } from './infrastructure/graphql';
 import { CoreMiddlewareModule } from './middleware/core';
-import { WorkersModule } from './workers';
-import { MedicationModule } from './medication';
-import { StudentModule } from './student';
-import { AppointmentModule } from './appointment';
+import { WorkersModule } from './services/workers';
+import { MedicationModule } from './services/medication';
+import { StudentModule } from './services/student';
+import { AppointmentModule } from './services/appointment';
 import { DiscoveryExampleModule } from './discovery';
 import { CommandsModule } from './commands';
 import { CoreModule } from './core';
 import { SentryModule } from './infrastructure/monitoring/sentry.module';
-import { VaccinationsModule } from './vaccinations/vaccinations.module';
+import { VaccinationsModule } from './services/vaccinations/vaccinations.module';
 
 @Module({
   imports: [

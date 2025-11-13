@@ -15,7 +15,7 @@ import { Model, ModelCtor } from 'sequelize-typescript';
 import * as crypto from 'crypto';
 
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 export interface CacheOptions {
   ttl?: number; // Time to live in seconds (default: 300)

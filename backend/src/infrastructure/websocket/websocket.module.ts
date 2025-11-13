@@ -59,9 +59,9 @@ import { WebSocketService } from './websocket.service';
 import { WsJwtAuthGuard } from './guards';
 import { AdminMetricsService, RateLimiterService } from './services';
 import { AdminWebSocketGateway } from './gateways';
-import { AuthModule } from '@/auth';
+import { AuthModule } from '@/services/auth';
 import { AppointmentWebSocketListener } from './listeners/appointment.listener';
-import { AppConfigService } from '../../config/app-config.service';
+import { AppConfigService } from '@/common/config/app-config.service';
 
 /**
  * WebSocket Module

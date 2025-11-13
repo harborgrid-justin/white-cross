@@ -11,10 +11,10 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { RedisIoAdapter } from './infrastructure/websocket';
 import { AppConfigService } from './config';
-import { LoggerService } from './shared/logging/logger.service';
+import { LoggerService } from './common/logging/logger.service';
 import { SentryService } from './infrastructure/monitoring/sentry.service';
 import { HipaaExceptionFilter } from './common/exceptions/filters';
-import { createSwaggerConfig, addGlobalSchemas } from './config/swagger.config';
+import { createSwaggerConfig, addGlobalSchemas } from '@/common/config/swagger.config';
 
 // Global logger for bootstrap errors
 const bootstrapLogger = new LoggerService();

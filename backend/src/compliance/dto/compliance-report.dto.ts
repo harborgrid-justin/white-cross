@@ -1,6 +1,6 @@
 import { IsDateString, IsEnum, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ComplianceReportType, ComplianceStatus } from '../entities/compliance-report.entity';
+import { ComplianceReportType, ComplianceStatus } from '../../database/models/compliance-report.model';
 
 export class CreateComplianceReportDto {
   @ApiProperty({

@@ -17,7 +17,7 @@ import { L3CacheService } from './l3-cache.service';
 import { CacheOptimizationService } from './cache-optimization.service';
 import { CacheAccessPatternTrackerService } from './cache-access-pattern-tracker.service';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import {
   InMemoryCacheEntry,
   CacheTier,

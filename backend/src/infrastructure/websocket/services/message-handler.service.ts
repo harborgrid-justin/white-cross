@@ -10,7 +10,7 @@ import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket } from '../interfaces';
 import { MessageEventDto, MessageDeliveryDto, ReadReceiptDto, TypingIndicatorDto } from '../dto';
 import { RateLimiterService } from './rate-limiter.service';
-import { WebSocketUtilities } from '../shared/websocket-utilities';
+import { WebSocketUtilities } from '@/common/websocket-utilities';
 
 import { BaseService } from '@/common/base';
 @Injectable()

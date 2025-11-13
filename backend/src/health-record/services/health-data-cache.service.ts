@@ -4,24 +4,12 @@
  * HIPAA Compliance: Implements secure caching with automatic PHI data encryption
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, RedisClientType } from 'redis';
-import { RedisConfig } from '../../config/redis.config';
-
+import { RedisConfig } from '@/common/config/redis.config';
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
-import { Inject } from '@nestjs/common';
+import { LoggerService } from '@/common/logging/logger.service';
 export interface CacheOptions {
   ttl?: number;
   tags?: string[];
@@ -38,7 +26,7 @@ export interface CacheStats {
 }
 
 @Injectable()
-export class HealthDataCacheService implements OnModuleInit {
+export class HealthDataCacheService extends BaseService implements OnModuleInit {
   private redisClient: RedisClientType;
   private isConnected = false;
 

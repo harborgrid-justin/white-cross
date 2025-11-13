@@ -10,7 +10,7 @@ import { RecurringGenerationService } from './services/recurring/recurring-gener
 import { RecurringStatisticsService } from './services/recurring/recurring-statistics.service';
 
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()
 export class RecurringAppointmentsService extends BaseService {

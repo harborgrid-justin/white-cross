@@ -19,7 +19,7 @@ export * from './dto';
 export * from './services';
 
 // Sub-modules
-export { AllergyModule } from './allergy/allergy.module';
+export { AllergyModule } from '../services/allergy/allergy.module';
 export { ChronicConditionModule } from './chronic-condition/chronic-condition.module';
 export { MedicationModule } from './medication/medication.module';
 export { VitalsModule } from './vitals/vitals.module';

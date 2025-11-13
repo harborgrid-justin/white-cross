@@ -18,7 +18,10 @@ import {
 // Import all health-record services
 import { VaccinationService } from '../health-record/vaccination/vaccination.service';
 import { AllergyService } from '../health-record/allergy/allergy.service';
-import { ChronicConditionService } from '../health-record/chronic-condition/chronic-condition.service';
+import { HealthDomainController } from './health-domain.controller';
+import { HealthDomainService } from './health-domain.service';
+import { ChronicConditionService } from '../services/chronic-condition/chronic-condition.service';
+import { HealthRecordService } from '../health-record/health-record.service';
 import { VitalsService } from '../health-record/vitals/vitals.service';
 import { SearchService } from '../health-record/search/search.service';
 import { StatisticsService } from '../health-record/statistics/statistics.service';

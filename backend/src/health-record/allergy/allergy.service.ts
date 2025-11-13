@@ -9,13 +9,13 @@ import { BadRequestException, Injectable, Inject, NotFoundException } from '@nes
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Allergy, AllergySeverity, AllergyType   } from '@/database/models';
 import { Student   } from '@/database/models';
 import { AllergyFilterDto } from './dto/allergy-filter.dto';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
-import { AuthenticatedUser } from '../../shared/types';
+import { AuthenticatedUser } from '@/common/types';
 
 @Injectable()
 export class AllergyService extends BaseService {

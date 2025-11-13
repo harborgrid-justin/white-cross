@@ -4,7 +4,7 @@ import { ApiKeyEntity } from './entities/api-key.entity';
 import { ApiKeyResponseDto } from './dto/api-key-response.dto';
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import * as crypto from 'crypto';
-import { AppConfigService } from '../config/app-config.service';
+import { AppConfigService } from '@/common/config/app-config.service';
 
 import { BaseService } from '@/common/base';
 /**

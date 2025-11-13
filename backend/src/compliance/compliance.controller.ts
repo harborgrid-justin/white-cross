@@ -26,7 +26,7 @@ import { createExecutionContext } from '../database/types/execution-context.inte
 import { UserRole } from '@/database/models';
 
 // Services
-import { AuditService } from './services/audit.service';
+import { AuditService } from '../administration/services/audit.service';
 import { ConsentService } from './services/consent.service';
 import { ComplianceReportService } from './services/compliance-report.service';
 import { ChecklistService } from './services/checklist.service';

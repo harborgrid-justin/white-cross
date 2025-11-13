@@ -19,7 +19,7 @@ import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, L
 import { Reflector } from '@nestjs/core';
 import type { Request, Response } from 'express';
 import * as crypto from 'crypto';
-import { AppConfigService } from '../../config/app-config.service';
+import { AppConfigService } from '@/common/config/app-config.service';
 
 export interface CSRFConfig {
   cookieName: string;

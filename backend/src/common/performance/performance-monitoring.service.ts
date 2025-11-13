@@ -19,7 +19,7 @@ import * as process from 'process';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 // Healthcare-specific Performance Metric Interfaces
 export interface HealthcarePerformanceMetric {

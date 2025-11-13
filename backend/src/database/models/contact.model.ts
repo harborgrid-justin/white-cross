@@ -14,7 +14,7 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
-import { ContactType } from '../../contact/enums/contact-type.enum';
+import { ContactType } from '../../services/communication/contact/enums/contact-type.enum';
 
 /**
  * Contact Model

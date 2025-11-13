@@ -13,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
 import { JobType } from '../enums/job-type.enum';
 import { InventoryMaintenanceData } from '../interfaces/job-data.interface';
-import { CacheService } from '../../../shared/cache/cache.service';
+import { CacheService } from '@/common/cache/cache.service';
 import { InventoryAlertService } from '../../../inventory/services/inventory-alert.service';
 import { InventoryNotificationService } from '../../../inventory/services/inventory-notification.service';
 import { InventoryReorderService } from '../../../inventory/services/inventory-reorder.service';

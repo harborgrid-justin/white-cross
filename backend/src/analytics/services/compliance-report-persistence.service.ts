@@ -7,8 +7,7 @@ import { ComplianceStatus } from '../enums/compliance-status.enum';
 import { ReportStatus } from '../enums/report-status.enum';
 import { ReportType } from '../enums/report-type.enum';
 import { ComplianceReport } from '../interfaces/compliance-report.interfaces';
-import { AnalyticsReport } from '../entities/analytics-report.entity';
-
+import { AnalyticsReport } from '@/database/models';
 import { BaseService } from '@/common/base';
 /**
  * Compliance Report Persistence Service
@@ -30,7 +29,13 @@ export class ComplianceReportPersistenceService extends BaseService {
     private readonly analyticsReportModel: typeof AnalyticsReport,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-  ) {}
+  ) {
+    super({
+      serviceName: 'ComplianceReportPersistenceService',
+      logger: new Logger(ComplianceReportPersistenceService.name),
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Save report to database

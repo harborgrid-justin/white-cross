@@ -9,7 +9,7 @@
  * - Security configuration validation
  */
 
-import { validationSchema, validateEnvironment } from '../../src/config/validation.schema';
+import { validationSchema, validateEnvironment } from '../src/common/config/validation.schema';
 
 describe('Configuration Validation Tests', () => {
   describe('Database Configuration', () => {

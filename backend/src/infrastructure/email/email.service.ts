@@ -7,7 +7,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { EmailValidatorService } from './services/email-validator.service';
 import { EmailSenderService } from './services/email-sender.service';
 import { EmailStatisticsService } from './services/email-statistics.service';

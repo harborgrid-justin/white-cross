@@ -48,7 +48,7 @@ import {
   BaseNextWrapper,
   HealthcareContext,
 } from '../base/base-http.adapter';
-import { AdapterUtilities } from '../shared/adapter-utilities';
+import { AdapterUtilities } from '@/common/adapter-utilities';
 
 /**
  * Express-specific request wrapper implementing IRequest interface

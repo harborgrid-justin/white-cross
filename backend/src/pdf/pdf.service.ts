@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { BaseService } from '@/common/base';
-import { LoggerService } from '../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import {
   GenerateImmunizationReportDto,
   GenerateIncidentReportDto,
