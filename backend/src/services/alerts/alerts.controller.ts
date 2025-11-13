@@ -19,8 +19,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/auth';
-import { CurrentUser } from '@/auth/decorators';
+import { JwtAuthGuard } from '@/services/auth';
+import { CurrentUser } from '@/services/auth/decorators';
 import { AlertsService } from './alerts.service';
 import { AlertFilterDto, AlertsUpdatePreferencesDto, CreateAlertDto } from '@/alerts/dto';
 

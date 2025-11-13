@@ -18,7 +18,7 @@
 import { Args, Context, ID, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '@/auth';
+import { Roles } from '@/services/auth';
 import { UserRole } from '@/database';
 import {
   ChronicConditionDto,

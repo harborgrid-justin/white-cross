@@ -14,7 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { JwtAuthGuard } from '@/auth';
+import { JwtAuthGuard } from '@/services/auth';
 import { StudentService } from '../student.service';
 
 import { BaseController } from '@/common/base';

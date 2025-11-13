@@ -15,9 +15,9 @@
  */
 import DataLoader from 'dataloader';
 import { Injectable, Logger, Scope } from '@nestjs/common';
-import { StudentService } from '@/student';
+import { StudentService } from '@/services/student';
 import { ContactService } from '@/services/communication/contact';
-import { MedicationService } from '@/medication';
+import { MedicationService } from '@/services/medication';
 import { HealthRecordService } from '@/health-record';
 import { EmergencyContactService } from '@/services/communication/emergency-contact';
 import { ChronicConditionService } from '@/services/chronic-condition';

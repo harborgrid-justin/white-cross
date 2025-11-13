@@ -6,10 +6,10 @@
 
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { RequestMetrics, CacheMetrics, PerformanceSummary, PerformanceTrend } from './types/metrics.types';
-import { RequestMetricsService } from '@/services/request-metrics.service';
-import { CacheMetricsService } from '@/services/cache-metrics.service';
-import { SystemMetricsService } from '@/services/system-metrics.service';
-import { PerformanceAnalyzerService } from '@/services/performance-analyzer.service';
+import { RequestMetricsService } from '@/infrastructure/monitoring/services/request-metrics.service';
+import { CacheMetricsService } from '@/infrastructure/monitoring/services/cache-metrics.service';
+import { SystemMetricsService } from '@/infrastructure/monitoring/services/system-metrics.service';
+import { PerformanceAnalyzerService } from '@/infrastructure/monitoring/services/performance-analyzer.service';
 
 import { BaseService } from '@/common/base';
 

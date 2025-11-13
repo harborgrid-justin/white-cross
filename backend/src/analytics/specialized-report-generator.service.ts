@@ -19,7 +19,7 @@ import {
 
 import { ANALYTICS_CONSTANTS } from './analytics-constants';
 
-import { BaseReportGeneratorService } from '@/services/base-report-generator.service';
+import { BaseReportGeneratorService } from '@/analytics/services/base-report-generator.service';
 
 import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';

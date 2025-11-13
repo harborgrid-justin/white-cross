@@ -22,7 +22,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/auth';
+import { JwtAuthGuard } from '@/services/auth';
 import { StudentService } from '../student.service';
 import { StudentBulkUpdateDto } from '../dto/bulk-update.dto';
 import { TransferStudentDto } from '../dto/transfer-student.dto';

@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestj
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GradeTransitionService } from './grade-transition.service';
 import { BulkTransitionDto, BulkTransitionResultDto, TransitionStudentDto } from './dto';
-import { Student } from '../student/entities/student.entity';
+import { Student } from '../services/student/entities/student.entity';
 
 import { BaseController } from '@/common/base';
 /**

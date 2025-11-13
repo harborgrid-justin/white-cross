@@ -24,7 +24,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/auth';
+import { JwtAuthGuard } from '@/services/auth';
 import { StudentService } from '../student.service';
 import { AddToWaitlistDto } from '../dto/add-to-waitlist.dto';
 import { WaitlistPriorityDto } from '../dto/waitlist-priority.dto';

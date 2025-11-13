@@ -339,7 +339,7 @@ export class EmergencyContact extends Model<
 
       // Import the helper function dynamically to avoid circular dependencies
       const { logModelPHIFieldChanges } = await import(
-        '@/services/model-audit-helper.service.js'
+        '@/database/services/model-audit-helper.service.js'
       );
 
       // Get the transaction if available

@@ -9,9 +9,9 @@ import { Job } from 'bullmq';
 import { JobType } from '../enums/job-type.enum';
 import { MedicationReminderData } from '../interfaces/job-data.interface';
 import { BaseJobProcessor } from '../base/base.processor';
-import { ReminderGeneratorService } from '@/services/reminder-generator.service';
-import { ReminderCacheService } from '@/services/reminder-cache.service';
-import { ReminderNotificationService } from '@/services/reminder-notification.service';
+import { ReminderGeneratorService } from '@/infrastructure/jobs/services/reminder-generator.service';
+import { ReminderCacheService } from '@/infrastructure/jobs/services/reminder-cache.service';
+import { ReminderNotificationService } from '@/infrastructure/jobs/services/reminder-notification.service';
 
 /**
  * Medication Reminder Job Processor

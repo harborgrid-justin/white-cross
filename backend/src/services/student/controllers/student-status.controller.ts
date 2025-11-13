@@ -14,7 +14,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/auth';
+import { JwtAuthGuard } from '@/services/auth';
 import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentStatusService } from '@/services/student-status.service';
 import { TransferStudentDto } from '../dto/transfer-student.dto';

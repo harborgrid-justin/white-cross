@@ -17,7 +17,7 @@ import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { SignDocumentDto } from './dto/sign-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
-import { CurrentUser, IpAddress } from '@/auth/decorators';
+import { CurrentUser, IpAddress } from '@/services/auth/decorators';
 
 import { BaseController } from '@/common/base';
 /**

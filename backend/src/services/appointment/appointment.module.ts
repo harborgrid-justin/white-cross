@@ -34,8 +34,8 @@ import { Appointment } from '@/database/models';
 import { AppointmentReminder } from '@/database/models';
 import { AppointmentWaitlist } from '@/database/models';
 import { User } from '@/database/models';
-import { WebSocketModule } from '../infrastructure/websocket/websocket.module';
-import { EmailModule } from '../infrastructure/email/email.module';
+import { WebSocketModule } from '../../infrastructure/websocket/websocket.module';
+import { EmailModule } from '../../infrastructure/email/email.module';
 import { AppConfigService } from '@/common/config/app-config.service';
 
 /**

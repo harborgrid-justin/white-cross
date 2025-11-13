@@ -7,7 +7,7 @@
 import { Module } from '@nestjs/common';
 import { VaccinationsController } from './vaccinations.controller';
 import { VaccinationsService } from './vaccinations.service';
-import { HealthRecordModule } from '../health-record/health-record.module';
+import { HealthRecordModule } from '../../health-record/health-record.module';
 
 @Module({
   imports: [HealthRecordModule],

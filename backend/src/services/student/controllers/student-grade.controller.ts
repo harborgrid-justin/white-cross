@@ -6,7 +6,7 @@
 
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/auth';
+import { JwtAuthGuard } from '@/services/auth';
 import { StudentService } from '../student.service';
 import { GradeTransitionDto } from '../dto/grade-transition.dto';
 import { GraduationDto } from '../dto/graduation.dto';

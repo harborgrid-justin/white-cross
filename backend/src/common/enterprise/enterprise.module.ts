@@ -1,6 +1,6 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
-import { EnterpriseCacheService } from '@/services/enterprise-cache.service';
-import { EnterpriseMetricsService } from '@/services/enterprise-metrics.service';
+import { EnterpriseCacheService } from '@/common/enterprise/services/enterprise-cache.service';
+import { EnterpriseMetricsService } from '@/common/enterprise/services/enterprise-metrics.service';
 
 export interface EnterpriseModuleOptions {
   moduleName: string;

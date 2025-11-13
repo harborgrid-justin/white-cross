@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { HealthDomainService } from './health-domain.service';
-import { HealthDomainFacadeService } from '@/services/health-domain-facade.service';
+import { HealthDomainFacadeService } from '@/health-domain/services/health-domain-facade.service';
 import { HealthDomainController } from './health-domain.controller';
 
 // Import all health-record sub-modules

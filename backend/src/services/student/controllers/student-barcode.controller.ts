@@ -6,7 +6,7 @@
 
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/auth';
+import { JwtAuthGuard } from '@/services/auth';
 import { StudentService } from '../student.service';
 import { GenerateBarcodeDto } from '../dto/generate-barcode.dto';
 import { VerifyBarcodeDto } from '../dto/verify-barcode.dto';

@@ -7,7 +7,7 @@
 
 import { Controller, Get, HttpStatus, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Public } from '@/auth/decorators/public.decorator';
+import { Public } from '@/services/auth/decorators/public.decorator';
 import { MonitoringService } from './monitoring.service';
 import { BaseController } from '@/common/base';
 import {

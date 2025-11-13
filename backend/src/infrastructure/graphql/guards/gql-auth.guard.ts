@@ -15,8 +15,8 @@ import { ExecutionContext, Injectable, Logger, UnauthorizedException } from '@ne
 import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from '@/auth/decorators';
-import { TokenBlacklistService } from '@/auth';
+import { IS_PUBLIC_KEY } from '@/services/auth/decorators';
+import { TokenBlacklistService } from '@/services/auth';
 
 
 /**

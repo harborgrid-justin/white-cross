@@ -16,9 +16,9 @@ export * from './controller-decorators.service';
 export * from './model-decorators.service';
 export * from './swagger-decorators.service';
 export * from './swagger-parameter-decorators.service';
-export * from '../../auth/decorators/roles.decorator';
-export * from '../../auth/decorators/public.decorator';
-export * from '../../auth/decorators/current-user.decorator';
+export * from '../../services/auth/decorators/roles.decorator';
+export * from '../../services/auth/decorators/public.decorator';
+export * from '../../services/auth/decorators/current-user.decorator';
 
 // Validation Decorators
 export * from '../validators/decorators/is-phone.decorator';

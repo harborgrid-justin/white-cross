@@ -1,7 +1,7 @@
 import { UseGuards, ExecutionContext, createParamDecorator } from '@nestjs/common';
 import { Args, Context, ID, Parent, Query, Mutation, ResolveField } from '@nestjs/graphql';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '@/auth';
+import { Roles } from '@/services/auth';
 import { UserRole } from '@/database';
 import type { GraphQLContext } from '../types/context.interface';
 

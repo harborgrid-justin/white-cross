@@ -9,8 +9,8 @@ import { Conversation } from '@/database/models';
 import { ConversationParticipant } from '@/database/models';
 
 // Infrastructure Modules
-import { EncryptionModule } from '../infrastructure/encryption/encryption.module';
-import { MessageQueueModule } from '../infrastructure/queue/message-queue.module';
+import { EncryptionModule } from '../../infrastructure/encryption/encryption.module';
+import { MessageQueueModule } from '../../infrastructure/queue/message-queue.module';
 
 // Auth Module for JWT and token services
 import { AuthModule } from '@/services/auth/auth.module';

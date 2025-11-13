@@ -12,7 +12,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { ROLES_KEY } from '@/auth/decorators';
+import { ROLES_KEY } from '@/services/auth/decorators';
 import { UserRole } from '@/database';
 
 /**

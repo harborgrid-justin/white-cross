@@ -5,8 +5,8 @@
  */
 export { JobsModule } from './jobs.module';
 export { JobType } from './enums/job-type.enum';
-export { QueueManagerService } from '@/services/queue-manager.service';
-export type { JobOptions, QueueStats } from '@/services/queue-manager.service';
+export { QueueManagerService } from '@/infrastructure/jobs/services/queue-manager.service';
+export type { JobOptions, QueueStats } from '@/infrastructure/jobs/services/queue-manager.service';
 export type {
   MedicationReminderData,
   InventoryMaintenanceData,

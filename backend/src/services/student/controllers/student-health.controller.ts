@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { JwtAuthGuard } from '@/auth';
+import { JwtAuthGuard } from '@/services/auth';
 import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentService } from '../student.service';
 import { MentalHealthRecordsDto } from '../dto/mental-health-records.dto';

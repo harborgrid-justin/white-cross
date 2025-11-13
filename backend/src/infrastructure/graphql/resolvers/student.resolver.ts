@@ -13,7 +13,7 @@
 import { Args, Context, ID, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard, GqlRolesGuard } from '../guards';
-import { Roles } from '@/auth';
+import { Roles } from '@/services/auth';
 import { UserRole } from '@/database';
 import {
   ContactDto,
@@ -28,7 +28,7 @@ import {
   IncidentReportDto,
   AllergyDto,
 } from '../dto';
-import { StudentService } from '@/student';
+import { StudentService } from '@/services/student';
 import type { GraphQLContext } from '../types/context.interface';
 import { PHIField } from '@/infrastructure/graphql/guards';
 
