@@ -1,8 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor, Optional } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Optional } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AuditAction } from '../enums/audit-action.enum';
 import { AuditService } from '../audit.service';
+import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 
 /**
  * Audit Interceptor
@@ -15,21 +16,31 @@ import { AuditService } from '../audit.service';
  * or use @Audit() decorator
  */
 @Injectable()
-export class AuditInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(AuditInterceptor.name);
-
-  constructor(@Optional() private readonly auditService?: AuditService) {}
+export class AuditInterceptor extends BaseInterceptor implements NestInterceptor {
+  constructor(@Optional() private readonly auditService?: AuditService) {
+    super();
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
-    const { method, url, user } = request;
+    const { method, url } = request;
+    const { userId } = this.getUserContext(request);
+    const { handler, controller } = this.getHandlerInfo(context);
 
     // Extract audit information from request
     const action = this.getActionFromMethod(method);
     const entityType = this.getEntityTypeFromUrl(url);
-    const userId = user?.id || user?.userId;
-    const ipAddress = this.auditService?.extractIPAddress(request) || 'unknown';
-    const userAgent = this.auditService?.extractUserAgent(request) || 'unknown';
+    const ipAddress = this.getClientIp(request);
+    const userAgent = request.headers['user-agent'] || 'unknown';
+
+    // Log audit interception start using base class
+    this.logRequest('debug', `Audit interception started for ${controller}.${handler}`, {
+      method,
+      url,
+      action,
+      entityType,
+      userId,
+    });
 
     return next.handle().pipe(
       tap({
@@ -48,9 +59,23 @@ export class AuditInterceptor implements NestInterceptor {
                 success: true,
               })
               .catch((error) => {
-                this.logger.error('Failed to log audit action:', error);
+                this.logError('Failed to log audit action', error, {
+                  controller,
+                  handler,
+                  method,
+                  url,
+                });
               });
           }
+
+          // Log successful audit completion using base class
+          this.logResponse('debug', `Audit action completed successfully`, {
+            controller,
+            handler,
+            action,
+            entityType,
+            success: true,
+          });
         },
         error: (error) => {
           // Log failed action (async, fail-safe)
@@ -67,9 +92,24 @@ export class AuditInterceptor implements NestInterceptor {
                 errorMessage: error.message,
               })
               .catch((err) => {
-                this.logger.error('Failed to log audit action error:', err);
+                this.logError('Failed to log audit action error', err, {
+                  controller,
+                  handler,
+                  method,
+                  url,
+                  originalError: error.message,
+                });
               });
           }
+
+          // Log audit error using base class
+          this.logError(`Audit action failed in ${controller}.${handler}`, error, {
+            controller,
+            handler,
+            action,
+            entityType,
+            success: false,
+          });
         },
       }),
     );

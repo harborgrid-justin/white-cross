@@ -9,6 +9,7 @@ export * from './base.service';
 export * from './base-crud.service';
 export * from './base-healthcare.service';
 export * from './base-repository.service';
+export * from './base-controller';
 
 // Legacy exports
 export { BaseService } from './base.service';

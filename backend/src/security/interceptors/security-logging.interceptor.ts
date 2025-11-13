@@ -1,19 +1,20 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { ThreatDetectionService } from '../services/threat-detection.service';
+import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 
 /**
  * Security Logging Interceptor
  * Logs security-relevant requests and performs automatic threat detection
  */
 @Injectable()
-export class SecurityLoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(SecurityLoggingInterceptor.name);
-
+export class SecurityLoggingInterceptor extends BaseInterceptor implements NestInterceptor {
   constructor(
     private readonly threatDetectionService: ThreatDetectionService,
-  ) {}
+  ) {
+    super();
+  }
 
   async intercept(
     context: ExecutionContext,
@@ -21,15 +22,27 @@ export class SecurityLoggingInterceptor implements NestInterceptor {
   ): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
     const startTime = Date.now();
+    const { userId } = this.getUserContext(request);
+    const { handler, controller } = this.getHandlerInfo(context);
 
     const securityContext = {
-      userId: request.user?.id,
-      ipAddress: this.extractIP(request),
+      userId,
+      ipAddress: this.getClientIp(request),
       userAgent: request.headers['user-agent'],
       requestPath: request.url,
       requestMethod: request.method,
       timestamp: new Date(),
     };
+
+    // Log security interception start using base class
+    this.logRequest('info', `Security interception started for ${controller}.${handler}`, {
+      controller,
+      handler,
+      userId,
+      ipAddress: securityContext.ipAddress,
+      requestPath: securityContext.requestPath,
+      requestMethod: securityContext.requestMethod,
+    });
 
     // Perform threat detection on sensitive inputs
     await this.performThreatDetection(request, securityContext);
@@ -37,20 +50,29 @@ export class SecurityLoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         next: () => {
-          const duration = Date.now() - startTime;
-          this.logger.log('Security request completed', {
-            ...securityContext,
+          const { duration, durationMs } = this.getDurationString(startTime);
+
+          // Log successful security request using base class
+          this.logResponse('info', `Security request completed for ${controller}.${handler}`, {
+            controller,
+            handler,
+            userId,
             duration,
+            durationMs,
             status: 'success',
           });
         },
         error: (error) => {
-          const duration = Date.now() - startTime;
-          this.logger.error('Security request failed', {
-            ...securityContext,
+          const { duration, durationMs } = this.getDurationString(startTime);
+
+          // Log security request error using base class
+          this.logError(`Security request failed in ${controller}.${handler}`, error, {
+            controller,
+            handler,
+            userId,
             duration,
+            durationMs,
             status: 'error',
-            error: error.message,
           });
         },
       }),
@@ -77,25 +99,8 @@ export class SecurityLoggingInterceptor implements NestInterceptor {
         await this.threatDetectionService.scanInput(bodyString, context);
       }
     } catch (error) {
-      this.logger.error('Error in threat detection', { error });
+      this.logError('Error in threat detection', error);
       // Don't block the request
     }
-  }
-
-  /**
-   * Extract IP address from request
-   */
-  private extractIP(request: any): string {
-    const forwarded = request.headers['x-forwarded-for'];
-    if (forwarded) {
-      return forwarded.split(',')[0].trim();
-    }
-
-    const realIP = request.headers['x-real-ip'];
-    if (realIP) {
-      return realIP;
-    }
-
-    return request.ip || request.connection?.remoteAddress || '127.0.0.1';
   }
 }

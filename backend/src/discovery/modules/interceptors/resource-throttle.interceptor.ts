@@ -1,9 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { DynamicResourcePoolService } from '../services/dynamic-resource-pool.service';
 import { AuthenticatedRequest, ThrottleQueueItem, TypedSubscriber } from '../types/resource.types';
+import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
 interface ThrottleConfig {
   maxConcurrent: number;
@@ -28,8 +29,7 @@ interface RequestMetrics {
  * using Discovery Service patterns
  */
 @Injectable()
-export class ResourceThrottleInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(ResourceThrottleInterceptor.name);
+export class ResourceThrottleInterceptor extends BaseInterceptor implements NestInterceptor {
   private readonly activeRequests = new Map<string, RequestMetrics>();
   private readonly requestQueue = new Map<string, ThrottleQueueItem[]>();
   private readonly resourceCounters = new Map<string, number>();
@@ -63,12 +63,14 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const requestId = this.generateRequestId(context);
+    const requestId = this.getOrGenerateRequestId(context.switchToHttp().getRequest());
     const resourceType = throttleConfig.resourceType || 'default';
 
-    this.logger.debug(
-      `Throttling request ${requestId} for resource type: ${resourceType}`,
-    );
+    this.logRequest('debug', `Throttling request ${requestId} for resource type: ${resourceType}`, {
+      operation: 'RESOURCE_THROTTLE',
+      requestId,
+      resourceType,
+    });
 
     try {
       // Check if we can acquire resources
@@ -85,9 +87,11 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
           });
         } else {
           // Queue is full, reject request
-          this.logger.warn(
-            `Resource throttle queue full for ${resourceType}, rejecting request ${requestId}`,
-          );
+          this.logRequest('warn', `Resource throttle queue full for ${resourceType}, rejecting request ${requestId}`, {
+            operation: 'QUEUE_FULL_REJECTION',
+            requestId,
+            resourceType,
+          });
           return throwError(
             () => new Error(`Resource limit exceeded for ${resourceType}`),
           );
@@ -113,25 +117,12 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
         }),
       );
     } catch (error) {
-      this.logger.error(
-        `Error in resource throttle interceptor for request ${requestId}:`,
-        error,
-      );
+      this.logError(`Error in resource throttle interceptor for request ${requestId}`, error, {
+        operation: 'RESOURCE_THROTTLE_ERROR',
+        requestId,
+      });
       return throwError(() => error);
     }
-  }
-
-  /**
-   * Generate unique request ID
-   */
-  private generateRequestId(context: ExecutionContext): string {
-    const request = context
-      .switchToHttp()
-      .getRequest<Partial<AuthenticatedRequest>>();
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substr(2, 9);
-
-    return `${request.method || 'unknown'}_${timestamp}_${random}`;
   }
 
   /**
@@ -145,9 +136,12 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
     const currentCount = this.resourceCounters.get(resourceType) || 0;
 
     if (currentCount >= config.maxConcurrent) {
-      this.logger.debug(
-        `Max concurrent limit reached for ${resourceType}: ${currentCount}/${config.maxConcurrent}`,
-      );
+      this.logRequest('debug', `Max concurrent limit reached for ${resourceType}: ${currentCount}/${config.maxConcurrent}`, {
+        operation: 'MAX_CONCURRENT_REACHED',
+        resourceType,
+        currentCount,
+        maxConcurrent: config.maxConcurrent,
+      });
       return false;
     }
 
@@ -160,16 +154,21 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
 
       if (resource) {
         this.resourceCounters.set(resourceType, currentCount + 1);
-        this.logger.debug(
-          `Acquired resource for ${requestId}, count: ${currentCount + 1}/${config.maxConcurrent}`,
-        );
+        this.logRequest('debug', `Acquired resource for ${requestId}, count: ${currentCount + 1}/${config.maxConcurrent}`, {
+          operation: 'RESOURCE_ACQUIRED',
+          requestId,
+          resourceType,
+          currentCount: currentCount + 1,
+          maxConcurrent: config.maxConcurrent,
+        });
         return true;
       }
     } catch (error) {
-      this.logger.warn(
-        `Failed to acquire resource from pool for ${requestId}:`,
-        error,
-      );
+      this.logError(`Failed to acquire resource from pool for ${requestId}`, error, {
+        operation: 'RESOURCE_ACQUISITION_FAILED',
+        requestId,
+        resourceType,
+      });
     }
 
     return false;
@@ -213,9 +212,12 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
 
     queue.splice(insertIndex, 0, queueItem);
 
-    this.logger.debug(
-      `Added request ${requestId} to queue at position ${insertIndex}, queue size: ${queue.length}`,
-    );
+    this.logRequest('debug', `Added request ${requestId} to queue at position ${insertIndex}, queue size: ${queue.length}`, {
+      operation: 'REQUEST_QUEUED',
+      requestId,
+      queuePosition: insertIndex,
+      queueSize: queue.length,
+    });
 
     // Set timeout for queued request
     setTimeout(() => {
@@ -223,9 +225,11 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
       if (index !== -1) {
         queue.splice(index, 1);
         queueItem.reject(new Error(`Request ${requestId} timed out in queue`));
-        this.logger.warn(
-          `Request ${requestId} timed out in queue after ${config.timeoutMs}ms`,
-        );
+        this.logRequest('warn', `Request ${requestId} timed out in queue after ${config.timeoutMs}ms`, {
+          operation: 'QUEUE_TIMEOUT',
+          requestId,
+          timeoutMs: config.timeoutMs,
+        });
       }
     }, config.timeoutMs);
   }
@@ -251,9 +255,11 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
 
         if (resource) {
           this.resourceCounters.set(resourceType, currentCount + 1);
-          this.logger.debug(
-            `Processing queued request for ${resourceType}, count: ${currentCount + 1}`,
-          );
+          this.logRequest('debug', `Processing queued request for ${resourceType}, count: ${currentCount + 1}`, {
+            operation: 'PROCESSING_QUEUED_REQUEST',
+            resourceType,
+            currentCount: currentCount + 1,
+          });
 
           // The queued request will be processed through the normal flow
           // This is a simplified approach - in a real implementation,
@@ -283,21 +289,28 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
 
     if (currentCount > 0) {
       this.resourceCounters.set(resourceType, currentCount - 1);
-      this.logger.debug(
-        `Released resource for ${requestId}, count: ${currentCount - 1}`,
-      );
+      this.logRequest('debug', `Released resource for ${requestId}, count: ${currentCount - 1}`, {
+        operation: 'RESOURCE_RELEASED',
+        requestId,
+        resourceType,
+        currentCount: currentCount - 1,
+      });
     }
 
     try {
       // Release resource back to pool
       // Note: In a real implementation, you'd need to track the actual resource instance
       // For now, we'll just handle the counter logic
-      this.logger.debug(`Resource released for ${resourceType}`);
+      this.logRequest('debug', `Resource released for ${resourceType}`, {
+        operation: 'RESOURCE_POOL_RELEASE',
+        resourceType,
+      });
     } catch (error) {
-      this.logger.warn(
-        `Error releasing resource to pool for ${requestId}:`,
-        error,
-      );
+      this.logError(`Error releasing resource to pool for ${requestId}`, error, {
+        operation: 'RESOURCE_RELEASE_ERROR',
+        requestId,
+        resourceType,
+      });
     }
 
     // Remove request tracking
@@ -325,9 +338,11 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
       metrics.executionTime = metrics.endTime - metrics.startTime;
       metrics.success = true;
 
-      this.logger.debug(
-        `Request ${requestId} completed successfully in ${metrics.executionTime}ms`,
-      );
+      this.logRequest('debug', `Request ${requestId} completed successfully in ${metrics.executionTime}ms`, {
+        operation: 'REQUEST_SUCCESS',
+        requestId,
+        executionTime: metrics.executionTime,
+      });
     }
   }
 
@@ -341,10 +356,12 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
       metrics.executionTime = metrics.endTime - metrics.startTime;
       metrics.success = false;
 
-      this.logger.warn(
-        `Request ${requestId} failed after ${metrics.executionTime}ms:`,
-        error.message,
-      );
+      this.logRequest('warn', `Request ${requestId} failed after ${metrics.executionTime}ms: ${error.message}`, {
+        operation: 'REQUEST_ERROR',
+        requestId,
+        executionTime: metrics.executionTime,
+        errorMessage: error.message,
+      });
     }
   }
 
@@ -409,6 +426,8 @@ export class ResourceThrottleInterceptor implements NestInterceptor {
     this.requestQueue.clear();
     this.resourceCounters.clear();
     this.activeRequests.clear();
-    this.logger.log('Resource throttle interceptor reset');
+    this.logRequest('log', 'Resource throttle interceptor reset', {
+      operation: 'RESOURCE_THROTTLE_RESET',
+    });
   }
 }
