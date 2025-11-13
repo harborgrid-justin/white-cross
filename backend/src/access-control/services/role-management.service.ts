@@ -207,11 +207,7 @@ export class RoleManagementService extends BaseService {
 
     try {
       const Role = this.getModel('Role');
-      const role = await Role.findByPk(id, { transaction });
-
-      if (!role) {
-        throw new NotFoundException('Role not found');
-      }
+      const role = await this.findEntityOrFail(Role, id, 'Role');
 
       // Prevent modification of system roles
       if (role.isSystem) {

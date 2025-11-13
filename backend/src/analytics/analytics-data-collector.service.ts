@@ -77,7 +77,7 @@ export class AnalyticsDataCollectorService extends BaseService {
       const cached = await this.cacheManager.get<HealthMetricsData>(cacheKey);
 
       if (cached && !options.forceRefresh) {
-        return { success: true, data: cached };
+        return this.handleSuccess('Operation completed', cached );
       }
 
       const dateRange = this.getDateRange(period);
@@ -121,7 +121,7 @@ export class AnalyticsDataCollectorService extends BaseService {
         period,
       });
 
-      return { success: true, data: healthMetrics };
+      return this.handleSuccess('Operation completed', healthMetrics );
     } catch (error) {
       this.logError(`Failed to collect health metrics for school ${schoolId}`, error);
       return {
@@ -196,7 +196,7 @@ export class AnalyticsDataCollectorService extends BaseService {
         generatedAt: new Date(),
       };
 
-      return { success: true, data: studentMetrics };
+      return this.handleSuccess('Operation completed', studentMetrics );
     } catch (error) {
       this.logError(`Failed to collect student health metrics for ${studentId}`, error);
       return {
@@ -256,7 +256,7 @@ export class AnalyticsDataCollectorService extends BaseService {
         generatedAt: new Date(),
       };
 
-      return { success: true, data: medicationAnalytics };
+      return this.handleSuccess('Operation completed', medicationAnalytics );
     } catch (error) {
       this.logError(`Failed to collect medication analytics for school ${schoolId}`, error);
       return {
@@ -320,7 +320,7 @@ export class AnalyticsDataCollectorService extends BaseService {
         generatedAt: new Date(),
       };
 
-      return { success: true, data: appointmentAnalytics };
+      return this.handleSuccess('Operation completed', appointmentAnalytics );
     } catch (error) {
       this.logError(`Failed to collect appointment analytics for school ${schoolId}`, error);
       return {
@@ -376,7 +376,7 @@ export class AnalyticsDataCollectorService extends BaseService {
         generatedAt: new Date(),
       };
 
-      return { success: true, data: incidentAnalytics };
+      return this.handleSuccess('Operation completed', incidentAnalytics );
     } catch (error) {
       this.logError(`Failed to collect incident analytics for school ${schoolId}`, error);
       return {

@@ -95,4 +95,3 @@ export class RecurringAppointmentsService extends BaseService {
     return this.statisticsService.getTemplateStatistics(this.templateService.getAllTemplates());
   }
 }
-}

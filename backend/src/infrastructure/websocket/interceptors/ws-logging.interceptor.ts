@@ -14,14 +14,14 @@
  *
  * @class WsLoggingInterceptor
  */
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Socket } from 'socket.io';
+import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
 @Injectable()
-export class WsLoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger('WebSocket');
+export class WsLoggingInterceptor extends BaseInterceptor implements NestInterceptor {
 
   /**
    * Intercepts WebSocket event handling
@@ -40,8 +40,8 @@ export class WsLoggingInterceptor implements NestInterceptor {
     const userId = user?.userId || 'anonymous';
     const organizationId = user?.organizationId || 'unknown';
 
-    // Log incoming event
-    this.logger.debug(`[${pattern}] ← Received from socket ${client.id}`, {
+    // Log incoming event using base class
+    this.logRequest('debug', `[${pattern}] ← Received from socket ${client.id}`, {
       pattern,
       userId,
       organizationId,
@@ -55,34 +55,27 @@ export class WsLoggingInterceptor implements NestInterceptor {
       tap((response) => {
         const duration = Date.now() - startTime;
 
-        // Log successful response
-        this.logger.debug(
-          `[${pattern}] → Response sent to socket ${client.id} (${duration}ms)`,
-          {
-            pattern,
-            userId,
-            organizationId,
-            socketId: client.id,
-            duration,
-            hasResponse: !!response,
-          },
-        );
+        // Log successful response using base class
+        this.logRequest('debug', `[${pattern}] → Response sent to socket ${client.id} (${duration}ms)`, {
+          pattern,
+          userId,
+          organizationId,
+          socketId: client.id,
+          duration,
+          hasResponse: !!response,
+        });
       }),
       catchError((error) => {
         const duration = Date.now() - startTime;
 
-        // Log error
-        this.logger.error(
-          `[${pattern}] ✗ Error in socket ${client.id} (${duration}ms)`,
-          {
-            pattern,
-            userId,
-            organizationId,
-            socketId: client.id,
-            duration,
-            error: error.message,
-          },
-        );
+        // Log error using base class
+        this.logError(`[${pattern}] ✗ Error in socket ${client.id} (${duration}ms)`, error, {
+          pattern,
+          userId,
+          organizationId,
+          socketId: client.id,
+          duration,
+        });
 
         return throwError(() => error);
       }),

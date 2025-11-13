@@ -9,19 +9,19 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { RequestContextService, ContextInitializerService } from './request-context.service';
+import { BaseInterceptor } from '../interceptors/base.interceptor';
 
 @Injectable()
-export class ContextInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(ContextInterceptor.name);
-
+export class ContextInterceptor extends BaseInterceptor implements NestInterceptor {
   constructor(
     private readonly contextInitializer: ContextInitializerService,
-  ) {}
+  ) {
+    super();
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
@@ -30,10 +30,11 @@ export class ContextInterceptor implements NestInterceptor {
     // Create request context
     const requestContext = this.contextInitializer.createContext(request);
 
-    this.logger.debug(`Request context initialized: ${requestContext.correlationId}`, {
+    // Log context initialization using base class
+    this.logRequest('debug', `Request context initialized: ${requestContext.correlationId}`, {
       method: requestContext.request.method,
       url: requestContext.request.url,
-      correlationId: requestContext.correlationId
+      correlationId: requestContext.correlationId,
     });
 
     // Run the request handler within the context
@@ -44,10 +45,12 @@ export class ContextInterceptor implements NestInterceptor {
           RequestContextService.setResponseMetadata(response.statusCode);
 
           const duration = RequestContextService.getRequestDuration();
-          this.logger.debug(`Request completed: ${requestContext.correlationId}`, {
+
+          // Log successful completion using base class
+          this.logResponse('debug', `Request completed: ${requestContext.correlationId}`, {
             statusCode: response.statusCode,
             duration,
-            correlationId: requestContext.correlationId
+            correlationId: requestContext.correlationId,
           });
         }),
         catchError((error) => {
@@ -55,11 +58,12 @@ export class ContextInterceptor implements NestInterceptor {
           RequestContextService.setResponseMetadata(error.status || 500);
 
           const duration = RequestContextService.getRequestDuration();
-          this.logger.error(`Request failed: ${requestContext.correlationId}`, {
+
+          // Log error using base class
+          this.logError(`Request failed: ${requestContext.correlationId}`, error, {
             statusCode: error.status || 500,
-            error: error.message,
             duration,
-            correlationId: requestContext.correlationId
+            correlationId: requestContext.correlationId,
           });
 
           throw error;

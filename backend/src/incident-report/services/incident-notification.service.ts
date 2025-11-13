@@ -11,6 +11,12 @@ import { Inject } from '@nestjs/common';
 import { BaseService } from '../../common/base';
 import { LoggerService } from '../../shared/logging/logger.service';
 import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class IncidentNotificationService implements OnModuleDestroy {
   private notificationListeners: Set<string> = new Set();

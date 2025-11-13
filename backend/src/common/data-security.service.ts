@@ -660,7 +660,7 @@ export class DataSecurityService extends BaseService {
     };
 
     if (classificationLevel[classification] > classificationLevel[allowedClassification]) {
-      throw new Error('Data classification exceeds allowed level for external API');
+      return this.handleError('Operation failed', new Error('Data classification exceeds allowed level for external API'));
     }
 
     return this.redactPII(data);
@@ -687,7 +687,7 @@ export class DataSecurityService extends BaseService {
     const MAX_INPUT_LENGTH = 100000;
     if (input.length > MAX_INPUT_LENGTH) {
       this.logWarning(`Input exceeds maximum length: ${input.length}`);
-      throw new Error('Input exceeds maximum allowed length');
+      return this.handleError('Operation failed', new Error('Input exceeds maximum allowed length'));
     }
 
     return input
@@ -720,7 +720,7 @@ export class DataSecurityService extends BaseService {
     const MAX_HTML_LENGTH = 500000;
     if (html.length > MAX_HTML_LENGTH) {
       this.logWarning(`HTML input exceeds maximum length: ${html.length}`);
-      throw new Error('HTML input exceeds maximum allowed length');
+      return this.handleError('Operation failed', new Error('HTML input exceeds maximum allowed length'));
     }
 
     // Remove all tags except allowed ones
@@ -791,7 +791,7 @@ export class DataSecurityService extends BaseService {
    */
   sanitizeSQLIdentifier(identifier: string): string {
     if (!identifier || typeof identifier !== 'string') {
-      throw new Error('SQL identifier cannot be empty or non-string');
+      return this.handleError('Operation failed', new Error('SQL identifier cannot be empty or non-string'));
     }
 
     // Maximum identifier length (based on SQL standards)
@@ -804,7 +804,7 @@ export class DataSecurityService extends BaseService {
     // Must start with letter, underscore, or dollar sign
     if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(identifier)) {
       this.logWarning(`Invalid SQL identifier attempted: ${identifier}`);
-      throw new Error('Invalid SQL identifier: must start with letter/underscore and contain only alphanumeric/underscore/$ characters');
+      return this.handleError('Operation failed', new Error('Invalid SQL identifier: must start with letter/underscore and contain only alphanumeric/underscore/$ characters'));
     }
 
     // Blacklist SQL keywords that should never be identifiers
@@ -814,7 +814,7 @@ export class DataSecurityService extends BaseService {
     ];
 
     if (SQL_KEYWORDS.includes(identifier.toUpperCase())) {
-      throw new Error('SQL identifier cannot be a reserved SQL keyword');
+      return this.handleError('Operation failed', new Error('SQL identifier cannot be a reserved SQL keyword'));
     }
 
     return identifier;
@@ -841,7 +841,7 @@ export class DataSecurityService extends BaseService {
     // Maximum pattern length to prevent DoS
     const MAX_PATTERN_LENGTH = 1000;
     if (value.length > MAX_PATTERN_LENGTH) {
-      throw new Error('SQL LIKE pattern exceeds maximum allowed length');
+      return this.handleError('Operation failed', new Error('SQL LIKE pattern exceeds maximum allowed length'));
     }
 
     // Escape backslash first, then wildcards
@@ -870,18 +870,18 @@ export class DataSecurityService extends BaseService {
    */
   validateSQLOrderBy(orderBy: string, allowedColumns: string[]): string {
     if (!orderBy || typeof orderBy !== 'string') {
-      throw new Error('ORDER BY clause cannot be empty');
+      return this.handleError('Operation failed', new Error('ORDER BY clause cannot be empty'));
     }
 
     if (!allowedColumns || !Array.isArray(allowedColumns) || allowedColumns.length === 0) {
-      throw new Error('allowedColumns must be a non-empty array');
+      return this.handleError('Operation failed', new Error('allowedColumns must be a non-empty array'));
     }
 
     const parts = orderBy.toLowerCase().trim().split(/\s+/);
 
     if (parts.length > 2) {
       this.logWarning(`Invalid ORDER BY clause attempted: ${orderBy}`);
-      throw new Error('Invalid ORDER BY clause: too many parts');
+      return this.handleError('Operation failed', new Error('Invalid ORDER BY clause: too many parts'));
     }
 
     const column = parts[0];

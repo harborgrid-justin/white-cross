@@ -262,11 +262,11 @@ export class RegulationTrackingService extends BaseService {
    */
   private validateStateParameter(state: string): void {
     if (!state || state.trim().length === 0) {
-      throw new Error('State parameter is required');
+      return this.handleError('Operation failed', new Error('State parameter is required'));
     }
 
     if (state.length !== 2) {
-      throw new Error('State must be a 2-letter state code');
+      return this.handleError('Operation failed', new Error('State must be a 2-letter state code'));
     }
   }
 
@@ -275,7 +275,7 @@ export class RegulationTrackingService extends BaseService {
    */
   private validateRegulationId(regulationId: string): void {
     if (!regulationId || regulationId.trim().length === 0) {
-      throw new Error('Regulation ID is required');
+      return this.handleError('Operation failed', new Error('Regulation ID is required'));
     }
   }
 }

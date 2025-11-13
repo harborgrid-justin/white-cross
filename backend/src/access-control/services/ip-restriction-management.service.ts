@@ -95,11 +95,7 @@ export class IpRestrictionManagementService extends BaseService {
   async removeIpRestriction(id: string): Promise<{ success: boolean }> {
     try {
       const IpRestriction = this.getModel('IpRestriction');
-      const restriction = await IpRestriction.findByPk(id);
-
-      if (!restriction) {
-        throw new NotFoundException('IP restriction not found');
-      }
+      const restriction = await this.findEntityOrFail(IpRestriction, id, 'IP');
 
       await restriction.update({
         isActive: false,

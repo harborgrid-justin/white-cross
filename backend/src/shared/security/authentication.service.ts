@@ -753,7 +753,7 @@ export class AuthenticationService extends BaseService {
       return await this.generateToken(user);
     } catch (error) {
       logger.error('Error refreshing JWT token:', error);
-      throw new Error('Failed to refresh authentication token');
+      return this.handleError('Operation failed', new Error('Failed to refresh authentication token'));
     }
   }
 }

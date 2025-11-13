@@ -68,10 +68,7 @@ export class UserRoleAssignmentService extends BaseService {
       const SecurityIncident = this.getModel('SecurityIncident');
 
       // Verify target user exists
-      const targetUser = await User.findByPk(userId, { transaction });
-      if (!targetUser) {
-        throw new NotFoundException('User not found');
-      }
+      const targetUser = await this.findEntityOrFail(User, userId, 'User');
 
       // Verify role exists
       const role = await Role.findByPk(roleId, {

@@ -8,29 +8,48 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { SanitizableObject, SanitizableValue } from '../types/utility-types';
+import { BaseInterceptor } from './base.interceptor';
 
 /**
  * Sanitization Interceptor
  *
  * @class SanitizationInterceptor
+ * @extends {BaseInterceptor}
  * @implements {NestInterceptor}
  *
  * @description Sanitizes request body and response data
  */
 @Injectable()
-export class SanitizationInterceptor implements NestInterceptor {
+export class SanitizationInterceptor extends BaseInterceptor implements NestInterceptor {
   private readonly dangerousPatterns = {
     xss: /<script|javascript:|onerror=|onclick=|onload=/i,
     sql: /(\bUNION\b|\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b|\bDROP\b)/i,
     path: /\.\.\//g,
   };
 
+  constructor() {
+    super();
+  }
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
+    const { handler, controller } = this.getHandlerInfo(context);
 
     // Sanitize request body
     if (request.body) {
+      const originalBody = JSON.stringify(request.body);
       request.body = this.sanitizeObject(request.body);
+      const sanitizedBody = JSON.stringify(request.body);
+
+      // Log if sanitization occurred
+      if (originalBody !== sanitizedBody) {
+        this.logRequest('warn', `Input sanitized in ${controller}.${handler}`, {
+          controller,
+          handler,
+          originalLength: originalBody.length,
+          sanitizedLength: sanitizedBody.length,
+        });
+      }
     }
 
     // Note: request.query is read-only in Express, so we skip sanitizing it

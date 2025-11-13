@@ -107,4 +107,59 @@ export abstract class BaseService {
       throw error; // This won't be reached due to handleError throwing, but keeps TypeScript happy
     }
   }
+
+  /**
+   * Sanitize input data by removing null/undefined values and trimming strings
+   */
+  protected sanitizeInput<T extends Record<string, any>>(
+    input: T,
+    options: {
+      removeNull?: boolean;
+      removeUndefined?: boolean;
+      trimStrings?: boolean;
+      removeEmptyStrings?: boolean;
+    } = {},
+  ): Partial<T> {
+    const {
+      removeNull = true,
+      removeUndefined = true,
+      trimStrings = true,
+      removeEmptyStrings = false,
+    } = options;
+
+    const sanitized: Partial<T> = {};
+
+    for (const [key, value] of Object.entries(input)) {
+      let processedValue = value;
+
+      // Remove null values if requested
+      if (removeNull && processedValue === null) {
+        continue;
+      }
+
+      // Remove undefined values if requested
+      if (removeUndefined && processedValue === undefined) {
+        continue;
+      }
+
+      // Trim strings if requested
+      if (trimStrings && typeof processedValue === 'string') {
+        processedValue = processedValue.trim();
+
+        // Remove empty strings if requested
+        if (removeEmptyStrings && processedValue === '') {
+          continue;
+        }
+      }
+
+      // Recursively sanitize nested objects
+      if (processedValue && typeof processedValue === 'object' && !Array.isArray(processedValue)) {
+        processedValue = this.sanitizeInput(processedValue, options);
+      }
+
+      sanitized[key as keyof T] = processedValue;
+    }
+
+    return sanitized;
+  }
 }

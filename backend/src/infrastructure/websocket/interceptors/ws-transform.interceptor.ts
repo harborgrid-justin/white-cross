@@ -16,6 +16,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
 /**
  * Fields to remove from responses (potential sensitive data)

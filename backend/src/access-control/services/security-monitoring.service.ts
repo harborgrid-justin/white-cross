@@ -146,11 +146,7 @@ export class SecurityMonitoringService extends BaseService {
   async updateSecurityIncident(id: string, data: SecurityIncidentUpdateData): Promise<SecurityIncidentInstance> {
     try {
       const SecurityIncident = this.getModel('SecurityIncident');
-      const incident = await SecurityIncident.findByPk(id);
-
-      if (!incident) {
-        throw new NotFoundException('Security incident not found');
-      }
+      const incident = await this.findEntityOrFail(SecurityIncident, id, 'Security');
 
       const updateData: any = {};
 

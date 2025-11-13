@@ -143,14 +143,11 @@ export class StudentCrudService extends BaseService {
         where.gender = gender;
       }
 
-      // Pagination
-      const offset = (page - 1) * limit;
-
-      // Execute query with eager loading
-      const { rows: data, count: total } = await this.studentModel.findAndCountAll({
-        where,
-        offset,
+      // Execute query with pagination using BaseService method
+      const result = await this.createPaginatedQuery(this.studentModel, {
+        page,
         limit,
+        where,
         order: [
           ['lastName', 'ASC'],
           ['firstName', 'ASC'],
@@ -170,13 +167,8 @@ export class StudentCrudService extends BaseService {
       });
 
       return {
-        data,
-        meta: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
+        data: result.data,
+        meta: result.pagination,
       };
     } catch (error) {
       this.handleError('Failed to fetch students', error);

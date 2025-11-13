@@ -577,7 +577,7 @@ export class AiSearchService extends BaseService {
    */
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) {
-      throw new Error('Vectors must have the same length');
+      return this.handleError('Operation failed', new Error('Vectors must have the same length'));
     }
 
     let dotProduct = 0;

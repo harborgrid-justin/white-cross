@@ -8,6 +8,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { BaseInterceptor } from './base.interceptor';
 import { ApiSuccessResponse } from '../interfaces/api-response.interface';
 
 /**
@@ -36,13 +37,16 @@ import { ApiSuccessResponse } from '../interfaces/api-response.interface';
  * - Pagination metadata is preserved if present
  */
 @Injectable()
-export class ResponseTransformInterceptor<T>
-  implements NestInterceptor<T, ApiSuccessResponse<T>>
-{
+export class ResponseTransformInterceptor<T> extends BaseInterceptor implements NestInterceptor<T, ApiSuccessResponse<T>> {
+  constructor() {
+    super();
+  }
   intercept(
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<ApiSuccessResponse<T>> {
+    const { handler, controller } = this.getHandlerInfo(context);
+
     return next.handle().pipe(
       map((data) => {
         // Skip transformation if response is already in standard format
@@ -70,6 +74,14 @@ export class ResponseTransformInterceptor<T>
         if (data && typeof data === 'object' && 'message' in data) {
           response.message = data.message;
         }
+
+        // Log response transformation using base class
+        this.logResponse('debug', `Response transformed in ${controller}.${handler}`, {
+          hasPagination,
+          hasMessage: !!response.message,
+          controller,
+          handler,
+        });
 
         return response;
       }),

@@ -72,7 +72,7 @@ export class AnalyticsMetricsCalculatorService extends BaseService {
         kpiCount: Object.keys(kpis).length,
       });
 
-      return { success: true, data: result };
+      return this.handleSuccess('Operation completed', result );
     } catch (error) {
       this.logError(`Failed to calculate health KPIs for school ${healthMetrics.schoolId}`, error);
       return {
@@ -99,7 +99,7 @@ export class AnalyticsMetricsCalculatorService extends BaseService {
       const cached = await this.cacheManager.get<TrendAnalysisResult>(cacheKey);
 
       if (cached) {
-        return { success: true, data: cached };
+        return this.handleSuccess('Operation completed', cached );
       }
 
       // In a real implementation, this would fetch historical data
@@ -134,7 +134,7 @@ export class AnalyticsMetricsCalculatorService extends BaseService {
         trend: trendAnalysis.trend,
       });
 
-      return { success: true, data: trendAnalysis };
+      return this.handleSuccess('Operation completed', trendAnalysis );
     } catch (error) {
       this.logError(`Failed to analyze trends for school ${schoolId}, metric ${metricType}`, error);
       return {
@@ -175,7 +175,7 @@ export class AnalyticsMetricsCalculatorService extends BaseService {
         generatedAt: new Date(),
       };
 
-      return { success: true, data: forecastAnalysis };
+      return this.handleSuccess('Operation completed', forecastAnalysis );
     } catch (error) {
       this.logError(`Failed to generate forecast for school ${schoolId}, metric ${metricType}`, error);
       return {

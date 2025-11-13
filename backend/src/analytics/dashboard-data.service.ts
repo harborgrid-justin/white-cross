@@ -46,7 +46,7 @@ export class DashboardDataService extends BaseService {
       const cached = await this.cacheManager.get<DashboardData>(cacheKey);
 
       if (cached) {
-        return { success: true, data: cached };
+        return this.handleSuccess('Operation completed', cached );
       }
 
       // Collect all dashboard components
@@ -81,7 +81,7 @@ export class DashboardDataService extends BaseService {
         timeRange,
       });
 
-      return { success: true, data: dashboardData };
+      return this.handleSuccess('Operation completed', dashboardData );
     } catch (error) {
       this.logError(`Failed to prepare dashboard data for school ${schoolId}`, error);
       return {

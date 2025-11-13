@@ -557,7 +557,6 @@ export class ApplicationHealthIndicator {
  */
 @Injectable()
 export class ProductionHealthCheckService {
-  private readonly logger = new Logger(ProductionHealthCheckService.name);
   private healthHistory: OverallHealthStatus[] = [];
   private maxHistorySize = 100;
   private isShuttingDown = false;
@@ -922,8 +921,6 @@ export class ProductionHealthCheckService {
  */
 @Controller('health')
 export class HealthController {
-  private readonly logger = new Logger(HealthController.name);
-
   constructor(
     @Inject(LoggerService) logger: LoggerService,
     private readonly healthCheckService: ProductionHealthCheckService
@@ -1021,8 +1018,15 @@ export class HealthMonitoringService {
   };
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly healthCheckService: ProductionHealthCheckService
-  ) {}
+  ) {
+    super({
+      serviceName: 'ExternalService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Starts health monitoring

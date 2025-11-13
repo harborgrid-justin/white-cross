@@ -59,8 +59,6 @@ export class HealthRecordCrudService extends BaseService {
       provider?: string;
     } = {},
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
-    const offset = (page - 1) * limit;
-
     const whereClause: any = { studentId };
 
     // Apply filters
@@ -68,41 +66,29 @@ export class HealthRecordCrudService extends BaseService {
       whereClause.recordType = filters.type;
     }
     if (filters.dateFrom || filters.dateTo) {
-      whereClause.recordDate = {};
-      if (filters.dateFrom) {
-        whereClause.recordDate[Op.gte] = filters.dateFrom;
-      }
-      if (filters.dateTo) {
-        whereClause.recordDate[Op.lte] = filters.dateTo;
-      }
+      whereClause.recordDate = this.buildDateRangeClause('recordDate', filters.dateFrom, filters.dateTo);
     }
     if (filters.provider) {
       whereClause.provider = { [Op.iLike]: `%${filters.provider}%` };
     }
 
-    // Execute query with pagination
-    const { rows: records, count: total } =
-      await this.healthRecordModel.findAndCountAll({
-        where: whereClause,
-        include: [{ model: this.studentModel, as: 'student' }],
-        order: [['recordDate', 'DESC']],
-        limit,
-        offset,
-      });
+    // Execute query with pagination using BaseService method
+    const result = await this.createPaginatedQuery(this.healthRecordModel, {
+      page,
+      limit,
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+    });
 
     // PHI Access Audit Log
     this.logInfo(
-      `PHI Access: Health records retrieved for student ${studentId}, count: ${records.length}`,
+      `PHI Access: Health records retrieved for student ${studentId}, count: ${result.data.length}`,
     );
 
     return {
-      records,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      records: result.data,
+      pagination: result.pagination,
     };
   }
 
@@ -271,8 +257,6 @@ export class HealthRecordCrudService extends BaseService {
       studentId?: string;
     } = {},
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
-    const offset = (page - 1) * limit;
-
     const whereClause: any = {};
 
     // Apply filters
@@ -283,41 +267,29 @@ export class HealthRecordCrudService extends BaseService {
       whereClause.studentId = filters.studentId;
     }
     if (filters.dateFrom || filters.dateTo) {
-      whereClause.recordDate = {};
-      if (filters.dateFrom) {
-        whereClause.recordDate[Op.gte] = filters.dateFrom;
-      }
-      if (filters.dateTo) {
-        whereClause.recordDate[Op.lte] = filters.dateTo;
-      }
+      whereClause.recordDate = this.buildDateRangeClause('recordDate', filters.dateFrom, filters.dateTo);
     }
     if (filters.provider) {
       whereClause.provider = { [Op.iLike]: `%${filters.provider}%` };
     }
 
-    // Execute query with pagination
-    const { rows: records, count: total } =
-      await this.healthRecordModel.findAndCountAll({
-        where: whereClause,
-        include: [{ model: this.studentModel, as: 'student' }],
-        order: [['recordDate', 'DESC']],
-        limit,
-        offset,
-      });
+    // Execute query with pagination using BaseService method
+    const result = await this.createPaginatedQuery(this.healthRecordModel, {
+      page,
+      limit,
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+    });
 
     // PHI Access Audit Log
     this.logInfo(
-      `PHI Access: All health records retrieved, count: ${records.length}, filters: ${JSON.stringify(filters)}`,
+      `PHI Access: All health records retrieved, count: ${result.data.length}, filters: ${JSON.stringify(filters)}`,
     );
 
     return {
-      records,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      records: result.data,
+      pagination: result.pagination,
     };
   }
 

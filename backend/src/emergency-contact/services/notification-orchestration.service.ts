@@ -219,7 +219,7 @@ export class NotificationOrchestrationService extends BaseService {
     message: string,
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     if (!contact.phoneNumber) {
-      return { success: false, error: 'Phone number not available' };
+      return this.handleError('Operation failed', new Error('Phone number not available'));
     }
 
     try {
@@ -252,7 +252,7 @@ export class NotificationOrchestrationService extends BaseService {
     attachments?: string[],
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     if (!contact.email) {
-      return { success: false, error: 'Email address not available' };
+      return this.handleError('Operation failed', new Error('Email address not available'));
     }
 
     try {
@@ -287,7 +287,7 @@ export class NotificationOrchestrationService extends BaseService {
     message: string,
   ): Promise<{ success: boolean; callId?: string; error?: string }> {
     if (!contact.phoneNumber) {
-      return { success: false, error: 'Phone number not available' };
+      return this.handleError('Operation failed', new Error('Phone number not available'));
     }
 
     try {

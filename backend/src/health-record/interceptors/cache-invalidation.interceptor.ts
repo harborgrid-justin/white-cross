@@ -4,9 +4,10 @@
  * HIPAA Compliance: Ensures cached PHI data is always current
  */
 
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 import { HealthDataCacheService } from '../services/health-data-cache.service';
 
 export interface CacheInvalidationConfig {
@@ -38,10 +39,10 @@ export function InvalidateCache(config: CacheInvalidationConfig) {
 }
 
 @Injectable()
-export class CacheInvalidationInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(CacheInvalidationInterceptor.name);
-
-  constructor(private readonly cacheService: HealthDataCacheService) {}
+export class CacheInvalidationInterceptor extends BaseInterceptor implements NestInterceptor {
+  constructor(private readonly cacheService: HealthDataCacheService) {
+    super();
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const handler = context.getHandler();
@@ -63,7 +64,11 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
         try {
           await this.invalidateCache(config, request, response);
         } catch (error) {
-          this.logger.error('Error invalidating cache:', error);
+          // Log cache invalidation error using base class
+          this.logError('Error invalidating cache', error, {
+            operation: 'CACHE_INVALIDATION',
+            handler: handler.name,
+          });
           // Don't fail the request if cache invalidation fails
         }
       }),
@@ -79,14 +84,22 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
     const studentId = this.extractStudentId(config, request, response);
 
     if (!studentId) {
-      this.logger.warn('Could not extract student ID for cache invalidation');
+      // Log warning using base class
+      this.logRequest('warn', 'Could not extract student ID for cache invalidation', {
+        operation: 'CACHE_INVALIDATION',
+        config: JSON.stringify(config),
+      });
       return;
     }
 
     // Invalidate based on configuration
     if (config.invalidateAll) {
       await this.cacheService.invalidateStudentHealthData(studentId);
-      this.logger.debug(`Invalidated all cache for student ${studentId}`);
+      this.logRequest('debug', `Invalidated all cache for student ${studentId}`, {
+        operation: 'CACHE_INVALIDATION',
+        studentId,
+        invalidateAll: true,
+      });
       return;
     }
 
@@ -122,9 +135,11 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
       }
 
       await Promise.all(promises);
-      this.logger.debug(
-        `Invalidated cache types [${config.invalidateTypes.join(', ')}] for student ${studentId}`,
-      );
+      this.logRequest('debug', `Invalidated cache types [${config.invalidateTypes.join(', ')}] for student ${studentId}`, {
+        operation: 'CACHE_INVALIDATION',
+        studentId,
+        invalidateTypes: config.invalidateTypes,
+      });
     }
   }
 
@@ -167,10 +182,10 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
  * For operations that affect multiple students
  */
 @Injectable()
-export class BulkCacheInvalidationInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(BulkCacheInvalidationInterceptor.name);
-
-  constructor(private readonly cacheService: HealthDataCacheService) {}
+export class BulkCacheInvalidationInterceptor extends BaseInterceptor implements NestInterceptor {
+  constructor(private readonly cacheService: HealthDataCacheService) {
+    super();
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
@@ -178,7 +193,10 @@ export class BulkCacheInvalidationInterceptor implements NestInterceptor {
         try {
           await this.invalidateBulkCache(response);
         } catch (error) {
-          this.logger.error('Error invalidating bulk cache:', error);
+          // Log bulk cache invalidation error using base class
+          this.logError('Error invalidating bulk cache', error, {
+            operation: 'BULK_CACHE_INVALIDATION',
+          });
         }
       }),
     );
@@ -199,7 +217,10 @@ export class BulkCacheInvalidationInterceptor implements NestInterceptor {
       ),
     );
 
-    this.logger.debug(`Invalidated cache for ${studentIds.length} students`);
+    this.logRequest('debug', `Invalidated cache for ${studentIds.length} students`, {
+      operation: 'BULK_CACHE_INVALIDATION',
+      studentIds,
+    });
   }
 
   private extractStudentIds(response: any): string[] {
