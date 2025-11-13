@@ -11,26 +11,12 @@
  * - Comprehensive job monitoring
  * - Horizontal scalability
  */
-import { Injectable, OnModuleDestroy, OnModuleInit, Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job, Queue } from 'bullmq';
-import { JobType } from '@/infrastructure/jobs';
-
-import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+import { JobType } from '@/infrastructure/jobs/enums/job-type.enum';
 export interface JobOptions {
   delay?: number;
   priority?: number;
@@ -50,12 +36,12 @@ export interface QueueStats {
 }
 
 @Injectable()
-export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
+export class QueueManagerService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private queues: Map<JobType, Queue> = new Map();
 
   constructor(
     @Inject(LoggerService) logger: LoggerService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
     super({
       serviceName: 'QueueManagerService',

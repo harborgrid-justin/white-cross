@@ -51,7 +51,7 @@ export class EmailSenderService extends BaseService {
     const transportType = this.configService.get<string>('EMAIL_TRANSPORT', 'smtp');
 
     if (transportType === 'smtp') {
-      return nodemailer.createTransporter({
+      return nodemailer.createTransport({
         host: this.configService.get<string>('EMAIL_SMTP_HOST', 'localhost'),
         port: this.configService.get<number>('EMAIL_SMTP_PORT', 587),
         secure: this.configService.get<boolean>('EMAIL_SMTP_SECURE', false),
@@ -70,7 +70,7 @@ export class EmailSenderService extends BaseService {
     // Development fallback
     if (!this.isProduction) {
       this.logWarning('Using development transport (logging only)');
-      return nodemailer.createTransporter({
+      return nodemailer.createTransport({
         streamTransport: true,
         newline: 'unix',
       });

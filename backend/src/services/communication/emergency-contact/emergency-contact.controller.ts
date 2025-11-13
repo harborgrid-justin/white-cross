@@ -27,12 +27,13 @@ import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
 import { EmergencyContactUpdateDto } from './dto/update-emergency-contact.dto';
 import { EmergencyVerifyContactDto } from './dto/verify-contact.dto';
 import { NotificationDto } from './dto/notification.dto';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { BaseController } from '@/common/base';
-import { 
-  ControllerUtilities, 
+import {
+  ControllerUtilities,
   ApiTagsAndAuth,
-  ApiResponseWrapper 
-} from '../common/shared/controller-utilities';
+  ApiResponseWrapper,
+} from '@/common/shared/controller-utilities';
 
 @ApiTagsAndAuth(['Emergency Contacts'])
 @Controller('emergency-contact')

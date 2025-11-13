@@ -4,28 +4,14 @@
  * @description Handles email template loading, rendering, and caching using Handlebars
  */
 
-import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { ConfigService } from '@nestjs/config';
 import * as Handlebars from 'handlebars';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { EmailTemplate } from './dto/email.dto';
-
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 /**
  * Rendered email content with both HTML and text versions
  */
@@ -48,14 +34,14 @@ interface TemplateCacheEntry {
  * Provides template loading, rendering, and caching functionality
  */
 @Injectable()
-export class EmailTemplateService implements OnModuleInit {
+export class EmailTemplateService extends BaseService implements OnModuleInit {
   private readonly templateCache = new Map<EmailTemplate, TemplateCacheEntry>();
   private readonly cacheEnabled: boolean;
   private readonly templateDirectory: string;
 
   constructor(
     @Inject(LoggerService) logger: LoggerService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
     super({
       serviceName: 'EmailTemplateService',

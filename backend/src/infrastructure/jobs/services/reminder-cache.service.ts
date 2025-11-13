@@ -7,7 +7,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { CacheService } from '@/common/cache/cache.service';
+import { CacheService } from '@/infrastructure/cache/cache.service';
 
 interface MedicationReminder {
   id: string;

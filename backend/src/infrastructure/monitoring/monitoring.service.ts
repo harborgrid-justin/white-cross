@@ -6,7 +6,7 @@
  * with metrics collection, alerting, and performance tracking
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ComponentHealth,
@@ -27,20 +27,8 @@ import { MetricsCollectionService } from './metrics-collection.service';
 import { AlertManagementService } from './alert-management.service';
 import { PerformanceTrackingService } from './performance-tracking.service';
 import { LogAggregationService } from './log-aggregation.service';
-
-import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 /**
  * Service interfaces for optional dependencies
  */
@@ -91,7 +79,7 @@ interface CircuitBreakerServiceInterface {
  * ```
  */
 @Injectable()
-export class MonitoringService implements OnModuleInit {
+export class MonitoringService extends BaseService implements OnModuleInit, OnModuleDestroy {
   // Metrics collection interval
   private metricsInterval?: NodeJS.Timeout;
   private lastMetrics?: MetricsSnapshot;
@@ -132,6 +120,14 @@ export class MonitoringService implements OnModuleInit {
     this.startMetricsCollection();
 
     this.logInfo('Monitoring service initialized successfully');
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    if (this.metricsInterval) {
+      clearInterval(this.metricsInterval);
+      this.metricsInterval = undefined;
+    }
+    this.logInfo('Monitoring service destroyed');
   }
 
   /**
