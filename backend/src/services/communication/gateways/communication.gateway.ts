@@ -10,9 +10,9 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
-import { WsExceptionFilter } from '../../infrastructure/websocket/filters/ws-exception.filter';
-import { WsJwtAuthGuard } from '../../infrastructure/websocket/guards/ws-jwt-auth.guard';
-import { WsLoggingInterceptor } from '../../infrastructure/websocket/interceptors/ws-logging.interceptor';
+import { WsExceptionFilter } from '@/infrastructure/websocket/filters/ws-exception.filter';
+import { WsJwtAuthGuard } from '@/infrastructure/websocket/guards/ws-jwt-auth.guard';
+import { WsLoggingInterceptor } from '@/infrastructure/websocket/interceptors/ws-logging.interceptor';
 import { DeliveryStatusUpdate } from '../types/index';
 
 @UseFilters(new WsExceptionFilter())

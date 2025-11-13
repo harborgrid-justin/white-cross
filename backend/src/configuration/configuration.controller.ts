@@ -8,7 +8,7 @@ import {
   ImportConfigurationsDto,
   UpdateConfigurationDto,
 } from './dto';
-import { ConfigCategory } from '../administration/enums/administration.enums';
+import { ConfigCategory } from '../services/administration/enums/administration.enums';
 
 import { BaseController } from '@/common/base';
 /**

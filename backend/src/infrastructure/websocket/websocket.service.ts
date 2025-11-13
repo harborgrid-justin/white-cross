@@ -4,24 +4,14 @@
  * @description Main service orchestrating all WebSocket functionality
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { AppConfigService } from '@/common/config';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 import { BroadcastService } from './services/broadcast.service';
 import { AlertService } from './services/alert.service';
 import { MessageService } from './services/message.service';
 import { PresenceService } from './services/presence.service';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 import {
   AlertData,
   NotificationData,
@@ -34,7 +24,7 @@ import {
 } from './types/websocket.types';
 
 @Injectable()
-export class WebSocketService implements OnModuleDestroy {
+export class WebSocketService extends BaseService implements OnModuleDestroy {
   constructor(
     @Inject(LoggerService) logger: LoggerService,
     private readonly config: AppConfigService,

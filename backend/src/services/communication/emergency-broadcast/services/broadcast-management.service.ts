@@ -8,7 +8,7 @@ import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { BroadcastStatus } from '../emergency-broadcast.enums';
 import { EmergencyBroadcast } from '../emergency-broadcast.interfaces';
-import { UserRole } from '../../database/types/user-role.enum';
+import { ExecutionContext, UserRole } from '@/database/types';
 import {
   BroadcastStatusResponseDto,
   CreateEmergencyBroadcastDto,
@@ -18,8 +18,7 @@ import {
   SendBroadcastResponseDto,
   UpdateEmergencyBroadcastDto,
 } from '../dto';
-import { EmergencyBroadcastRepository } from '../../database/repositories/impl/emergency-broadcast.repository';
-import { ExecutionContext } from '../../database/types';
+import { EmergencyBroadcastRepository } from '@/database/repositories/impl/emergency-broadcast.repository';
 import { BroadcastPriorityService } from './broadcast-priority.service';
 import { BroadcastRecipientService } from './broadcast-recipient.service';
 import { BroadcastDeliveryService } from './broadcast-delivery.service';

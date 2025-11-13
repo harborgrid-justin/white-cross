@@ -10,8 +10,8 @@ import { RequestContextService } from '@/common/context/request-context.service'
 import { BaseService } from '@/common/base';
 import { AcademicRecord, AttendanceRecord, BehaviorRecord, SubjectGrade } from './interfaces/academic-record.interface';
 import { TranscriptImportDto } from './dto/transcript-import.dto';
-import { AcademicTranscriptRepository } from '../database/repositories/impl/academic-transcript.repository';
-import { StudentRepository } from '../database/repositories/impl/student.repository';
+import { AcademicTranscriptRepository } from '../../database/repositories/impl/academic-transcript.repository';
+import { StudentRepository } from '../../database/repositories/impl/student.repository';
 
 @Injectable()
 export class AcademicTranscriptService extends BaseService {

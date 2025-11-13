@@ -4,7 +4,7 @@
  * @description Main service orchestrating all encryption functionality
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
@@ -21,21 +21,8 @@ import { CryptoService } from '@/infrastructure/encryption/services/crypto.servi
 import { SessionKeyManagerService } from '@/infrastructure/encryption/services/session-key-manager.service';
 import { MessageEncryptionService } from '@/infrastructure/encryption/services/message-encryption.service';
 
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 @Injectable()
-export class EncryptionService implements IEncryptionService {
+export class EncryptionService extends BaseService implements IEncryptionService {
   private readonly config: EncryptionConfig;
 
   constructor(
@@ -59,7 +46,7 @@ export class EncryptionService implements IEncryptionService {
       keyRotationInterval: 7 * 24 * 60 * 60,
       version: '1.0.0',
       enabled: this.configService.get<boolean>('ENCRYPTION_ENABLED', true),
-  };
+    };
 
     this.logInfo('Encryption service initialized', {
       enabled: this.config.enabled,

@@ -19,25 +19,12 @@
  * - Secure random generation
  */
 
-import { Injectable, Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 import { CacheService } from '../cache/cache.service';
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 import {
   EncryptedKeyStorage,
   IKeyManagementService,
@@ -55,7 +42,10 @@ import {
  * Handles RSA key pair generation, storage, and lifecycle management
  */
 @Injectable()
-export class KeyManagementService implements IKeyManagementService {
+export class KeyManagementService
+  extends BaseService
+  implements IKeyManagementService
+{
   private readonly DEFAULT_KEY_SIZE = 4096;
   private readonly DEFAULT_EXPIRATION = 365 * 24 * 60 * 60; // 1 year
   private readonly PBKDF2_ITERATIONS = 100000;

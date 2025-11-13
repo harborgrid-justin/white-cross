@@ -1,21 +1,10 @@
-import { Injectable, Logger, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { SmartGarbageCollectionService } from './smart-garbage-collection.service';
 import { MemoryLeakDetectionService } from './memory-leak-detection.service';
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 import {
   CleanableProvider,
   GCConditionFunction,
@@ -51,6 +40,7 @@ interface OptimizationResult {
 
 @Injectable()
 export class GCOptimizationService
+  extends BaseService
   implements OnModuleInit, OnApplicationShutdown
 {
   private gcTimer: NodeJS.Timeout | null = null;

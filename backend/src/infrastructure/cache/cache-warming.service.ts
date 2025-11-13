@@ -10,25 +10,14 @@
  * - Priority: Critical data warmed first
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { CacheService } from './cache.service';
 import { CacheEvent, CacheWarmingStrategy } from './cache.interfaces';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 /**
  * Cache miss event payload
  */
@@ -42,7 +31,7 @@ interface CacheMissPayload {
  * Cache warming service
  */
 @Injectable()
-export class CacheWarmingService implements OnModuleInit {
+export class CacheWarmingService extends BaseService implements OnModuleInit {
   private strategies: Map<string, CacheWarmingStrategy> = new Map();
   private warmingInProgress = false;
   private lastWarmingTime?: Date;

@@ -16,11 +16,11 @@ import {
   IGrowthTrackingRepository,
   UpdateGrowthTrackingDTO,
 } from '../interfaces/growth-tracking.repository.interface';
-import type { IAuditLogger  } from "../../interfaces";
-import { sanitizeSensitiveData  } from "../../interfaces";
-import type { ICacheManager  } from "../../interfaces";
-import { QueryOptions   } from "../../database/types";
-import { GrowthTracking    } from '@/database/models';
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import { QueryOptions } from '../../../database/types';
+import { GrowthTracking } from '@/database/models';
 
 @Injectable()
 export class GrowthTrackingRepository

@@ -14,11 +14,11 @@ import {
   UpdateVitalSignsDTO,
   VitalSignsAttributes,
 } from '../interfaces/vital-signs.repository.interface';
-import type { IAuditLogger  } from "../../interfaces";
-import { sanitizeSensitiveData  } from "../../interfaces";
-import type { ICacheManager  } from "../../interfaces";
-import { VitalSigns    } from '@/database/models';
-import { ExecutionContext, QueryOptions   } from "../../database/types";
+import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logger.interface';
+import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
+import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
+import { VitalSigns } from '@/database/models';
+import { ExecutionContext, QueryOptions } from '../../../database/types';
 
 @Injectable()
 export class VitalSignsRepository

@@ -11,44 +11,27 @@
  * This service manages the core business logic for emergency contact data
  * and ensures data integrity through transactions and validation.
  */
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Transaction } from 'sequelize';
 import { EmergencyContact } from '@/database/models';
 import { Student } from '@/database/models';
 import { ContactPriority } from '../../contact/enums';
 import { EmergencyContactCreateDto } from '../dto/create-emergency-contact.dto';
 import { EmergencyContactUpdateDto } from '../dto/update-emergency-contact.dto';
 import { ContactValidationService } from './contact-validation.service';
-import { BaseService, FilterOptions } from '../../common/shared/service-utilities';
 
 @Injectable()
-export class ContactManagementService extends BaseService<
-  EmergencyContact,
-  EmergencyContactCreateDto,
-  EmergencyContactUpdateDto
-> {
+export class ContactManagementService {
+  private readonly logger = new Logger(ContactManagementService.name);
+
   constructor(
-    @InjectRepository(EmergencyContact)
-    repository: Repository<EmergencyContact>,
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
     private readonly validationService: ContactValidationService,
-    eventEmitter?: EventEmitter2,
   ) {
-    super(repository, eventEmitter, {
-      entityName: 'EmergencyContact',
-      enableEvents: true,
-      enableAudit: true,
-    });
   }
 
   /**
@@ -60,18 +43,15 @@ export class ContactManagementService extends BaseService<
    */
   async getStudentEmergencyContacts(studentId: string): Promise<EmergencyContact[]> {
     try {
-      // Use base service method with custom filters
-      const result = await this.findAll({
-        studentId,
-        isActive: true,
-        orderBy: 'priority',
-        orderDirection: 'ASC',
+      const contacts = await this.emergencyContactModel.findAll({
+        where: { studentId, isActive: true },
+        order: [['priority', 'ASC']],
       });
 
       this.logger.log(
-        `Retrieved ${result.data.length} emergency contacts for student ${studentId}`,
+        `Retrieved ${contacts.length} emergency contacts for student ${studentId}`,
       );
-      return result.data;
+      return contacts;
     } catch (error: any) {
       this.logger.error(
         `Error fetching student emergency contacts: ${error.message}`,
@@ -89,8 +69,11 @@ export class ContactManagementService extends BaseService<
    * @throws NotFoundException if contact not found
    */
   async getEmergencyContactById(id: string): Promise<EmergencyContact> {
-    // Use base service method
-    return await this.findOne(id);
+    const contact = await this.emergencyContactModel.findByPk(id);
+    if (!contact) {
+      throw new NotFoundException('Emergency contact not found');
+    }
+    return contact;
   }
 
   /**
@@ -103,10 +86,11 @@ export class ContactManagementService extends BaseService<
    * @throws BadRequestException if validation fails or business rules violated
    */
   async createEmergencyContact(data: EmergencyContactCreateDto): Promise<EmergencyContact> {
-    return await this.executeInTransaction(async (_manager) => {
+    return await this.withTransaction(async (transaction) => {
       // Verify student exists and is active
       const student = await this.studentModel.findOne({
         where: { id: data.studentId },
+        transaction,
       });
 
       if (!student) {
@@ -126,7 +110,7 @@ export class ContactManagementService extends BaseService<
 
       // Check PRIMARY contact limit (max 2 per student)
       if (data.priority === ContactPriority.PRIMARY) {
-        await this.validatePrimaryContactLimit(data.studentId);
+        await this.validatePrimaryContactLimit(data.studentId, transaction);
       }
 
       // Prepare contact data with serialized notification channels
@@ -137,8 +121,9 @@ export class ContactManagementService extends BaseService<
           : JSON.stringify(['sms', 'email']), // Default channels
       };
 
-      // Use base service create method
-      const savedContact = await this.create(contactData);
+      const savedContact = await this.emergencyContactModel.create(contactData, {
+        transaction,
+      });
 
       this.logger.log(
         `Emergency contact created: ${savedContact.firstName} ${savedContact.lastName} (${savedContact.priority}) for student ${student.firstName} ${student.lastName}`,
@@ -162,15 +147,15 @@ export class ContactManagementService extends BaseService<
     id: string,
     data: EmergencyContactUpdateDto,
   ): Promise<EmergencyContact> {
-    return await this.executeInTransaction(async (_manager) => {
-      const existingContact = await this.findOne(id);
+    return await this.withTransaction(async (transaction) => {
+      const existingContact = await this.getEmergencyContactById(id);
 
       // Validate update data
       this.validationService.validateContactUpdate(data, existingContact);
 
       // Handle priority changes with PRIMARY contact enforcement
       if (data.priority !== undefined && data.priority !== existingContact.priority) {
-        await this.validatePriorityChange(id, existingContact, data.priority);
+        await this.validatePriorityChange(existingContact, data.priority, transaction);
       }
 
       // Handle deactivation - ensure at least one PRIMARY contact remains active
@@ -179,7 +164,7 @@ export class ContactManagementService extends BaseService<
         existingContact.isActive &&
         existingContact.priority === ContactPriority.PRIMARY
       ) {
-        await this.validatePrimaryContactDeactivation(id, existingContact.studentId);
+        await this.validatePrimaryContactDeactivation(existingContact.studentId, transaction);
       }
 
       // Prepare update data with serialized notification channels
@@ -188,8 +173,8 @@ export class ContactManagementService extends BaseService<
         updateData.notificationChannels = JSON.stringify((data as any).notificationChannels);
       }
 
-      // Use base service update method
-      return await this.update(id, updateData);
+      await existingContact.update(updateData, { transaction });
+      return existingContact;
     });
   }
 
@@ -203,16 +188,15 @@ export class ContactManagementService extends BaseService<
    * @throws BadRequestException if deletion would violate business rules
    */
   async deleteEmergencyContact(id: string): Promise<{ success: boolean }> {
-    return await this.executeInTransaction(async (_manager) => {
-      const contact = await this.findOne(id);
+    return await this.withTransaction(async (transaction) => {
+      const contact = await this.getEmergencyContactById(id);
 
       // Prevent deletion if this is the only active PRIMARY contact
       if (contact.isActive && contact.priority === ContactPriority.PRIMARY) {
-        await this.validatePrimaryContactDeactivation(id, contact.studentId);
+        await this.validatePrimaryContactDeactivation(contact.studentId, transaction);
       }
 
-      // Use base service remove method (soft delete)
-      await this.remove(id);
+      await contact.update({ isActive: false }, { transaction });
 
       this.logger.log(`Emergency contact deleted: ${contact.firstName} ${contact.lastName}`);
 
@@ -229,11 +213,14 @@ export class ContactManagementService extends BaseService<
    * @param studentId - Student identifier
    * @throws BadRequestException if limit exceeded
    */
-  private async validatePrimaryContactLimit(studentId: string): Promise<void> {
-    const existingPrimaryContacts = await this.count({
-      studentId,
-      priority: ContactPriority.PRIMARY,
-      isActive: true,
+  private async validatePrimaryContactLimit(studentId: string, transaction?: Transaction): Promise<void> {
+    const existingPrimaryContacts = await this.emergencyContactModel.count({
+      where: {
+        studentId,
+        priority: ContactPriority.PRIMARY,
+        isActive: true,
+      },
+      transaction,
     });
 
     if (existingPrimaryContacts >= 2) {
@@ -253,16 +240,19 @@ export class ContactManagementService extends BaseService<
    * @throws BadRequestException if change would violate business rules
    */
   private async validatePriorityChange(
-    contactId: string,
     existingContact: EmergencyContact,
     newPriority: ContactPriority,
+    transaction?: Transaction,
   ): Promise<void> {
     if (newPriority === ContactPriority.PRIMARY) {
       // Upgrading to PRIMARY - check limit using base service count method
-      const existingPrimaryContacts = await this.count({
-        studentId: existingContact.studentId,
-        priority: ContactPriority.PRIMARY,
-        isActive: true,
+      const existingPrimaryContacts = await this.emergencyContactModel.count({
+        where: {
+          studentId: existingContact.studentId,
+          priority: ContactPriority.PRIMARY,
+          isActive: true,
+        },
+        transaction,
       });
 
       // Subtract 1 if the current contact is already PRIMARY (shouldn't happen in this flow)
@@ -278,10 +268,13 @@ export class ContactManagementService extends BaseService<
       }
     } else if (existingContact.priority === ContactPriority.PRIMARY) {
       // Downgrading from PRIMARY - ensure at least one PRIMARY contact remains
-      const otherPrimaryContacts = await this.count({
-        studentId: existingContact.studentId,
-        priority: ContactPriority.PRIMARY,
-        isActive: true,
+      const otherPrimaryContacts = await this.emergencyContactModel.count({
+        where: {
+          studentId: existingContact.studentId,
+          priority: ContactPriority.PRIMARY,
+          isActive: true,
+        },
+        transaction,
       });
 
       if (otherPrimaryContacts <= 1) {
@@ -302,13 +295,16 @@ export class ContactManagementService extends BaseService<
    * @throws BadRequestException if deactivation would leave no PRIMARY contacts
    */
   private async validatePrimaryContactDeactivation(
-    contactId: string,
     studentId: string,
+    transaction?: Transaction,
   ): Promise<void> {
-    const activePrimaryContacts = await this.count({
-      studentId,
-      priority: ContactPriority.PRIMARY,
-      isActive: true,
+    const activePrimaryContacts = await this.emergencyContactModel.count({
+      where: {
+        studentId,
+        priority: ContactPriority.PRIMARY,
+        isActive: true,
+      },
+      transaction,
     });
 
     if (activePrimaryContacts <= 1) {
@@ -319,39 +315,13 @@ export class ContactManagementService extends BaseService<
     }
   }
 
-  /**
-   * Apply custom filters for emergency contacts
-   */
-  protected applyCustomFilters(where: any, filters: FilterOptions): void {
-    super.applyCustomFilters(where, filters);
-
-    // Add custom filters specific to emergency contacts
-    if ((filters as any).studentId) {
-      where.studentId = (filters as any).studentId;
+  private async withTransaction<T>(handler: (transaction: Transaction | undefined) => Promise<T>): Promise<T> {
+    const sequelize = this.emergencyContactModel.sequelize;
+    if (!sequelize) {
+      return handler(undefined);
     }
 
-    if ((filters as any).priority) {
-      where.priority = (filters as any).priority;
-    }
-
-    if ((filters as any).relationship) {
-      where.relationship = (filters as any).relationship;
-    }
+    return sequelize.transaction(async (transaction) => handler(transaction));
   }
 
-  /**
-   * Apply search filter for emergency contacts
-   */
-  protected applySearchFilter(where: any, search: string): void {
-    // Search across first name, last name, email, and phone number
-    const searchConditions = [
-      { firstName: { $ilike: `%${search}%` } },
-      { lastName: { $ilike: `%${search}%` } },
-      { email: { $ilike: `%${search}%` } },
-      { phoneNumber: { $ilike: `%${search}%` } },
-      { relationship: { $ilike: `%${search}%` } },
-    ];
-
-    (where as any).$or = searchConditions;
-  }
 }

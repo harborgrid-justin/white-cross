@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { Conversation, ConversationType } from '@/database/models';
 import { ConversationParticipant } from '@/database/models';
 import { Message } from '@/database/models';
-import { EncryptionService } from '../../infrastructure/encryption/encryption.service';
+import { EncryptionService } from '@/infrastructure/encryption/encryption.service';
 import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';

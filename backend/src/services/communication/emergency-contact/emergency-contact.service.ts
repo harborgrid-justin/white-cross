@@ -25,17 +25,17 @@ import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
 import { EmergencyContactUpdateDto } from './dto/update-emergency-contact.dto';
 import { NotificationDto } from './dto/notification.dto';
 import { NotificationResultDto } from './dto/notification-result.dto';
-import { ContactManagementService } from '@/services/communication/emergency-contact/services/contact-management.service';
-import { ContactVerificationService } from '@/services/communication/emergency-contact/services/contact-verification.service';
-import { ContactStatisticsService } from '@/services/communication/emergency-contact/services/contact-statistics.service';
-import { NotificationOrchestrationService } from '@/services/communication/emergency-contact/services/notification-orchestration.service';
-import { NotificationQueueService } from '@/services/communication/emergency-contact/services/notification-queue.service';
+import { ContactManagementService } from './services/contact-management.service';
+import { ContactVerificationService } from './services/contact-verification.service';
+import { ContactStatisticsService } from './services/contact-statistics.service';
+import { NotificationOrchestrationService } from './services/notification-orchestration.service';
+import { NotificationQueueService } from './services/notification-queue.service';
 
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 @Injectable()
-export class EmergencyContactService implements OnModuleDestroy {
+export class EmergencyContactService extends BaseService implements OnModuleDestroy {
   constructor(
     @Inject(LoggerService) logger: LoggerService,
     private readonly contactManagementService: ContactManagementService,

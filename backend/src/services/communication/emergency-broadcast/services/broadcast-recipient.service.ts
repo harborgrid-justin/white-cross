@@ -5,8 +5,8 @@
  */
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { StudentRepository } from '../../database/repositories/impl/student.repository';
-import { EmergencyBroadcastRepository } from '../../database/repositories/impl/emergency-broadcast.repository';
+import { StudentRepository } from '@/database/repositories/impl/student.repository';
+import { EmergencyBroadcastRepository } from '@/database/repositories/impl/emergency-broadcast.repository';
 
 import { BaseService } from '@/common/base';
 export interface BroadcastRecipient {

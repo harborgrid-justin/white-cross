@@ -10,28 +10,17 @@
  * - Event handling for connection state changes
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
 import { CacheConfigService } from './cache.config';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 /**
  * Service responsible for Redis connection management
  */
 @Injectable()
-export class CacheConnectionService implements OnModuleDestroy {
+export class CacheConnectionService extends BaseService implements OnModuleDestroy {
   private redis: Redis | null = null;
   private reconnectAttempts = 0;
   private isHealthy = true;
@@ -39,7 +28,7 @@ export class CacheConnectionService implements OnModuleDestroy {
 
   constructor(
     @Inject(LoggerService) logger: LoggerService,
-    private readonly cacheConfig: CacheConfigService
+    private readonly cacheConfig: CacheConfigService,
   ) {
     super({
       serviceName: 'CacheConnectionService',

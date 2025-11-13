@@ -26,9 +26,9 @@ import {
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
-import { EnhancedMessageService } from '@/services/enhanced-message.service';
-import { ConversationService } from '@/services/conversation.service';
-import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
+import { EnhancedMessageService } from '../services/enhanced-message.service';
+import { ConversationService } from '../services/conversation.service';
+import { MessageQueueService } from '@/infrastructure/queue/message-queue.service';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
 import { CreateConversationDto } from '../dto/create-conversation.dto';

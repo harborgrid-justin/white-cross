@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CommunicationChannel, DeliveryStatus } from '../emergency-broadcast.enums';
 import { RecipientDeliveryStatus } from '../emergency-broadcast.interfaces';
-import { CommunicationService } from '@/services/communication/communication.service';
+import { CommunicationService } from '../../services/communication.service';
 import { BroadcastRecipient } from './broadcast-recipient.service';
 
 import { BaseService } from '@/common/base';

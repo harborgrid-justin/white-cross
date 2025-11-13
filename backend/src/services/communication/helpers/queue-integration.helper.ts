@@ -12,8 +12,8 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Job } from 'bull';
-import { MessageQueueService } from '../../infrastructure/queue/message-queue.service';
-import { JobPriority } from '../../infrastructure/queue/enums';
+import { MessageQueueService } from '@/infrastructure/queue/message-queue.service';
+import { JobPriority } from '@/infrastructure/queue/enums';
 import {
   DeliveryConfirmationJobDto,
   EncryptionJobDto,
@@ -22,7 +22,7 @@ import {
   NotificationPriority,
   NotificationType,
   SendMessageJobDto,
-} from '../../infrastructure/queue/dtos';
+} from '@/infrastructure/queue/dtos';
 
 /**
  * Job chain step configuration
