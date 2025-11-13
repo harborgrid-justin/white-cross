@@ -54,48 +54,6 @@ export {
   analyzeIndexUsage,
 } from './constraint-operations.service';
 
-// Export data migration operations
-export {
-  batchDataTransform,
-  migrateDataBetweenTables,
-  copyTableData,
-  validateDataIntegrity,
-} from './data-migration.service';
-
-// Export schema versioning operations
-export {
-  recordMigrationExecution,
-  getCurrentSchemaVersion,
-  compareSchemaVersions,
-  createSchemaSnapshot,
-} from './schema-versioning.service';
-
-// Export rollback operations
-export {
-  createRollbackPoint,
-  restoreRollbackPoint,
-  generateRollbackMigration,
-  testRollback,
-} from './rollback-operations.service';
-
-// Export seed and fixture operations
-export {
-  seedDataWithUpsert,
-  generateSeedFromExisting,
-  clearSeedData,
-  createTestFixtures,
-} from './seed-fixture.service';
-
-// Export migration management
-export {
-  ensureMigrationHistoryTable,
-  acquireMigrationLock,
-  releaseMigrationLock,
-  executeMigrationWithLock,
-  executeBatchMigrations,
-  analyzeMigrationPerformance,
-} from './migration-management.service';
-
 /**
  * Default export with all utilities grouped by category
  */
@@ -148,45 +106,4 @@ export default {
     analyzeIndexUsage,
   },
 
-  // Data migration operations
-  data: {
-    batchDataTransform,
-    migrateDataBetweenTables,
-    copyTableData,
-    validateDataIntegrity,
-  },
-
-  // Schema versioning
-  schema: {
-    recordMigrationExecution,
-    getCurrentSchemaVersion,
-    compareSchemaVersions,
-    createSchemaSnapshot,
-  },
-
-  // Rollback operations
-  rollback: {
-    createRollbackPoint,
-    restoreRollbackPoint,
-    generateRollbackMigration,
-    testRollback,
-  },
-
-  // Seed and fixture operations
-  seed: {
-    seedDataWithUpsert,
-    generateSeedFromExisting,
-    clearSeedData,
-    createTestFixtures,
-  },
-
-  // Migration management
-  management: {
-    ensureMigrationHistoryTable,
-    acquireMigrationLock,
-    releaseMigrationLock,
-    executeMigrationWithLock,
-    executeBatchMigrations,
-    analyzeMigrationPerformance,
-  },
 };

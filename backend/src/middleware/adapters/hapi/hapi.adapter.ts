@@ -46,7 +46,7 @@ import {
   BaseResponseWrapper,
   BaseNextWrapper,
 } from '../base/base-http.adapter';
-import { AdapterUtilities } from '@/common/adapter-utilities';
+import { AdapterUtilities } from '../shared/adapter-utilities';
 
 /**
  * Hapi-specific request wrapper implementing IRequest interface

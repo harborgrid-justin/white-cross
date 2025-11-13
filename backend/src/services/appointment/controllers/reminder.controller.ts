@@ -6,7 +6,7 @@
 
 import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ReminderService } from '@/services/reminder.service';
+import { ReminderService } from '../services/reminder.service';
 import { ReminderProcessingResultDto } from '../dto/reminder.dto';
 
 import { BaseController } from '@/common/base';
