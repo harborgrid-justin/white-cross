@@ -14,18 +14,33 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
 import { CacheConfigService } from './cache.config';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Service responsible for Redis connection management
  */
 @Injectable()
 export class CacheConnectionService implements OnModuleDestroy {
-  private readonly logger = new Logger(CacheConnectionService.name);
   private redis: Redis | null = null;
   private reconnectAttempts = 0;
   private isHealthy = true;
   private lastError?: Error;
 
-  constructor(private readonly cacheConfig: CacheConfigService) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly cacheConfig: CacheConfigService
+  ) {
+    super({
+      serviceName: 'CacheConnectionService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Get Redis client instance
@@ -71,11 +86,11 @@ export class CacheConnectionService implements OnModuleDestroy {
         connectTimeout: config.connectionTimeout,
         retryStrategy: (times) => {
           if (times > config.maxRetries) {
-            this.logger.error('Redis connection failed after max retries');
+            this.logError('Redis connection failed after max retries');
             return null;
           }
           const delay = Math.min(times * config.retryDelay, 10000);
-          this.logger.warn(`Retrying Redis connection in ${delay}ms (attempt ${times})`);
+          this.logWarning(`Retrying Redis connection in ${delay}ms (attempt ${times})`);
           return delay;
         },
         maxRetriesPerRequest: 3,
@@ -86,9 +101,9 @@ export class CacheConnectionService implements OnModuleDestroy {
       this.setupEventHandlers();
 
       await this.redis.ping();
-      this.logger.log('Redis connection established');
+      this.logInfo('Redis connection established');
     } catch (error) {
-      this.logger.error('Failed to connect to Redis', error);
+      this.logError('Failed to connect to Redis', error);
       this.isHealthy = false;
       this.lastError = error as Error;
       throw error;
@@ -102,7 +117,7 @@ export class CacheConnectionService implements OnModuleDestroy {
     if (this.redis) {
       await this.redis.quit();
       this.redis = null;
-      this.logger.log('Redis disconnected');
+      this.logInfo('Redis disconnected');
     }
   }
 
@@ -120,7 +135,7 @@ export class CacheConnectionService implements OnModuleDestroy {
       await this.redis.ping();
       return Date.now() - start;
     } catch (error) {
-      this.logger.error('Redis health check failed:', error);
+      this.logError('Redis health check failed:', error);
       this.isHealthy = false;
       this.lastError = error as Error;
       return -1;
@@ -144,29 +159,29 @@ export class CacheConnectionService implements OnModuleDestroy {
     }
 
     this.redis.on('error', (error) => {
-      this.logger.error('Redis error:', error);
+      this.logError('Redis error:', error);
       this.isHealthy = false;
       this.lastError = error;
     });
 
     this.redis.on('connect', () => {
-      this.logger.log('Redis connected');
+      this.logInfo('Redis connected');
       this.isHealthy = true;
       this.reconnectAttempts = 0;
     });
 
     this.redis.on('ready', () => {
-      this.logger.log('Redis ready');
+      this.logInfo('Redis ready');
     });
 
     this.redis.on('close', () => {
-      this.logger.warn('Redis connection closed');
+      this.logWarning('Redis connection closed');
       this.isHealthy = false;
     });
 
     this.redis.on('reconnecting', () => {
       this.reconnectAttempts++;
-      this.logger.log(`Redis reconnecting (attempt ${this.reconnectAttempts})`);
+      this.logInfo(`Redis reconnecting (attempt ${this.reconnectAttempts})`);
     });
   }
 }

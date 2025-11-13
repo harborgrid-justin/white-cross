@@ -56,10 +56,11 @@ import {
 } from './dto/violation.dto';
 import { QueryStatisticsDto } from './dto/statistics.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('compliance')
 @ApiBearerAuth()
 @Controller('compliance')
-export class ComplianceController {
+export class ComplianceController extends BaseController {
   private readonly logger = new Logger(ComplianceController.name);
 
   constructor(

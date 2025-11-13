@@ -12,6 +12,7 @@ import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
 import { StudentService } from '../student.service';
 import type { StudentDataExport, StudentStatistics } from '../types';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Analytics Controller
  *
@@ -23,7 +24,7 @@ import type { StudentDataExport, StudentStatistics } from '../types';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentAnalyticsController {
+export class StudentAnalyticsController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

@@ -30,10 +30,11 @@ import {
 } from './dto';
 import { ContactType } from './enums';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Contacts')
 @ApiBearerAuth()
 @Controller('contacts')
-export class ContactController {
+export class ContactController extends BaseController {
   constructor(
     private readonly contactService: ContactService,
     private readonly emergencyContactService: EmergencyContactService,

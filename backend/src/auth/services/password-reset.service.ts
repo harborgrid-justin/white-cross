@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { User   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 interface PasswordResetToken {
   token: string;
   userId: string;
@@ -11,8 +12,7 @@ interface PasswordResetToken {
 }
 
 @Injectable()
-export class PasswordResetService {
-  private readonly logger = new Logger(PasswordResetService.name);
+export class PasswordResetService extends BaseService {
   // In-memory store for password reset tokens
   // In production, use Redis or database table
   private resetTokens: Map<string, PasswordResetToken> = new Map();
@@ -37,7 +37,7 @@ export class PasswordResetService {
 
     // Always return success even if user doesn't exist (security best practice)
     if (!user) {
-      this.logger.warn(
+      this.logWarning(
         `Password reset requested for non-existent email: ${email}`,
       );
       return {
@@ -63,7 +63,7 @@ export class PasswordResetService {
     // Send email with reset link
     await this.sendPasswordResetEmail(user.email, token);
 
-    this.logger.log(`Password reset initiated for user: ${user.email}`);
+    this.logInfo(`Password reset initiated for user: ${user.email}`);
 
     return {
       success: true,
@@ -136,7 +136,7 @@ export class PasswordResetService {
     // Remove used token
     this.resetTokens.delete(token);
 
-    this.logger.log(`Password reset completed for user: ${user.email}`);
+    this.logInfo(`Password reset completed for user: ${user.email}`);
 
     return {
       success: true,
@@ -160,7 +160,7 @@ export class PasswordResetService {
     }
 
     if (cleaned > 0) {
-      this.logger.debug(`Cleaned up ${cleaned} expired password reset tokens`);
+      this.logDebug(`Cleaned up ${cleaned} expired password reset tokens`);
     }
   }
 
@@ -182,9 +182,9 @@ export class PasswordResetService {
     const resetUrl = `${this.getAppUrl()}/reset-password?token=${token}`;
 
     // TODO: In production, send actual email
-    this.logger.log(`Password reset email would be sent to: ${email}`);
-    this.logger.log(`Reset URL: ${resetUrl}`);
-    this.logger.log(`Token expires in ${this.tokenExpiryMinutes} minutes`);
+    this.logInfo(`Password reset email would be sent to: ${email}`);
+    this.logInfo(`Reset URL: ${resetUrl}`);
+    this.logInfo(`Token expires in ${this.tokenExpiryMinutes} minutes`);
 
     // Mock email sending
     // await emailService.send({

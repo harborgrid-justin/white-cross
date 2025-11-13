@@ -1,12 +1,60 @@
 {
   "statistics": {
-    "detectionDate": "2025-11-13T00:01:45.789Z",
+    "detectionDate": "2025-11-13T01:21:31.348Z",
     "formats": {
       "typescript": {
         "sources": {
+          "backend/src/infrastructure/queue/dtos/base/base-queue-job.dto.ts": {
+            "lines": 40,
+            "tokens": 149,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 26,
+            "duplicatedTokens": 93,
+            "percentage": 65,
+            "percentageTokens": 62.42,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/infrastructure/graphql/dto/base/base-healthcare.dto.ts": {
             "lines": 140,
             "tokens": 1056,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/graphql/dto/base/base-health-record-fields.dto.ts": {
+            "lines": 65,
+            "tokens": 498,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/graphql/dto/base/base-contact-fields.dto.ts": {
+            "lines": 104,
+            "tokens": 822,
+            "sources": 1,
+            "clones": 4,
+            "duplicatedLines": 163,
+            "duplicatedTokens": 1377,
+            "percentage": 156.73,
+            "percentageTokens": 167.52,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/database/services/optimization/shared/cache-analysis.utils.ts": {
+            "lines": 112,
+            "tokens": 724,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -1372,6 +1420,42 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/infrastructure/queue/services/queue-monitoring.service.ts": {
+            "lines": 398,
+            "tokens": 3099,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/queue/services/improved-message-queue.service.ts": {
+            "lines": 277,
+            "tokens": 1757,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 19,
+            "duplicatedTokens": 130,
+            "percentage": 6.86,
+            "percentageTokens": 7.4,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/queue/services/base-queue.service.ts": {
+            "lines": 398,
+            "tokens": 3243,
+            "sources": 1,
+            "clones": 7,
+            "duplicatedLines": 219,
+            "duplicatedTokens": 1746,
+            "percentage": 55.03,
+            "percentageTokens": 53.84,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/infrastructure/queue/processors/message-notification.processor.ts": {
             "lines": 103,
             "tokens": 743,
@@ -1532,23 +1616,23 @@
             "lines": 246,
             "tokens": 920,
             "sources": 1,
-            "clones": 5,
-            "duplicatedLines": 150,
-            "duplicatedTokens": 494,
-            "percentage": 60.98,
-            "percentageTokens": 53.7,
+            "clones": 3,
+            "duplicatedLines": 82,
+            "duplicatedTokens": 287,
+            "percentage": 33.33,
+            "percentageTokens": 31.2,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
           "backend/src/infrastructure/queue/dtos/message-job.dto.ts": {
-            "lines": 595,
-            "tokens": 2172,
+            "lines": 405,
+            "tokens": 1503,
             "sources": 1,
-            "clones": 11,
-            "duplicatedLines": 355,
-            "duplicatedTokens": 1135,
-            "percentage": 59.66,
-            "percentageTokens": 52.26,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1569,10 +1653,10 @@
             "tokens": 987,
             "sources": 1,
             "clones": 2,
-            "duplicatedLines": 63,
-            "duplicatedTokens": 211,
-            "percentage": 24.9,
-            "percentageTokens": 21.38,
+            "duplicatedLines": 56,
+            "duplicatedTokens": 194,
+            "percentage": 22.13,
+            "percentageTokens": 19.66,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -1988,11 +2072,11 @@
             "lines": 589,
             "tokens": 4417,
             "sources": 1,
-            "clones": 4,
-            "duplicatedLines": 60,
-            "duplicatedTokens": 556,
-            "percentage": 10.19,
-            "percentageTokens": 12.59,
+            "clones": 7,
+            "duplicatedLines": 42,
+            "duplicatedTokens": 679,
+            "percentage": 7.13,
+            "percentageTokens": 15.37,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -2072,11 +2156,11 @@
             "lines": 482,
             "tokens": 2892,
             "sources": 1,
-            "clones": 5,
-            "duplicatedLines": 83,
-            "duplicatedTokens": 579,
-            "percentage": 17.22,
-            "percentageTokens": 20.02,
+            "clones": 6,
+            "duplicatedLines": 86,
+            "duplicatedTokens": 672,
+            "percentage": 17.84,
+            "percentageTokens": 23.24,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -2093,14 +2177,14 @@
             "newClones": 0
           },
           "backend/src/infrastructure/graphql/resolvers/health-record.resolver.ts": {
-            "lines": 455,
-            "tokens": 2954,
+            "lines": 430,
+            "tokens": 2687,
             "sources": 1,
             "clones": 2,
-            "duplicatedLines": 57,
-            "duplicatedTokens": 407,
-            "percentage": 12.53,
-            "percentageTokens": 13.78,
+            "duplicatedLines": 26,
+            "duplicatedTokens": 215,
+            "percentage": 6.05,
+            "percentageTokens": 8,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -2321,14 +2405,14 @@
             "newClones": 0
           },
           "backend/src/infrastructure/graphql/dto/health-record.dto.ts": {
-            "lines": 363,
-            "tokens": 2792,
+            "lines": 269,
+            "tokens": 1930,
             "sources": 1,
-            "clones": 3,
-            "duplicatedLines": 108,
-            "duplicatedTokens": 873,
-            "percentage": 29.75,
-            "percentageTokens": 31.27,
+            "clones": 1,
+            "duplicatedLines": 20,
+            "duplicatedTokens": 121,
+            "percentage": 7.43,
+            "percentageTokens": 6.27,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -2345,14 +2429,14 @@
             "newClones": 0
           },
           "backend/src/infrastructure/graphql/dto/contact.dto.ts": {
-            "lines": 343,
-            "tokens": 2449,
+            "lines": 344,
+            "tokens": 2462,
             "sources": 1,
             "clones": 5,
-            "duplicatedLines": 188,
-            "duplicatedTokens": 1485,
-            "percentage": 54.81,
-            "percentageTokens": 60.64,
+            "duplicatedLines": 183,
+            "duplicatedTokens": 1498,
+            "percentage": 53.2,
+            "percentageTokens": 60.84,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -2752,6 +2836,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/health-record/vaccination/dto/index.ts": {
+            "lines": 2,
+            "tokens": 25,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/health-record/vaccination/dto/create-vaccination.dto.ts": {
             "lines": 148,
             "tokens": 1087,
@@ -2801,14 +2897,14 @@
             "newClones": 0
           },
           "backend/src/health-record/services/cache/cache-types.ts": {
-            "lines": 90,
-            "tokens": 506,
+            "lines": 11,
+            "tokens": 12,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 62,
-            "duplicatedTokens": 399,
-            "percentage": 68.89,
-            "percentageTokens": 78.85,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -2873,14 +2969,14 @@
             "newClones": 0
           },
           "backend/src/health-record/services/cache/cache-interfaces.ts": {
-            "lines": 93,
-            "tokens": 553,
+            "lines": 98,
+            "tokens": 561,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 62,
-            "duplicatedTokens": 399,
-            "percentage": 66.67,
-            "percentageTokens": 72.15,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -2968,6 +3064,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/health-record/medication/dto/index.ts": {
+            "lines": 1,
+            "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/health-record/medication/dto/create-medication.dto.ts": {
             "lines": 91,
             "tokens": 558,
@@ -3019,6 +3127,18 @@
           "backend/src/health-record/chronic-condition/dto/update-chronic-condition.dto.ts": {
             "lines": 12,
             "tokens": 59,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/health-record/chronic-condition/dto/index.ts": {
+            "lines": 1,
+            "tokens": 16,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -3725,14 +3845,14 @@
             "newClones": 0
           },
           "backend/src/database/services/optimization/types.ts": {
-            "lines": 139,
-            "tokens": 747,
+            "lines": 8,
+            "tokens": 12,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 132,
-            "duplicatedTokens": 744,
-            "percentage": 94.96,
-            "percentageTokens": 99.6,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -3749,14 +3869,14 @@
             "newClones": 0
           },
           "backend/src/database/services/optimization/query-optimization.service.ts": {
-            "lines": 600,
-            "tokens": 3373,
+            "lines": 555,
+            "tokens": 3085,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 81,
-            "duplicatedTokens": 368,
-            "percentage": 13.5,
-            "percentageTokens": 10.91,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -3797,14 +3917,14 @@
             "newClones": 0
           },
           "backend/src/database/services/optimization/cache-optimization.service.ts": {
-            "lines": 295,
-            "tokens": 1383,
+            "lines": 255,
+            "tokens": 1134,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 81,
-            "duplicatedTokens": 368,
-            "percentage": 27.46,
-            "percentageTokens": 26.61,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -3821,14 +3941,14 @@
             "newClones": 0
           },
           "backend/src/database/services/operations/streaming-operations.service.ts": {
-            "lines": 548,
-            "tokens": 4507,
+            "lines": 565,
+            "tokens": 4668,
             "sources": 1,
-            "clones": 14,
-            "duplicatedLines": 280,
-            "duplicatedTokens": 2322,
-            "percentage": 51.09,
-            "percentageTokens": 51.52,
+            "clones": 12,
+            "duplicatedLines": 228,
+            "duplicatedTokens": 1948,
+            "percentage": 40.35,
+            "percentageTokens": 41.73,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -4976,11 +5096,11 @@
             "lines": 182,
             "tokens": 945,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 132,
-            "duplicatedTokens": 744,
-            "percentage": 72.53,
-            "percentageTokens": 78.73,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -5009,14 +5129,26 @@
             "newClones": 0
           },
           "backend/src/database/migrations/utilities/table-operations.service.ts": {
-            "lines": 502,
-            "tokens": 2749,
+            "lines": 481,
+            "tokens": 2618,
             "sources": 1,
             "clones": 9,
-            "duplicatedLines": 232,
-            "duplicatedTokens": 1250,
-            "percentage": 46.22,
-            "percentageTokens": 45.47,
+            "duplicatedLines": 200,
+            "duplicatedTokens": 1067,
+            "percentage": 41.58,
+            "percentageTokens": 40.76,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/database/migrations/utilities/table-attributes-builder.ts": {
+            "lines": 56,
+            "tokens": 342,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 33,
+            "duplicatedTokens": 218,
+            "percentage": 58.93,
+            "percentageTokens": 63.74,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -5068,15 +5200,27 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/database/migrations/shared/migration-utilities.ts": {
+            "lines": 52,
+            "tokens": 326,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 33,
+            "duplicatedTokens": 218,
+            "percentage": 63.46,
+            "percentageTokens": 66.87,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/database/migrations/services/table-operations.service.ts": {
-            "lines": 330,
-            "tokens": 2379,
+            "lines": 301,
+            "tokens": 2203,
             "sources": 1,
             "clones": 11,
-            "duplicatedLines": 244,
-            "duplicatedTokens": 1776,
-            "percentage": 73.94,
-            "percentageTokens": 74.65,
+            "duplicatedLines": 209,
+            "duplicatedTokens": 1563,
+            "percentage": 69.44,
+            "percentageTokens": 70.95,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -8824,6 +8968,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/security/dto/index.ts": {
+            "lines": 2,
+            "tokens": 25,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/report/services/report-generation.service.ts": {
             "lines": 120,
             "tokens": 979,
@@ -9476,11 +9632,11 @@
             "lines": 457,
             "tokens": 3009,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 4,
+            "duplicatedTokens": 81,
+            "percentage": 0.88,
+            "percentageTokens": 2.69,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -9529,6 +9685,18 @@
             "duplicatedTokens": 249,
             "percentage": 74.47,
             "percentageTokens": 79.55,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/mobile/enums/index.ts": {
+            "lines": 1,
+            "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -10048,9 +10216,33 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/medication-interaction/entities/index.ts": {
+            "lines": 1,
+            "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/medication-interaction/dto/interaction-check-result.dto.ts": {
             "lines": 44,
             "tokens": 304,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/medication-interaction/dto/index.ts": {
+            "lines": 2,
+            "tokens": 25,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -10147,6 +10339,18 @@
           "backend/src/medication/entities/medication-log.entity.ts": {
             "lines": 6,
             "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/medication/entities/index.ts": {
+            "lines": 2,
+            "tokens": 25,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -11189,14 +11393,14 @@
             "newClones": 0
           },
           "backend/src/infrastructure/streaming/streaming-query.service.ts": {
-            "lines": 307,
-            "tokens": 2373,
+            "lines": 297,
+            "tokens": 2326,
             "sources": 1,
             "clones": 1,
             "duplicatedLines": 18,
             "duplicatedTokens": 92,
-            "percentage": 5.86,
-            "percentageTokens": 3.88,
+            "percentage": 6.06,
+            "percentageTokens": 3.96,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -11276,11 +11480,11 @@
             "lines": 507,
             "tokens": 3539,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 16,
-            "duplicatedTokens": 184,
-            "percentage": 3.16,
-            "percentageTokens": 5.2,
+            "clones": 6,
+            "duplicatedLines": 222,
+            "duplicatedTokens": 1692,
+            "percentage": 43.79,
+            "percentageTokens": 47.81,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -12223,6 +12427,18 @@
           "backend/src/incident-report/entities/witness-statement.entity.ts": {
             "lines": 6,
             "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/incident-report/entities/index.ts": {
+            "lines": 2,
+            "tokens": 25,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -13816,6 +14032,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/grade-transition/dto/index.ts": {
+            "lines": 2,
+            "tokens": 25,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/grade-transition/dto/bulk-transition.dto.ts": {
             "lines": 62,
             "tokens": 423,
@@ -14489,14 +14717,14 @@
             "newClones": 0
           },
           "backend/src/emergency-contact/services/contact-management.service.ts": {
-            "lines": 466,
-            "tokens": 2723,
+            "lines": 356,
+            "tokens": 2216,
             "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 20,
-            "duplicatedTokens": 166,
-            "percentage": 4.29,
-            "percentageTokens": 6.1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -14779,6 +15007,18 @@
           "backend/src/document/enums/document.enums.ts": {
             "lines": 58,
             "tokens": 322,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/document/entities/index.ts": {
+            "lines": 2,
+            "tokens": 25,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -16857,10 +17097,10 @@
             "tokens": 1556,
             "sources": 1,
             "clones": 7,
-            "duplicatedLines": 181,
-            "duplicatedTokens": 1213,
-            "percentage": 76.37,
-            "percentageTokens": 77.96,
+            "duplicatedLines": 178,
+            "duplicatedTokens": 1183,
+            "percentage": 75.11,
+            "percentageTokens": 76.03,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -18500,11 +18740,11 @@
             "lines": 303,
             "tokens": 2528,
             "sources": 1,
-            "clones": 4,
-            "duplicatedLines": 26,
-            "duplicatedTokens": 360,
-            "percentage": 8.58,
-            "percentageTokens": 14.24,
+            "clones": 5,
+            "duplicatedLines": 30,
+            "duplicatedTokens": 439,
+            "percentage": 9.9,
+            "percentageTokens": 17.37,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -18548,11 +18788,11 @@
             "lines": 231,
             "tokens": 2044,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 4,
+            "duplicatedTokens": 79,
+            "percentage": 1.73,
+            "percentageTokens": 3.86,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -19225,6 +19465,18 @@
             "duplicatedTokens": 418,
             "percentage": 4.84,
             "percentageTokens": 5.19,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/common/base/index.ts": {
+            "lines": 1,
+            "tokens": 24,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -19936,6 +20188,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/chronic-condition/interfaces/index.ts": {
+            "lines": 1,
+            "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/chronic-condition/interfaces/chronic-condition-statistics.interface.ts": {
             "lines": 23,
             "tokens": 81,
@@ -19951,6 +20215,18 @@
           "backend/src/chronic-condition/interfaces/chronic-condition-search-result.interface.ts": {
             "lines": 17,
             "tokens": 69,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/chronic-condition/enums/index.ts": {
+            "lines": 1,
+            "tokens": 16,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -20728,6 +21004,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/audit/interfaces/index.ts": {
+            "lines": 2,
+            "tokens": 43,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/audit/interfaces/audit-log-entry.interface.ts": {
             "lines": 15,
             "tokens": 104,
@@ -20767,6 +21055,18 @@
           "backend/src/audit/enums/phi-access-type.enum.ts": {
             "lines": 9,
             "tokens": 42,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/audit/enums/index.ts": {
+            "lines": 2,
+            "tokens": 37,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -20911,6 +21211,18 @@
           "backend/src/appointment/validators/status-transitions.ts": {
             "lines": 81,
             "tokens": 478,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/appointment/validators/index.ts": {
+            "lines": 1,
+            "tokens": 16,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -21316,6 +21628,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/api-key-auth/dto/index.ts": {
+            "lines": 1,
+            "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/api-key-auth/dto/create-api-key.dto.ts": {
             "lines": 61,
             "tokens": 406,
@@ -21476,11 +21800,11 @@
             "lines": 116,
             "tokens": 914,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 4,
+            "duplicatedTokens": 81,
+            "percentage": 3.45,
+            "percentageTokens": 8.86,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -21664,6 +21988,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/analytics/interfaces/index.ts": {
+            "lines": 1,
+            "tokens": 16,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/analytics/interfaces/health-analytics.interfaces.ts": {
             "lines": 161,
             "tokens": 934,
@@ -21763,6 +22099,18 @@
           "backend/src/analytics/enums/compliance-status.enum.ts": {
             "lines": 8,
             "tokens": 42,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/analytics/entities/index.ts": {
+            "lines": 1,
+            "tokens": 16,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -23068,6 +23416,18 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
+          "backend/src/access-control/guards/index.ts": {
+            "lines": 2,
+            "tokens": 25,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
           "backend/src/access-control/dto/update-role.dto.ts": {
             "lines": 7,
             "tokens": 43,
@@ -23263,6 +23623,18 @@
           "backend/src/access-control/decorators/permissions.decorator.ts": {
             "lines": 15,
             "tokens": 66,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/access-control/decorators/index.ts": {
+            "lines": 2,
+            "tokens": 25,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -24881,8 +25253,8 @@
             "newClones": 0
           },
           "backend/src/emergency-contact/emergency-contact.controller.ts": {
-            "lines": 461,
-            "tokens": 2893,
+            "lines": 351,
+            "tokens": 2216,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -25304,11 +25676,11 @@
             "lines": 229,
             "tokens": 4742,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 4,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 308,
+            "percentage": 5.24,
+            "percentageTokens": 6.5,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -25376,11 +25748,11 @@
             "lines": 107,
             "tokens": 764,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 4,
+            "duplicatedTokens": 75,
+            "percentage": 3.74,
+            "percentageTokens": 9.82,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -25460,11 +25832,11 @@
             "lines": 86,
             "tokens": 596,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 1,
+            "duplicatedLines": 4,
+            "duplicatedTokens": 75,
+            "percentage": 4.65,
+            "percentageTokens": 12.58,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -26694,14 +27066,14 @@
           }
         },
         "total": {
-          "lines": 342400,
-          "tokens": 2306635,
-          "sources": 2224,
-          "clones": 828,
-          "duplicatedLines": 13876,
-          "duplicatedTokens": 101447,
-          "percentage": 4.05,
-          "percentageTokens": 4.4,
+          "lines": 343074,
+          "tokens": 2313164,
+          "sources": 2255,
+          "clones": 831,
+          "duplicatedLines": 13613,
+          "duplicatedTokens": 101450,
+          "percentage": 3.97,
+          "percentageTokens": 4.39,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -26712,11 +27084,11 @@
             "lines": 30,
             "tokens": 451,
             "sources": 1,
-            "clones": 0,
-            "duplicatedLines": 0,
-            "duplicatedTokens": 0,
-            "percentage": 0,
-            "percentageTokens": 0,
+            "clones": 4,
+            "duplicatedLines": 12,
+            "duplicatedTokens": 348,
+            "percentage": 40,
+            "percentageTokens": 77.16,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -26724,11 +27096,11 @@
             "lines": 130,
             "tokens": 1231,
             "sources": 1,
-            "clones": 7,
-            "duplicatedLines": 166,
-            "duplicatedTokens": 1233,
-            "percentage": 127.69,
-            "percentageTokens": 100.16,
+            "clones": 1,
+            "duplicatedLines": 20,
+            "duplicatedTokens": 162,
+            "percentage": 15.38,
+            "percentageTokens": 13.16,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -26745,44 +27117,8 @@
             "newClones": 0
           },
           "backend/src/infrastructure/email/templates/password-reset.html.hbs": {
-            "lines": 110,
-            "tokens": 1025,
-            "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 36,
-            "duplicatedTokens": 279,
-            "percentage": 32.73,
-            "percentageTokens": 27.22,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "backend/src/infrastructure/email/templates/notification.text.hbs": {
-            "lines": 19,
-            "tokens": 290,
-            "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 5,
-            "duplicatedTokens": 113,
-            "percentage": 26.32,
-            "percentageTokens": 38.97,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "backend/src/infrastructure/email/templates/notification.html.hbs": {
-            "lines": 91,
-            "tokens": 762,
-            "sources": 1,
-            "clones": 2,
-            "duplicatedLines": 58,
-            "duplicatedTokens": 420,
-            "percentage": 63.74,
-            "percentageTokens": 55.12,
-            "newDuplicatedLines": 0,
-            "newClones": 0
-          },
-          "backend/src/infrastructure/email/templates/custom.text.hbs": {
-            "lines": 6,
-            "tokens": 194,
+            "lines": 14,
+            "tokens": 66,
             "sources": 1,
             "clones": 0,
             "duplicatedLines": 0,
@@ -26792,15 +27128,63 @@
             "newDuplicatedLines": 0,
             "newClones": 0
           },
-          "backend/src/infrastructure/email/templates/custom.html.hbs": {
-            "lines": 63,
-            "tokens": 487,
+          "backend/src/infrastructure/email/templates/notification.text.hbs": {
+            "lines": 19,
+            "tokens": 290,
+            "sources": 1,
+            "clones": 3,
+            "duplicatedLines": 11,
+            "duplicatedTokens": 286,
+            "percentage": 57.89,
+            "percentageTokens": 98.62,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/email/templates/notification.html.hbs": {
+            "lines": 12,
+            "tokens": 57,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/email/templates/custom.text.hbs": {
+            "lines": 6,
+            "tokens": 194,
             "sources": 1,
             "clones": 2,
-            "duplicatedLines": 44,
-            "duplicatedTokens": 324,
-            "percentage": 69.84,
-            "percentageTokens": 66.53,
+            "duplicatedLines": 6,
+            "duplicatedTokens": 175,
+            "percentage": 100,
+            "percentageTokens": 90.21,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/email/templates/custom.html.hbs": {
+            "lines": 10,
+            "tokens": 46,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "backend/src/infrastructure/email/templates/base.html.hbs": {
+            "lines": 97,
+            "tokens": 794,
+            "sources": 1,
+            "clones": 1,
+            "duplicatedLines": 20,
+            "duplicatedTokens": 162,
+            "percentage": 20.62,
+            "percentageTokens": 20.4,
             "newDuplicatedLines": 0,
             "newClones": 0
           },
@@ -26817,27 +27201,27 @@
             "newClones": 0
           },
           "backend/src/infrastructure/email/templates/alert.html.hbs": {
-            "lines": 149,
-            "tokens": 1209,
+            "lines": 10,
+            "tokens": 46,
             "sources": 1,
-            "clones": 1,
-            "duplicatedLines": 28,
-            "duplicatedTokens": 210,
-            "percentage": 18.79,
-            "percentageTokens": 17.37,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
             "newDuplicatedLines": 0,
             "newClones": 0
           }
         },
         "total": {
-          "lines": 645,
-          "tokens": 6349,
-          "sources": 10,
-          "clones": 8,
-          "duplicatedLines": 171,
-          "duplicatedTokens": 1346,
-          "percentage": 26.51,
-          "percentageTokens": 21.2,
+          "lines": 375,
+          "tokens": 3875,
+          "sources": 11,
+          "clones": 6,
+          "duplicatedLines": 37,
+          "duplicatedTokens": 623,
+          "percentage": 9.87,
+          "percentageTokens": 16.08,
           "newDuplicatedLines": 0,
           "newClones": 0
         }
@@ -27344,14 +27728,14 @@
       }
     },
     "total": {
-      "lines": 353458,
-      "tokens": 2370967,
-      "sources": 2273,
-      "clones": 870,
-      "duplicatedLines": 14737,
-      "duplicatedTokens": 107352,
-      "percentage": 4.17,
-      "percentageTokens": 4.53,
+      "lines": 353862,
+      "tokens": 2375022,
+      "sources": 2305,
+      "clones": 871,
+      "duplicatedLines": 14340,
+      "duplicatedTokens": 106632,
+      "percentage": 4.05,
+      "percentageTokens": 4.49,
       "newDuplicatedLines": 0,
       "newClones": 0
     }
@@ -28799,217 +29183,73 @@
     },
     {
       "format": "typescript",
-      "lines": 29,
-      "fragment": ";\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}",
+      "lines": 9,
+      "fragment": "(queueName: QueueName, jobId: string): Promise<void> {\n    const queue = this.getQueue(queueName);\n    const job = await queue.getJob(jobId);\n\n    if (!job) {\n      throw new Error(`Job ${jobId} not found in queue ${queueName}`);\n    }\n\n    await job.remove",
       "tokens": 0,
       "firstFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 125,
-        "end": 153,
+        "name": "backend/src/infrastructure/queue/services/base-queue.service.ts",
+        "start": 344,
+        "end": 352,
         "startLoc": {
-          "line": 125,
-          "column": 2,
-          "position": 481
+          "line": 344,
+          "column": 10,
+          "position": 2753
         },
         "endLoc": {
-          "line": 153,
-          "column": 2,
-          "position": 578
+          "line": 352,
+          "column": 7,
+          "position": 2845
         }
       },
       "secondFile": {
+        "name": "backend/src/infrastructure/queue/services/base-queue.service.ts",
+        "start": 329,
+        "end": 337,
+        "startLoc": {
+          "line": 329,
+          "column": 15,
+          "position": 2626
+        },
+        "endLoc": {
+          "line": 337,
+          "column": 6,
+          "position": 2718
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 27,
+      "fragment": "/**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}",
+      "tokens": 0,
+      "firstFile": {
         "name": "backend/src/infrastructure/queue/dtos/notification-job.dto.ts",
-        "start": 219,
+        "start": 221,
         "end": 247,
         "startLoc": {
-          "line": 219,
-          "column": 7,
-          "position": 823
+          "line": 221,
+          "column": 3,
+          "position": 827
         },
         "endLoc": {
           "line": 247,
           "column": 2,
           "position": 920
         }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 34,
-      "fragment": ": string;\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}\n\n/**\n * DTO for batch message job\n * Handles sending messages to multiple recipients\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 202,
-        "end": 235,
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/queue/dtos/base/base-queue-job.dto.ts",
+        "start": 15,
+        "end": 41,
         "startLoc": {
-          "line": 202,
+          "line": 15,
+          "column": 3,
+          "position": 56
+        },
+        "endLoc": {
+          "line": 41,
           "column": 2,
-          "position": 743
-        },
-        "endLoc": {
-          "line": 235,
-          "column": 4,
-          "position": 846
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/queue/dtos/notification-job.dto.ts",
-        "start": 219,
-        "end": 158,
-        "startLoc": {
-          "line": 219,
-          "column": 8,
-          "position": 820
-        },
-        "endLoc": {
-          "line": 158,
-          "column": 4,
-          "position": 581
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 34,
-      "fragment": ";\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}\n\n/**\n * DTO for message cleanup job\n * Handles old message cleanup and retention policies\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 291,
-        "end": 324,
-        "startLoc": {
-          "line": 291,
-          "column": 7,
-          "position": 1094
-        },
-        "endLoc": {
-          "line": 324,
-          "column": 4,
-          "position": 1194
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/queue/dtos/notification-job.dto.ts",
-        "start": 219,
-        "end": 158,
-        "startLoc": {
-          "line": 219,
-          "column": 7,
-          "position": 823
-        },
-        "endLoc": {
-          "line": 158,
-          "column": 4,
-          "position": 581
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 34,
-      "fragment": "?: number;\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}\n\n/**\n * DTO for delivery confirmation job\n * Tracks message delivery status\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 349,
-        "end": 382,
-        "startLoc": {
-          "line": 349,
-          "column": 10,
-          "position": 1303
-        },
-        "endLoc": {
-          "line": 382,
-          "column": 4,
-          "position": 1407
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 291,
-        "end": 158,
-        "startLoc": {
-          "line": 291,
-          "column": 11,
-          "position": 1090
-        },
-        "endLoc": {
-          "line": 158,
-          "column": 4,
-          "position": 581
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 34,
-      "fragment": "?: string;\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}\n\n/**\n * DTO for encryption job\n * Handles message encryption/decryption\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 425,
-        "end": 458,
-        "startLoc": {
-          "line": 425,
-          "column": 14,
-          "position": 1563
-        },
-        "endLoc": {
-          "line": 458,
-          "column": 4,
-          "position": 1667
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 202,
-        "end": 158,
-        "startLoc": {
-          "line": 202,
-          "column": 10,
-          "position": 742
-        },
-        "endLoc": {
-          "line": 158,
-          "column": 4,
-          "position": 581
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 34,
-      "fragment": "?: string;\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}\n\n/**\n * DTO for indexing job\n * Handles message search indexing\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 493,
-        "end": 526,
-        "startLoc": {
-          "line": 493,
-          "column": 10,
-          "position": 1801
-        },
-        "endLoc": {
-          "line": 526,
-          "column": 4,
-          "position": 1905
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 202,
-        "end": 158,
-        "startLoc": {
-          "line": 202,
-          "column": 10,
-          "position": 742
-        },
-        "endLoc": {
-          "line": 158,
-          "column": 4,
-          "position": 581
+          "position": 149
         }
       }
     },
@@ -29017,71 +29257,35 @@
       "format": "typescript",
       "lines": 29,
       "fragment": ";\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 568,
-        "end": 596,
-        "startLoc": {
-          "line": 568,
-          "column": 5,
-          "position": 2075
-        },
-        "endLoc": {
-          "line": 596,
-          "column": 2,
-          "position": 2172
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/queue/dtos/notification-job.dto.ts",
-        "start": 219,
-        "end": 247,
-        "startLoc": {
-          "line": 219,
-          "column": 7,
-          "position": 823
-        },
-        "endLoc": {
-          "line": 247,
-          "column": 2,
-          "position": 920
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 36,
-      "fragment": ")\n  @IsOptional()\n  chunkDelay?: number;\n\n  /**\n   * Job creation timestamp\n   */\n  @IsDateString()\n  createdAt: Date;\n\n  /**\n   * User who initiated the job\n   */\n  @IsString()\n  @IsOptional()\n  initiatedBy?: string;\n\n  /**\n   * Job identifier\n   */\n  @IsString()\n  @IsOptional()\n  jobId?: string;\n\n  /**\n   * Additional metadata\n   */\n  @IsObject()\n  @IsOptional()\n  metadata?: Record<string, any>;\n}\n\n/**\n * DTO for message cleanup job\n * Handles deletion of old messages\n */",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/infrastructure/queue/dtos/batch-message-job.dto.ts",
-        "start": 138,
-        "end": 173,
+        "start": 140,
+        "end": 168,
         "startLoc": {
-          "line": 138,
-          "column": 2,
-          "position": 537
+          "line": 140,
+          "column": 7,
+          "position": 551
         },
         "endLoc": {
-          "line": 173,
-          "column": 4,
-          "position": 651
+          "line": 168,
+          "column": 2,
+          "position": 648
         }
       },
       "secondFile": {
-        "name": "backend/src/infrastructure/queue/dtos/message-job.dto.ts",
-        "start": 289,
-        "end": 158,
+        "name": "backend/src/infrastructure/queue/dtos/notification-job.dto.ts",
+        "start": 219,
+        "end": 41,
         "startLoc": {
-          "line": 289,
-          "column": 5,
-          "position": 1080
+          "line": 219,
+          "column": 7,
+          "position": 823
         },
         "endLoc": {
-          "line": 158,
-          "column": 4,
-          "position": 581
+          "line": 41,
+          "column": 2,
+          "position": 149
         }
       }
     },
@@ -29108,16 +29312,16 @@
       "secondFile": {
         "name": "backend/src/infrastructure/queue/dtos/notification-job.dto.ts",
         "start": 219,
-        "end": 247,
+        "end": 41,
         "startLoc": {
           "line": 219,
           "column": 7,
           "position": 823
         },
         "endLoc": {
-          "line": 247,
+          "line": 41,
           "column": 2,
-          "position": 920
+          "position": 149
         }
       }
     },
@@ -29231,6 +29435,78 @@
     },
     {
       "format": "typescript",
+      "lines": 5,
+      "fragment": "(returnType: any, name: string, options: any = {}) {\n    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {\n      Query(() => returnType, { name, ...options })(target, propertyName, descriptor);\n      UseGuards(GqlAuthGuard, GqlRolesGuard)(target, propertyName, descriptor);\n      Roles(...CommonRoles.STUDENT_ACCESS",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/graphql/shared/resolver-utilities.ts",
+        "start": 174,
+        "end": 178,
+        "startLoc": {
+          "line": 174,
+          "column": 13,
+          "position": 1136
+        },
+        "endLoc": {
+          "line": 178,
+          "column": 15,
+          "position": 1245
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/graphql/shared/resolver-utilities.ts",
+        "start": 163,
+        "end": 167,
+        "startLoc": {
+          "line": 163,
+          "column": 9,
+          "position": 999
+        },
+        "endLoc": {
+          "line": 167,
+          "column": 11,
+          "position": 1108
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 5,
+      "fragment": "(returnType: any, options: any = {}) {\n    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {\n      Mutation(() => returnType, options)(target, propertyName, descriptor);\n      UseGuards(GqlAuthGuard, GqlRolesGuard)(target, propertyName, descriptor);\n      Roles(...CommonRoles.ADMIN_ONLY",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/graphql/shared/resolver-utilities.ts",
+        "start": 196,
+        "end": 200,
+        "startLoc": {
+          "line": 196,
+          "column": 14,
+          "position": 1396
+        },
+        "endLoc": {
+          "line": 200,
+          "column": 11,
+          "position": 1491
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/graphql/shared/resolver-utilities.ts",
+        "start": 185,
+        "end": 189,
+        "startLoc": {
+          "line": 185,
+          "column": 12,
+          "position": 1273
+        },
+        "endLoc": {
+          "line": 189,
+          "column": 11,
+          "position": 1368
+        }
+      }
+    },
+    {
+      "format": "typescript",
       "lines": 13,
       "fragment": "{\n    return {\n      id: contact.id,\n      firstName: contact.firstName,\n      lastName: contact.lastName,\n      email: contact.email ?? undefined,\n      phone: contact.phone ?? undefined,\n      type: contact.type,\n      relationTo: contact.relationTo ?? undefined,\n      isActive: contact.isActive,\n      createdAt: contact.createdAt,\n      updatedAt: contact.updatedAt,\n    } as",
       "tokens": 0,
@@ -29303,37 +29579,37 @@
     },
     {
       "format": "typescript",
-      "lines": 35,
-      "fragment": "{\n    return {\n      id: record.id,\n      studentId: record.studentId,\n      recordType: record.recordType,\n      title: record.title,\n      description: record.description,\n      recordDate: record.recordDate,\n      provider: record.provider || undefined,\n      providerNpi: record.providerNpi || undefined,\n      facility: record.facility || undefined,\n      facilityNpi: record.facilityNpi || undefined,\n      diagnosis: record.diagnosis || undefined,\n      diagnosisCode: record.diagnosisCode || undefined,\n      treatment: record.treatment || undefined,\n      followUpRequired: record.followUpRequired,\n      followUpDate: record.followUpDate || undefined,\n      followUpCompleted: record.followUpCompleted,\n      attachments: record.attachments || [],\n      metadata: record.metadata || undefined,\n      isConfidential: record.isConfidential,\n      notes: record.notes || undefined,\n      createdBy: record.createdBy || undefined,\n      updatedBy: record.updatedBy || undefined,\n      createdAt: record.createdAt,\n      updatedAt: record.updatedAt,\n    };\n  }\n\n  /**\n   * Query: Get paginated list of health records with optional filtering\n   *\n   * Access: ADMIN, SCHOOL_ADMIN, DISTRICT_ADMIN, NURSE only\n   * PHI ACCESS - Audit logged\n   */",
+      "lines": 4,
+      "fragment": "(\n    @Args('page', { type: () => Number, defaultValue: 1 }) page: number,\n    @Args('limit', { type: () => Number, defaultValue: 20 }) limit: number,\n    @Args('orderBy', { type: () => String, defaultValue: 'recordDate'",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/infrastructure/graphql/resolvers/health-record.resolver.ts",
-        "start": 79,
-        "end": 113,
+        "start": 97,
+        "end": 100,
         "startLoc": {
-          "line": 79,
-          "column": 2,
-          "position": 407
+          "line": 97,
+          "column": 17,
+          "position": 495
         },
         "endLoc": {
-          "line": 113,
-          "column": 6,
-          "position": 692
+          "line": 100,
+          "column": 13,
+          "position": 588
         }
       },
       "secondFile": {
-        "name": "backend/src/infrastructure/graphql/shared/resolver-utilities.ts",
-        "start": 423,
-        "end": 454,
+        "name": "backend/src/infrastructure/graphql/resolvers/student.resolver.ts",
+        "start": 130,
+        "end": 133,
         "startLoc": {
-          "line": 423,
-          "column": 2,
-          "position": 3170
+          "line": 130,
+          "column": 12,
+          "position": 729
         },
         "endLoc": {
-          "line": 454,
-          "column": 6,
-          "position": 3455
+          "line": 133,
+          "column": 11,
+          "position": 822
         }
       }
     },
@@ -29483,73 +29759,109 @@
     },
     {
       "format": "typescript",
-      "lines": 45,
-      "fragment": ": Date;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(200, { message: 'Provider name must not exceed 200 characters' })\n  provider?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(20, { message: 'Provider NPI must not exceed 20 characters' })\n  providerNpi?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(200, { message: 'Facility name must not exceed 200 characters' })\n  facility?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(20, { message: 'Facility NPI must not exceed 20 characters' })\n  facilityNpi?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(500, { message: 'Diagnosis must not exceed 500 characters' })\n  diagnosis?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(20, { message: 'Diagnosis code must not exceed 20 characters' })\n  diagnosisCode?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(2000, { message: 'Treatment must not exceed 2000 characters' })\n  treatment?: string;\n\n  @Field({ nullable",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/graphql/dto/health-record.dto.ts",
-        "start": 240,
-        "end": 284,
-        "startLoc": {
-          "line": 240,
-          "column": 2,
-          "position": 1800
-        },
-        "endLoc": {
-          "line": 284,
-          "column": 9,
-          "position": 2176
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/graphql/dto/health-record.dto.ts",
-        "start": 136,
-        "end": 180,
-        "startLoc": {
-          "line": 136,
-          "column": 11,
-          "position": 899
-        },
-        "endLoc": {
-          "line": 180,
-          "column": 13,
-          "position": 1275
-        }
-      }
-    },
-    {
-      "format": "typescript",
       "lines": 21,
       "fragment": ": boolean;\n\n  @Field({ nullable: true })\n  notes?: string;\n\n  @Field(() => ID, { nullable: true })\n  createdBy?: string;\n\n  @Field(() => ID, { nullable: true })\n  updatedBy?: string;\n\n  @Field()\n  createdAt: Date;\n\n  @Field()\n  updatedAt: Date;\n}\n\n/**\n * Contact List Response with Pagination\n */",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/infrastructure/graphql/dto/contact.dto.ts",
-        "start": 100,
-        "end": 120,
+        "start": 101,
+        "end": 121,
         "startLoc": {
-          "line": 100,
+          "line": 101,
           "column": 9,
-          "position": 593
+          "position": 606
         },
         "endLoc": {
-          "line": 120,
+          "line": 121,
           "column": 4,
-          "position": 714
+          "position": 727
         }
       },
       "secondFile": {
         "name": "backend/src/infrastructure/graphql/dto/health-record.dto.ts",
-        "start": 77,
-        "end": 97,
+        "start": 87,
+        "end": 107,
         "startLoc": {
-          "line": 77,
+          "line": 87,
           "column": 15,
-          "position": 477
+          "position": 499
         },
         "endLoc": {
-          "line": 97,
+          "line": 107,
           "column": 4,
-          "position": 598
+          "position": 620
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 10,
+      "fragment": "{\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsEmail({}, { message: 'Invalid email format' })\n  @MaxLength(100, { message: 'Email must not exceed 100 characters' })\n  email?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/graphql/dto/contact.dto.ts",
+        "start": 135,
+        "end": 144,
+        "startLoc": {
+          "line": 135,
+          "column": 2,
+          "position": 805
+        },
+        "endLoc": {
+          "line": 144,
+          "column": 9,
+          "position": 893
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/graphql/dto/base/base-contact-fields.dto.ts",
+        "start": 25,
+        "end": 34,
+        "startLoc": {
+          "line": 25,
+          "column": 2,
+          "position": 98
+        },
+        "endLoc": {
+          "line": 34,
+          "column": 14,
+          "position": 186
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 65,
+      "fragment": ": ContactType;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(100, { message: 'Organization must not exceed 100 characters' })\n  organization?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'Title must not exceed 50 characters' })\n  title?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(200, { message: 'Address must not exceed 200 characters' })\n  address?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'City must not exceed 50 characters' })\n  city?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(2, { message: 'State must be 2 characters' })\n  @MinLength(2, { message: 'State must be 2 characters' })\n  @Matches(/^[A-Z]{2}$/, {\n    message: 'State must be 2 uppercase letters (e.g., CA, NY)',\n  })\n  state?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @Matches(/^\\d{5}(-\\d{4})?$/, {\n    message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)',\n  })\n  zip?: string;\n\n  @Field(() => ID, { nullable: true })\n  @IsOptional()\n  @IsString()\n  relationTo?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'Relationship type must not exceed 50 characters' })\n  relationshipType?: string;\n\n  @Field(() => GraphQLJSON, { nullable: true })\n  @IsOptional()\n  customFields?: Record<string, unknown>;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(1000, { message: 'Notes must not exceed 1000 characters' })\n  notes?: string;\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/graphql/dto/contact.dto.ts",
+        "start": 153,
+        "end": 217,
+        "startLoc": {
+          "line": 153,
+          "column": 5,
+          "position": 958
+        },
+        "endLoc": {
+          "line": 217,
+          "column": 2,
+          "position": 1505
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/graphql/dto/base/base-contact-fields.dto.ts",
+        "start": 41,
+        "end": 105,
+        "startLoc": {
+          "line": 41,
+          "column": 2,
+          "position": 275
+        },
+        "endLoc": {
+          "line": 105,
+          "column": 2,
+          "position": 822
         }
       }
     },
@@ -29560,68 +29872,68 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/infrastructure/graphql/dto/contact.dto.ts",
-        "start": 222,
-        "end": 238,
+        "start": 223,
+        "end": 239,
         "startLoc": {
-          "line": 222,
+          "line": 223,
           "column": 2,
-          "position": 1512
+          "position": 1525
         },
         "endLoc": {
-          "line": 238,
+          "line": 239,
           "column": 2,
-          "position": 1644
+          "position": 1657
         }
       },
       "secondFile": {
-        "name": "backend/src/infrastructure/graphql/dto/contact.dto.ts",
-        "start": 134,
-        "end": 150,
+        "name": "backend/src/infrastructure/graphql/dto/base/base-contact-fields.dto.ts",
+        "start": 25,
+        "end": 151,
         "startLoc": {
-          "line": 134,
+          "line": 25,
           "column": 2,
-          "position": 792
+          "position": 98
         },
         "endLoc": {
-          "line": 150,
+          "line": 151,
           "column": 2,
-          "position": 924
+          "position": 937
         }
       }
     },
     {
       "format": "typescript",
-      "lines": 69,
-      "fragment": ": ContactType;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(100, { message: 'Organization must not exceed 100 characters' })\n  organization?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'Title must not exceed 50 characters' })\n  title?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(200, { message: 'Address must not exceed 200 characters' })\n  address?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'City must not exceed 50 characters' })\n  city?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(2, { message: 'State must be 2 characters' })\n  @MinLength(2, { message: 'State must be 2 characters' })\n  @Matches(/^[A-Z]{2}$/, {\n    message: 'State must be 2 uppercase letters (e.g., CA, NY)',\n  })\n  state?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @Matches(/^\\d{5}(-\\d{4})?$/, {\n    message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)',\n  })\n  zip?: string;\n\n  @Field(() => ID, { nullable: true })\n  @IsOptional()\n  @IsString()\n  relationTo?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'Relationship type must not exceed 50 characters' })\n  relationshipType?: string;\n\n  @Field(() => GraphQLJSON, { nullable: true })\n  @IsOptional()\n  customFields?: Record<string, unknown>;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(1000, { message: 'Notes must not exceed 1000 characters' })\n  notes?: string;\n}\n\n/**\n * Contact Filter Input for Queries\n */",
+      "lines": 75,
+      "fragment": "})\n  phone?: string;\n\n  @Field(() => ContactType, { nullable: true })\n  @IsOptional()\n  @IsEnum(ContactType, { message: 'Invalid contact type' })\n  type?: ContactType;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(100, { message: 'Organization must not exceed 100 characters' })\n  organization?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'Title must not exceed 50 characters' })\n  title?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(200, { message: 'Address must not exceed 200 characters' })\n  address?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'City must not exceed 50 characters' })\n  city?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(2, { message: 'State must be 2 characters' })\n  @MinLength(2, { message: 'State must be 2 characters' })\n  @Matches(/^[A-Z]{2}$/, {\n    message: 'State must be 2 uppercase letters (e.g., CA, NY)',\n  })\n  state?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @Matches(/^\\d{5}(-\\d{4})?$/, {\n    message: 'Invalid ZIP code format (e.g., 12345 or 12345-6789)',\n  })\n  zip?: string;\n\n  @Field(() => ID, { nullable: true })\n  @IsOptional()\n  @IsString()\n  relationTo?: string;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(50, { message: 'Relationship type must not exceed 50 characters' })\n  relationshipType?: string;\n\n  @Field(() => GraphQLJSON, { nullable: true })\n  @IsOptional()\n  customFields?: Record<string, unknown>;\n\n  @Field({ nullable: true })\n  @IsOptional()\n  @IsString()\n  @MaxLength(1000, { message: 'Notes must not exceed 1000 characters' })\n  notes?: string;\n}\n\n/**\n * Contact Filter Input for Queries\n */",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/infrastructure/graphql/dto/contact.dto.ts",
-        "start": 241,
-        "end": 309,
+        "start": 236,
+        "end": 310,
         "startLoc": {
-          "line": 241,
-          "column": 2,
-          "position": 1682
+          "line": 236,
+          "column": 3,
+          "position": 1635
         },
         "endLoc": {
-          "line": 309,
+          "line": 310,
           "column": 4,
-          "position": 2232
+          "position": 2245
         }
       },
       "secondFile": {
-        "name": "backend/src/infrastructure/graphql/dto/contact.dto.ts",
-        "start": 152,
-        "end": 220,
+        "name": "backend/src/infrastructure/graphql/dto/base/base-contact-fields.dto.ts",
+        "start": 35,
+        "end": 221,
         "startLoc": {
-          "line": 152,
-          "column": 5,
-          "position": 945
+          "line": 35,
+          "column": 2,
+          "position": 215
         },
         "endLoc": {
-          "line": 220,
+          "line": 221,
           "column": 4,
-          "position": 1495
+          "position": 1508
         }
       }
     },
@@ -29735,22 +30047,166 @@
     },
     {
       "format": "handlebars",
+      "lines": 4,
+      "fragment": "WHITE CROSS HEALTHCARE\n================================================================================\n\n{",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/email/templates/notification.text.hbs",
+        "start": 1,
+        "end": 4,
+        "startLoc": {
+          "line": 1,
+          "column": 1,
+          "position": 0
+        },
+        "endLoc": {
+          "line": 4,
+          "column": 2,
+          "position": 88
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/email/templates/welcome.text.hbs",
+        "start": 1,
+        "end": 2,
+        "startLoc": {
+          "line": 1,
+          "column": 1,
+          "position": 0
+        },
+        "endLoc": {
+          "line": 2,
+          "column": 2,
+          "position": 56
+        }
+      }
+    },
+    {
+      "format": "handlebars",
+      "lines": 4,
+      "fragment": "}}\n\n================================================================================\nThis",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/email/templates/notification.text.hbs",
+        "start": 14,
+        "end": 17,
+        "startLoc": {
+          "line": 14,
+          "column": 3,
+          "position": 147
+        },
+        "endLoc": {
+          "line": 17,
+          "column": 5,
+          "position": 232
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/email/templates/welcome.text.hbs",
+        "start": 23,
+        "end": 2,
+        "startLoc": {
+          "line": 23,
+          "column": 9,
+          "position": 287
+        },
+        "endLoc": {
+          "line": 2,
+          "column": 2,
+          "position": 56
+        }
+      }
+    },
+    {
+      "format": "handlebars",
+      "lines": 4,
+      "fragment": "WHITE CROSS HEALTHCARE\n================================================================================\n\n{{body",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/email/templates/custom.text.hbs",
+        "start": 1,
+        "end": 4,
+        "startLoc": {
+          "line": 1,
+          "column": 1,
+          "position": 0
+        },
+        "endLoc": {
+          "line": 4,
+          "column": 5,
+          "position": 90
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/email/templates/welcome.text.hbs",
+        "start": 1,
+        "end": 4,
+        "startLoc": {
+          "line": 1,
+          "column": 1,
+          "position": 0
+        },
+        "endLoc": {
+          "line": 4,
+          "column": 2,
+          "position": 90
+        }
+      }
+    },
+    {
+      "format": "handlebars",
+      "lines": 4,
+      "fragment": "}}\n\n================================================================================\n(",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/email/templates/custom.text.hbs",
+        "start": 4,
+        "end": 7,
+        "startLoc": {
+          "line": 4,
+          "column": 5,
+          "position": 91
+        },
+        "endLoc": {
+          "line": 7,
+          "column": 2,
+          "position": 176
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/email/templates/welcome.text.hbs",
+        "start": 23,
+        "end": 2,
+        "startLoc": {
+          "line": 23,
+          "column": 9,
+          "position": 287
+        },
+        "endLoc": {
+          "line": 2,
+          "column": 2,
+          "position": 56
+        }
+      }
+    },
+    {
+      "format": "handlebars",
       "lines": 21,
       "fragment": "White Cross Healthcare</title>\n    <style>\n        body {\n            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            max-width: 600px;\n            margin: 0 auto;\n            padding: 20px;\n            background-color: #f5f5f5;\n        }\n        .container {\n            background-color: #ffffff;\n            border-radius: 8px;\n            padding: 30px;\n            box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n        }\n        .header {\n            text-align: center;\n            padding-bottom: 20px;\n            border-bottom:",
       "tokens": 0,
       "firstFile": {
-        "name": "backend/src/infrastructure/email/templates/password-reset.html.hbs",
+        "name": "backend/src/infrastructure/email/templates/base.html.hbs",
         "start": 6,
         "end": 26,
         "startLoc": {
           "line": 6,
           "column": 2,
-          "position": 51
+          "position": 53
         },
         "endLoc": {
           "line": 26,
           "column": 15,
-          "position": 213
+          "position": 215
         }
       },
       "secondFile": {
@@ -29766,186 +30222,6 @@
           "line": 26,
           "column": 15,
           "position": 211
-        }
-      }
-    },
-    {
-      "format": "handlebars",
-      "lines": 17,
-      "fragment": "px;\n        }\n        .footer {\n            margin-top: 30px;\n            padding-top: 20px;\n            border-top: 2px solid #e0e0e0;\n            text-align: center;\n            font-size: 12px;\n            color: #6c757d;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <div class=\"logo\">White Cross Healthcare</div>\n            <div style",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/email/templates/password-reset.html.hbs",
-        "start": 61,
-        "end": 77,
-        "startLoc": {
-          "line": 61,
-          "column": 2,
-          "position": 452
-        },
-        "endLoc": {
-          "line": 77,
-          "column": 6,
-          "position": 569
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/email/templates/welcome.html.hbs",
-        "start": 80,
-        "end": 96,
-        "startLoc": {
-          "line": 80,
-          "column": 3,
-          "position": 615
-        },
-        "endLoc": {
-          "line": 96,
-          "column": 6,
-          "position": 732
-        }
-      }
-    },
-    {
-      "format": "handlebars",
-      "lines": 43,
-      "fragment": "</title>\n    <style>\n        body {\n            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            max-width: 600px;\n            margin: 0 auto;\n            padding: 20px;\n            background-color: #f5f5f5;\n        }\n        .container {\n            background-color: #ffffff;\n            border-radius: 8px;\n            padding: 30px;\n            box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n        }\n        .header {\n            text-align: center;\n            padding-bottom: 20px;\n            border-bottom: 2px solid #e0e0e0;\n            margin-bottom: 30px;\n        }\n        .logo {\n            font-size: 24px;\n            font-weight: bold;\n            color: #2c3e50;\n        }\n        .title {\n            font-size: 22px;\n            font-weight: bold;\n            color: #2c3e50;\n            margin: 20px 0;\n        }\n        .content {\n            font-size: 16px;\n            color: #555;\n            margin: 20px 0;\n            line-height: 1.8;\n        }\n        .cta-button {\n            display: inline-block;\n            padding: 12",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/email/templates/notification.html.hbs",
-        "start": 6,
-        "end": 48,
-        "startLoc": {
-          "line": 6,
-          "column": 13,
-          "position": 52
-        },
-        "endLoc": {
-          "line": 48,
-          "column": 3,
-          "position": 352
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/email/templates/welcome.html.hbs",
-        "start": 6,
-        "end": 48,
-        "startLoc": {
-          "line": 6,
-          "column": 11,
-          "position": 54
-        },
-        "endLoc": {
-          "line": 48,
-          "column": 3,
-          "position": 356
-        }
-      }
-    },
-    {
-      "format": "handlebars",
-      "lines": 17,
-      "fragment": ";\n        }\n        .footer {\n            margin-top: 30px;\n            padding-top: 20px;\n            border-top: 2px solid #e0e0e0;\n            text-align: center;\n            font-size: 12px;\n            color: #6c757d;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <div class=\"logo\">White Cross Healthcare</div>\n            <div style=\"color: #6c757d; margin-top: 10px;\">Notification",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/email/templates/notification.html.hbs",
-        "start": 54,
-        "end": 70,
-        "startLoc": {
-          "line": 54,
-          "column": 5,
-          "position": 399
-        },
-        "endLoc": {
-          "line": 70,
-          "column": 13,
-          "position": 519
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/email/templates/welcome.html.hbs",
-        "start": 80,
-        "end": 77,
-        "startLoc": {
-          "line": 80,
-          "column": 3,
-          "position": 616
-        },
-        "endLoc": {
-          "line": 77,
-          "column": 9,
-          "position": 573
-        }
-      }
-    },
-    {
-      "format": "handlebars",
-      "lines": 29,
-      "fragment": "</title>\n    <style>\n        body {\n            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            max-width: 600px;\n            margin: 0 auto;\n            padding: 20px;\n            background-color: #f5f5f5;\n        }\n        .container {\n            background-color: #ffffff;\n            border-radius: 8px;\n            padding: 30px;\n            box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n        }\n        .header {\n            text-align: center;\n            padding-bottom: 20px;\n            border-bottom: 2px solid #e0e0e0;\n            margin-bottom: 30px;\n        }\n        .logo {\n            font-size: 24px;\n            font-weight: bold;\n            color: #2c3e50;\n        }\n        .content",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/email/templates/custom.html.hbs",
-        "start": 6,
-        "end": 34,
-        "startLoc": {
-          "line": 6,
-          "column": 2,
-          "position": 50
-        },
-        "endLoc": {
-          "line": 34,
-          "column": 8,
-          "position": 260
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/email/templates/welcome.html.hbs",
-        "start": 6,
-        "end": 34,
-        "startLoc": {
-          "line": 6,
-          "column": 11,
-          "position": 54
-        },
-        "endLoc": {
-          "line": 34,
-          "column": 6,
-          "position": 266
-        }
-      }
-    },
-    {
-      "format": "handlebars",
-      "lines": 17,
-      "fragment": ";\n        }\n        .footer {\n            margin-top: 30px;\n            padding-top: 20px;\n            border-top: 2px solid #e0e0e0;\n            text-align: center;\n            font-size: 12px;\n            color: #6c757d;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <div class=\"logo\">White Cross Healthcare</div>\n        </",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/email/templates/custom.html.hbs",
-        "start": 37,
-        "end": 53,
-        "startLoc": {
-          "line": 37,
-          "column": 4,
-          "position": 282
-        },
-        "endLoc": {
-          "line": 53,
-          "column": 2,
-          "position": 396
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/email/templates/welcome.html.hbs",
-        "start": 80,
-        "end": 96,
-        "startLoc": {
-          "line": 80,
-          "column": 3,
-          "position": 616
-        },
-        "endLoc": {
-          "line": 96,
-          "column": 4,
-          "position": 730
         }
       }
     },
@@ -29982,42 +30258,6 @@
           "line": 18,
           "column": 3,
           "position": 253
-        }
-      }
-    },
-    {
-      "format": "handlebars",
-      "lines": 29,
-      "fragment": "</title>\n    <style>\n        body {\n            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            max-width: 600px;\n            margin: 0 auto;\n            padding: 20px;\n            background-color: #f5f5f5;\n        }\n        .container {\n            background-color: #ffffff;\n            border-radius: 8px;\n            padding: 30px;\n            box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n        }\n        .header {\n            text-align: center;\n            padding-bottom: 20px;\n            border-bottom: 2px solid #e0e0e0;\n            margin-bottom: 30px;\n        }\n        .logo {\n            font-size: 24px;\n            font-weight: bold;\n            color: #2c3e50;\n        }\n        .alert-badge",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/infrastructure/email/templates/alert.html.hbs",
-        "start": 6,
-        "end": 34,
-        "startLoc": {
-          "line": 6,
-          "column": 6,
-          "position": 52
-        },
-        "endLoc": {
-          "line": 34,
-          "column": 12,
-          "position": 262
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/infrastructure/email/templates/welcome.html.hbs",
-        "start": 6,
-        "end": 34,
-        "startLoc": {
-          "line": 6,
-          "column": 11,
-          "position": 54
-        },
-        "endLoc": {
-          "line": 34,
-          "column": 6,
-          "position": 266
         }
       }
     },
@@ -30306,78 +30546,6 @@
           "line": 266,
           "column": 2,
           "position": 2191
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 19,
-      "fragment": "export interface InMemoryCacheEntry<T = any> {\n  data: T;\n  timestamp: Date;\n  accessCount: number;\n  lastAccessed: Date;\n  compliance: ComplianceLevel;\n  encrypted: boolean;\n  tags: string[];\n  size: number;\n  tier: CacheTier;\n}\n\nexport enum CacheTier {\n  L1 = 'L1', // In-memory application cache\n  L2 = 'L2', // Redis distributed cache\n  L3 = 'L3', // Database query result cache\n}\n\nexport enum",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/health-record/services/cache/cache-interfaces.ts",
-        "start": 7,
-        "end": 25,
-        "startLoc": {
-          "line": 7,
-          "column": 1,
-          "position": 3
-        },
-        "endLoc": {
-          "line": 25,
-          "column": 5,
-          "position": 129
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/health-record/services/cache/cache-types.ts",
-        "start": 13,
-        "end": 31,
-        "startLoc": {
-          "line": 13,
-          "column": 1,
-          "position": 17
-        },
-        "endLoc": {
-          "line": 31,
-          "column": 10,
-          "position": 143
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 45,
-      "fragment": "}\n\nexport interface CacheMetrics {\n  l1Stats: {\n    hits: number;\n    misses: number;\n    evictions: number;\n    size: number;\n    memoryUsage: number;\n  };\n  l2Stats: {\n    hits: number;\n    misses: number;\n    networkLatency: number;\n    size: number;\n  };\n  l3Stats: {\n    hits: number;\n    misses: number;\n    queryTime: number;\n    size: number;\n  };\n  overall: {\n    hitRate: number;\n    averageResponseTime: number;\n    totalMemoryUsage: number;\n  };\n}\n\nexport interface AccessPattern {\n  key: string;\n  frequency: number;\n  lastAccess: Date;\n  predictedNextAccess: Date;\n  importance: number;\n  studentId?: string;\n  dataType: string;\n}\n\nexport interface CacheOperationResult<T = any> {\n  success: boolean;\n  data?: T;\n  error?: string;\n  responseTime: number;\n  tier",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/health-record/services/cache/cache-interfaces.ts",
-        "start": 31,
-        "end": 75,
-        "startLoc": {
-          "line": 31,
-          "column": 1,
-          "position": 175
-        },
-        "endLoc": {
-          "line": 75,
-          "column": 5,
-          "position": 448
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/health-record/services/cache/cache-types.ts",
-        "start": 29,
-        "end": 73,
-        "startLoc": {
-          "line": 29,
-          "column": 1,
-          "position": 138
-        },
-        "endLoc": {
-          "line": 73,
-          "column": 2,
-          "position": 410
         }
       }
     },
@@ -31571,109 +31739,37 @@
     },
     {
       "format": "typescript",
-      "lines": 82,
-      "fragment": ";\n}\n\n/**\n * Analyzes query cache effectiveness\n *\n * @param {Sequelize} sequelize - Sequelize instance\n * @returns {Promise<CacheMetrics>}\n *\n * @example\n * ```typescript\n * const cacheMetrics = await analyzeQueryCache(sequelize);\n * console.log(`Cache hit rate: ${(cacheMetrics.hitRate * 100).toFixed(2)}%`);\n *\n * if (cacheMetrics.hitRate < 0.8) {\n *   console.log('Consider increasing shared_buffers');\n * }\n * ```\n */\nexport async function analyzeQueryCache(\n  sequelize: Sequelize\n): Promise<CacheMetrics> {\n  const dialect = sequelize.getDialect();\n\n  if (dialect === 'postgres') {\n    const [result] = await sequelize.query(\n      `\n      SELECT\n        sum(heap_blks_hit) AS heap_hit,\n        sum(heap_blks_read) AS heap_read,\n        sum(idx_blks_hit) AS idx_hit,\n        sum(idx_blks_read) AS idx_read\n      FROM pg_statio_user_tables\n    `,\n      { type: QueryTypes.SELECT }\n    );\n\n    const stats = result[0] as Record<string, unknown>;\n    const totalHits = ((stats.heap_hit as number) || 0) + ((stats.idx_hit as number) || 0);\n    const totalMisses = ((stats.heap_read as number) || 0) + ((stats.idx_read as number) || 0);\n    const total = totalHits + totalMisses;\n\n    return {\n      hitRate: total > 0 ? totalHits / total : 0,\n      missRate: total > 0 ? totalMisses / total : 0,\n      totalHits,\n      totalMisses,\n      bufferCacheSize: 0,\n      sharedBuffers: 0,\n      effectiveCacheSize: 0,\n    };\n  }\n\n  return {\n    hitRate: 0,\n    missRate: 0,\n    totalHits: 0,\n    totalMisses: 0,\n    bufferCacheSize: 0,\n    sharedBuffers: 0,\n    effectiveCacheSize: 0,\n  };\n}\n\n/**\n * Optimizes database cache settings\n *\n * @param {Sequelize} sequelize - Sequelize instance\n * @param {number} totalMemoryMB - Total system memory in MB\n * @returns {Promise<{sharedBuffers: string, effectiveCacheSize: string, workMem: string}>}\n *\n * @example\n * ```typescript\n * // For system with 32GB RAM\n * const recommendations = await optimizeCacheSettings(sequelize, 32768);\n *\n * console.log('Recommended PostgreSQL settings:');\n * console.log(`shared_buffers = ${recommendations.sharedBuffers}`);\n * console.log(`effective_cache_size = ${recommendations.effectiveCacheSize}`);\n * console.log(`work_mem = ${recommendations.workMem}`);\n * ```\n */",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/database/services/optimization/cache-optimization.service.ts",
-        "start": 33,
-        "end": 114,
-        "startLoc": {
-          "line": 33,
-          "column": 2,
-          "position": 82
-        },
-        "endLoc": {
-          "line": 114,
-          "column": 4,
-          "position": 450
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/database/services/optimization/query-optimization.service.ts",
-        "start": 398,
-        "end": 479,
-        "startLoc": {
-          "line": 398,
-          "column": 16,
-          "position": 2369
-        },
-        "endLoc": {
-          "line": 479,
-          "column": 4,
-          "position": 2737
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 27,
-      "fragment": "true,\n      highWaterMark: config.highWaterMark || 16,\n      async read() {\n        try {\n          if (!hasMore) {\n            this.push(null);\n            return;\n          }\n\n          const batch = await model.findAll({\n            where,\n            limit: config.batchSize,\n            offset,\n            transaction: config.transaction,\n          });\n\n          if (batch.length === 0) {\n            hasMore = false;\n            this.push(null);\n            return;\n          }\n\n          offset += config.batchSize;\n          hasMore = batch.length === config.batchSize;\n\n          for (const record of batch) {\n            try",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 250,
-        "end": 276,
-        "startLoc": {
-          "line": 250,
-          "column": 2,
-          "position": 1998
-        },
-        "endLoc": {
-          "line": 276,
-          "column": 4,
-          "position": 2185
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 41,
-        "end": 67,
-        "startLoc": {
-          "line": 41,
-          "column": 2,
-          "position": 260
-        },
-        "endLoc": {
-          "line": 67,
-          "column": 3,
-          "position": 447
-        }
-      }
-    },
-    {
-      "format": "typescript",
       "lines": 18,
       "fragment": ");\n  const startTime = Date.now();\n\n  const metrics: StreamingMetrics = {\n    totalRecords: 0,\n    totalBatches: 0,\n    averageBatchSize: 0,\n    executionTimeMs: 0,\n    throughput: 0,\n    memoryPeakMb: 0,\n    backpressureEvents: 0,\n  };\n\n  try {\n    let offset = 0;\n    let hasMore = true;\n    const batchSizes: number[] = [];\n    const",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 313,
-        "end": 330,
+        "start": 330,
+        "end": 347,
         "startLoc": {
-          "line": 313,
+          "line": 330,
           "column": 42,
-          "position": 2487
+          "position": 2648
         },
         "endLoc": {
-          "line": 330,
+          "line": 347,
           "column": 6,
-          "position": 2613
+          "position": 2774
         }
       },
       "secondFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 95,
-        "end": 113,
+        "start": 112,
+        "end": 130,
         "startLoc": {
-          "line": 95,
+          "line": 112,
           "column": 35,
-          "position": 673
+          "position": 834
         },
         "endLoc": {
-          "line": 113,
+          "line": 130,
           "column": 6,
-          "position": 800
+          "position": 961
         }
       }
     },
@@ -31684,32 +31780,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 334,
-        "end": 347,
+        "start": 351,
+        "end": 364,
         "startLoc": {
-          "line": 334,
+          "line": 351,
           "column": 2,
-          "position": 2656
+          "position": 2817
         },
         "endLoc": {
-          "line": 347,
+          "line": 364,
           "column": 2,
-          "position": 2796
+          "position": 2957
         }
       },
       "secondFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 113,
-        "end": 127,
+        "start": 130,
+        "end": 144,
         "startLoc": {
-          "line": 113,
+          "line": 130,
           "column": 8,
-          "position": 804
+          "position": 965
         },
         "endLoc": {
-          "line": 127,
+          "line": 144,
           "column": 6,
-          "position": 945
+          "position": 1106
         }
       }
     },
@@ -31720,32 +31816,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 346,
-        "end": 363,
+        "start": 363,
+        "end": 380,
         "startLoc": {
-          "line": 346,
+          "line": 363,
           "column": 9,
-          "position": 2793
+          "position": 2954
         },
         "endLoc": {
-          "line": 363,
+          "line": 380,
           "column": 8,
-          "position": 2896
+          "position": 3057
         }
       },
       "secondFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 124,
-        "end": 142,
+        "start": 141,
+        "end": 159,
         "startLoc": {
-          "line": 124,
+          "line": 141,
           "column": 9,
-          "position": 938
+          "position": 1099
         },
         "endLoc": {
-          "line": 142,
+          "line": 159,
           "column": 4,
-          "position": 1042
+          "position": 1203
         }
       }
     },
@@ -31756,32 +31852,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 368,
-        "end": 377,
+        "start": 385,
+        "end": 394,
         "startLoc": {
-          "line": 368,
+          "line": 385,
           "column": 7,
-          "position": 2924
+          "position": 3085
         },
         "endLoc": {
-          "line": 377,
+          "line": 394,
           "column": 33,
-          "position": 3040
+          "position": 3201
         }
       },
       "secondFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 147,
-        "end": 156,
+        "start": 164,
+        "end": 173,
         "startLoc": {
-          "line": 147,
+          "line": 164,
           "column": 7,
-          "position": 1077
+          "position": 1238
         },
         "endLoc": {
-          "line": 156,
+          "line": 173,
           "column": 25,
-          "position": 1193
+          "position": 1354
         }
       }
     },
@@ -31792,32 +31888,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 456,
-        "end": 503,
+        "start": 473,
+        "end": 520,
         "startLoc": {
-          "line": 456,
+          "line": 473,
           "column": 52,
-          "position": 3663
+          "position": 3824
         },
         "endLoc": {
-          "line": 503,
+          "line": 520,
           "column": 56,
-          "position": 4032
+          "position": 4193
         }
       },
       "secondFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 95,
-        "end": 142,
+        "start": 112,
+        "end": 159,
         "startLoc": {
-          "line": 95,
+          "line": 112,
           "column": 35,
-          "position": 673
+          "position": 834
         },
         "endLoc": {
-          "line": 142,
+          "line": 159,
           "column": 4,
-          "position": 1042
+          "position": 1203
         }
       }
     },
@@ -31828,32 +31924,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 528,
-        "end": 539,
+        "start": 545,
+        "end": 556,
         "startLoc": {
-          "line": 528,
+          "line": 545,
           "column": 17,
-          "position": 4298
+          "position": 4459
         },
         "endLoc": {
-          "line": 539,
+          "line": 556,
           "column": 39,
-          "position": 4418
+          "position": 4579
         }
       },
       "secondFile": {
         "name": "backend/src/database/services/operations/streaming-operations.service.ts",
-        "start": 366,
-        "end": 156,
+        "start": 383,
+        "end": 173,
         "startLoc": {
-          "line": 366,
+          "line": 383,
           "column": 2,
-          "position": 2920
+          "position": 3081
         },
         "endLoc": {
-          "line": 156,
+          "line": 173,
           "column": 25,
-          "position": 1193
+          "position": 1354
         }
       }
     },
@@ -34775,42 +34871,6 @@
     },
     {
       "format": "typescript",
-      "lines": 133,
-      "fragment": "/**\n * Index definition with optimization metadata\n */\nexport interface IndexInfo {\n  name: string;\n  tableName: string;\n  columnNames: string[];\n  unique: boolean;\n  type: 'btree' | 'hash' | 'gin' | 'gist' | 'brin';\n  size: number;\n  scans: number;\n  tuples_read: number;\n  tuples_fetched: number;\n  indexDef: string;\n  isValid: boolean;\n}\n\n/**\n * Query performance metrics\n */\nexport interface QueryPerformance {\n  query: string;\n  executionTime: number;\n  planningTime: number;\n  totalCost: number;\n  rows: number;\n  cached: boolean;\n  indexesUsed: string[];\n  fullScans: number;\n  recommendations: string[];\n}\n\n/**\n * Table statistics information\n */\nexport interface TableStatistics {\n  tableName: string;\n  rowCount: number;\n  totalSize: number;\n  indexSize: number;\n  toastSize: number;\n  deadTuples: number;\n  liveTuples: number;\n  lastVacuum?: Date;\n  lastAnalyze?: Date;\n  bloatPercentage: number;\n}\n\n/**\n * Index usage statistics\n */\nexport interface IndexUsageStats {\n  schemaName: string;\n  tableName: string;\n  indexName: string;\n  indexScans: number;\n  tuplesRead: number;\n  tuplesFetched: number;\n  sizeBytes: number;\n  unusedReason?: string;\n}\n\n/**\n * Query plan node\n */\nexport interface QueryPlanNode {\n  nodeType: string;\n  relationName?: string;\n  alias?: string;\n  startupCost: number;\n  totalCost: number;\n  planRows: number;\n  planWidth: number;\n  actualTime?: [number, number];\n  actualRows?: number;\n  actualLoops?: number;\n  indexName?: string;\n  filter?: string;\n  plans?: QueryPlanNode[];\n}\n\n/**\n * Vacuum operation options\n */\nexport interface VacuumOptions {\n  full?: boolean;\n  freeze?: boolean;\n  analyze?: boolean;\n  verbose?: boolean;\n  skipLocked?: boolean;\n  indexCleanup?: boolean;\n  truncate?: boolean;\n  parallel?: number;\n}\n\n/**\n * Table bloat information\n */\nexport interface TableBloat {\n  tableName: string;\n  realSize: number;\n  expectedSize: number;\n  bloatSize: number;\n  bloatPercentage: number;\n  deadTuples: number;\n  wastedBytes: number;\n}\n\n/**\n * Cache performance metrics\n */\nexport interface CacheMetrics {\n  hitRate: number;\n  missRate: number;\n  totalHits: number;\n  totalMisses: number;\n  bufferCacheSize: number;\n  sharedBuffers: number;\n  effectiveCacheSize: number;\n}\n\n/**\n * Index recommendation\n */\nexport interface IndexRecommendation {\n  tableName: string;\n  columns: string[];\n  reason: string;\n  estimatedImprovement: number;\n  priority: 'high' | 'medium' | 'low';\n  indexType: 'btree' | 'hash' | 'gin' | 'gist';\n  createStatement: string;\n}",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/database/optimization/types/index.ts",
-        "start": 10,
-        "end": 142,
-        "startLoc": {
-          "line": 10,
-          "column": 1,
-          "position": 20
-        },
-        "endLoc": {
-          "line": 142,
-          "column": 2,
-          "position": 764
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/database/services/optimization/types.ts",
-        "start": 8,
-        "end": 140,
-        "startLoc": {
-          "line": 8,
-          "column": 1,
-          "position": 3
-        },
-        "endLoc": {
-          "line": 140,
-          "column": 2,
-          "position": 747
-        }
-      }
-    },
-    {
-      "format": "typescript",
       "lines": 23,
       "fragment": ",\n        {\n          replacements: { tableName },\n          type: QueryTypes.SELECT,\n        }\n      );\n\n      return results as IndexInfo[];\n    } else if (dialect === 'mysql') {\n      const whereClause = tableName ? `WHERE TABLE_NAME = :tableName` : '';\n\n      const [results] = await sequelize.query(\n        `\n        SELECT\n          INDEX_NAME AS name,\n          TABLE_NAME AS tableName,\n          COLUMN_NAME AS columnName,\n          NON_UNIQUE = 0 AS \\`unique\\`,\n          INDEX_TYPE AS type,\n          CARDINALITY AS scans\n        FROM INFORMATION_SCHEMA.STATISTICS\n        WHERE TABLE_SCHEMA = DATABASE()\n          ",
       "tokens": 0,
@@ -34975,17 +35035,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 259,
-        "end": 280,
+        "start": 238,
+        "end": 259,
         "startLoc": {
-          "line": 259,
+          "line": 238,
           "column": 2,
-          "position": 1213
+          "position": 1082
         },
         "endLoc": {
-          "line": 280,
+          "line": 259,
           "column": 4,
-          "position": 1303
+          "position": 1172
         }
       }
     },
@@ -35011,17 +35071,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 259,
-        "end": 280,
+        "start": 238,
+        "end": 259,
         "startLoc": {
-          "line": 259,
+          "line": 238,
           "column": 2,
-          "position": 1213
+          "position": 1082
         },
         "endLoc": {
-          "line": 280,
+          "line": 259,
           "column": 4,
-          "position": 1303
+          "position": 1172
         }
       }
     },
@@ -35047,17 +35107,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 259,
-        "end": 280,
+        "start": 238,
+        "end": 259,
         "startLoc": {
-          "line": 259,
+          "line": 238,
           "column": 2,
-          "position": 1213
+          "position": 1082
         },
         "endLoc": {
-          "line": 280,
+          "line": 259,
           "column": 4,
-          "position": 1303
+          "position": 1172
         }
       }
     },
@@ -35099,37 +35159,73 @@
     },
     {
       "format": "typescript",
-      "lines": 47,
-      "fragment": "> = {\n      id: {\n        type: DataTypes.UUID,\n        defaultValue: DataTypes.UUIDV4,\n        primaryKey: true,\n        allowNull: false,\n      },\n      ...attributes,\n    };\n\n    // Add timestamp fields if enabled\n    if (timestamps) {\n      completeAttributes.createdAt = {\n        type: DataTypes.DATE,\n        allowNull: false,\n        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),\n      };\n      completeAttributes.updatedAt = {\n        type: DataTypes.DATE,\n        allowNull: false,\n        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),\n      };\n    }\n\n    // Add soft delete field if paranoid\n    if (paranoid) {\n      completeAttributes.deletedAt = {\n        type: DataTypes.DATE,\n        allowNull: true,\n      };\n    }\n\n    // Create table\n    await queryInterface.createTable(tableName, completeAttributes, {\n      transaction,\n      comment,\n    });\n\n    // Create indexes\n    for (const index of indexes) {\n      await queryInterface.addIndex(tableName, index.fields, {\n        ...index,\n        transaction,\n      });\n    }\n\n    this",
+      "lines": 34,
+      "fragment": "const completeAttributes: Record<string, any> = {\n    id: {\n      type: DataTypes.UUID,\n      defaultValue: DataTypes.UUIDV4,\n      primaryKey: true,\n      allowNull: false,\n    },\n    ...attributes,\n  };\n\n  // Add timestamp fields if enabled\n  if (timestamps) {\n    completeAttributes.createdAt = {\n      type: DataTypes.DATE,\n      allowNull: false,\n      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),\n    };\n    completeAttributes.updatedAt = {\n      type: DataTypes.DATE,\n      allowNull: false,\n      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),\n    };\n  }\n\n  // Add soft delete field if paranoid\n  if (paranoid) {\n    completeAttributes.deletedAt = {\n      type: DataTypes.DATE,\n      allowNull: true,\n    };\n  }\n\n  return completeAttributes;\n}",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/database/migrations/shared/migration-utilities.ts",
+        "start": 20,
+        "end": 53,
+        "startLoc": {
+          "line": 20,
+          "column": 3,
+          "position": 108
+        },
+        "endLoc": {
+          "line": 53,
+          "column": 2,
+          "position": 326
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/database/migrations/utilities/table-attributes-builder.ts",
+        "start": 24,
+        "end": 57,
+        "startLoc": {
+          "line": 24,
+          "column": 3,
+          "position": 124
+        },
+        "endLoc": {
+          "line": 57,
+          "column": 2,
+          "position": 342
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 15,
+      "fragment": "= {},\n    transaction?: Transaction,\n  ): Promise<void> {\n    const {\n      indexes = [],\n      paranoid = false,\n      timestamps = true,\n      underscored = false,\n      comment,\n    } = options;\n\n    // Build complete attribute definition with defaults using shared utility\n    const completeAttributes = buildTableAttributes(attributes, { timestamps, paranoid });\n\n    // Create table",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 40,
-        "end": 86,
+        "start": 29,
+        "end": 43,
         "startLoc": {
-          "line": 40,
-          "column": 4,
-          "position": 269
+          "line": 29,
+          "column": 2,
+          "position": 191
         },
         "endLoc": {
-          "line": 86,
-          "column": 5,
-          "position": 556
+          "line": 43,
+          "column": 16,
+          "position": 295
         }
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 57,
-        "end": 102,
+        "start": 46,
+        "end": 60,
         "startLoc": {
-          "line": 57,
-          "column": 8,
-          "position": 188
+          "line": 46,
+          "column": 2,
+          "position": 111
         },
         "endLoc": {
-          "line": 102,
-          "column": 2,
-          "position": 473
+          "line": 60,
+          "column": 37,
+          "position": 214
         }
       }
     },
@@ -35140,32 +35236,32 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 95,
-        "end": 110,
+        "start": 66,
+        "end": 81,
         "startLoc": {
-          "line": 95,
+          "line": 66,
           "column": 2,
-          "position": 626
+          "position": 450
         },
         "endLoc": {
-          "line": 110,
+          "line": 81,
           "column": 5,
-          "position": 731
+          "position": 555
         }
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 121,
-        "end": 135,
+        "start": 100,
+        "end": 114,
         "startLoc": {
-          "line": 121,
+          "line": 100,
           "column": 24,
-          "position": 506
+          "position": 375
         },
         "endLoc": {
-          "line": 135,
+          "line": 114,
           "column": 2,
-          "position": 609
+          "position": 478
         }
       }
     },
@@ -35176,17 +35272,17 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 271,
-        "end": 279,
+        "start": 242,
+        "end": 250,
         "startLoc": {
-          "line": 271,
+          "line": 242,
           "column": 5,
-          "position": 1892
+          "position": 1716
         },
         "endLoc": {
-          "line": 279,
+          "line": 250,
           "column": 15,
-          "position": 1979
+          "position": 1803
         }
       },
       "secondFile": {
@@ -35212,17 +35308,17 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 309,
-        "end": 326,
+        "start": 280,
+        "end": 297,
         "startLoc": {
-          "line": 309,
+          "line": 280,
           "column": 15,
-          "position": 2209
+          "position": 2033
         },
         "endLoc": {
-          "line": 326,
+          "line": 297,
           "column": 4,
-          "position": 2343
+          "position": 2167
         }
       },
       "secondFile": {
@@ -35263,17 +35359,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 130,
-        "end": 144,
+        "start": 101,
+        "end": 115,
         "startLoc": {
-          "line": 130,
+          "line": 101,
           "column": 12,
-          "position": 858
+          "position": 682
         },
         "endLoc": {
-          "line": 144,
+          "line": 115,
           "column": 31,
-          "position": 958
+          "position": 782
         }
       }
     },
@@ -35299,17 +35395,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 144,
-        "end": 178,
+        "start": 115,
+        "end": 149,
         "startLoc": {
-          "line": 144,
+          "line": 115,
           "column": 12,
-          "position": 965
+          "position": 789
         },
         "endLoc": {
-          "line": 178,
+          "line": 149,
           "column": 30,
-          "position": 1202
+          "position": 1026
         }
       }
     },
@@ -35335,17 +35431,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 179,
-        "end": 186,
+        "start": 150,
+        "end": 157,
         "startLoc": {
-          "line": 179,
+          "line": 150,
           "column": 13,
-          "position": 1205
+          "position": 1029
         },
         "endLoc": {
-          "line": 186,
+          "line": 157,
           "column": 12,
-          "position": 1292
+          "position": 1116
         }
       }
     },
@@ -35371,17 +35467,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 186,
-        "end": 221,
+        "start": 157,
+        "end": 192,
         "startLoc": {
-          "line": 186,
+          "line": 157,
           "column": 12,
-          "position": 1293
+          "position": 1117
         },
         "endLoc": {
-          "line": 221,
+          "line": 192,
           "column": 38,
-          "position": 1542
+          "position": 1366
         }
       }
     },
@@ -42160,17 +42256,17 @@
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/infrastructure/streaming/streaming-query.service.ts",
-        "start": 30,
-        "end": 48,
+        "start": 31,
+        "end": 49,
         "startLoc": {
-          "line": 30,
+          "line": 31,
           "column": 1,
-          "position": 116
+          "position": 129
         },
         "endLoc": {
-          "line": 48,
+          "line": 49,
           "column": 4,
-          "position": 208
+          "position": 221
         }
       },
       "secondFile": {
@@ -42191,37 +42287,217 @@
     },
     {
       "format": "typescript",
-      "lines": 9,
-      "fragment": "(queueName: QueueName, jobId: string): Promise<void> {\n    const queue = this.getQueue(queueName);\n    const job = await queue.getJob(jobId);\n\n    if (!job) {\n      throw new Error(`Job ${jobId} not found in queue ${queueName}`);\n    }\n\n    await job.remove",
+      "lines": 20,
+      "fragment": "constructor(\n    @InjectQueue(QueueName.MESSAGE_DELIVERY)\n    private readonly messageDeliveryQueue: Queue,\n\n    @InjectQueue(QueueName.MESSAGE_NOTIFICATION)\n    private readonly notificationQueue: Queue,\n\n    @InjectQueue(QueueName.MESSAGE_INDEXING)\n    private readonly indexingQueue: Queue,\n\n    @InjectQueue(QueueName.MESSAGE_ENCRYPTION)\n    private readonly encryptionQueue: Queue,\n\n    @InjectQueue(QueueName.BATCH_MESSAGE_SENDING)\n    private readonly batchMessageQueue: Queue,\n\n    @InjectQueue(QueueName.MESSAGE_CLEANUP)\n    private readonly cleanupQueue: Queue,\n\n    private",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/infrastructure/queue/message-queue.service.ts",
-        "start": 480,
-        "end": 488,
+        "start": 31,
+        "end": 50,
         "startLoc": {
-          "line": 480,
-          "column": 10,
-          "position": 3309
+          "line": 31,
+          "column": 3,
+          "position": 196
         },
         "endLoc": {
-          "line": 488,
-          "column": 7,
-          "position": 3401
+          "line": 50,
+          "column": 8,
+          "position": 326
         }
       },
       "secondFile": {
-        "name": "backend/src/infrastructure/queue/message-queue.service.ts",
-        "start": 465,
-        "end": 473,
+        "name": "backend/src/infrastructure/queue/services/improved-message-queue.service.ts",
+        "start": 30,
+        "end": 49,
         "startLoc": {
-          "line": 465,
-          "column": 15,
-          "position": 3182
+          "line": 30,
+          "column": 3,
+          "position": 159
         },
         "endLoc": {
-          "line": 473,
+          "line": 49,
+          "column": 12,
+          "position": 289
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 52,
+      "fragment": ".backoff || {\n          type: config.backoffType,\n          delay: config.backoffDelay,\n        },\n      removeOnComplete:\n        options?.removeOnComplete !== undefined\n          ? options.removeOnComplete\n          : {\n              count: config.removeOnCompleteCount,\n              age: config.removeOnCompleteAge,\n            },\n      removeOnFail:\n        options?.removeOnFail !== undefined\n          ? options.removeOnFail\n          : {\n              count: config.removeOnFailCount,\n              age: config.removeOnFailAge,\n            },\n      repeat: options?.repeat,\n    };\n  }\n\n  /**\n   * Get statistics for a specific queue\n   */\n  async getQueueStats(queueName: QueueName): Promise<QueueStats> {\n    const queue = this.getQueue(queueName);\n\n    const [waiting, active, completed, failed, delayed, paused] =\n      await Promise.all([\n        queue.getWaitingCount(),\n        queue.getActiveCount(),\n        queue.getCompletedCount(),\n        queue.getFailedCount(),\n        queue.getDelayedCount(),\n        queue.getPausedCount(),\n      ]);\n\n    return {\n      name: queueName,\n      waiting,\n      active,\n      completed,\n      failed,\n      delayed,\n      paused,\n    };\n  }\n\n  /**\n   * Get metrics for all queues\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/queue/message-queue.service.ts",
+        "start": 279,
+        "end": 330,
+        "startLoc": {
+          "line": 279,
+          "column": 2,
+          "position": 1716
+        },
+        "endLoc": {
+          "line": 330,
           "column": 6,
-          "position": 3274
+          "position": 2029
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/queue/services/base-queue.service.ts",
+        "start": 152,
+        "end": 202,
+        "startLoc": {
+          "line": 152,
+          "column": 2,
+          "position": 1185
+        },
+        "endLoc": {
+          "line": 202,
+          "column": 6,
+          "position": 1497
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 47,
+      "fragment": "),\n    );\n\n    const queues = queueStats.reduce(\n      (acc, stats) => {\n        acc[stats.name] = stats;\n        return acc;\n      },\n      {} as Record<QueueName, QueueStats>,\n    );\n\n    const totals = queueStats.reduce(\n      (acc, stats) => ({\n        waiting: acc.waiting + stats.waiting,\n        active: acc.active + stats.active,\n        completed: acc.completed + stats.completed,\n        failed: acc.failed + stats.failed,\n        delayed: acc.delayed + stats.delayed,\n        paused: acc.paused + stats.paused,\n      }),\n      { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0, paused: 0 },\n    );\n\n    return {\n      queues,\n      totals,\n      timestamp: new Date(),\n    };\n  }\n\n  /**\n   * Get health status for a queue\n   */\n  async getQueueHealth(queueName: QueueName): Promise<QueueHealth> {\n    const queue = this.getQueue(queueName);\n    const stats = await this.getQueueStats(queueName);\n\n    // Calculate failure rate\n    const totalProcessed = stats.completed + stats.failed;\n    const failureRate = totalProcessed > 0 ? stats.failed / totalProcessed : 0;\n    const highFailureRate = failureRate > 0.1; // More than 10% failure rate\n\n    // Check Redis connection\n    let redisConnected = true;\n    try {\n      await queue.client.ping();\n    } catch (",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/queue/message-queue.service.ts",
+        "start": 335,
+        "end": 381,
+        "startLoc": {
+          "line": 335,
+          "column": 7,
+          "position": 2090
+        },
+        "endLoc": {
+          "line": 381,
+          "column": 2,
+          "position": 2519
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/queue/services/base-queue.service.ts",
+        "start": 205,
+        "end": 251,
+        "startLoc": {
+          "line": 205,
+          "column": 2,
+          "position": 1549
+        },
+        "endLoc": {
+          "line": 251,
+          "column": 2,
+          "position": 1978
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 32,
+      "fragment": "{\n      redisConnected = false;\n    }\n\n    // Determine overall status\n    let status: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';\n    if (!redisConnected || highFailureRate) {\n      status = 'unhealthy';\n    } else if (stats.failed > 100 || stats.waiting > 1000) {\n      status = 'degraded';\n    }\n\n    return {\n      name: queueName,\n      status,\n      checks: {\n        redis: redisConnected,\n        accepting: stats.paused === 0,\n        processing: stats.active > 0 || stats.waiting === 0,\n        highFailureRate,\n      },\n      failureRate,\n      checkedAt: new Date(),\n    };\n  }\n\n  /**\n   * Get failed jobs from a queue\n   */\n  async getFailedJobs(\n    queueName: QueueName,\n    limit: number = 100,",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/queue/message-queue.service.ts",
+        "start": 381,
+        "end": 412,
+        "startLoc": {
+          "line": 381,
+          "column": 2,
+          "position": 2523
+        },
+        "endLoc": {
+          "line": 412,
+          "column": 2,
+          "position": 2745
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/queue/services/base-queue.service.ts",
+        "start": 251,
+        "end": 280,
+        "startLoc": {
+          "line": 251,
+          "column": 2,
+          "position": 1978
+        },
+        "endLoc": {
+          "line": 280,
+          "column": 2,
+          "position": 2197
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 37,
+      "fragment": ",\n      queueName,\n      data: job.data,\n      error: {\n        message: job.failedReason || 'Unknown error',\n        stack: job.stacktrace?.join('\\n'),\n      },\n      attempts: job.attemptsMade,\n      failedAt: new Date(job.finishedOn || Date.now()),\n      createdAt: new Date(job.timestamp),\n    }));\n  }\n\n  /**\n   * Pause a queue\n   */\n  async pauseQueue(queueName: QueueName): Promise<void> {\n    const queue = this.getQueue(queueName);\n    await queue.pause();\n    this.logger.warn(`Queue paused: ${queueName}`);\n  }\n\n  /**\n   * Resume a queue\n   */\n  async resumeQueue(queueName: QueueName): Promise<void> {\n    const queue = this.getQueue(queueName);\n    await queue.resume();\n    this.logger.log(`Queue resumed: ${queueName}`);\n  }\n\n  /**\n   * Clean old jobs from a queue\n   */\n  async cleanQueue(\n    queueName: QueueName,\n    grace: number = 86400000,",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/queue/message-queue.service.ts",
+        "start": 418,
+        "end": 454,
+        "startLoc": {
+          "line": 418,
+          "column": 7,
+          "position": 2827
+        },
+        "endLoc": {
+          "line": 454,
+          "column": 2,
+          "position": 3092
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/queue/services/base-queue.service.ts",
+        "start": 285,
+        "end": 319,
+        "startLoc": {
+          "line": 285,
+          "column": 2,
+          "position": 2279
+        },
+        "endLoc": {
+          "line": 319,
+          "column": 2,
+          "position": 2541
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 40,
+      "fragment": "): Promise<void> {\n    const queue = this.getQueue(queueName);\n    await queue.clean(grace, 'completed');\n    await queue.clean(grace * 7, 'failed'); // Keep failed jobs longer\n    this.logger.log(`Queue cleaned: ${queueName}`);\n  }\n\n  /**\n   * Retry a failed job\n   */\n  async retryFailedJob(queueName: QueueName, jobId: string): Promise<void> {\n    const queue = this.getQueue(queueName);\n    const job = await queue.getJob(jobId);\n\n    if (!job) {\n      throw new Error(`Job ${jobId} not found in queue ${queueName}`);\n    }\n\n    await job.retry();\n    this.logger.log(`Job retried: ${jobId} in queue ${queueName}`);\n  }\n\n  /**\n   * Remove a job from a queue\n   */\n  async removeJob(queueName: QueueName, jobId: string): Promise<void> {\n    const queue = this.getQueue(queueName);\n    const job = await queue.getJob(jobId);\n\n    if (!job) {\n      throw new Error(`Job ${jobId} not found in queue ${queueName}`);\n    }\n\n    await job.remove();\n    this.logger.log(`Job removed: ${jobId} from queue ${queueName}`);\n  }\n\n  /**\n   * Close all queues gracefully\n   */",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/infrastructure/queue/message-queue.service.ts",
+        "start": 455,
+        "end": 494,
+        "startLoc": {
+          "line": 455,
+          "column": 3,
+          "position": 3097
+        },
+        "endLoc": {
+          "line": 494,
+          "column": 6,
+          "position": 3430
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/infrastructure/queue/services/base-queue.service.ts",
+        "start": 319,
+        "end": 358,
+        "startLoc": {
+          "line": 319,
+          "column": 9,
+          "position": 2541
+        },
+        "endLoc": {
+          "line": 358,
+          "column": 6,
+          "position": 2874
         }
       }
     },
@@ -44526,42 +44802,6 @@
           "line": 30,
           "column": 9,
           "position": 248
-        }
-      }
-    },
-    {
-      "format": "typescript",
-      "lines": 11,
-      "fragment": ",\n  ): Promise<EmergencyContact> {\n    if (!this.emergencyContactModel.sequelize) {\n      throw new Error('Database connection not available');\n    }\n    const transaction = await this.emergencyContactModel.sequelize.transaction({\n      isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,\n    });\n\n    try {\n      const",
-      "tokens": 0,
-      "firstFile": {
-        "name": "backend/src/emergency-contact/services/contact-management.service.ts",
-        "start": 206,
-        "end": 216,
-        "startLoc": {
-          "line": 206,
-          "column": 26,
-          "position": 1169
-        },
-        "endLoc": {
-          "line": 216,
-          "column": 6,
-          "position": 1252
-        }
-      },
-      "secondFile": {
-        "name": "backend/src/emergency-contact/services/contact-management.service.ts",
-        "start": 114,
-        "end": 124,
-        "startLoc": {
-          "line": 114,
-          "column": 26,
-          "position": 604
-        },
-        "endLoc": {
-          "line": 124,
-          "column": 39,
-          "position": 687
         }
       }
     },
@@ -48763,17 +49003,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 15,
-        "end": 31,
+        "start": 16,
+        "end": 32,
         "startLoc": {
-          "line": 15,
+          "line": 16,
           "column": 3,
-          "position": 92
+          "position": 105
         },
         "endLoc": {
-          "line": 31,
+          "line": 32,
           "column": 6,
-          "position": 204
+          "position": 217
         }
       }
     },
@@ -48995,37 +49235,37 @@
     },
     {
       "format": "typescript",
-      "lines": 25,
-      "fragment": "createTableWithDefaults(\n  queryInterface: QueryInterface,\n  tableName: string,\n  attributes: Record<string, any>,\n  options: {\n    indexes?: IndexDefinition[];\n    paranoid?: boolean;\n    timestamps?: boolean;\n    underscored?: boolean;\n    comment?: string;\n  } = {},\n  transaction?: Transaction,\n): Promise<void> {\n  const {\n    indexes = [],\n    paranoid = false,\n    timestamps = true,\n    underscored = false,\n    comment,\n  } = options;\n\n  // Build complete attribute definition with defaults\n  const completeAttributes: Record<string, any> = {\n    id: {\n      type: Sequelize",
+      "lines": 22,
+      "fragment": "createTableWithDefaults(\n  queryInterface: QueryInterface,\n  tableName: string,\n  attributes: Record<string, any>,\n  options: {\n    indexes?: IndexDefinition[];\n    paranoid?: boolean;\n    timestamps?: boolean;\n    underscored?: boolean;\n    comment?: string;\n  } = {},\n  transaction?: Transaction,\n): Promise<void> {\n  const {\n    indexes = [],\n    paranoid = false,\n    timestamps = true,\n    underscored = false,\n    comment,\n  } = options;\n\n  // Build complete attribute definition with defaults",
       "tokens": 0,
       "firstFile": {
         "name": "backend/src/database/migrations/migration-builders.ts",
         "start": 41,
-        "end": 65,
+        "end": 62,
         "startLoc": {
           "line": 41,
           "column": 2,
           "position": 278
         },
         "endLoc": {
-          "line": 65,
-          "column": 10,
-          "position": 465
+          "line": 62,
+          "column": 53,
+          "position": 435
         }
       },
       "secondFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 18,
-        "end": 42,
+        "start": 19,
+        "end": 40,
         "startLoc": {
-          "line": 18,
+          "line": 19,
           "column": 2,
-          "position": 97
+          "position": 110
         },
         "endLoc": {
-          "line": 42,
-          "column": 10,
-          "position": 285
+          "line": 40,
+          "column": 74,
+          "position": 268
         }
       }
     },
@@ -49051,17 +49291,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 84,
-        "end": 117,
+        "start": 63,
+        "end": 96,
         "startLoc": {
-          "line": 84,
+          "line": 63,
           "column": 10,
-          "position": 370
+          "position": 239
         },
         "endLoc": {
-          "line": 117,
+          "line": 96,
           "column": 4,
-          "position": 476
+          "position": 345
         }
       }
     },
@@ -49087,17 +49327,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/services/table-operations.service.ts",
-        "start": 92,
-        "end": 155,
+        "start": 63,
+        "end": 134,
         "startLoc": {
-          "line": 92,
+          "line": 63,
           "column": 2,
-          "position": 586
+          "position": 410
         },
         "endLoc": {
-          "line": 155,
+          "line": 134,
           "column": 4,
-          "position": 657
+          "position": 526
         }
       }
     },
@@ -49123,17 +49363,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 156,
-        "end": 193,
+        "start": 135,
+        "end": 172,
         "startLoc": {
-          "line": 156,
+          "line": 135,
           "column": 1,
-          "position": 659
+          "position": 528
         },
         "endLoc": {
-          "line": 193,
+          "line": 172,
           "column": 4,
-          "position": 839
+          "position": 708
         }
       }
     },
@@ -49159,17 +49399,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 194,
-        "end": 216,
+        "start": 173,
+        "end": 195,
         "startLoc": {
-          "line": 194,
+          "line": 173,
           "column": 1,
-          "position": 841
+          "position": 710
         },
         "endLoc": {
-          "line": 216,
+          "line": 195,
           "column": 2,
-          "position": 1000
+          "position": 869
         }
       }
     },
@@ -49195,17 +49435,17 @@
       },
       "secondFile": {
         "name": "backend/src/database/migrations/utilities/table-operations.service.ts",
-        "start": 241,
-        "end": 264,
+        "start": 220,
+        "end": 243,
         "startLoc": {
-          "line": 241,
+          "line": 220,
           "column": 1,
-          "position": 1108
+          "position": 977
         },
         "endLoc": {
-          "line": 264,
+          "line": 243,
           "column": 2,
-          "position": 1249
+          "position": 1118
         }
       }
     },
@@ -51510,6 +51750,42 @@
           "line": 108,
           "column": 2,
           "position": 913
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 5,
+      "fragment": ",\n  })\n  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })\n  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })\n  @ApiQuery({ name: 'category'",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/communication/controllers/broadcast.controller.ts",
+        "start": 46,
+        "end": 50,
+        "startLoc": {
+          "line": 46,
+          "column": 43,
+          "position": 412
+        },
+        "endLoc": {
+          "line": 50,
+          "column": 11,
+          "position": 491
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/communication/controllers/message.controller.ts",
+        "start": 55,
+        "end": 59,
+        "startLoc": {
+          "line": 55,
+          "column": 55,
+          "position": 485
+        },
+        "endLoc": {
+          "line": 59,
+          "column": 11,
+          "position": 564
         }
       }
     },
@@ -54066,6 +54342,42 @@
           "line": 215,
           "column": 2,
           "position": 1809
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 5,
+      "fragment": ");\n    const dayNum = d.getUTCDay() || 7;\n    d.setUTCDate(d.getUTCDate() + 4 - dayNum);\n    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));\n    return Math.ceil(((d",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/analytics/services/date-range.service.ts",
+        "start": 91,
+        "end": 95,
+        "startLoc": {
+          "line": 91,
+          "column": 5,
+          "position": 687
+        },
+        "endLoc": {
+          "line": 95,
+          "column": 2,
+          "position": 768
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/mobile/services/notification-analytics.service.ts",
+        "start": 452,
+        "end": 456,
+        "startLoc": {
+          "line": 452,
+          "column": 2,
+          "position": 2893
+        },
+        "endLoc": {
+          "line": 456,
+          "column": 2,
+          "position": 2974
         }
       }
     },
@@ -57347,6 +57659,78 @@
     },
     {
       "format": "typescript",
+      "lines": 4,
+      "fragment": ":\u0000 \u0000R\u0000e\u0000c\u0000o\u0000r\u0000d\u0000<\u0000s\u0000t\u0000r\u0000i\u0000n\u0000g\u0000,\u0000 \u0000u\u0000n\u0000k\u0000n\u0000o\u0000w\u0000n\u0000>\u0000,\u0000\r\u0000\n\u0000 \u0000 \u0000 \u0000 \u0000d\u0000e\u0000s\u0000c\u0000r\u0000i\u0000p\u0000t\u0000i\u0000o\u0000n\u0000?\u0000:\u0000 \u0000s\u0000t\u0000r\u0000i\u0000n\u0000g\u0000\r\u0000\n\u0000 \u0000 \u0000)\u0000:\u0000 \u0000R\u0000e\u0000c\u0000o\u0000r\u0000d\u0000<\u0000s\u0000t\u0000r\u0000i\u0000n\u0000g\u0000,\u0000 \u0000u\u0000n\u0000k\u0000n\u0000o\u0000w\u0000n\u0000>\u0000 \u0000{\u0000\r\u0000\n\u0000 \u0000 \u0000 \u0000 \u0000r\u0000e\u0000t\u0000u\u0000r\u0000n\u0000 \u0000g\u0000e\u0000n\u0000e\u0000r\u0000a\u0000t\u0000e\u0000P",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/config/swagger-schema-generators.service.ts",
+        "start": 190,
+        "end": 193,
+        "startLoc": {
+          "line": 190,
+          "column": 20,
+          "position": 3883
+        },
+        "endLoc": {
+          "line": 193,
+          "column": 2,
+          "position": 3959
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/config/swagger-schema-generators.service.ts",
+        "start": 134,
+        "end": 137,
+        "startLoc": {
+          "line": 134,
+          "column": 22,
+          "position": 2733
+        },
+        "endLoc": {
+          "line": 137,
+          "column": 2,
+          "position": 2809
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 4,
+      "fragment": ":\u0000 \u0000R\u0000e\u0000c\u0000o\u0000r\u0000d\u0000<\u0000s\u0000t\u0000r\u0000i\u0000n\u0000g\u0000,\u0000 \u0000u\u0000n\u0000k\u0000n\u0000o\u0000w\u0000n\u0000>\u0000,\u0000\r\u0000\n\u0000 \u0000 \u0000 \u0000 \u0000d\u0000e\u0000s\u0000c\u0000r\u0000i\u0000p\u0000t\u0000i\u0000o\u0000n\u0000?\u0000:\u0000 \u0000s\u0000t\u0000r\u0000i\u0000n\u0000g\u0000\r\u0000\n\u0000 \u0000 \u0000)\u0000:\u0000 \u0000R\u0000e\u0000c\u0000o\u0000r\u0000d\u0000<\u0000s\u0000t\u0000r\u0000i\u0000n\u0000g\u0000,\u0000 \u0000u\u0000n\u0000k\u0000n\u0000o\u0000w\u0000n\u0000>\u0000 \u0000{\u0000\r\u0000\n\u0000 \u0000 \u0000 \u0000 \u0000r\u0000e\u0000t\u0000u\u0000r\u0000n\u0000 \u0000g\u0000e\u0000n\u0000e\u0000r\u0000a\u0000t\u0000e\u0000P\u0000o\u0000l\u0000y\u0000m\u0000o\u0000r\u0000p\u0000h\u0000i\u0000c\u0000U",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/config/swagger-schema-generators.service.ts",
+        "start": 224,
+        "end": 227,
+        "startLoc": {
+          "line": 224,
+          "column": 28,
+          "position": 4629
+        },
+        "endLoc": {
+          "line": 227,
+          "column": 2,
+          "position": 4707
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/config/swagger-schema-generators.service.ts",
+        "start": 134,
+        "end": 193,
+        "startLoc": {
+          "line": 134,
+          "column": 22,
+          "position": 2733
+        },
+        "endLoc": {
+          "line": 193,
+          "column": 2,
+          "position": 3961
+        }
+      }
+    },
+    {
+      "format": "typescript",
       "lines": 6,
       "fragment": "\u0000)\u0000:\u0000 \u0000v\u0000o\u0000i\u0000d\u0000 \u0000{\u0000\r\u0000\n\u0000 \u0000 \u0000 \u0000 \u0000S\u0000w\u0000a\u0000g\u0000g\u0000e\u0000r\u0000M\u0000o\u0000d\u0000u\u0000l\u0000e\u0000.\u0000s\u0000e\u0000t\u0000u\u0000p\u0000(\u0000p\u0000a\u0000t\u0000h\u0000,\u0000 \u0000a\u0000p\u0000p\u0000,\u0000 \u0000d\u0000o\u0000c\u0000u\u0000m\u0000e\u0000n\u0000t\u0000)\u0000;\u0000\r\u0000\n\u0000 \u0000 \u0000}\u0000\r\u0000\n\u0000\r\u0000\n\u0000 \u0000 \u0000/\u0000*\u0000*\u0000\r\u0000\n\u0000 \u0000 \u0000 \u0000*\u0000 \u0000C",
       "tokens": 0,
@@ -57450,6 +57834,42 @@
           "line": 344,
           "column": 12,
           "position": 2539
+        }
+      }
+    },
+    {
+      "format": "typescript",
+      "lines": 5,
+      "fragment": "host: process.env.REDIS_HOST || 'localhost',\n    port: parseInt(process.env.REDIS_PORT || '6379', 10),\n    password: process.env.REDIS_PASSWORD || undefined,\n    username: process.env.REDIS_USERNAME || undefined,\n    db: parseInt(process.env.REDIS_DB",
+      "tokens": 0,
+      "firstFile": {
+        "name": "backend/src/config/cache.config.ts",
+        "start": 48,
+        "end": 52,
+        "startLoc": {
+          "line": 48,
+          "column": 5,
+          "position": 215
+        },
+        "endLoc": {
+          "line": 52,
+          "column": 9,
+          "position": 290
+        }
+      },
+      "secondFile": {
+        "name": "backend/src/config/queue.config.ts",
+        "start": 57,
+        "end": 61,
+        "startLoc": {
+          "line": 57,
+          "column": 5,
+          "position": 294
+        },
+        "endLoc": {
+          "line": 61,
+          "column": 15,
+          "position": 369
         }
       }
     },

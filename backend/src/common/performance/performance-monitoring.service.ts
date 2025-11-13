@@ -17,6 +17,10 @@ import { performance } from 'perf_hooks';
 import * as os from 'os';
 import * as process from 'process';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // Healthcare-specific Performance Metric Interfaces
 export interface HealthcarePerformanceMetric {
   id: string;
@@ -127,7 +131,6 @@ export interface HealthcareOptimizationRecommendation {
  */
 @Injectable()
 export class HealthcarePerformanceMonitoringService extends EventEmitter {
-  private readonly logger = new Logger('HealthcarePerformanceMonitoring');
   private metrics: HealthcarePerformanceMetric[] = [];
   private queryPerformance: HealthcareQueryPerformance[] = [];
   private systemMetrics: HealthcareSystemMetrics[] = [];
@@ -141,7 +144,16 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
   private readonly phiQueryThreshold = 500; // 500ms for PHI queries
   private alertThresholds = new Map<string, number>();
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private configService: ConfigService
+  ) {
+    super({
+      serviceName: 'HealthcarePerformanceMonitoringService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super();
     this.initializeHealthcareAlertThresholds();
     this.startHealthcareSystemMonitoring();
@@ -630,7 +642,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
 
     // Log critical alerts for HIPAA audit
     if (alert.severity === 'critical') {
-      this.logger.error(
+      this.logError(
         `CRITICAL Healthcare Performance Alert: ${alert.message} | Impact: ${alert.patientImpact} | Time: ${alert.timestamp.toISOString()}`
       );
     }
@@ -706,7 +718,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
         
         this.emit('healthcareSystemMetricsUpdated', metrics);
       } catch (error) {
-        this.logger.error('Healthcare system monitoring error:', error);
+        this.logError('Healthcare system monitoring error:', error);
       }
     }, 30000); // Every 30 seconds
 
@@ -728,7 +740,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
         // Generate aggregated healthcare metrics
         this.generateHealthcareAggregatedMetrics();
       } catch (error) {
-        this.logger.error('Healthcare metric aggregation error:', error);
+        this.logError('Healthcare metric aggregation error:', error);
       }
     }, 60 * 60 * 1000); // Every hour
 
@@ -744,7 +756,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
         // Log performance audit summary for HIPAA compliance
         this.generateHealthcarePerformanceAuditLog();
       } catch (error) {
-        this.logger.error('Healthcare audit logging error:', error);
+        this.logError('Healthcare audit logging error:', error);
       }
     }, 15 * 60 * 1000); // Every 15 minutes
 
@@ -895,7 +907,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
    * Logs HIPAA audit metrics
    */
   private logHIPAAAuditMetric(metric: HealthcarePerformanceMetric): void {
-    this.logger.log(
+    this.logInfo(
       `HIPAA Performance Audit: ${metric.name} | Value: ${metric.value}${metric.unit} | Patient Impact: ${metric.patientImpactLevel} | Time: ${metric.timestamp.toISOString()}`
     );
   }
@@ -914,7 +926,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
       m.patientImpactLevel === 'HIGH' || m.patientImpactLevel === 'CRITICAL'
     );
 
-    this.logger.log(
+    this.logInfo(
       `Healthcare Performance Summary: PHI Operations: ${phiMetrics.length}, High Impact Events: ${highImpactMetrics.length}`
     );
   }
@@ -932,7 +944,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
       a.patientImpact === 'HIGH' || a.patientImpact === 'CRITICAL'
     );
 
-    this.logger.log(
+    this.logInfo(
       `Healthcare Performance Audit: Critical Alerts: ${criticalAlerts.length}, Patient Impact Alerts: ${patientImpactAlerts.length}`
     );
   }
@@ -1026,7 +1038,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
         hipaaCompliance: hipaaAuditMetrics.length >= 0 // HIPAA audit trail is working
       };
     } catch (error) {
-      this.logger.error('Healthcare performance monitoring health check failed:', error);
+      this.logError('Healthcare performance monitoring health check failed:', error);
       return {
         monitoring: false,
         metrics: false,
@@ -1043,7 +1055,7 @@ export class HealthcarePerformanceMonitoringService extends EventEmitter {
   destroy(): void {
     this.monitoringIntervals.forEach(interval => clearInterval(interval));
     this.removeAllListeners();
-    this.logger.log('Healthcare Performance Monitoring Service destroyed');
+    this.logInfo('Healthcare Performance Monitoring Service destroyed');
   }
 }
 

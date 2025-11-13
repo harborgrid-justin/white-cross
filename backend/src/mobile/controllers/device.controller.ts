@@ -5,6 +5,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { NotificationService } from '../services/notification.service';
 import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Device Controller
  * Handles mobile device registration and management
@@ -13,7 +14,7 @@ import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('mobile/devices')
-export class DeviceController {
+export class DeviceController extends BaseController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Post()

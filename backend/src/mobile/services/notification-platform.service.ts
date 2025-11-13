@@ -1,6 +1,13 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DeviceToken, PushNotification } from '../entities';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   NotificationCategory,
   NotificationPlatform,
@@ -66,13 +73,20 @@ export interface PlatformDeliveryResult {
  */
 @Injectable()
 export class NotificationPlatformService implements OnModuleInit {
-  private readonly logger = new Logger(NotificationPlatformService.name);
-
   // Platform clients (initialized when dependencies are installed)
   private firebaseMessaging: any = null;
   private apnsProvider: any = null;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly configService: ConfigService
+  ) {
+    super({
+      serviceName: 'NotificationPlatformService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Initialize platform providers on module startup
@@ -85,9 +99,9 @@ export class NotificationPlatformService implements OnModuleInit {
       // Initialize APNs if configured
       await this.initializeAPNs();
 
-      this.logger.log('NotificationPlatformService initialized successfully');
+      this.logInfo('NotificationPlatformService initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize NotificationPlatformService', error);
+      this.logError('Failed to initialize NotificationPlatformService', error);
     }
   }
 
@@ -112,7 +126,7 @@ export class NotificationPlatformService implements OnModuleInit {
       const admin = await import('firebase-admin').catch(() => null);
 
       if (!admin) {
-        this.logger.warn(
+        this.logWarning(
           'firebase-admin not installed. FCM notifications will not be available. ' +
             'Install with: npm install firebase-admin',
         );
@@ -128,7 +142,7 @@ export class NotificationPlatformService implements OnModuleInit {
         ?.replace(/\\n/g, '\n');
 
       if (!projectId || !clientEmail || !privateKey) {
-        this.logger.warn('Firebase credentials not configured. FCM disabled.');
+        this.logWarning('Firebase credentials not configured. FCM disabled.');
         return;
       }
 
@@ -141,9 +155,9 @@ export class NotificationPlatformService implements OnModuleInit {
       });
 
       this.firebaseMessaging = admin.default.messaging();
-      this.logger.log('Firebase Cloud Messaging initialized');
+      this.logInfo('Firebase Cloud Messaging initialized');
     } catch (error) {
-      this.logger.error('Failed to initialize Firebase', error);
+      this.logError('Failed to initialize Firebase', error);
     }
   }
 
@@ -169,7 +183,7 @@ export class NotificationPlatformService implements OnModuleInit {
       const apn = await import('apn').catch(() => null);
 
       if (!apn) {
-        this.logger.warn(
+        this.logWarning(
           'apn not installed. APNs notifications will not be available. ' +
             'Install with: npm install apn',
         );
@@ -185,7 +199,7 @@ export class NotificationPlatformService implements OnModuleInit {
       );
 
       if (!keyId || !teamId || !token) {
-        this.logger.warn('APNs credentials not configured. APNs disabled.');
+        this.logWarning('APNs credentials not configured. APNs disabled.');
         return;
       }
 
@@ -198,11 +212,11 @@ export class NotificationPlatformService implements OnModuleInit {
         production: production,
       });
 
-      this.logger.log(
+      this.logInfo(
         `APNs initialized (${production ? 'production' : 'development'})`,
       );
     } catch (error) {
-      this.logger.error('Failed to initialize APNs', error);
+      this.logError('Failed to initialize APNs', error);
     }
   }
 
@@ -220,7 +234,7 @@ export class NotificationPlatformService implements OnModuleInit {
     notification: PushNotification,
   ): Promise<PlatformDeliveryResult> {
     try {
-      this.logger.log(
+      this.logInfo(
         `Sending to ${platform}: ${token.token.substring(0, 10)}...`,
       );
 
@@ -235,14 +249,14 @@ export class NotificationPlatformService implements OnModuleInit {
           return await this.sendToWebPush(token, notification);
 
         default:
-          this.logger.warn(`Unsupported platform: ${platform}`);
+          this.logWarning(`Unsupported platform: ${platform}`);
           return {
             success: false,
             error: `Unsupported platform: ${platform}`,
           };
       }
     } catch (error) {
-      this.logger.error(`Failed to send to ${platform}`, error);
+      this.logError(`Failed to send to ${platform}`, error);
       return {
         success: false,
         error: String(error),
@@ -263,7 +277,7 @@ export class NotificationPlatformService implements OnModuleInit {
     notification: PushNotification,
   ): Promise<PlatformDeliveryResult> {
     if (!this.firebaseMessaging) {
-      this.logger.warn('Firebase not initialized, skipping FCM delivery');
+      this.logWarning('Firebase not initialized, skipping FCM delivery');
       return {
         success: false,
         error: 'Firebase not initialized',
@@ -293,14 +307,14 @@ export class NotificationPlatformService implements OnModuleInit {
 
       const response = await this.firebaseMessaging.send(message);
 
-      this.logger.log(`FCM delivery successful: ${response}`);
+      this.logInfo(`FCM delivery successful: ${response}`);
 
       return {
         success: true,
         response: { messageId: response },
       };
     } catch (error: any) {
-      this.logger.error('FCM delivery failed', error);
+      this.logError('FCM delivery failed', error);
 
       // Check for invalid token errors
       const invalidTokenErrors = [
@@ -332,7 +346,7 @@ export class NotificationPlatformService implements OnModuleInit {
     notification: PushNotification,
   ): Promise<PlatformDeliveryResult> {
     if (!this.apnsProvider) {
-      this.logger.warn('APNs not initialized, skipping APNs delivery');
+      this.logWarning('APNs not initialized, skipping APNs delivery');
       return {
         success: false,
         error: 'APNs not initialized',
@@ -394,14 +408,14 @@ export class NotificationPlatformService implements OnModuleInit {
         };
       }
 
-      this.logger.log('APNs delivery successful');
+      this.logInfo('APNs delivery successful');
 
       return {
         success: true,
         response: result.sent,
       };
     } catch (error) {
-      this.logger.error('APNs delivery failed', error);
+      this.logError('APNs delivery failed', error);
 
       return {
         success: false,
@@ -428,7 +442,7 @@ export class NotificationPlatformService implements OnModuleInit {
       const webPush = await import('web-push').catch(() => null);
 
       if (!webPush) {
-        this.logger.warn('web-push not installed');
+        this.logWarning('web-push not installed');
         return {
           success: false,
           error: 'web-push not installed',
@@ -444,7 +458,7 @@ export class NotificationPlatformService implements OnModuleInit {
       );
 
       if (!vapidPublicKey || !vapidPrivateKey) {
-        this.logger.warn('VAPID keys not configured');
+        this.logWarning('VAPID keys not configured');
         return {
           success: false,
           error: 'VAPID keys not configured',
@@ -472,14 +486,14 @@ export class NotificationPlatformService implements OnModuleInit {
         payload,
       );
 
-      this.logger.log('Web Push delivery successful');
+      this.logInfo('Web Push delivery successful');
 
       return {
         success: true,
         response,
       };
     } catch (error: any) {
-      this.logger.error('Web Push delivery failed', error);
+      this.logError('Web Push delivery failed', error);
 
       const isInvalidToken = error.statusCode === 410; // Gone - subscription expired
 

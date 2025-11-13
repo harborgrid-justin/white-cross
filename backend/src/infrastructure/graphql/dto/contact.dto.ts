@@ -22,6 +22,7 @@ import {
   BaseHealthcareUpdateInputDto,
   BaseHealthcareFilterInputDto
 } from './base/base-healthcare.dto';
+import { BaseContactFieldsDto } from './base/base-contact-fields.dto';
 
 /**
  * Contact Type Enum for GraphQL

@@ -9,12 +9,13 @@
  * Environment Configuration:
  * BCRYPT_SALT_ROUNDS=12 (recommended for healthcare applications)
  */
-import { BadRequestException, ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User, UserCreationAttributes, UserRole } from '@/database';
+import { BaseService } from '../common/base/base.service';
 import { AuthChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
@@ -24,8 +25,7 @@ import { TokenBlacklistService } from './services/token-blacklist.service';
 import { SafeUser } from './types/auth.types';
 
 @Injectable()
-export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
+export class AuthService extends BaseService {
   private readonly saltRounds: number;
   private readonly accessTokenExpiry = '15m';
   private readonly refreshTokenExpiry = '7d';
@@ -37,6 +37,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly tokenBlacklistService: TokenBlacklistService,
   ) {
+    super('AuthService');
     // SECURITY UPDATE: Configurable salt rounds, default increased to 12 for healthcare security
     this.saltRounds = parseInt(
       this.configService.get<string>('BCRYPT_SALT_ROUNDS', '12'),
@@ -92,7 +93,7 @@ export class AuthService {
         isActive: true,
       } as UserCreationAttributes);
 
-      this.logger.log(`User registered successfully: ${email}`);
+      this.logInfo(`User registered successfully: ${email}`);
 
       // Generate tokens
       const tokens = await this.generateTokens(user);
@@ -104,9 +105,9 @@ export class AuthService {
         expiresIn: 900, // 15 minutes in seconds
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to register user: ${error.message}`,
-        error.stack,
+        error instanceof Error ? error.stack : undefined,
       );
       throw new BadRequestException('Failed to register user');
     }
@@ -149,7 +150,7 @@ export class AuthService {
     // Reset failed login attempts and update last login
     await user.resetFailedLoginAttempts();
 
-    this.logger.log(`User logged in successfully: ${email}`);
+    this.logInfo(`User logged in successfully: ${email}`);
 
     // Generate tokens
     const tokens = await this.generateTokens(user);
@@ -283,7 +284,7 @@ export class AuthService {
     // CRITICAL SECURITY: Invalidate all existing tokens after password change
     await this.tokenBlacklistService.blacklistAllUserTokens(userId);
 
-    this.logger.log(
+    this.logInfo(
       `Password changed successfully for user: ${user.email} - All tokens invalidated`,
     );
 
@@ -319,7 +320,7 @@ export class AuthService {
     user.mustChangePassword = true; // Force user to change password on next login
     await user.save();
 
-    this.logger.log(
+    this.logInfo(
       `Password reset for user: ${user.email} by admin: ${adminUserId || 'system'}`,
     );
 
@@ -343,7 +344,7 @@ export class AuthService {
         role,
       } as UserCreationAttributes);
 
-      this.logger.log(`Test user created: ${testEmail}`);
+      this.logInfo(`Test user created: ${testEmail}`);
     }
 
     return user;

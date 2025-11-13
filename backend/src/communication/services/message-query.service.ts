@@ -15,6 +15,7 @@ import {
 } from '../types/message-response.types';
 import { MarkAsReadResult, UnreadCountResult } from '../types/index';
 
+import { BaseService } from '../../common/base';
 /**
  * MessageQueryService
  *
@@ -28,9 +29,7 @@ import { MarkAsReadResult, UnreadCountResult } from '../types/index';
  * - Handle participant validation for queries
  */
 @Injectable()
-export class MessageQueryService {
-  private readonly logger = new Logger(MessageQueryService.name);
-
+export class MessageQueryService extends BaseService {
   constructor(
     @InjectModel(Message) private messageModel: typeof Message,
     @InjectModel(MessageRead) private messageReadModel: typeof MessageRead,
@@ -170,7 +169,7 @@ export class MessageQueryService {
    * Mark messages as read
    */
   async markMessagesAsRead(dto: MarkAsReadDto, userId: string): Promise<MarkAsReadResult> {
-    this.logger.log(`Marking ${dto.messageIds.length} messages as read for user ${userId}`);
+    this.logInfo(`Marking ${dto.messageIds.length} messages as read for user ${userId}`);
 
     const readPromises = dto.messageIds.map((messageId) =>
       this.messageReadModel.findOrCreate({
@@ -202,7 +201,7 @@ export class MessageQueryService {
     dto: MarkConversationAsReadDto,
     userId: string,
   ): Promise<MarkConversationAsReadResponse> {
-    this.logger.log(`Marking conversation ${dto.conversationId} as read for user ${userId}`);
+    this.logInfo(`Marking conversation ${dto.conversationId} as read for user ${userId}`);
 
     // Get all unread messages in the conversation
     const messages = await this.messageModel.findAll({
@@ -255,7 +254,7 @@ export class MessageQueryService {
    * Get unread message count for a user
    */
   async getUnreadCount(userId: string, conversationId?: string): Promise<UnreadCountResult> {
-    this.logger.log(`Getting unread count for user ${userId}`);
+    this.logInfo(`Getting unread count for user ${userId}`);
 
     const where: WhereOptions = {
       senderId: { [Op.ne]: userId }, // Exclude own messages

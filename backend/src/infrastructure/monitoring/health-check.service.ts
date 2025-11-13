@@ -6,7 +6,9 @@
  * including database, cache, WebSocket, job queues, and external APIs.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { ConfigService } from '@nestjs/config';
@@ -56,9 +58,7 @@ interface CircuitBreakerServiceInterface {
  * ```
  */
 @Injectable()
-export class HealthCheckService {
-  private readonly logger = new Logger(HealthCheckService.name);
-
+export class HealthCheckService extends BaseService {
   // Optional service dependencies
   private cacheService?: CacheServiceInterface;
   private websocketService?: WebSocketServiceInterface;
@@ -84,22 +84,22 @@ export class HealthCheckService {
    */
   setCacheService(cacheService: CacheServiceInterface | undefined): void {
     this.cacheService = cacheService;
-    this.logger.log('Cache service registered for health monitoring');
+    this.logInfo('Cache service registered for health monitoring');
   }
 
   setWebSocketService(websocketService: WebSocketServiceInterface | undefined): void {
     this.websocketService = websocketService;
-    this.logger.log('WebSocket service registered for health monitoring');
+    this.logInfo('WebSocket service registered for health monitoring');
   }
 
   setQueueManagerService(queueManagerService: MessageQueueServiceInterface | undefined): void {
     this.queueManagerService = queueManagerService;
-    this.logger.log('Queue manager service registered for health monitoring');
+    this.logInfo('Queue manager service registered for health monitoring');
   }
 
   setCircuitBreakerService(circuitBreakerService: CircuitBreakerServiceInterface | undefined): void {
     this.circuitBreakerService = circuitBreakerService;
-    this.logger.log('Circuit breaker service registered for health monitoring');
+    this.logInfo('Circuit breaker service registered for health monitoring');
   }
 
   /**
@@ -153,7 +153,7 @@ export class HealthCheckService {
         },
       };
     } catch (error) {
-      this.logger.error('Database health check failed', error);
+      this.logError('Database health check failed', error);
       return {
         status: HealthStatus.UNHEALTHY,
         message: 'Database connection failed',
@@ -233,7 +233,7 @@ export class HealthCheckService {
         },
       };
     } catch (error) {
-      this.logger.error('Redis health check failed', error);
+      this.logError('Redis health check failed', error);
       return {
         status: HealthStatus.UNHEALTHY,
         message: 'Redis health check failed',
@@ -286,7 +286,7 @@ export class HealthCheckService {
         },
       };
     } catch (error) {
-      this.logger.error('WebSocket health check failed', error);
+      this.logError('WebSocket health check failed', error);
       return {
         status: HealthStatus.DEGRADED,
         message: 'WebSocket server not fully operational',
@@ -367,7 +367,7 @@ export class HealthCheckService {
         },
       };
     } catch (error) {
-      this.logger.error('Job queue health check failed', error);
+      this.logError('Job queue health check failed', error);
       return {
         status: HealthStatus.DEGRADED,
         message: 'Job queue health check failed',
@@ -432,7 +432,7 @@ export class HealthCheckService {
         },
       };
     } catch (error) {
-      this.logger.error('External API health check failed', error);
+      this.logError('External API health check failed', error);
       return {
         status: HealthStatus.DEGRADED,
         message: 'External API health check failed',

@@ -15,6 +15,10 @@ import { Sequelize, QueryInterface, Transaction } from 'sequelize';
 import * as crypto from 'crypto';
 import { EventEmitter } from 'events';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Migration definition interface
  */
@@ -83,7 +87,6 @@ export interface MigrationGraph {
  */
 @Injectable()
 export class MigrationVersionControlService extends EventEmitter {
-  private readonly logger = new Logger(MigrationVersionControlService.name);
   private migrations = new Map<string, Migration>();
   private branches = new Map<string, MigrationBranch>();
   private checkpoints = new Map<string, MigrationCheckpoint>();
@@ -118,7 +121,7 @@ export class MigrationVersionControlService extends EventEmitter {
     };
 
     this.migrations.set(id, fullMigration);
-    this.logger.log(`Migration registered: ${id} - ${migration.name}`);
+    this.logInfo(`Migration registered: ${id} - ${migration.name}`);
 
     return id;
   }
@@ -222,7 +225,7 @@ export class MigrationVersionControlService extends EventEmitter {
           result.failed.push(id);
           result.success = false;
 
-          this.logger.error(`Migration failed: ${id}`, error);
+          this.logError(`Migration failed: ${id}`, error);
           this.emit('migrationFailed', { migration, error });
 
           if (!options.continueOnError) {
@@ -268,7 +271,7 @@ export class MigrationVersionControlService extends EventEmitter {
     };
 
     this.branches.set(name, branch);
-    this.logger.log(`Migration branch created: ${name}`);
+    this.logInfo(`Migration branch created: ${name}`);
 
     return branch;
   }
@@ -284,7 +287,7 @@ export class MigrationVersionControlService extends EventEmitter {
 
     if (!branch.migrations.includes(migrationId)) {
       branch.migrations.push(migrationId);
-      this.logger.log(`Migration ${migrationId} added to branch ${branchName}`);
+      this.logInfo(`Migration ${migrationId} added to branch ${branchName}`);
     }
   }
 
@@ -313,7 +316,7 @@ export class MigrationVersionControlService extends EventEmitter {
     branch.mergedAt = new Date();
     branch.mergedInto = targetBranch;
 
-    this.logger.log(`Branch ${branchName} merged into ${targetBranch}`);
+    this.logInfo(`Branch ${branchName} merged into ${targetBranch}`);
     this.emit('branchMerged', { branch, target });
 
     return { success: true, conflicts: [] };
@@ -376,7 +379,7 @@ export class MigrationVersionControlService extends EventEmitter {
       await this.autoResolveConflict(conflict);
     }
 
-    this.logger.log(`Conflict resolved: ${conflict.migration1} vs ${conflict.migration2} - ${resolution}`);
+    this.logInfo(`Conflict resolved: ${conflict.migration1} vs ${conflict.migration2} - ${resolution}`);
     this.emit('conflictResolved', conflict);
   }
 
@@ -408,7 +411,7 @@ export class MigrationVersionControlService extends EventEmitter {
       }
 
       await transaction.commit();
-      this.logger.log(`Rolled back ${toRollback.length} migrations to ${migrationId}`);
+      this.logInfo(`Rolled back ${toRollback.length} migrations to ${migrationId}`);
 
     } catch (error) {
       await transaction.rollback();
@@ -430,7 +433,7 @@ export class MigrationVersionControlService extends EventEmitter {
     };
 
     this.checkpoints.set(checkpoint.id, checkpoint);
-    this.logger.log(`Migration checkpoint created: ${checkpoint.id} - ${name}`);
+    this.logInfo(`Migration checkpoint created: ${checkpoint.id} - ${name}`);
 
     return checkpoint;
   }
@@ -448,7 +451,7 @@ export class MigrationVersionControlService extends EventEmitter {
     const lastMigrationId = checkpoint.migrations[checkpoint.migrations.length - 1];
     await this.rollbackTo(lastMigrationId);
 
-    this.logger.log(`Rolled back to checkpoint: ${checkpointId}`);
+    this.logInfo(`Rolled back to checkpoint: ${checkpointId}`);
   }
 
   // ============================================================================
@@ -497,7 +500,7 @@ export class MigrationVersionControlService extends EventEmitter {
       });
     } catch (error) {
       // Table might already exist
-      this.logger.warn('Migration table initialization skipped (may already exist)');
+      this.logWarning('Migration table initialization skipped (may already exist)');
     }
   }
 

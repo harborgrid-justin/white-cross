@@ -5,25 +5,32 @@
  * HIPAA Compliance: All vital signs data is PHI and requires audit logging
  */
 
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { VitalSigns   } from "../../database/models";
 import { Student   } from "../../database/models";
 
 @Injectable()
-export class VitalsService {
-  private readonly logger = new Logger(VitalsService.name);
-
+export class VitalsService extends BaseService {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(VitalSigns)
     private readonly vitalSignsModel: typeof VitalSigns,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super({
+      serviceName: 'VitalsService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async recordVitals(data: any): Promise<VitalSigns> {
-    this.logger.log(`Recording vitals for student ${data.studentId}`);
+    this.logInfo(`Recording vitals for student ${data.studentId}`);
 
     // Verify student exists
     const student = await this.studentModel.findByPk(data.studentId);
@@ -99,7 +106,7 @@ export class VitalsService {
       abnormalFlags,
     });
 
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Vital signs recorded for student ${data.studentId}`,
     );
     return vital;
@@ -109,7 +116,7 @@ export class VitalsService {
     studentId: string,
     limit?: number,
   ): Promise<VitalSigns[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting vitals history for student ${studentId}, limit: ${limit || 'all'}`,
     );
 
@@ -132,7 +139,7 @@ export class VitalsService {
   }
 
   async detectAnomalies(studentId: string): Promise<any> {
-    this.logger.log(`Detecting vital sign anomalies for student ${studentId}`);
+    this.logInfo(`Detecting vital sign anomalies for student ${studentId}`);
 
     const history = await this.getVitalsHistory(studentId, 10); // Last 10 measurements
 
@@ -184,7 +191,7 @@ export class VitalsService {
    * Get latest vital signs for a student
    */
   async getLatest(studentId: string): Promise<VitalSigns | null> {
-    this.logger.log(`Getting latest vitals for student ${studentId}`);
+    this.logInfo(`Getting latest vitals for student ${studentId}`);
 
     const history = await this.getVitalsHistory(studentId, 1);
     return history[0] || null;
@@ -194,7 +201,7 @@ export class VitalsService {
    * Get growth chart data (height/weight over time)
    */
   async getGrowthChart(studentId: string): Promise<any> {
-    this.logger.log(`Getting growth chart data for student ${studentId}`);
+    this.logInfo(`Getting growth chart data for student ${studentId}`);
 
     const vitals = await this.vitalSignsModel.findAll({
       where: {
@@ -233,7 +240,7 @@ export class VitalsService {
     gender: 'M' | 'F',
   ): any {
     // This is a simplified version - real implementation would use CDC growth charts
-    this.logger.log(
+    this.logInfo(
       `Calculating BMI percentile for BMI ${bmi}, age ${ageInMonths} months, gender ${gender}`,
     );
 
@@ -273,7 +280,7 @@ export class VitalsService {
     metric: string,
     days: number = 30,
   ): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Getting ${metric} trends for student ${studentId} over ${days} days`,
     );
 
@@ -322,7 +329,7 @@ export class VitalsService {
     studentId?: string,
     days: number = 7,
   ): Promise<VitalSigns[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting abnormal vitals${studentId ? ` for student ${studentId}` : ''} over ${days} days`,
     );
 
@@ -356,7 +363,7 @@ export class VitalsService {
    * Get vital signs summary statistics
    */
   async getVitalsSummary(studentId: string): Promise<any> {
-    this.logger.log(`Getting vitals summary for student ${studentId}`);
+    this.logInfo(`Getting vitals summary for student ${studentId}`);
 
     const vitals = await this.vitalSignsModel.findAll({
       where: { studentId },

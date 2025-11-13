@@ -8,10 +8,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { AlertPreferences, DeliveryChannel } from '@/database';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class AlertPreferencesService {
-  private readonly logger = new Logger(AlertPreferencesService.name);
-
+export class AlertPreferencesService extends BaseService {
   constructor(
     @InjectModel(AlertPreferences)
     private readonly alertPreferencesModel: typeof AlertPreferences,
@@ -51,7 +50,7 @@ export class AlertPreferencesService {
     // Update the existing preferences
     await existing.update(preferences);
 
-    this.logger.log(`Updated alert preferences for user ${userId}`);
+    this.logInfo(`Updated alert preferences for user ${userId}`);
 
     return existing;
   }
@@ -125,7 +124,7 @@ export class AlertPreferencesService {
     }
 
     await prefs.save();
-    this.logger.log(`${enabled ? 'Enabled' : 'Disabled'} ${channel} for user ${userId}`);
+    this.logInfo(`${enabled ? 'Enabled' : 'Disabled'} ${channel} for user ${userId}`);
     
     return prefs;
   }
@@ -149,7 +148,7 @@ export class AlertPreferencesService {
     };
 
     await prefs.save();
-    this.logger.log(`Set quiet hours for user ${userId}: ${startTime} - ${endTime}`);
+    this.logInfo(`Set quiet hours for user ${userId}: ${startTime} - ${endTime}`);
     
     return prefs;
   }
@@ -166,7 +165,7 @@ export class AlertPreferencesService {
     };
 
     await prefs.save();
-    this.logger.log(`Disabled quiet hours for user ${userId}`);
+    this.logInfo(`Disabled quiet hours for user ${userId}`);
     
     return prefs;
   }

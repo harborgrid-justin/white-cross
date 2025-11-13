@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Logger,
   Param,
   ParseUUIDPipe,
   Post,
@@ -12,8 +11,17 @@ import {
   Query,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { BaseController } from '../common/base/base-controller';
 import { HealthRecordAuditInterceptor } from '../health-record/interceptors/health-record-audit.interceptor';
 import { MedicationService } from './services/medication.service';
 import { CreateMedicationDto } from './dto/create-medication.dto';
@@ -50,10 +58,10 @@ import { UpdateMedicationDto } from './dto/update-medication.dto';
 @ApiTags('medications')
 @Controller('medications')
 @ApiBearerAuth()
-export class MedicationController {
-  private readonly logger = new Logger(MedicationController.name);
-
-  constructor(private readonly medicationService: MedicationService) {}
+export class MedicationController extends BaseController {
+  constructor(private readonly medicationService: MedicationService) {
+    super('MedicationController');
+  }
 
   /**
    * List all medications with pagination and filtering
@@ -145,7 +153,7 @@ export class MedicationController {
     description: 'Internal server error - Database or system failure',
   })
   async list(@Query() query: ListMedicationsQueryDto) {
-    this.logger.log(
+    this.logInfo(
       `GET /medications - page=${query.page}, limit=${query.limit}, search=${query.search}`,
     );
     return this.medicationService.getMedications(query);
@@ -165,7 +173,7 @@ export class MedicationController {
     description: 'Medication statistics retrieved successfully',
   })
   async getStats() {
-    this.logger.log('GET /medications/stats');
+    this.logInfo('GET /medications/stats');
     return this.medicationService.getMedicationStats();
   }
 
@@ -224,9 +232,7 @@ export class MedicationController {
     description: 'Internal server error',
   })
   async create(@Body() createDto: CreateMedicationDto) {
-    this.logger.log(
-      `POST /medications - Creating medication: ${createDto.medicationName}`,
-    );
+    this.logInfo(`POST /medications - Creating medication: ${createDto.medicationName}`);
     return this.medicationService.createMedication(createDto);
   }
 
@@ -262,7 +268,7 @@ export class MedicationController {
     description: 'Internal server error',
   })
   async getById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    this.logger.log(`GET /medications/${id}`);
+    this.logInfo(`GET /medications/${id}`);
     return this.medicationService.getMedicationById(id);
   }
 
@@ -311,7 +317,7 @@ export class MedicationController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateDto: UpdateMedicationDto,
   ) {
-    this.logger.log(`PUT /medications/${id}`);
+    this.logInfo(`PUT /medications/${id}`);
     return this.medicationService.updateMedication(id, updateDto);
   }
 
@@ -361,9 +367,7 @@ export class MedicationController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() deactivateDto: DeactivateMedicationDto,
   ) {
-    this.logger.log(
-      `POST /medications/${id}/deactivate - Reason: ${deactivateDto.reason}`,
-    );
+    this.logInfo(`POST /medications/${id}/deactivate - Reason: ${deactivateDto.reason}`);
     return this.medicationService.deactivateMedication(id, deactivateDto);
   }
 
@@ -403,7 +407,7 @@ export class MedicationController {
     description: 'Internal server error',
   })
   async activate(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    this.logger.log(`POST /medications/${id}/activate`);
+    this.logInfo(`POST /medications/${id}/activate`);
     return this.medicationService.activateMedication(id);
   }
 
@@ -465,13 +469,7 @@ export class MedicationController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
   ) {
-    this.logger.log(
-      `GET /medications/student/${studentId} - page=${page}, limit=${limit}`,
-    );
-    return this.medicationService.getMedicationsByStudent(
-      studentId,
-      Number(page),
-      Number(limit),
-    );
+    this.logInfo(`GET /medications/student/${studentId} - page=${page}, limit=${limit}`);
+    return this.medicationService.getMedicationsByStudent(studentId, Number(page), Number(limit));
   }
 }

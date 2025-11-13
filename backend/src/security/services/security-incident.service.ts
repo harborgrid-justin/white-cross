@@ -11,14 +11,13 @@ import { IncidentFilterDto } from '../dto/security-incident.dto';
 import { SecurityCreateIncidentDto } from '../dto/security-incident.dto';
 import { UpdateIncidentStatusDto } from '../dto/security-incident.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Security Incident Service
  * Handles detection, logging, and response to security incidents
  */
 @Injectable()
-export class SecurityIncidentService {
-  private readonly logger = new Logger(SecurityIncidentService.name);
-
+export class SecurityIncidentService extends BaseService {
   constructor(
     @InjectModel(SecurityIncidentEntity)
     private readonly incidentModel: typeof SecurityIncidentEntity,
@@ -45,7 +44,7 @@ export class SecurityIncidentService {
         status: IncidentStatus.DETECTED,
       });
 
-      this.logger.error('Security incident reported', {
+      this.logError('Security incident reported', {
         incidentId: incident.id,
         type: incident.type,
         severity: incident.severity,
@@ -56,7 +55,7 @@ export class SecurityIncidentService {
 
       return incident;
     } catch (error) {
-      this.logger.error('Error reporting security incident', { error });
+      this.logError('Error reporting security incident', { error });
       throw error;
     }
   }
@@ -115,7 +114,7 @@ export class SecurityIncidentService {
           break;
       }
 
-      this.logger.log('Auto-response executed', {
+      this.logInfo('Auto-response executed', {
         incidentId: incident.id,
         actionsTaken,
         notificationsSent,
@@ -129,7 +128,7 @@ export class SecurityIncidentService {
         systemChanges,
       };
     } catch (error) {
-      this.logger.error('Error in auto-response', {
+      this.logError('Error in auto-response', {
         error,
         incidentId: incident.id,
       });
@@ -158,13 +157,13 @@ export class SecurityIncidentService {
         expiresAt,
         isActive: true,
       });
-      this.logger.warn('Temporary IP blacklist added', {
+      this.logWarning('Temporary IP blacklist added', {
         ipAddress,
         incidentId,
         expiresAt,
       });
     } catch (error) {
-      this.logger.error('Error adding temporary blacklist', {
+      this.logError('Error adding temporary blacklist', {
         error,
         ipAddress,
       });
@@ -182,14 +181,14 @@ export class SecurityIncidentService {
       // In production, send email/SMS to security team
       // Use communication service for multi-channel alerts
 
-      this.logger.warn('Security team notified', {
+      this.logWarning('Security team notified', {
         incidentId: incident.id,
         urgency,
         type: incident.type,
         severity: incident.severity,
       });
     } catch (error) {
-      this.logger.error('Error notifying security team', { error });
+      this.logError('Error notifying security team', { error });
     }
   }
 
@@ -213,7 +212,7 @@ export class SecurityIncidentService {
       // If more than 3 similar incidents in the last hour, consider it a pattern
       return similarIncidents > 3;
     } catch (error) {
-      this.logger.error('Error checking incident pattern', { error });
+      this.logError('Error checking incident pattern', { error });
       return false;
     }
   }
@@ -244,7 +243,7 @@ export class SecurityIncidentService {
         limit: 100,
       });
     } catch (error) {
-      this.logger.error('Error fetching incidents', { error });
+      this.logError('Error fetching incidents', { error });
       return [];
     }
   }
@@ -256,7 +255,7 @@ export class SecurityIncidentService {
     try {
       return await this.incidentModel.findByPk(id);
     } catch (error) {
-      this.logger.error('Error fetching incident', { error, id });
+      this.logError('Error fetching incident', { error, id });
       return null;
     }
   }
@@ -272,7 +271,7 @@ export class SecurityIncidentService {
       const incident = await this.incidentModel.findByPk(incidentId);
 
       if (!incident) {
-        this.logger.warn('Incident not found', { incidentId });
+        this.logWarning('Incident not found', { incidentId });
         return null;
       }
 
@@ -284,7 +283,7 @@ export class SecurityIncidentService {
 
       await incident.save();
 
-      this.logger.log('Incident status updated', {
+      this.logInfo('Incident status updated', {
         incidentId,
         status: dto.status,
         hasResolution: !!dto.resolution,
@@ -292,7 +291,7 @@ export class SecurityIncidentService {
 
       return incident;
     } catch (error) {
-      this.logger.error('Error updating incident status', {
+      this.logError('Error updating incident status', {
         error,
         incidentId,
       });
@@ -334,7 +333,7 @@ export class SecurityIncidentService {
 
       const criticalIncidents = incidents.filter((i) => i.severity === IncidentSeverity.CRITICAL);
 
-      this.logger.log('Incident report generated', {
+      this.logInfo('Incident report generated', {
         startDate,
         endDate,
         totalIncidents: incidents.length,
@@ -348,7 +347,7 @@ export class SecurityIncidentService {
         criticalIncidents,
       };
     } catch (error) {
-      this.logger.error('Error generating incident report', { error });
+      this.logError('Error generating incident report', { error });
       throw error;
     }
   }
@@ -402,7 +401,7 @@ export class SecurityIncidentService {
         highUnresolved,
       };
     } catch (error) {
-      this.logger.error('Error getting incident statistics', { error });
+      this.logError('Error getting incident statistics', { error });
       throw error;
     }
   }

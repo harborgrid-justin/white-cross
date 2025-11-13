@@ -3,6 +3,13 @@ import { DiscoveryService, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { SmartGarbageCollectionService } from './smart-garbage-collection.service';
 import { MemoryLeakDetectionService } from './memory-leak-detection.service';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   CleanableProvider,
   GCConditionFunction,
@@ -40,7 +47,6 @@ interface OptimizationResult {
 export class GCOptimizationService
   implements OnModuleInit, OnApplicationShutdown
 {
-  private readonly logger = new Logger(GCOptimizationService.name);
   private gcTimer: NodeJS.Timeout | null = null;
   private readonly gcStrategies = new Map<string, GCStrategy>();
   private readonly gcMetrics: GCMetrics = {
@@ -56,22 +62,29 @@ export class GCOptimizationService
   private isOptimizing = false;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
     private readonly smartGCService: SmartGarbageCollectionService,
     private readonly leakDetectionService: MemoryLeakDetectionService,
   ) {
+    super({
+      serviceName: 'GCOptimizationService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.initializeDefaultStrategies();
   }
 
   async onModuleInit() {
-    this.logger.log('Initializing GC Optimization Service');
+    this.logInfo('Initializing GC Optimization Service');
     await this.discoverGCProviders();
     this.startOptimizationScheduler();
   }
 
   async onApplicationShutdown() {
-    this.logger.log('Shutting down GC Optimization Service');
+    this.logInfo('Shutting down GC Optimization Service');
     if (this.gcTimer) {
       clearInterval(this.gcTimer);
     }
@@ -90,17 +103,17 @@ export class GCOptimizationService
       for (const wrapper of allWrappers) {
         if (this.isGCOptimizable(wrapper)) {
           this.gcProviders.add(wrapper.instance);
-          this.logger.debug(
+          this.logDebug(
             `Discovered GC optimizable provider: ${wrapper.name}`,
           );
         }
       }
 
-      this.logger.log(
+      this.logInfo(
         `Discovered ${this.gcProviders.size} GC optimizable providers`,
       );
     } catch (error) {
-      this.logger.error('Error discovering GC providers', error);
+      this.logError('Error discovering GC providers', error);
     }
   }
 
@@ -222,7 +235,7 @@ export class GCOptimizationService
       await this.performOptimization();
     }, interval);
 
-    this.logger.log(
+    this.logInfo(
       `GC optimization scheduler started (interval: ${interval}ms)`,
     );
   }
@@ -234,7 +247,7 @@ export class GCOptimizationService
     options?: Partial<GCOptimizationOptions>,
   ): Promise<OptimizationResult[]> {
     if (this.isOptimizing) {
-      this.logger.debug('Optimization already in progress, skipping');
+      this.logDebug('Optimization already in progress, skipping');
       return [];
     }
 
@@ -273,7 +286,7 @@ export class GCOptimizationService
             };
 
             results.push(result);
-            this.logger.debug(
+            this.logDebug(
               `GC strategy '${name}' freed ${memoryFreed} bytes in ${executionTime}ms`,
             );
           }
@@ -288,7 +301,7 @@ export class GCOptimizationService
             error: error.message,
           };
           results.push(result);
-          this.logger.error(`GC strategy '${name}' failed:`, error);
+          this.logError(`GC strategy '${name}' failed:`, error);
         }
       }
 
@@ -305,11 +318,11 @@ export class GCOptimizationService
       const memoryAfter = process.memoryUsage();
       const totalMemoryFreed = memoryBefore.heapUsed - memoryAfter.heapUsed;
 
-      this.logger.log(
+      this.logInfo(
         `GC optimization completed: ${totalMemoryFreed} bytes freed in ${totalTime}ms`,
       );
     } catch (error) {
-      this.logger.error('Error during GC optimization:', error);
+      this.logError('Error during GC optimization:', error);
     } finally {
       this.isOptimizing = false;
     }
@@ -329,7 +342,7 @@ export class GCOptimizationService
           await provider.cleanup();
         }
       } catch (error) {
-        this.logger.error(`Error clearing cache for provider:`, error);
+        this.logError(`Error clearing cache for provider:`, error);
       }
     }
   }
@@ -346,7 +359,7 @@ export class GCOptimizationService
           await provider.optimize();
         }
       } catch (error) {
-        this.logger.error(`Error compacting provider data:`, error);
+        this.logError(`Error compacting provider data:`, error);
       }
     }
   }
@@ -381,7 +394,7 @@ export class GCOptimizationService
         await provider.clearCache();
       }
     } catch (error) {
-      this.logger.error(`Error optimizing provider:`, error);
+      this.logError(`Error optimizing provider:`, error);
     }
   }
 
@@ -396,7 +409,7 @@ export class GCOptimizationService
           await provider.lightCleanup();
         }
       } catch (error) {
-        this.logger.error(`Error during lightweight cleanup:`, error);
+        this.logError(`Error during lightweight cleanup:`, error);
       }
     }
   }
@@ -431,7 +444,7 @@ export class GCOptimizationService
    * Perform final optimization before shutdown
    */
   private async performFinalOptimization(): Promise<void> {
-    this.logger.log('Performing final GC optimization before shutdown');
+    this.logInfo('Performing final GC optimization before shutdown');
 
     // Force cleanup of all providers
     await this.clearProviderCaches();
@@ -441,7 +454,7 @@ export class GCOptimizationService
       global.gc();
     }
 
-    this.logger.log('Final GC optimization completed');
+    this.logInfo('Final GC optimization completed');
   }
 
   /**
@@ -449,7 +462,7 @@ export class GCOptimizationService
    */
   addStrategy(name: string, strategy: GCStrategy): void {
     this.gcStrategies.set(name, strategy);
-    this.logger.log(`Added custom GC strategy: ${name}`);
+    this.logInfo(`Added custom GC strategy: ${name}`);
   }
 
   /**
@@ -458,7 +471,7 @@ export class GCOptimizationService
   removeStrategy(name: string): boolean {
     const removed = this.gcStrategies.delete(name);
     if (removed) {
-      this.logger.log(`Removed GC strategy: ${name}`);
+      this.logInfo(`Removed GC strategy: ${name}`);
     }
     return removed;
   }
@@ -494,7 +507,7 @@ export class GCOptimizationService
   async forceOptimization(
     options?: Partial<GCOptimizationOptions>,
   ): Promise<OptimizationResult[]> {
-    this.logger.log('Forcing immediate GC optimization');
+    this.logInfo('Forcing immediate GC optimization');
     return await this.performOptimization(options);
   }
 
@@ -509,6 +522,6 @@ export class GCOptimizationService
     this.gcMetrics.lastOptimization = new Date();
     this.gcMetrics.heapUtilization = 0;
     this.optimizationHistory = [];
-    this.logger.log('GC metrics and history reset');
+    this.logInfo('GC metrics and history reset');
   }
 }

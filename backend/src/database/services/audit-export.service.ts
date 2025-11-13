@@ -7,6 +7,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AuditLog } from '../models/audit-log.model';
 import { AuditQueryService, AuditLogFilters } from './audit-query.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Audit Export Service
  *
@@ -16,9 +17,7 @@ import { AuditQueryService, AuditLogFilters } from './audit-query.service';
  * - Large dataset handling (up to 10,000 records)
  */
 @Injectable()
-export class AuditExportService {
-  private readonly logger = new Logger(AuditExportService.name);
-
+export class AuditExportService extends BaseService {
   constructor(
     private readonly auditQuery: AuditQueryService,
   ) {}
@@ -114,7 +113,7 @@ export class AuditExportService {
 
       return csv;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to export audit logs to CSV: ${error.message}`,
         error.stack,
       );
@@ -150,7 +149,7 @@ export class AuditExportService {
         2,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to export audit logs to JSON: ${error.message}`,
         error.stack,
       );

@@ -16,6 +16,7 @@ import { AccessControlCreateIncidentDto } from './dto/create-security-incident.d
 import { IpRestrictionCheckResult } from './interfaces/ip-restriction-check.interface';
 import { SecurityStatistics } from './interfaces/security-statistics.interface';
 import { UserPermissionsResult } from './interfaces/user-permissions-result.interface';
+import { BaseService } from '../../common/base';
 import {
   IpRestrictionInstance,
   LoginAttemptInstance,
@@ -45,9 +46,7 @@ import {
  * All methods maintain the same public API for backward compatibility.
  */
 @Injectable()
-export class AccessControlService {
-  private readonly logger = new Logger(AccessControlService.name);
-
+export class AccessControlService extends BaseService {
   constructor(
     private readonly roleManagementService: RoleManagementService,
     private readonly permissionManagementService: PermissionManagementService,

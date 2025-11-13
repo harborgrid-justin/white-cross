@@ -21,6 +21,7 @@ import { EnhancedAuditService } from './services/audit.service';
 import { PIIDetectionService } from './services/pii-detection.service';
 import { EnhancedThreatDetectionService } from './services/enhanced-threat-detection.service';
 
+import { BaseService } from '../../common/base';
 // Re-export interfaces for backward compatibility
 export * from './interfaces/security.interfaces';
 
@@ -35,9 +36,7 @@ export { EnhancedThreatDetectionService } from './services/enhanced-threat-detec
 // ============================================================================
 
 @Injectable()
-export class EnhancedSecurityService {
-  private readonly logger = new Logger(EnhancedSecurityService.name);
-
+export class EnhancedSecurityService extends BaseService {
   constructor(
     private readonly configService: ConfigService,
     private readonly encryptionService: EnhancedEncryptionService,
@@ -119,7 +118,7 @@ export class EnhancedSecurityService {
         auditLogged: true,
       };
     } catch (error) {
-      this.logger.error('Security scan failed:', error);
+      this.logError('Security scan failed:', error);
       throw error;
     }
   }

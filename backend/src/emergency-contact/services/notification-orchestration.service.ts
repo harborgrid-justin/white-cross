@@ -23,10 +23,9 @@ import { NotificationResultDto } from '../dto/notification-result.dto';
 import { NotificationDeliveryService } from './notification-delivery.service';
 import { ContactManagementService } from './contact-management.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class NotificationOrchestrationService {
-  private readonly logger = new Logger(NotificationOrchestrationService.name);
-
+export class NotificationOrchestrationService extends BaseService {
   constructor(
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
@@ -69,13 +68,13 @@ export class NotificationOrchestrationService {
         results.push(result);
       }
 
-      this.logger.log(
+      this.logInfo(
         `Emergency notification sent for student ${studentId}: ${notificationData.type} (${notificationData.priority})`,
       );
 
       return results;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error sending emergency notification: ${error.message}`,
         error.stack,
       );
@@ -115,13 +114,13 @@ export class NotificationOrchestrationService {
         notificationData,
       );
 
-      this.logger.log(
+      this.logInfo(
         `Notification sent to contact ${contact.firstName} ${contact.lastName}`,
       );
 
       return result;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error sending contact notification: ${error.message}`,
         error.stack,
       );

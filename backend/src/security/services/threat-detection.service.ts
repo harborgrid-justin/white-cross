@@ -3,13 +3,13 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { LoginAttemptEntity } from '../entities/login-attempt.entity';
 
+import { BaseService } from '../../common/base';
 /**
  * Threat Detection Service
  * Detects various security threats including SQL injection, XSS, brute force, etc.
  */
 @Injectable()
-export class ThreatDetectionService {
-  private readonly logger = new Logger(ThreatDetectionService.name);
+export class ThreatDetectionService extends BaseService {
   private readonly BRUTE_FORCE_THRESHOLD = 5; // Failed attempts
   private readonly BRUTE_FORCE_WINDOW = 300000; // 5 minutes in milliseconds
 
@@ -39,7 +39,7 @@ export class ThreatDetectionService {
       });
 
       if (recentFailures >= this.BRUTE_FORCE_THRESHOLD) {
-        this.logger.warn('Brute force attack detected', {
+        this.logWarning('Brute force attack detected', {
           ipAddress,
           userId,
           failureCount: recentFailures,
@@ -53,7 +53,7 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting brute force', {
+      this.logError('Error detecting brute force', {
         error,
         userId,
         ipAddress,
@@ -94,7 +94,7 @@ export class ThreatDetectionService {
       }
 
       if (matchedPatterns.length > 0) {
-        this.logger.warn('SQL injection attempt detected', {
+        this.logWarning('SQL injection attempt detected', {
           ...context,
           patterns: matchedPatterns,
           input: input.substring(0, 200),
@@ -108,7 +108,7 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting SQL injection', { error });
+      this.logError('Error detecting SQL injection', { error });
       return { detected: false };
     }
   }
@@ -139,7 +139,7 @@ export class ThreatDetectionService {
       }
 
       if (matchedPatterns.length > 0) {
-        this.logger.warn('XSS attempt detected', {
+        this.logWarning('XSS attempt detected', {
           ...context,
           patterns: matchedPatterns,
           input: input.substring(0, 200),
@@ -153,7 +153,7 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting XSS', { error });
+      this.logError('Error detecting XSS', { error });
       return { detected: false };
     }
   }
@@ -171,7 +171,7 @@ export class ThreatDetectionService {
       const hasRequiredRole = userRoles.includes(requiredRole);
 
       if (!hasRequiredRole) {
-        this.logger.warn('Privilege escalation attempt detected', {
+        this.logWarning('Privilege escalation attempt detected', {
           userId,
           attemptedAction,
           requiredRole,
@@ -186,7 +186,7 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting privilege escalation', {
+      this.logError('Error detecting privilege escalation', {
         error,
         userId,
       });
@@ -215,7 +215,7 @@ export class ThreatDetectionService {
       const threshold = thresholds[dataType] ?? thresholds.default;
 
       if (volume > threshold) {
-        this.logger.warn('Potential data breach attempt detected', {
+        this.logWarning('Potential data breach attempt detected', {
           userId,
           ipAddress,
           dataType,
@@ -231,7 +231,7 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting data breach attempt', {
+      this.logError('Error detecting data breach attempt', {
         error,
         userId,
       });
@@ -252,7 +252,7 @@ export class ThreatDetectionService {
       const detected = pathTraversalPatterns.some((pattern) => pattern.test(input));
 
       if (detected) {
-        this.logger.warn('Path traversal attempt detected', {
+        this.logWarning('Path traversal attempt detected', {
           ...context,
           input: input.substring(0, 200),
         });
@@ -262,7 +262,7 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting path traversal', { error });
+      this.logError('Error detecting path traversal', { error });
       return { detected: false };
     }
   }
@@ -295,7 +295,7 @@ export class ThreatDetectionService {
       }
 
       if (matchedPatterns.length > 0) {
-        this.logger.warn('Command injection attempt detected', {
+        this.logWarning('Command injection attempt detected', {
           ...context,
           patterns: matchedPatterns,
           input: input.substring(0, 200),
@@ -309,7 +309,7 @@ export class ThreatDetectionService {
 
       return { detected: false };
     } catch (error) {
-      this.logger.error('Error detecting command injection', { error });
+      this.logError('Error detecting command injection', { error });
       return { detected: false };
     }
   }
@@ -378,7 +378,7 @@ export class ThreatDetectionService {
       const attempt = await this.loginAttemptModel.create(data);
       return attempt;
     } catch (error) {
-      this.logger.error('Error recording login attempt', { error });
+      this.logError('Error recording login attempt', { error });
       throw error;
     }
   }
@@ -404,7 +404,7 @@ export class ThreatDetectionService {
         order: [['createdAt', 'DESC']],
       });
     } catch (error) {
-      this.logger.error('Error fetching failed attempts', { error, ipAddress });
+      this.logError('Error fetching failed attempts', { error, ipAddress });
       return [];
     }
   }

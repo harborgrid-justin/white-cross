@@ -4,14 +4,15 @@
  * @description Service for handling column management operations
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { QueryInterface, Sequelize, Transaction } from 'sequelize';
 import { ColumnDefinition } from '../types/migration-utilities.types';
+import { modifyColumnType } from '../utilities/column-operations.service';
 
 @Injectable()
-export class ColumnOperationsService {
-  private readonly logger = new Logger(ColumnOperationsService.name);
-
+export class ColumnOperationsService extends BaseService {
   /**
    * Adds a column with validation and default value population
    */
@@ -70,7 +71,7 @@ export class ColumnOperationsService {
       }
     }
 
-    this.logger.log(`Added column ${columnName} to table ${tableName}`);
+    this.logInfo(`Added column ${columnName} to table ${tableName}`);
   }
 
   /**
@@ -113,7 +114,7 @@ export class ColumnOperationsService {
     // Remove column
     await queryInterface.removeColumn(tableName, columnName, { transaction });
 
-    this.logger.log(`Removed column ${columnName} from table ${tableName}`);
+    this.logInfo(`Removed column ${columnName} from table ${tableName}`);
   }
 
   /**
@@ -131,53 +132,9 @@ export class ColumnOperationsService {
     } = {},
     transaction?: Transaction,
   ): Promise<void> {
-    const { castUsing, validate = true, tempColumn = false } = options;
-    const sequelize = queryInterface.sequelize;
-    const dialect = sequelize.getDialect();
+    return await modifyColumnType(queryInterface, tableName, columnName, newDefinition, options, transaction);
 
-    if (tempColumn || dialect === 'postgres') {
-      // Use temporary column approach for complex conversions
-      const tempColumnName = `${columnName}_temp`;
-
-      // Add temporary column
-      await queryInterface.addColumn(tableName, tempColumnName, newDefinition, {
-        transaction,
-      });
-
-      // Copy and convert data
-      const castExpression = castUsing || `"${columnName}"`;
-      await sequelize.query(
-        `UPDATE "${tableName}" SET "${tempColumnName}" = ${castExpression}`,
-        { transaction },
-      );
-
-      // Drop old column
-      await queryInterface.removeColumn(tableName, columnName, { transaction });
-
-      // Rename temp column to original name
-      await queryInterface.renameColumn(
-        tableName,
-        tempColumnName,
-        columnName,
-        { transaction },
-      );
-    } else {
-      // Direct column modification
-      await queryInterface.changeColumn(tableName, columnName, newDefinition, {
-        transaction,
-      });
-    }
-
-    // Validate conversion if requested
-    if (validate) {
-      const [results] = await sequelize.query(
-        `SELECT COUNT(*) as count FROM "${tableName}" WHERE "${columnName}" IS NULL`,
-        { transaction },
-      );
-      this.logger.log(`Column ${columnName} conversion completed. NULL count: ${(results[0] as any).count}`);
-    }
-
-    this.logger.log(`Modified column type for ${columnName} in table ${tableName}`);
+    this.logInfo(`Modified column type for ${columnName} in table ${tableName}`);
   }
 
   /**
@@ -197,7 +154,7 @@ export class ColumnOperationsService {
       { transaction },
     );
 
-    this.logger.log(`Renamed column ${oldColumnName} to ${newColumnName} in table ${tableName}`);
+    this.logInfo(`Renamed column ${oldColumnName} to ${newColumnName} in table ${tableName}`);
   }
 
   /**

@@ -8,14 +8,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CountryCode, isValidPhoneNumber, parsePhoneNumber, PhoneNumber as LibPhoneNumber } from 'libphonenumber-js';
 import { PhoneNumberType, PhoneNumberValidationResult } from '../dto/phone-number.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Phone Number Validator Service
  * Provides comprehensive phone number validation and formatting for international numbers
  */
 @Injectable()
-export class PhoneValidatorService {
-  private readonly logger = new Logger(PhoneValidatorService.name);
-
+export class PhoneValidatorService extends BaseService {
   /**
    * Validate a phone number and return detailed information
    *
@@ -76,13 +75,13 @@ export class PhoneValidatorService {
         type: this.mapPhoneNumberType(parsedNumber),
       };
 
-      this.logger.debug(
+      this.logDebug(
         `Validated phone number: ${result.e164Format} (${result.countryCode})`,
       );
 
       return result;
     } catch (error) {
-      this.logger.warn(
+      this.logWarning(
         `Phone validation error for ${phoneNumber}: ${error.message}`,
       );
       return {
@@ -188,7 +187,7 @@ export class PhoneValidatorService {
     );
 
     const validCount = results.filter((r) => r.isValid).length;
-    this.logger.log(
+    this.logInfo(
       `Batch validation: ${validCount}/${phoneNumbers.length} valid numbers`,
     );
 
@@ -222,7 +221,7 @@ export class PhoneValidatorService {
         ? parsedNumber.formatNational()
         : parsedNumber.formatInternational();
     } catch (error) {
-      this.logger.warn(`Phone formatting error: ${error.message}`);
+      this.logWarning(`Phone formatting error: ${error.message}`);
       return null;
     }
   }

@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { AuditLog, AuditSeverity, ComplianceType } from '../models/audit-log.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Interface for compliance report
  */
@@ -38,9 +39,7 @@ export interface ComplianceReport {
  * - Critical event monitoring
  */
 @Injectable()
-export class AuditComplianceService {
-  private readonly logger = new Logger(AuditComplianceService.name);
-
+export class AuditComplianceService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -145,7 +144,7 @@ export class AuditComplianceService {
         })),
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to generate compliance report: ${error.message}`,
         error.stack,
       );

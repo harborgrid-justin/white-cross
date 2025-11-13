@@ -33,6 +33,7 @@ import { AddWaitlistDto } from './dto/add-waitlist.dto';
 import { WaitlistStatusDto } from './dto/waitlist-status.dto';
 import { PaginatedResponse, StudentDataExport, StudentStatistics } from './types';
 
+import { BaseService } from '../../common/base';
 /**
  * Student Service (Facade)
  *
@@ -50,9 +51,7 @@ import { PaginatedResponse, StudentDataExport, StudentStatistics } from './types
  * clean separation of concerns and easier testing.
  */
 @Injectable()
-export class StudentService {
-  private readonly logger = new Logger(StudentService.name);
-
+export class StudentService extends BaseService {
   constructor(
     private readonly crudService: StudentCrudService,
     private readonly queryService: StudentQueryService,

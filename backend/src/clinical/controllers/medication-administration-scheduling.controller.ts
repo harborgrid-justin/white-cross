@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { BaseController } from '../../common/base';
 /**
  * Medication Administration Scheduling Controller
  *
@@ -9,7 +10,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@ne
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
 @Controller('medications/administrations')
-export class MedicationAdministrationSchedulingController {
+export class MedicationAdministrationSchedulingController extends BaseController {
   /**
    * Get due medications
    */

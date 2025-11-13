@@ -6,6 +6,7 @@ import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
 import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Clinic Visit Controller
  * REST API for clinic visit workflow and tracking
@@ -13,7 +14,7 @@ import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
 @ApiTags('Clinical - Clinic Visits')
 @ApiBearerAuth()
 @Controller('clinical/visits')
-export class ClinicVisitController {
+export class ClinicVisitController extends BaseController {
   constructor(
     private readonly clinicVisitBasicService: ClinicVisitBasicService,
     private readonly clinicVisitAnalyticsService: ClinicVisitAnalyticsService,

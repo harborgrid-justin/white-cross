@@ -7,6 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { BaseService } from '../../common/base';
 import {
   AnalyticsReportType,
   AnalyticsTimePeriod,
@@ -20,9 +21,7 @@ import {
 } from '../analytics-interfaces';
 
 @Injectable()
-export class ReportDataCollectorService {
-  private readonly logger = new Logger(ReportDataCollectorService.name);
-
+export class ReportDataCollectorService extends BaseService {
   constructor(
     // In a real implementation, these would be injected repositories
     // @InjectRepository(Student) private readonly studentRepository: Repository<Student>,
@@ -66,7 +65,7 @@ export class ReportDataCollectorService {
           throw new Error(`Unsupported report type: ${reportType}`);
       }
     } catch (error) {
-      this.logger.error(`Failed to collect data for report ${reportType}`, error);
+      this.logError(`Failed to collect data for report ${reportType}`, error);
       throw error;
     }
   }

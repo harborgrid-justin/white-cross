@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DrugInteractionService } from '../services/drug-interaction.service';
 
+import { BaseController } from '../../common/base';
 /**
  * Drug Safety Controller
  * Handles safety checks and LASA warnings
@@ -9,7 +10,7 @@ import { DrugInteractionService } from '../services/drug-interaction.service';
 @ApiTags('Clinical - Drug Safety')
 @ApiBearerAuth()
 @Controller('clinical/drugs')
-export class DrugSafetyController {
+export class DrugSafetyController extends BaseController {
   constructor(
     private readonly drugInteractionService: DrugInteractionService,
   ) {}

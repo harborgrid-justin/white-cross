@@ -17,6 +17,7 @@ import { HealthRecord   } from "../../database/models";
 import { GrowthDataPoint } from '../interfaces/pagination.interface';
 import { VitalSigns } from '../interfaces/vital-signs.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * HealthRecordVitalsService
  *
@@ -30,9 +31,7 @@ import { VitalSigns } from '../interfaces/vital-signs.interface';
  * - Extract vital signs from health record metadata
  */
 @Injectable()
-export class HealthRecordVitalsService {
-  private readonly logger = new Logger(HealthRecordVitalsService.name);
-
+export class HealthRecordVitalsService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
@@ -89,7 +88,7 @@ export class HealthRecordVitalsService {
       );
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Growth chart data retrieved for student ${studentId}, data points: ${growthData.length}`,
     );
 
@@ -136,7 +135,7 @@ export class HealthRecordVitalsService {
       .filter((vital) => Object.values(vital).some((v) => v !== undefined));
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Recent vitals retrieved for student ${studentId}, count: ${vitals.length}`,
     );
 

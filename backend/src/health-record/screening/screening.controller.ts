@@ -13,10 +13,11 @@ import { OverdueScreeningsQueryDto } from './dto/screening.dto';
 import { ScreeningScheduleQueryDto } from './dto/screening.dto';
 import { ScreeningStatisticsQueryDto } from './dto/screening.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('health-records-screenings')
 @Controller('health-records/screenings')
 // @ApiBearerAuth()
-export class ScreeningController {
+export class ScreeningController extends BaseController {
   constructor(private readonly screeningService: ScreeningService) {}
 
   /**

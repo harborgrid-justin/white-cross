@@ -10,6 +10,13 @@ import { BroadcastService } from './services/broadcast.service';
 import { AlertService } from './services/alert.service';
 import { MessageService } from './services/message.service';
 import { PresenceService } from './services/presence.service';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   AlertData,
   NotificationData,
@@ -23,37 +30,42 @@ import {
 
 @Injectable()
 export class WebSocketService implements OnModuleDestroy {
-  private readonly logger = new Logger(WebSocketService.name);
-
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly config: AppConfigService,
     private readonly broadcastService: BroadcastService,
     private readonly alertService: AlertService,
     private readonly messageService: MessageService,
     private readonly presenceService: PresenceService,
   ) {
-    this.logger.log('WebSocketService initialized');
+    super({
+      serviceName: 'WebSocketService',
+      logger,
+      enableAuditLogging: true,
+    });
+
+    this.logInfo('WebSocketService initialized');
   }
 
   /**
    * Cleanup resources on module destroy
    */
   async onModuleDestroy() {
-    this.logger.log('WebSocketService shutting down - cleaning up resources');
+    this.logInfo('WebSocketService shutting down - cleaning up resources');
 
     // Get current connection count for logging
     const connectedSockets = this.getConnectedSocketsCount();
     if (connectedSockets > 0) {
-      this.logger.log(`Disconnecting ${connectedSockets} active WebSocket connections`);
+      this.logInfo(`Disconnecting ${connectedSockets} active WebSocket connections`);
 
       // Notify all connected clients about server shutdown if enabled
       if (this.config.get<boolean>('websocket.notifyOnShutdown', true)) {
         // Broadcast shutdown notification would go here
-        this.logger.log('Shutdown notification sent to connected clients');
+        this.logInfo('Shutdown notification sent to connected clients');
       }
     }
 
-    this.logger.log('WebSocketService destroyed, resources cleaned up');
+    this.logInfo('WebSocketService destroyed, resources cleaned up');
   }
 
   // Broadcasting Methods

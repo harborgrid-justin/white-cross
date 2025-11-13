@@ -19,6 +19,7 @@ import { AllergySeverity } from '../../common/enums';
 import { AllergyFiltersDto } from '../dto/allergy-filters.dto';
 import { PaginationDto } from '../dto/pagination.dto';
 
+import { BaseService } from '../../common/base';
 export interface PaginatedAllergyResults {
   allergies: Allergy[];
   total: number;
@@ -36,9 +37,7 @@ export interface AllergyStatistics {
 }
 
 @Injectable()
-export class AllergyQueryService {
-  private readonly logger = new Logger(AllergyQueryService.name);
-
+export class AllergyQueryService extends BaseService {
   constructor(
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
@@ -72,7 +71,7 @@ export class AllergyQueryService {
 
     // PHI Audit Log
     if (allergies.length > 0) {
-      this.logger.log(
+      this.logInfo(
         `Student allergies accessed: Student ${studentId}, Count: ${allergies.length}, ` +
           `IncludeInactive: ${includeInactive}`,
       );
@@ -142,7 +141,7 @@ export class AllergyQueryService {
       });
 
     // PHI Audit Log
-    this.logger.log(
+    this.logInfo(
       `Allergy search: Filters: ${JSON.stringify(filters)}, Results: ${allergies.length}`,
     );
 
@@ -179,7 +178,7 @@ export class AllergyQueryService {
 
     // PHI Audit Log
     if (allergies.length > 0) {
-      this.logger.warn(
+      this.logWarning(
         `Critical allergies accessed: Student ${studentId}, Count: ${allergies.length}, ` +
           `Severities: ${allergies.map((a) => a.severity).join(', ')}`,
       );
@@ -284,7 +283,7 @@ export class AllergyQueryService {
       critical,
     };
 
-    this.logger.log(
+    this.logInfo(
       `Allergy statistics retrieved: ${JSON.stringify(statistics)}`,
     );
 

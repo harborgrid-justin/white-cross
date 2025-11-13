@@ -5,10 +5,11 @@ import { CreateChronicConditionDto } from './dto/create-chronic-condition.dto';
 import { UpdateChronicConditionDto } from './dto/update-chronic-condition.dto';
 import { ChronicCondition   } from "../../database/models";
 
+import { BaseController } from '../../common/base';
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()
 @Controller('chronic-conditions')
-export class HealthRecordChronicConditionController {
+export class HealthRecordChronicConditionController extends BaseController {
   constructor(
     private readonly chronicConditionService: ChronicConditionService,
   ) {}

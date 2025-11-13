@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { BaseService } from '../../common/base';
 import {
   ComplianceMetrics,
   CounterMetric,
@@ -12,15 +13,14 @@ import {
 } from '../interfaces/enterprise-metrics.interface';
 
 @Injectable()
-export class EnterpriseMetricsService {
-  private readonly logger = new Logger(EnterpriseMetricsService.name);
+export class EnterpriseMetricsService extends BaseService {
   private counters = new Map<string, CounterMetric>();
   private gauges = new Map<string, GaugeMetric>();
   private histograms = new Map<string, HistogramMetric>();
   private startTime = Date.now();
 
   constructor(private readonly moduleName: string) {
-    this.logger.log(
+    this.logInfo(
       `Enterprise metrics service initialized for module: ${moduleName}`,
     );
   }
@@ -48,7 +48,7 @@ export class EnterpriseMetricsService {
         });
       }
     } catch (error) {
-      this.logger.error(`Failed to increment counter ${name}:`, error);
+      this.logError(`Failed to increment counter ${name}:`, error);
     }
   }
 
@@ -68,7 +68,7 @@ export class EnterpriseMetricsService {
         description: `Gauge metric for ${name} in ${this.moduleName}`,
       });
     } catch (error) {
-      this.logger.error(`Failed to record gauge ${name}:`, error);
+      this.logError(`Failed to record gauge ${name}:`, error);
     }
   }
 
@@ -103,7 +103,7 @@ export class EnterpriseMetricsService {
         });
       }
     } catch (error) {
-      this.logger.error(`Failed to record histogram ${name}:`, error);
+      this.logError(`Failed to record histogram ${name}:`, error);
     }
   }
 
@@ -332,7 +332,7 @@ export class EnterpriseMetricsService {
     this.gauges.clear();
     this.histograms.clear();
     this.startTime = Date.now();
-    this.logger.log(`Metrics reset for module: ${this.moduleName}`);
+    this.logInfo(`Metrics reset for module: ${this.moduleName}`);
   }
 
   /**
@@ -431,7 +431,7 @@ export class EnterpriseMetricsService {
    * Cleanup on service destruction
    */
   onModuleDestroy(): void {
-    this.logger.log(
+    this.logInfo(
       `Enterprise metrics service destroyed for module: ${this.moduleName}`,
     );
   }

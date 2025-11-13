@@ -9,6 +9,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { BaseService } from '../../common/base';
 import {
   ThreatEvent,
   ThreatType,
@@ -16,8 +17,7 @@ import {
 } from '../interfaces/security.interfaces';
 
 @Injectable()
-export class EnhancedThreatDetectionService {
-  private readonly logger = new Logger(EnhancedThreatDetectionService.name);
+export class EnhancedThreatDetectionService extends BaseService {
   private threatEvents: ThreatEvent[] = [];
   private failedAttempts = new Map<string, { count: number; lastAttempt: Date }>();
   private readonly maxThreatEvents = 1000;
@@ -61,7 +61,7 @@ export class EnhancedThreatDetectionService {
     await this.attemptAutoMitigation(threatEvent);
 
     // Log threat
-    this.logger.error(`Threat Detected: ${type} from ${source} targeting ${target}`, {
+    this.logError(`Threat Detected: ${type} from ${source} targeting ${target}`, {
       threatId: threatEvent.id,
       severity,
       description,

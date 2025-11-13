@@ -6,14 +6,13 @@ import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.d
 import { UpdateTreatmentPlanDto } from '../dto/treatment/update-treatment-plan.dto';
 import { TreatmentPlanFiltersDto } from '../dto/treatment/treatment-plan-filters.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Treatment Plan Service
  * Manages treatment plans for students including CRUD operations and status management
  */
 @Injectable()
-export class TreatmentPlanService {
-  private readonly logger = new Logger(TreatmentPlanService.name);
-
+export class TreatmentPlanService extends BaseService {
   constructor(
     @InjectModel(TreatmentPlan)
     private treatmentPlanModel: typeof TreatmentPlan,
@@ -23,7 +22,7 @@ export class TreatmentPlanService {
    * Create a new treatment plan
    */
   async create(createDto: CreateTreatmentPlanDto): Promise<TreatmentPlan> {
-    this.logger.log(
+    this.logInfo(
       `Creating treatment plan for student ${createDto.studentId}`,
     );
 
@@ -174,6 +173,6 @@ export class TreatmentPlanService {
       throw new NotFoundException(`Treatment plan ${id} not found`);
     }
 
-    this.logger.log(`Deleted treatment plan ${id}`);
+    this.logInfo(`Deleted treatment plan ${id}`);
   }
 }

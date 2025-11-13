@@ -7,14 +7,13 @@ import { CheckInDto } from '../dto/visit/check-in.dto';
 import { CheckOutDto } from '../dto/visit/check-out.dto';
 import { VisitFiltersDto } from '../dto/visit/visit-filters.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Clinic Visit Basic Service
  * Handles basic CRUD operations for clinic visits
  */
 @Injectable()
-export class ClinicVisitBasicService {
-  private readonly logger = new Logger(ClinicVisitBasicService.name);
-
+export class ClinicVisitBasicService extends BaseService {
   constructor(
     @InjectModel(ClinicVisit)
     private readonly clinicVisitModel: typeof ClinicVisit,
@@ -24,7 +23,7 @@ export class ClinicVisitBasicService {
    * Check in a student to the clinic
    */
   async checkIn(data: CheckInDto): Promise<ClinicVisit> {
-    this.logger.log(`Checking in student ${data.studentId}`);
+    this.logInfo(`Checking in student ${data.studentId}`);
 
     // Validate student doesn't have an active visit
     const activeVisit = await this.clinicVisitModel.findOne({
@@ -52,7 +51,7 @@ export class ClinicVisitBasicService {
    * Check out a student from the clinic
    */
   async checkOut(visitId: string, data: CheckOutDto): Promise<ClinicVisit> {
-    this.logger.log(`Checking out visit ${visitId}`);
+    this.logInfo(`Checking out visit ${visitId}`);
 
     const visit = await this.clinicVisitModel.findOne({
       where: { id: visitId },
@@ -188,6 +187,6 @@ export class ClinicVisitBasicService {
       throw new NotFoundException(`Visit with ID ${id} not found`);
     }
 
-    this.logger.log(`Deleted visit ${id}`);
+    this.logInfo(`Deleted visit ${id}`);
   }
 }

@@ -5,6 +5,7 @@ import { InteractionCheckDto } from '../dto/drug/interaction-check.dto';
 import { AddInteractionDto } from '../dto/drug/add-interaction.dto';
 import { UpdateInteractionDto } from '../dto/drug/update-interaction.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Drug Interaction Management Controller
  * Handles drug interaction operations
@@ -12,7 +13,7 @@ import { UpdateInteractionDto } from '../dto/drug/update-interaction.dto';
 @ApiTags('Clinical - Drug Interactions')
 @ApiBearerAuth()
 @Controller('clinical/drugs')
-export class DrugInteractionManagementController {
+export class DrugInteractionManagementController extends BaseController {
   constructor(
     private readonly drugInteractionService: DrugInteractionService,
   ) {}

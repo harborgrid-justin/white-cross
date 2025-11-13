@@ -3,16 +3,15 @@ import { InjectModel } from '@nestjs/sequelize';
 import { MessageTemplate } from '../../database/models/message-template.model';
 import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class TemplateService {
-  private readonly logger = new Logger(TemplateService.name);
-
+export class TemplateService extends BaseService {
   constructor(
     @InjectModel(MessageTemplate) private templateModel: typeof MessageTemplate,
   ) {}
 
   async createTemplate(data: CreateTemplateDto & { createdById: string }) {
-    this.logger.log(`Creating template: ${data.name}`);
+    this.logInfo(`Creating template: ${data.name}`);
 
     const template = await this.templateModel.create({
       name: data.name,

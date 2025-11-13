@@ -13,6 +13,7 @@ import { BulkCancelDto } from '../dto/statistics.dto';
 import { AppointmentEntity } from '../entities/appointment.entity';
 import { AppointmentValidation } from '../validators/appointment-validation';
 import { AppointmentStatus } from '../dto/update-appointment.dto';
+import { BaseService } from '../../common/base';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
@@ -31,9 +32,7 @@ import {
  * - Pattern-based appointment generation
  */
 @Injectable()
-export class AppointmentRecurringService {
-  private readonly logger = new Logger(AppointmentRecurringService.name);
-
+export class AppointmentRecurringService extends BaseService {
   constructor(
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
@@ -54,7 +53,7 @@ export class AppointmentRecurringService {
     createDto: CreateRecurringAppointmentDto,
     createAppointmentFn: (dto: CreateAppointmentDto) => Promise<AppointmentEntity>,
   ): Promise<{ appointments: AppointmentEntity[]; count: number }> {
-    this.logger.log('Creating recurring appointments');
+    this.logInfo('Creating recurring appointments');
 
     try {
       const appointments: AppointmentEntity[] = [];
@@ -100,7 +99,7 @@ export class AppointmentRecurringService {
             const appointment = await createAppointmentFn(appointmentDto);
             appointments.push(appointment);
           } catch (error) {
-            this.logger.warn(
+            this.logWarning(
               `Failed to create recurring appointment for ${currentDate.toISOString()}: ${error.message}`,
             );
           }
@@ -122,7 +121,7 @@ export class AppointmentRecurringService {
 
       return { appointments, count: appointments.length };
     } catch (error) {
-      this.logger.error(`Error creating recurring appointments: ${error.message}`, error.stack);
+      this.logError(`Error creating recurring appointments: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to create recurring appointments');
     }
   }
@@ -137,7 +136,7 @@ export class AppointmentRecurringService {
   async bulkCancelAppointments(
     bulkCancelDto: BulkCancelDto,
   ): Promise<{ cancelled: number; failed: number }> {
-    this.logger.log('Bulk cancelling appointments');
+    this.logInfo('Bulk cancelling appointments');
 
     try {
       // OPTIMIZATION: Use transaction and bulk operations instead of loop
@@ -167,7 +166,7 @@ export class AppointmentRecurringService {
             AppointmentValidation.validateCancellationNotice(appointment.scheduledAt);
             validAppointments.push(appointment.id);
           } catch (error) {
-            this.logger.warn(`Cannot cancel appointment ${appointment.id}: ${error.message}`);
+            this.logWarning(`Cannot cancel appointment ${appointment.id}: ${error.message}`);
             invalidAppointments.push(appointment.id);
           }
         }
@@ -221,12 +220,12 @@ export class AppointmentRecurringService {
         };
       });
 
-      this.logger.log(
+      this.logInfo(
         `Bulk cancellation completed: ${result.cancelled} cancelled, ${result.failed} failed`,
       );
       return result;
     } catch (error) {
-      this.logger.error(`Error in bulk cancellation: ${error.message}`, error.stack);
+      this.logError(`Error in bulk cancellation: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to bulk cancel appointments');
     }
   }

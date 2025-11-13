@@ -4,7 +4,9 @@
  * @description Service for generating medication reminders with optimized SQL queries
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 
@@ -36,9 +38,7 @@ interface MedicationReminderQueryResult {
  * Service for generating medication reminders
  */
 @Injectable()
-export class ReminderGeneratorService {
-  private readonly logger = new Logger(ReminderGeneratorService.name);
-
+export class ReminderGeneratorService extends BaseService {
   constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
 
   /**

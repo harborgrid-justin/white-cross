@@ -16,6 +16,13 @@ import { L2CacheService } from './l2-cache.service';
 import { L3CacheService } from './l3-cache.service';
 import { CacheOptimizationService } from './cache-optimization.service';
 import { CacheAccessPatternTrackerService } from './cache-access-pattern-tracker.service';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   InMemoryCacheEntry,
   CacheTier,
@@ -37,9 +44,8 @@ import {
  */
 @Injectable()
 export class CacheStrategyOrchestratorService implements OnModuleDestroy {
-  private readonly logger = new Logger(CacheStrategyOrchestratorService.name);
-
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly metricsService: HealthRecordMetricsService,
     private readonly eventEmitter: EventEmitter2,
     private readonly l1Cache: L1CacheService,
@@ -48,6 +54,12 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
     private readonly optimization: CacheOptimizationService,
     private readonly patternTracker: CacheAccessPatternTrackerService,
   ) {
+    super({
+      serviceName: 'CacheStrategyOrchestratorService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.initializeCacheStrategy();
     this.setupEventListeners();
   }
@@ -56,8 +68,8 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
    * Initialize cache strategy and start monitoring
    */
   private initializeCacheStrategy(): void {
-    this.logger.log('Initializing advanced multi-tier cache strategy orchestrator');
-    this.logger.log('Cache strategy orchestrator initialized successfully');
+    this.logInfo('Initializing advanced multi-tier cache strategy orchestrator');
+    this.logInfo('Cache strategy orchestrator initialized successfully');
   }
 
   /**
@@ -119,7 +131,7 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
-      this.logger.error(`Cache get operation failed for key ${key}:`, error);
+      this.logError(`Cache get operation failed for key ${key}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -174,7 +186,7 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
         tier: cacheEntry.tier,
       };
     } catch (error) {
-      this.logger.error(`Cache set operation failed for key ${key}:`, error);
+      this.logError(`Cache set operation failed for key ${key}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -210,7 +222,7 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
       this.patternTracker.removeAccessPattern(pat);
     }
 
-    this.logger.log(
+    this.logInfo(
       `Cache invalidation completed: ${invalidatedCount} entries removed, reason: ${reason}`,
     );
 
@@ -446,6 +458,6 @@ export class CacheStrategyOrchestratorService implements OnModuleDestroy {
    * Cleanup resources
    */
   onModuleDestroy(): void {
-    this.logger.log('Cache Strategy Orchestrator Service destroyed');
+    this.logInfo('Cache Strategy Orchestrator Service destroyed');
   }
 }

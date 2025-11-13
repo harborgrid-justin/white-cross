@@ -8,14 +8,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitStatusDto } from '../dto/rate-limit.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Rate Limiter Service
  * Implements sliding window rate limiting using in-memory storage (can be upgraded to Redis)
  */
 @Injectable()
-export class RateLimiterService {
-  private readonly logger = new Logger(RateLimiterService.name);
-
+export class RateLimiterService extends BaseService {
   // In-memory storage for rate limiting
   // In production, replace with Redis for distributed rate limiting
   private readonly limitStore: Map<string, number[]> = new Map();
@@ -36,7 +35,7 @@ export class RateLimiterService {
       1000,
     );
 
-    this.logger.log(
+    this.logInfo(
       `Rate limiter initialized - Per phone: ${this.DEFAULT_PER_PHONE_LIMIT}/hr, Per account: ${this.DEFAULT_PER_ACCOUNT_LIMIT}/hr`,
     );
 
@@ -124,7 +123,7 @@ export class RateLimiterService {
   async resetPhoneNumber(phoneNumber: string): Promise<void> {
     const key = `phone:${phoneNumber}`;
     this.limitStore.delete(key);
-    this.logger.debug(`Reset rate limit for ${phoneNumber}`);
+    this.logDebug(`Reset rate limit for ${phoneNumber}`);
   }
 
   /**
@@ -135,7 +134,7 @@ export class RateLimiterService {
   async resetAccount(accountId: string): Promise<void> {
     const key = `account:${accountId}`;
     this.limitStore.delete(key);
-    this.logger.debug(`Reset rate limit for account ${accountId}`);
+    this.logDebug(`Reset rate limit for account ${accountId}`);
   }
 
   /**
@@ -267,7 +266,7 @@ export class RateLimiterService {
     }
 
     if (cleanedCount > 0) {
-      this.logger.debug(
+      this.logDebug(
         `Cleaned up ${cleanedCount} expired rate limit entries`,
       );
     }

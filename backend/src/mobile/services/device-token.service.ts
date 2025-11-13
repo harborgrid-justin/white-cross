@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { DeviceToken } from '../entities';
 import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Device Token Service
  *
@@ -32,9 +33,7 @@ import { MobileUpdatePreferencesDto, RegisterDeviceDto } from '../dto';
  * ```
  */
 @Injectable()
-export class DeviceTokenService {
-  private readonly logger = new Logger(DeviceTokenService.name);
-
+export class DeviceTokenService extends BaseService {
   constructor(
     @InjectModel(DeviceToken)
     private readonly deviceTokenModel: typeof DeviceToken,
@@ -84,13 +83,13 @@ export class DeviceTokenService {
         allowBadge: true,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Device token registered: ${deviceToken.id} for user ${userId}`,
       );
 
       return deviceToken;
     } catch (error) {
-      this.logger.error('Error registering device token', error);
+      this.logError('Error registering device token', error);
       throw error;
     }
   }
@@ -116,7 +115,7 @@ export class DeviceTokenService {
       { where: { id: tokenId } },
     );
 
-    this.logger.log(`Device token unregistered: ${tokenId}`);
+    this.logInfo(`Device token unregistered: ${tokenId}`);
   }
 
   /**
@@ -159,7 +158,7 @@ export class DeviceTokenService {
 
     const updated = await token.update(dto);
 
-    this.logger.log(`Preferences updated for token: ${tokenId}`);
+    this.logInfo(`Preferences updated for token: ${tokenId}`);
 
     return updated;
   }
@@ -206,7 +205,7 @@ export class DeviceTokenService {
       { where: { id: tokenId } },
     );
 
-    this.logger.log(`Token marked as invalid: ${tokenId} - ${reason}`);
+    this.logInfo(`Token marked as invalid: ${tokenId} - ${reason}`);
   }
 
   /**
@@ -258,7 +257,7 @@ export class DeviceTokenService {
       },
     });
 
-    this.logger.log(
+    this.logInfo(
       `Cleaned up ${deletedCount} inactive tokens (older than ${inactiveDays} days)`,
     );
 

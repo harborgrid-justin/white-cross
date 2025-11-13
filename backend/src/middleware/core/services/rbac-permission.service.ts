@@ -8,6 +8,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { BaseService } from '../../common/base';
 import {
   Permission,
   type RbacConfig,
@@ -25,9 +26,7 @@ import {
  * This service eliminates code duplication between PermissionsGuard and RbacGuard.
  */
 @Injectable()
-export class RbacPermissionService {
-  private readonly logger = new Logger(RbacPermissionService.name);
-
+export class RbacPermissionService extends BaseService {
   /**
    * Check if user has specific permission
    *

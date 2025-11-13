@@ -34,6 +34,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
+import { BaseService } from '../../common/base';
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
@@ -1005,9 +1006,7 @@ export function validateMigrationChecksums(
 }
 
 @Injectable()
-export class MigrationVersionControlService {
-  private readonly logger = new Logger(MigrationVersionControlService.name);
-  
+export class MigrationVersionControlService extends BaseService {
   resolveMigrationDependencies = resolveMigrationDependencies;
   detectCircularDependencies = detectCircularDependencies;
   validateMigrationDependencies = validateMigrationDependencies;

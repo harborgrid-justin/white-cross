@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import { AuditAction, isPHIEntity, SENSITIVE_FIELDS } from '../types/database.enums';
 import { AuditSeverity, ComplianceType } from '../models/audit-log.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Audit Helper Service
  *
@@ -18,7 +19,7 @@ import { AuditSeverity, ComplianceType } from '../models/audit-log.model';
  * - Entity type analysis
  */
 @Injectable()
-export class AuditHelperService {
+export class AuditHelperService extends BaseService {
   /**
    * Sanitize sensitive data before storing in audit logs
    * Recursively redacts sensitive fields defined in SENSITIVE_FIELDS

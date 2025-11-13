@@ -8,6 +8,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from '@nes
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
+import { BaseService } from '../../common/base';
 import {
   AppointmentWaitlist,
   WaitlistPriority,
@@ -26,9 +27,7 @@ import {
  * - Remove from waitlist
  */
 @Injectable()
-export class WaitlistService {
-  private readonly logger = new Logger(WaitlistService.name);
-
+export class WaitlistService extends BaseService {
   constructor(
     @InjectModel(AppointmentWaitlist)
     private readonly waitlistModel: typeof AppointmentWaitlist,
@@ -47,7 +46,7 @@ export class WaitlistService {
     reason: string;
     notes?: string;
   }) {
-    this.logger.log(`Adding student ${data.studentId} to waitlist`);
+    this.logInfo(`Adding student ${data.studentId} to waitlist`);
 
     try {
       // Set expiration to 48 hours from now
@@ -70,7 +69,7 @@ export class WaitlistService {
         updatedAt: new Date(),
       });
     } catch (error) {
-      this.logger.error(`Error adding to waitlist: ${error.message}`, error.stack);
+      this.logError(`Error adding to waitlist: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to add to waitlist');
     }
   }
@@ -79,7 +78,7 @@ export class WaitlistService {
    * Get waitlist with filtering
    */
   async getWaitlist(filters: any = {}) {
-    this.logger.log('Fetching waitlist');
+    this.logInfo('Fetching waitlist');
 
     try {
       const whereClause: any = {};
@@ -126,7 +125,7 @@ export class WaitlistService {
         },
       };
     } catch (error) {
-      this.logger.error(`Error fetching waitlist: ${error.message}`, error.stack);
+      this.logError(`Error fetching waitlist: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch waitlist');
     }
   }
@@ -135,7 +134,7 @@ export class WaitlistService {
    * Update waitlist entry priority
    */
   async updateWaitlistPriority(id: string, priority: WaitlistPriority) {
-    this.logger.log(`Updating waitlist priority for entry: ${id}`);
+    this.logInfo(`Updating waitlist priority for entry: ${id}`);
 
     const entry = await this.waitlistModel.findByPk(id);
     if (!entry) {
@@ -150,7 +149,7 @@ export class WaitlistService {
    * Get waitlist position
    */
   async getWaitlistPosition(id: string) {
-    this.logger.log(`Getting waitlist position for entry: ${id}`);
+    this.logInfo(`Getting waitlist position for entry: ${id}`);
 
     const entry = await this.waitlistModel.findByPk(id);
     if (!entry) {
@@ -178,7 +177,7 @@ export class WaitlistService {
    * Notify waitlist entry
    */
   async notifyWaitlistEntry(id: string, message?: string) {
-    this.logger.log(`Notifying waitlist entry: ${id}`);
+    this.logInfo(`Notifying waitlist entry: ${id}`);
 
     const entry = await this.waitlistModel.findByPk(id);
     if (!entry) {
@@ -200,7 +199,7 @@ export class WaitlistService {
    * Remove from waitlist
    */
   async removeFromWaitlist(id: string, reason?: string) {
-    this.logger.log(`Removing from waitlist: ${id}`);
+    this.logInfo(`Removing from waitlist: ${id}`);
 
     const entry = await this.waitlistModel.findByPk(id);
     if (!entry) {
@@ -235,10 +234,10 @@ export class WaitlistService {
       );
 
       if (result[0] > 0) {
-        this.logger.log(`Cleaned up ${result[0]} expired waitlist entries`);
+        this.logInfo(`Cleaned up ${result[0]} expired waitlist entries`);
       }
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error cleaning up expired waitlist entries: ${error.message}`,
         error.stack,
       );

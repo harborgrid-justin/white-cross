@@ -21,7 +21,9 @@
  * 15. Disaster Recovery
  */
 
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../shared/base/BaseService';
+import { LoggerService } from '../shared/logging/logger.service';
 
 // ==================== Interfaces ====================
 
@@ -208,13 +210,19 @@ export class FeatureNotAvailableException extends HttpException {
 }
 
 @Injectable()
-export class FeaturesService {
-  private readonly logger = new Logger(FeaturesService.name);
-
+export class FeaturesService extends BaseService {
   // In-memory feature configuration store (replace with database in production)
   private featureConfigs: Map<string, any> = new Map();
 
-  constructor() {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+  ) {
+    super({
+      serviceName: 'FeaturesService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     // Initialize default feature configurations
     this.initializeDefaultConfigs();
   }
@@ -224,14 +232,14 @@ export class FeaturesService {
    */
   private initializeDefaultConfigs(): void {
     // Set up default configurations for all features
-    this.logger.log('Initializing default feature configurations');
+    this.logInfo('Initializing default feature configurations');
   }
 
   /**
    * 1. Advanced Analytics
    */
   async getAdvancedAnalytics(tenantId?: string): Promise<AnalyticsData> {
-    this.logger.log(
+    this.logInfo(
       `Getting advanced analytics for tenant: ${tenantId || 'default'}`,
     );
 
@@ -275,7 +283,7 @@ export class FeaturesService {
    * 2. Enterprise Reporting
    */
   async getEnterpriseReporting(tenantId?: string): Promise<Report[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting enterprise reporting for tenant: ${tenantId || 'default'}`,
     );
 
@@ -310,7 +318,7 @@ export class FeaturesService {
    * 3. Single Sign-On (SSO)
    */
   async getSingleSignOn(tenantId?: string): Promise<SSOConfig> {
-    this.logger.log(
+    this.logInfo(
       `Getting SSO configuration for tenant: ${tenantId || 'default'}`,
     );
 
@@ -334,7 +342,7 @@ export class FeaturesService {
    * 4. Multi-Tenancy
    */
   async getMultiTenancy(): Promise<TenantConfig[]> {
-    this.logger.log('Getting multi-tenancy configuration');
+    this.logInfo('Getting multi-tenancy configuration');
 
     return [
       {
@@ -368,7 +376,7 @@ export class FeaturesService {
    * 5. Custom Branding
    */
   async getCustomBranding(tenantId: string): Promise<BrandingConfig> {
-    this.logger.log(`Getting custom branding for tenant: ${tenantId}`);
+    this.logInfo(`Getting custom branding for tenant: ${tenantId}`);
 
     return {
       tenantId,
@@ -388,7 +396,7 @@ export class FeaturesService {
    * 6. API Access Management
    */
   async getAPIAccess(tenantId?: string): Promise<APIAccessConfig> {
-    this.logger.log(
+    this.logInfo(
       `Getting API access configuration for tenant: ${tenantId || 'default'}`,
     );
 
@@ -425,7 +433,7 @@ export class FeaturesService {
     format: string;
     dataType: string;
   }): Promise<ExportData> {
-    this.logger.log(
+    this.logInfo(
       `Creating data export: ${params.dataType} as ${params.format}`,
     );
 
@@ -433,7 +441,7 @@ export class FeaturesService {
 
     // Simulate export processing
     setTimeout(() => {
-      this.logger.log(`Export ${exportId} completed`);
+      this.logInfo(`Export ${exportId} completed`);
     }, 5000);
 
     return {
@@ -454,7 +462,7 @@ export class FeaturesService {
     endDate?: Date;
     action?: string;
   }): Promise<AuditLog[]> {
-    this.logger.log('Getting audit logs', { filters });
+    this.logInfo('Getting audit logs');
 
     // In a real implementation, this would query the audit_logs table
     return [
@@ -477,7 +485,7 @@ export class FeaturesService {
    * 9. Role-Based Access Control (RBAC)
    */
   async getRoleBasedAccess(tenantId?: string): Promise<RBACConfig> {
-    this.logger.log(
+    this.logInfo(
       `Getting RBAC configuration for tenant: ${tenantId || 'default'}`,
     );
 
@@ -540,7 +548,7 @@ export class FeaturesService {
   async getComplianceCertifications(
     tenantId?: string,
   ): Promise<Certification[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting compliance certifications for tenant: ${tenantId || 'default'}`,
     );
 
@@ -576,7 +584,7 @@ export class FeaturesService {
    * 11. 24x7 Support
    */
   async get24x7Support(tenantId?: string): Promise<SupportConfig> {
-    this.logger.log(
+    this.logInfo(
       `Getting 24x7 support configuration for tenant: ${tenantId || 'default'}`,
     );
 
@@ -600,7 +608,7 @@ export class FeaturesService {
    * 12. Custom Integrations
    */
   async getCustomIntegrations(tenantId?: string): Promise<Integration[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting custom integrations for tenant: ${tenantId || 'default'}`,
     );
 
@@ -635,7 +643,7 @@ export class FeaturesService {
    * 13. Advanced Security
    */
   async getAdvancedSecurity(tenantId?: string): Promise<SecurityConfig> {
-    this.logger.log(
+    this.logInfo(
       `Getting advanced security configuration for tenant: ${tenantId || 'default'}`,
     );
 
@@ -661,7 +669,7 @@ export class FeaturesService {
    * 14. Data Retention
    */
   async getDataRetention(tenantId?: string): Promise<RetentionPolicy[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting data retention policies for tenant: ${tenantId || 'default'}`,
     );
 
@@ -689,7 +697,7 @@ export class FeaturesService {
    * 15. Disaster Recovery
    */
   async getDisasterRecovery(tenantId?: string): Promise<DRConfig> {
-    this.logger.log(
+    this.logInfo(
       `Getting disaster recovery configuration for tenant: ${tenantId || 'default'}`,
     );
 
@@ -714,7 +722,7 @@ export class FeaturesService {
     featureName: string,
     tenantId?: string,
   ): Promise<boolean> {
-    this.logger.log(
+    this.logInfo(
       `Checking feature ${featureName} for tenant: ${tenantId || 'default'}`,
     );
 
@@ -750,7 +758,7 @@ export class FeaturesService {
     config: any,
     tenantId?: string,
   ): Promise<void> {
-    this.logger.log(
+    this.logInfo(
       `Updating feature ${featureName} config for tenant: ${tenantId || 'default'}`,
     );
 

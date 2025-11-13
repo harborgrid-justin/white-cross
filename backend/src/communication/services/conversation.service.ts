@@ -13,6 +13,7 @@ import { CreateConversationResult } from '../types/conversation.types';
 import { CreateConversationDto } from '../dto/create-conversation.dto';
 import { UpdateConversationDto } from '../dto/update-conversation.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * ConversationService
  *
@@ -39,9 +40,7 @@ import { UpdateConversationDto } from '../dto/update-conversation.dto';
  * - VIEWER: Can only view content, cannot send messages
  */
 @Injectable()
-export class ConversationService {
-  private readonly logger = new Logger(ConversationService.name);
-
+export class ConversationService extends BaseService {
   constructor(
     @InjectModel(Conversation) private conversationModel: typeof Conversation,
     @InjectModel(ConversationParticipant)
@@ -63,7 +62,7 @@ export class ConversationService {
     creatorId: string,
     tenantId: string,
   ): Promise<CreateConversationResult> {
-    this.logger.log(`Creating ${dto.type} conversation by user ${creatorId}`);
+    this.logInfo(`Creating ${dto.type} conversation by user ${creatorId}`);
 
     // Validate conversation type constraints
     this.validateConversationConstraints(dto);
@@ -355,7 +354,7 @@ export class ConversationService {
     // Soft delete conversation
     await conversation.destroy();
 
-    this.logger.log(`Conversation ${conversationId} deleted by user ${userId}`);
+    this.logInfo(`Conversation ${conversationId} deleted by user ${userId}`);
   }
 
   /**
@@ -377,7 +376,7 @@ export class ConversationService {
     requesterId: string,
     tenantId: string,
   ): Promise<CreateConversationResult> {
-    this.logger.log(
+    this.logInfo(
       `Adding participant ${dto.userId} to conversation ${conversationId}`,
     );
 
@@ -445,7 +444,7 @@ export class ConversationService {
     requesterId: string,
     tenantId: string,
   ): Promise<void> {
-    this.logger.log(
+    this.logInfo(
       `Removing participant ${participantUserId} from conversation ${conversationId}`,
     );
 

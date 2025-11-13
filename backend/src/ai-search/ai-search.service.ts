@@ -20,6 +20,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
+import { BaseService } from '../../common/base';
 export interface SearchFilters {
   dataTypes?: string[];
   dateRange?: { start?: Date; end?: Date };
@@ -105,8 +106,7 @@ export class VectorSearchException extends AISearchException {
 }
 
 @Injectable()
-export class AiSearchService {
-  private readonly logger = new Logger(AiSearchService.name);
+export class AiSearchService extends BaseService {
   private openai: OpenAI | null = null;
   private embeddingCache: Map<string, number[]> = new Map();
   private readonly CACHE_MAX_SIZE = 1000;
@@ -125,15 +125,15 @@ export class AiSearchService {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
     if (!apiKey) {
-      this.logger.warn('OpenAI API key not configured - using mock embeddings');
+      this.logWarning('OpenAI API key not configured - using mock embeddings');
       return;
     }
 
     try {
       this.openai = new OpenAI({ apiKey });
-      this.logger.log('OpenAI client initialized successfully');
+      this.logInfo('OpenAI client initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize OpenAI client', error);
+      this.logError('Failed to initialize OpenAI client', error);
     }
   }
 
@@ -151,7 +151,7 @@ export class AiSearchService {
     const cached = this.embeddingCache.get(cacheKey);
 
     if (cached) {
-      this.logger.debug(`Cache hit for embedding: ${cacheKey}`);
+      this.logDebug(`Cache hit for embedding: ${cacheKey}`);
       return cached;
     }
 
@@ -176,17 +176,17 @@ export class AiSearchService {
       // Cache the embedding
       this.cacheEmbedding(cacheKey, embedding);
 
-      this.logger.debug(
+      this.logDebug(
         `Generated embedding for text (length: ${text.length})`,
       );
 
       return embedding;
     } catch (error: any) {
-      this.logger.error('OpenAI embedding generation failed', error);
+      this.logError('OpenAI embedding generation failed', error);
 
       // Fallback to mock embedding on error
       if (error.code === 'insufficient_quota' || error.status === 429) {
-        this.logger.warn('OpenAI quota exceeded - using mock embedding');
+        this.logWarning('OpenAI quota exceeded - using mock embedding');
         return this.generateMockEmbedding(text);
       }
 
@@ -217,9 +217,9 @@ export class AiSearchService {
         },
       });
 
-      this.logger.log(`Indexed content: ${indexKey}`);
+      this.logInfo(`Indexed content: ${indexKey}`);
     } catch (error: any) {
-      this.logger.error(
+      this.logError(
         `Failed to index content ${contentType}:${contentId}`,
         error,
       );
@@ -285,13 +285,13 @@ export class AiSearchService {
       const limitedResults = results.slice(0, limit);
 
       const processingTime = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `Search completed in ${processingTime}ms, found ${limitedResults.length} results`,
       );
 
       return limitedResults;
     } catch (error: any) {
-      this.logger.error('Search failed', error);
+      this.logError('Search failed', error);
       throw new VectorSearchException(error.message);
     }
   }
@@ -300,7 +300,7 @@ export class AiSearchService {
    * Reindex all content (for maintenance)
    */
   async reindexAll(): Promise<void> {
-    this.logger.log('Starting full reindex...');
+    this.logInfo('Starting full reindex...');
 
     // In a real implementation, this would query all content from the database
     // and reindex everything. For now, we'll just clear the index.
@@ -308,7 +308,7 @@ export class AiSearchService {
     const indexSize = this.searchIndex.size;
     this.searchIndex.clear();
 
-    this.logger.log(`Reindex complete - cleared ${indexSize} entries`);
+    this.logInfo(`Reindex complete - cleared ${indexSize} entries`);
   }
 
   /**
@@ -319,9 +319,9 @@ export class AiSearchService {
 
     if (this.searchIndex.has(indexKey)) {
       this.searchIndex.delete(indexKey);
-      this.logger.log(`Deleted from index: ${indexKey}`);
+      this.logInfo(`Deleted from index: ${indexKey}`);
     } else {
-      this.logger.warn(`Content not found in index: ${indexKey}`);
+      this.logWarning(`Content not found in index: ${indexKey}`);
     }
   }
 
@@ -356,7 +356,7 @@ export class AiSearchService {
     partial: string,
     userId: string,
   ): Promise<string[]> {
-    this.logger.log(`Getting search suggestions for: ${partial}`);
+    this.logInfo(`Getting search suggestions for: ${partial}`);
 
     // In a real implementation, this would query a search_logs table
     // For now, return some static suggestions based on the partial text
@@ -393,7 +393,7 @@ export class AiSearchService {
     criteria: AdvancedSearchCriteria,
     userId: string,
   ): Promise<any> {
-    this.logger.log('Advanced patient search', { criteria });
+    this.logInfo('Advanced patient search', { criteria });
 
     // In a real implementation, this would build complex SQL queries
     // with joins across multiple tables. For now, return structure.
@@ -410,7 +410,7 @@ export class AiSearchService {
    * Find similar medical cases using vector similarity
    */
   async findSimilarCases(params: any): Promise<any[]> {
-    this.logger.log('Finding similar cases', { params });
+    this.logInfo('Finding similar cases', { params });
 
     // In a real implementation, this would:
     // 1. Get patient's medical profile as a vector
@@ -424,7 +424,7 @@ export class AiSearchService {
    * Search medication interactions and alternatives
    */
   async medicationSearch(params: any): Promise<any> {
-    this.logger.log('Medication search', { searchType: params.searchType });
+    this.logInfo('Medication search', { searchType: params.searchType });
 
     try {
       switch (params.searchType) {
@@ -446,7 +446,7 @@ export class AiSearchService {
           );
       }
     } catch (error: any) {
-      this.logger.error('Medication search error', error);
+      this.logError('Medication search error', error);
       throw new AISearchException(error.message || 'Medication search failed');
     }
   }
@@ -458,7 +458,7 @@ export class AiSearchService {
     period: string = 'week',
     limit: number = 10,
   ): Promise<SearchAnalytics> {
-    this.logger.log(`Getting search analytics for period: ${period}`);
+    this.logInfo(`Getting search analytics for period: ${period}`);
 
     // In a real implementation, this would query search_logs table
     return {
@@ -477,7 +477,7 @@ export class AiSearchService {
   private async findMedicationInteractions(
     medications: string[],
   ): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Finding interactions for ${medications.length} medications`,
     );
 
@@ -500,7 +500,7 @@ export class AiSearchService {
   private async findMedicationAlternatives(
     medications: string[],
   ): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Finding alternatives for ${medications.length} medications`,
     );
 
@@ -520,7 +520,7 @@ export class AiSearchService {
    * Find medication side effects
    */
   private async findMedicationSideEffects(medications: string[]): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Finding side effects for ${medications.length} medications`,
     );
 
@@ -543,7 +543,7 @@ export class AiSearchService {
     medications: string[],
     patientId?: string,
   ): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Finding contraindications for ${medications.length} medications`,
     );
 

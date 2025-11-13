@@ -18,6 +18,7 @@ import { Student   } from "../../database/models";
 import { PaginatedHealthRecords } from '../interfaces/pagination.interface';
 import { BulkDeleteResults } from '../interfaces/health-record-types';
 
+import { BaseService } from '../../common/base';
 /**
  * HealthRecordCrudService
  *
@@ -31,9 +32,7 @@ import { BulkDeleteResults } from '../interfaces/health-record-types';
  * - Vaccination record filtering
  */
 @Injectable()
-export class HealthRecordCrudService {
-  private readonly logger = new Logger(HealthRecordCrudService.name);
-
+export class HealthRecordCrudService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
@@ -92,7 +91,7 @@ export class HealthRecordCrudService {
       });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Health records retrieved for student ${studentId}, count: ${records.length}`,
     );
 
@@ -133,7 +132,7 @@ export class HealthRecordCrudService {
     }
 
     // PHI Creation Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Health record ${record.recordType} for student ${record.student!.firstName} ${record.student!.lastName}`,
     );
 
@@ -172,7 +171,7 @@ export class HealthRecordCrudService {
     }
 
     // PHI Modification Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Modified: Health record ${record.recordType} updated for student ${record.student!.firstName} ${record.student!.lastName}`,
     );
 
@@ -195,7 +194,7 @@ export class HealthRecordCrudService {
     });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Vaccination records retrieved for student ${studentId}, count: ${records.length}`,
     );
 
@@ -230,7 +229,7 @@ export class HealthRecordCrudService {
     const notFoundCount = recordIds.length - deletedCount;
 
     // PHI Deletion Audit Log
-    this.logger.warn(
+    this.logWarning(
       `PHI Deletion: Bulk delete completed - ${deletedCount} records deleted, ${notFoundCount} not found`,
     );
 
@@ -242,7 +241,7 @@ export class HealthRecordCrudService {
           ),
         ),
       ];
-      this.logger.warn(
+      this.logWarning(
         `PHI Deletion: Records deleted for students: ${studentNames.join(', ')}`,
       );
     }
@@ -307,7 +306,7 @@ export class HealthRecordCrudService {
       });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: All health records retrieved, count: ${records.length}, filters: ${JSON.stringify(filters)}`,
     );
 
@@ -349,7 +348,7 @@ export class HealthRecordCrudService {
     }
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Health record ${id} retrieved for student ${record.student?.firstName} ${record.student?.lastName}`,
     );
 

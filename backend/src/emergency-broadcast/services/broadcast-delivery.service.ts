@@ -10,15 +10,14 @@ import { RecipientDeliveryStatus } from '../emergency-broadcast.interfaces';
 import { CommunicationService } from '../../communication/services/communication.service';
 import { BroadcastRecipient } from './broadcast-recipient.service';
 
+import { BaseService } from '../../common/base';
 interface DeliveryResult {
   success: boolean;
   error?: string;
 }
 
 @Injectable()
-export class BroadcastDeliveryService {
-  private readonly logger = new Logger(BroadcastDeliveryService.name);
-
+export class BroadcastDeliveryService extends BaseService {
   constructor(private readonly communicationService: CommunicationService) {}
 
   /**
@@ -44,7 +43,7 @@ export class BroadcastDeliveryService {
   ): Promise<RecipientDeliveryStatus[]> {
     const deliveryStatuses: RecipientDeliveryStatus[] = [];
 
-    this.logger.log(
+    this.logInfo(
       `Delivering to ${recipients.length} recipients via channels: ${channels.join(', ')}`,
     );
 
@@ -83,7 +82,7 @@ export class BroadcastDeliveryService {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        this.logger.debug(`Delivery attempt ${attempt}/${maxRetries}`, {
+        this.logDebug(`Delivery attempt ${attempt}/${maxRetries}`, {
           broadcastId,
           recipientId: recipient.id,
           channel,
@@ -96,7 +95,7 @@ export class BroadcastDeliveryService {
         await this.sendViaChannel(channel, recipient, formattedMessage);
 
         // Success - log and return
-        this.logger.debug('Message delivered successfully', {
+        this.logDebug('Message delivered successfully', {
           broadcastId,
           recipientId: recipient.id,
           channel,
@@ -115,7 +114,7 @@ export class BroadcastDeliveryService {
           attemptCount: attempt,
         };
       } catch (error) {
-        this.logger.warn(`Delivery attempt ${attempt} failed`, {
+        this.logWarning(`Delivery attempt ${attempt} failed`, {
           broadcastId,
           recipientId: recipient.id,
           channel,
@@ -128,7 +127,7 @@ export class BroadcastDeliveryService {
           await this.sleep(delay);
         } else {
           // All retries exhausted - mark as failed
-          this.logger.error('All delivery attempts failed', {
+          this.logError('All delivery attempts failed', {
             broadcastId,
             recipientId: recipient.id,
             channel,

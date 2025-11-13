@@ -5,6 +5,7 @@ import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.d
 import { UpdateTreatmentPlanDto } from '../dto/treatment/update-treatment-plan.dto';
 import { TreatmentPlanFiltersDto } from '../dto/treatment/treatment-plan-filters.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Treatment Plan Controller
  * REST API for managing student treatment plans
@@ -12,7 +13,7 @@ import { TreatmentPlanFiltersDto } from '../dto/treatment/treatment-plan-filters
 @ApiTags('Clinical - Treatment Plans')
 @ApiBearerAuth()
 @Controller('clinical/treatment-plans')
-export class TreatmentPlanController {
+export class TreatmentPlanController extends BaseController {
   constructor(private readonly treatmentPlanService: TreatmentPlanService) {}
 
   @Post()

@@ -14,6 +14,13 @@ import { ResourceMonitor, ResourceAlert } from './resource-monitor.service';
 import { ResourceOptimizationEngine, OptimizationRecommendation } from './resource-optimization-engine.service';
 import { ResourceReporter } from './resource-reporter.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 export interface ResourceOptimizationPlan {
   planId: string;
   name: string;
@@ -29,7 +36,6 @@ export interface ResourceOptimizationPlan {
 
 @Injectable()
 export class ResourceOptimizationService implements OnModuleDestroy {
-  private readonly logger = new Logger(ResourceOptimizationService.name);
   private resourceHistory: ResourceMetrics[] = [];
   private alerts: Map<string, ResourceAlert> = new Map();
   private recommendations: Map<string, OptimizationRecommendation> = new Map();
@@ -37,12 +43,19 @@ export class ResourceOptimizationService implements OnModuleDestroy {
   private predictiveModels: Map<string, any> = new Map();
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly metricsCollector: ResourceMetricsCollector,
     private readonly resourceMonitor: ResourceMonitor,
     private readonly optimizationEngine: ResourceOptimizationEngine,
     private readonly resourceReporter: ResourceReporter,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super({
+      serviceName: 'ResourceOptimizationService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Get current resource metrics by delegating to metrics collector
@@ -152,7 +165,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
       
       this.resourceMonitor.checkForAlerts(metrics);
     } catch (error) {
-      this.logger.error('Failed to collect metrics and monitor', error);
+      this.logError('Failed to collect metrics and monitor', error);
     }
   }
 
@@ -167,7 +180,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
         await this.createOptimizationPlan(recommendations);
       }
     } catch (error) {
-      this.logger.error('Failed to analyze and optimize', error);
+      this.logError('Failed to analyze and optimize', error);
     }
   }
 
@@ -180,7 +193,7 @@ export class ResourceOptimizationService implements OnModuleDestroy {
       // Cleanup old data
       this.cleanupOldData();
     } catch (error) {
-      this.logger.error('Failed to perform maintenance', error);
+      this.logError('Failed to perform maintenance', error);
     }
   }
 
@@ -213,6 +226,6 @@ export class ResourceOptimizationService implements OnModuleDestroy {
     this.optimizationPlans.clear();
     this.predictiveModels.clear();
 
-    this.logger.log('Resource Optimization Service destroyed');
+    this.logInfo('Resource Optimization Service destroyed');
   }
 }

@@ -22,6 +22,7 @@ import { ImportResults } from '../interfaces/health-record-types';
 import { HealthRecordStatistics } from '../interfaces/health-record-types';
 import { PaginatedHealthRecords } from '../interfaces/pagination.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * HealthRecordSummaryService
  *
@@ -37,9 +38,7 @@ import { PaginatedHealthRecords } from '../interfaces/pagination.interface';
  * - Retrieve complete health profiles
  */
 @Injectable()
-export class HealthRecordSummaryService {
-  private readonly logger = new Logger(HealthRecordSummaryService.name);
-
+export class HealthRecordSummaryService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
@@ -99,7 +98,7 @@ export class HealthRecordSummaryService {
     });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Health summary retrieved for student ${studentId}`,
     );
 
@@ -154,7 +153,7 @@ export class HealthRecordSummaryService {
       });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Health records search performed, query: "${query}", results: ${records.length}`,
     );
 
@@ -204,7 +203,7 @@ export class HealthRecordSummaryService {
     });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Export: Complete health history exported for student ${studentId}`,
     );
 
@@ -317,7 +316,7 @@ export class HealthRecordSummaryService {
     }
 
     // PHI Creation Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Import: Health data imported for student ${studentId}, imported: ${results.imported}, skipped: ${results.skipped}`,
     );
 
@@ -361,7 +360,7 @@ export class HealthRecordSummaryService {
     });
 
     // PHI Access Audit Log
-    this.logger.log('System statistics retrieved for health records');
+    this.logInfo('System statistics retrieved for health records');
 
     return {
       totalRecords,

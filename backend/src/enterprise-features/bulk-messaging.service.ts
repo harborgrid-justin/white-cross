@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BulkMessage } from './enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class BulkMessagingService {
-  private readonly logger = new Logger(BulkMessagingService.name);
+export class BulkMessagingService extends BaseService {
   private bulkMessages: BulkMessage[] = [];
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -36,7 +36,7 @@ export class BulkMessagingService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Bulk message initiated', {
+      this.logInfo('Bulk message initiated', {
         messageId: message.id,
         recipientCount: data.recipients.length,
         channels: data.channels,
@@ -47,7 +47,7 @@ export class BulkMessagingService {
 
       return message;
     } catch (error) {
-      this.logger.error('Error sending bulk message', {
+      this.logError('Error sending bulk message', {
         error: error instanceof Error ? error.message : String(error),
         recipientCount: data.recipients.length,
       });
@@ -73,7 +73,7 @@ export class BulkMessagingService {
         status: message.status,
       };
 
-      this.logger.log('Delivery tracking retrieved', {
+      this.logInfo('Delivery tracking retrieved', {
         messageId,
         status: message.status,
         sent: message.deliveryStats.sent,
@@ -84,7 +84,7 @@ export class BulkMessagingService {
 
       return deliveryStats;
     } catch (error) {
-      this.logger.error('Error tracking delivery', {
+      this.logError('Error tracking delivery', {
         error: error instanceof Error ? error.message : String(error),
         messageId,
       });
@@ -101,14 +101,14 @@ export class BulkMessagingService {
 
       const message = this.bulkMessages.find((m) => m.id === messageId);
       if (!message) {
-        this.logger.warn('Bulk message not found', { messageId });
+        this.logWarning('Bulk message not found', { messageId });
         return null;
       }
 
-      this.logger.log('Bulk message retrieved', { messageId });
+      this.logInfo('Bulk message retrieved', { messageId });
       return message;
     } catch (error) {
-      this.logger.error('Error retrieving bulk message', {
+      this.logError('Error retrieving bulk message', {
         error: error instanceof Error ? error.message : String(error),
         messageId,
       });
@@ -127,14 +127,14 @@ export class BulkMessagingService {
         messages = messages.filter((m) => m.status === status);
       }
 
-      this.logger.log('Bulk messages retrieved', {
+      this.logInfo('Bulk messages retrieved', {
         count: messages.length,
         status,
       });
 
       return messages;
     } catch (error) {
-      this.logger.error('Error retrieving bulk messages', {
+      this.logError('Error retrieving bulk messages', {
         error: error instanceof Error ? error.message : String(error),
         status,
       });
@@ -182,7 +182,7 @@ export class BulkMessagingService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Delivery stats updated', {
+      this.logInfo('Delivery stats updated', {
         messageId,
         status: message.status,
         sent: message.deliveryStats.sent,
@@ -192,7 +192,7 @@ export class BulkMessagingService {
 
       return true;
     } catch (error) {
-      this.logger.error('Error updating delivery stats', {
+      this.logError('Error updating delivery stats', {
         error: error instanceof Error ? error.message : String(error),
         messageId,
       });
@@ -226,14 +226,14 @@ export class BulkMessagingService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Bulk message cancelled', {
+      this.logInfo('Bulk message cancelled', {
         messageId,
         cancelledBy,
       });
 
       return true;
     } catch (error) {
-      this.logger.error('Error cancelling bulk message', {
+      this.logError('Error cancelling bulk message', {
         error: error instanceof Error ? error.message : String(error),
         messageId,
       });
@@ -266,10 +266,10 @@ export class BulkMessagingService {
         totalOpened: this.bulkMessages.reduce((sum, m) => sum + (m.deliveryStats.opened || 0), 0),
       };
 
-      this.logger.log('Delivery summary retrieved', summary);
+      this.logInfo('Delivery summary retrieved', summary);
       return summary;
     } catch (error) {
-      this.logger.error('Error retrieving delivery summary', {
+      this.logError('Error retrieving delivery summary', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -298,7 +298,7 @@ export class BulkMessagingService {
       message.status = 'completed';
       message.completedAt = new Date();
 
-      this.logger.log('Bulk message processed', {
+      this.logInfo('Bulk message processed', {
         messageId: message.id,
         sent: message.deliveryStats.sent,
         delivered,
@@ -306,7 +306,7 @@ export class BulkMessagingService {
         opened,
       });
     } catch (error) {
-      this.logger.error('Error processing bulk message', {
+      this.logError('Error processing bulk message', {
         error: error instanceof Error ? error.message : String(error),
         messageId: message.id,
       });

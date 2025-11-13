@@ -27,6 +27,7 @@ import { StudentService } from '../student.service';
 import { StudentBulkUpdateDto } from '../dto/bulk-update.dto';
 import { TransferStudentDto } from '../dto/transfer-student.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Management Controller
  *
@@ -39,7 +40,7 @@ import { TransferStudentDto } from '../dto/transfer-student.dto';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentManagementController {
+export class StudentManagementController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

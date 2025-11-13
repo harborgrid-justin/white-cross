@@ -9,6 +9,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
+import { BaseService } from '../../common/base';
 import {
   AnalyticsTimePeriod,
   TrendData,
@@ -29,9 +30,7 @@ import {
 } from './analytics-constants';
 
 @Injectable()
-export class AnalyticsMetricsCalculatorService {
-  private readonly logger = new Logger(AnalyticsMetricsCalculatorService.name);
-
+export class AnalyticsMetricsCalculatorService extends BaseService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     @Inject(CACHE_MANAGER)
@@ -75,7 +74,7 @@ export class AnalyticsMetricsCalculatorService {
 
       return { success: true, data: result };
     } catch (error) {
-      this.logger.error(`Failed to calculate health KPIs for school ${healthMetrics.schoolId}`, error);
+      this.logError(`Failed to calculate health KPIs for school ${healthMetrics.schoolId}`, error);
       return {
         success: false,
         error: `Failed to calculate KPIs: ${error.message}`,
@@ -137,7 +136,7 @@ export class AnalyticsMetricsCalculatorService {
 
       return { success: true, data: trendAnalysis };
     } catch (error) {
-      this.logger.error(`Failed to analyze trends for school ${schoolId}, metric ${metricType}`, error);
+      this.logError(`Failed to analyze trends for school ${schoolId}, metric ${metricType}`, error);
       return {
         success: false,
         error: `Failed to analyze trends: ${error.message}`,
@@ -178,7 +177,7 @@ export class AnalyticsMetricsCalculatorService {
 
       return { success: true, data: forecastAnalysis };
     } catch (error) {
-      this.logger.error(`Failed to generate forecast for school ${schoolId}, metric ${metricType}`, error);
+      this.logError(`Failed to generate forecast for school ${schoolId}, metric ${metricType}`, error);
       return {
         success: false,
         error: `Failed to generate forecast: ${error.message}`,

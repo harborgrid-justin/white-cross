@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DelegationCheckResult, PermissionDelegation } from '../interfaces/permission-delegation.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * Permission Delegation Service
  *
@@ -15,14 +16,12 @@ import { DelegationCheckResult, PermissionDelegation } from '../interfaces/permi
  * - Full audit trail
  */
 @Injectable()
-export class DelegationService {
-  private readonly logger = new Logger(DelegationService.name);
-
+export class DelegationService extends BaseService {
   // In-memory delegation storage (in production, use database)
   private delegations: Map<string, PermissionDelegation> = new Map();
 
   constructor() {
-    this.logger.log('Permission Delegation Service initialized');
+    this.logInfo('Permission Delegation Service initialized');
     this.startCleanupInterval();
   }
 
@@ -65,7 +64,7 @@ export class DelegationService {
     };
 
     this.delegations.set(id, delegation);
-    this.logger.log(
+    this.logInfo(
       `Created delegation: ${fromUserId} -> ${toUserId} (${permissions.length} permissions)`,
     );
 
@@ -99,7 +98,7 @@ export class DelegationService {
     }
 
     this.delegations.set(delegationId, delegation);
-    this.logger.log(`Revoked delegation: ${delegationId} by ${revokedBy}`);
+    this.logInfo(`Revoked delegation: ${delegationId} by ${revokedBy}`);
 
     return delegation;
   }
@@ -194,7 +193,7 @@ export class DelegationService {
     }
 
     if (cleaned > 0) {
-      this.logger.log(`Cleaned up ${cleaned} expired delegations`);
+      this.logInfo(`Cleaned up ${cleaned} expired delegations`);
     }
   }
 

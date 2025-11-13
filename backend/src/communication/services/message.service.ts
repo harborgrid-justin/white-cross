@@ -4,10 +4,9 @@ import { Message } from '../../database/models/message.model';
 import { MessageDelivery } from '../../database/models/message-delivery.model';
 import { SendMessageDto } from '../dto/send-message.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class MessageService {
-  private readonly logger = new Logger(MessageService.name);
-
+export class MessageService extends BaseService {
   constructor(
     @InjectModel(Message) private messageModel: typeof Message,
     @InjectModel(MessageDelivery) private deliveryModel: typeof MessageDelivery,
@@ -22,7 +21,7 @@ export class MessageService {
    * Performance improvement: ~98% query reduction
    */
   async sendMessage(data: SendMessageDto & { senderId: string }) {
-    this.logger.log(`Sending message to ${data.recipients.length} recipients`);
+    this.logInfo(`Sending message to ${data.recipients.length} recipients`);
 
     // Create message record
     const message = await this.messageModel.create({

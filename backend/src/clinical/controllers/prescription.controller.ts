@@ -7,10 +7,11 @@ import { FillPrescriptionDto } from '../dto/prescription/fill-prescription.dto';
 import { PrescriptionFiltersDto } from '../dto/prescription/prescription-filters.dto';
 import { Prescription } from '../../database/models/prescription.model';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Clinical - Prescriptions')
 @ApiBearerAuth()
 @Controller('clinical/prescriptions')
-export class PrescriptionController {
+export class PrescriptionController extends BaseController {
   constructor(private readonly prescriptionService: PrescriptionService) {}
 
   @Post()

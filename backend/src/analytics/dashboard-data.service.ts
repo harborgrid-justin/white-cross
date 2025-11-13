@@ -9,6 +9,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
+import { BaseService } from '../../common/base';
 import {
   DashboardData,
   DashboardAlert,
@@ -25,9 +26,7 @@ import {
 } from './analytics-constants';
 
 @Injectable()
-export class DashboardDataService {
-  private readonly logger = new Logger(DashboardDataService.name);
-
+export class DashboardDataService extends BaseService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     @Inject(CACHE_MANAGER)
@@ -84,7 +83,7 @@ export class DashboardDataService {
 
       return { success: true, data: dashboardData };
     } catch (error) {
-      this.logger.error(`Failed to prepare dashboard data for school ${schoolId}`, error);
+      this.logError(`Failed to prepare dashboard data for school ${schoolId}`, error);
       return {
         success: false,
         error: `Failed to prepare dashboard: ${error.message}`,
@@ -120,7 +119,7 @@ export class DashboardDataService {
         },
       };
     } catch (error) {
-      this.logger.error(`Failed to get realtime updates for school ${schoolId}`, error);
+      this.logError(`Failed to get realtime updates for school ${schoolId}`, error);
       return {
         success: false,
         error: `Failed to get updates: ${error.message}`,

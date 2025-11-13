@@ -7,12 +7,13 @@ import { IntegrationStatisticsService } from './integration-statistics.service';
 import { CreateIntegrationDto } from '../dto/create-integration.dto';
 import { UpdateIntegrationDto } from '../dto/update-integration.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Main Integration Service (Facade Pattern)
  * Provides a unified interface to all integration functionality
  */
 @Injectable()
-export class IntegrationService {
+export class IntegrationService extends BaseService {
   constructor(
     private readonly configService: IntegrationConfigService,
     private readonly testService: IntegrationTestService,

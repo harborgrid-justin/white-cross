@@ -7,10 +7,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { N1QueryDetection, PerformanceAlert, QueryExecution } from '../types/query-monitor.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class N1QueryDetectorService {
-  private readonly logger = new Logger(N1QueryDetectorService.name);
-
+export class N1QueryDetectorService extends BaseService {
   // Configuration
   private readonly N1_DETECTION_WINDOW = 1000; // 1 second
   private readonly N1_OCCURRENCE_THRESHOLD = 5;
@@ -91,7 +90,7 @@ export class N1QueryDetectorService {
     // Create alert
     this.createAlert(detection);
 
-    this.logger.error(`N+1 QUERY DETECTED:`, {
+    this.logError(`N+1 QUERY DETECTED:`, {
       model,
       occurrences: executions.length,
       pattern: signature.substring(0, 200),
@@ -217,6 +216,6 @@ export class N1QueryDetectorService {
   reset(): void {
     this.n1Detections = [];
     this.alerts = [];
-    this.logger.log('N+1 query detector reset');
+    this.logInfo('N+1 query detector reset');
   }
 }

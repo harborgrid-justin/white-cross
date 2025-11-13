@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 
+import { BaseService } from '../../common/base';
 export interface ResourceStats {
   poolName: string;
   totalResources: number;
@@ -26,8 +27,7 @@ export interface SystemResourceStats {
  * Monitors system and application resources using Discovery Service
  */
 @Injectable()
-export class ResourceMonitorService {
-  private readonly logger = new Logger(ResourceMonitorService.name);
+export class ResourceMonitorService extends BaseService {
   private monitoringInterval?: NodeJS.Timeout;
   private resourceHistory: ResourceStats[] = [];
   private systemHistory: SystemResourceStats[] = [];
@@ -44,12 +44,12 @@ export class ResourceMonitorService {
    */
   startMonitoring(intervalMs: number = 10000): void {
     if (this.isMonitoring) {
-      this.logger.warn('Resource monitoring already started');
+      this.logWarning('Resource monitoring already started');
       return;
     }
 
     this.isMonitoring = true;
-    this.logger.log(
+    this.logInfo(
       `Starting resource monitoring with ${intervalMs}ms interval`,
     );
 
@@ -68,7 +68,7 @@ export class ResourceMonitorService {
     }
 
     this.isMonitoring = false;
-    this.logger.log('Resource monitoring stopped');
+    this.logInfo('Resource monitoring stopped');
   }
 
   /**
@@ -218,12 +218,12 @@ export class ResourceMonitorService {
       // Discover and monitor resource providers
       await this.discoverAndMonitorProviders();
 
-      this.logger.debug('Resource stats collected', {
+      this.logDebug('Resource stats collected', {
         memoryMB: Math.round(systemStats.memoryUsage.heapUsed / 1024 / 1024),
         activePools: this.resourceHistory.length,
       });
     } catch (error) {
-      this.logger.error('Failed to collect resource stats:', error);
+      this.logError('Failed to collect resource stats:', error);
     }
   }
 

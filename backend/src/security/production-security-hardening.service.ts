@@ -15,6 +15,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { EventEmitter } from 'events';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // Enhanced Interfaces
 export interface EncryptionKey {
   id: string;
@@ -77,7 +81,6 @@ export interface ThreatDetection {
 // Advanced Security Service
 @Injectable()
 export class ProductionSecurityHardeningService extends EventEmitter {
-  private readonly logger = new Logger('SecurityHardening');
   private keyStore = new Map<string, EncryptionKey>();
   private encryptedColumns = new Map<string, EncryptedColumn>();
   private auditLogs: AuditLog[] = [];
@@ -85,7 +88,15 @@ export class ProductionSecurityHardeningService extends EventEmitter {
   private threats: ThreatDetection[] = [];
   private piiPatterns = new Map<string, RegExp>();
 
-  constructor() {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService
+  ) {
+    super({
+      serviceName: 'ProductionSecurityHardeningService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super();
     this.initializePIIPatterns();
     this.startSecurityMonitoring();
@@ -141,7 +152,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
 
       this.emit('columnEncrypted', { table, column, keyId });
     } catch (error) {
-      this.logger.error(`Failed to encrypt column ${table}.${column}:`, error);
+      this.logError(`Failed to encrypt column ${table}.${column}:`, error);
       throw error;
     }
   }
@@ -184,7 +195,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
 
       this.emit('columnDecrypted', { table, column, keyId });
     } catch (error) {
-      this.logger.error(`Failed to decrypt column ${table}.${column}:`, error);
+      this.logError(`Failed to decrypt column ${table}.${column}:`, error);
       throw error;
     }
   }
@@ -244,7 +255,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
 
       this.emit('keyRotated', { table, column, oldKeyId, newKeyId });
     } catch (error) {
-      this.logger.error(`Failed to rotate encryption for ${table}.${column}:`, error);
+      this.logError(`Failed to rotate encryption for ${table}.${column}:`, error);
       throw error;
     }
   }
@@ -270,7 +281,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
       const result = await sequelize.query(testQuery, { type: QueryTypes.SELECT });
       return (result[0] as any).count > 0;
     } catch (error) {
-      this.logger.error(`Encryption validation failed for ${table}.${column}:`, error);
+      this.logError(`Encryption validation failed for ${table}.${column}:`, error);
       return false;
     }
   }
@@ -326,7 +337,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
         metadata: { location, algorithm: key.algorithm }
       });
     } catch (error) {
-      this.logger.error(`Failed to store key ${key.id}:`, error);
+      this.logError(`Failed to store key ${key.id}:`, error);
       throw error;
     }
   }
@@ -348,7 +359,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
           throw new Error(`Unsupported key storage location: ${location}`);
       }
     } catch (error) {
-      this.logger.error(`Failed to retrieve key ${keyId}:`, error);
+      this.logError(`Failed to retrieve key ${keyId}:`, error);
       return null;
     }
   }
@@ -399,7 +410,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
 
       return [...new Set(piiColumns)]; // Remove duplicates
     } catch (error) {
-      this.logger.error(`PII detection failed for table ${table}:`, error);
+      this.logError(`PII detection failed for table ${table}:`, error);
       return [];
     }
   }
@@ -464,7 +475,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
     this.auditLogs.push(auditLog);
 
     // In production, would persist to secure audit database
-    this.logger.log(`Security Event: ${auditLog.action} - ${auditLog.resource}`);
+    this.logInfo(`Security Event: ${auditLog.action} - ${auditLog.resource}`);
 
     // Emit event for real-time monitoring
     this.emit('securityEvent', auditLog);
@@ -673,7 +684,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
       try {
         await this.detectSuspiciousActivity({} as Sequelize);
       } catch (error) {
-        this.logger.error('Security monitoring error:', error);
+        this.logError('Security monitoring error:', error);
       }
     }, 5 * 60 * 1000);
 
@@ -719,7 +730,7 @@ export class ProductionSecurityHardeningService extends EventEmitter {
         encryption: true
       };
     } catch (error) {
-      this.logger.error('Security health check failed:', error);
+      this.logError('Security health check failed:', error);
       return {
         keyStore: false,
         auditSystem: false,

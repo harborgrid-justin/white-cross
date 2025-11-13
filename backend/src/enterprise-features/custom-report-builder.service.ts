@@ -2,10 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ReportDefinition, ReportExecutionResult } from './enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class CustomReportBuilderService {
-  private readonly logger = new Logger(CustomReportBuilderService.name);
-
+export class CustomReportBuilderService extends BaseService {
   constructor(private eventEmitter: EventEmitter2) {}
 
   /**
@@ -64,7 +63,7 @@ export class CustomReportBuilderService {
         service: 'CustomReportBuilderService',
       });
 
-      this.logger.log('Custom report definition created', {
+      this.logInfo('Custom report definition created', {
         reportId: report.id,
         reportName: report.name,
         fieldCount: report.fields.length,
@@ -74,7 +73,7 @@ export class CustomReportBuilderService {
       return report;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Error creating report definition', {
+      this.logError('Error creating report definition', {
         error: errorMessage,
         reportName: data?.name,
       });
@@ -126,7 +125,7 @@ export class CustomReportBuilderService {
         service: 'CustomReportBuilderService',
       });
 
-      this.logger.log('Custom report executed successfully', {
+      this.logInfo('Custom report executed successfully', {
         reportId,
         recordCount: result.metadata.totalRecords,
         executionTimeMs: executionTime,
@@ -135,7 +134,7 @@ export class CustomReportBuilderService {
       return result;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Error executing report', {
+      this.logError('Error executing report', {
         error: errorMessage,
         reportId,
       });
@@ -176,7 +175,7 @@ export class CustomReportBuilderService {
         service: 'CustomReportBuilderService',
       });
 
-      this.logger.log('Report exported successfully', {
+      this.logInfo('Report exported successfully', {
         reportId,
         format,
         recordCount: reportResult.metadata.totalRecords,
@@ -186,7 +185,7 @@ export class CustomReportBuilderService {
       return exportPath;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Error exporting report', {
+      this.logError('Error exporting report', {
         error: errorMessage,
         reportId,
         format,

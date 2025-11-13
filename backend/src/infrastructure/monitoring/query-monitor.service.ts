@@ -19,10 +19,15 @@ import { SlowQueryDetectorService } from './services/slow-query-detector.service
 import { N1QueryDetectorService } from './services/n1-query-detector.service';
 import { PerformanceReporterService } from './services/performance-reporter.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(QueryMonitorService.name);
-
   // Monitoring state
   private isMonitoring = false;
   private reportInterval: NodeJS.Timeout | null = null;
@@ -37,7 +42,7 @@ export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Initializing Query Monitor Service');
+    this.logInfo('Initializing Query Monitor Service');
     this.startMonitoring();
   }
 
@@ -46,7 +51,7 @@ export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
    */
   startMonitoring(): void {
     if (this.isMonitoring) {
-      this.logger.warn('Query monitoring already started');
+      this.logWarning('Query monitoring already started');
       return;
     }
 
@@ -68,7 +73,7 @@ export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
       this.performanceReporter.generatePeriodicReport();
     }, 60000); // Every minute
 
-    this.logger.log('Query performance monitoring started');
+    this.logInfo('Query performance monitoring started');
   }
 
   /**
@@ -100,7 +105,7 @@ export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
       this.reportInterval = null;
     }
 
-    this.logger.log('Query performance monitoring stopped');
+    this.logInfo('Query performance monitoring stopped');
   }
 
   /**
@@ -169,7 +174,7 @@ export class QueryMonitorService implements OnModuleInit, OnModuleDestroy {
     this.slowQueryDetector.reset();
     this.n1Detector.reset();
     this.performanceReporter.reset();
-    this.logger.log('Query monitor metrics reset');
+    this.logInfo('Query monitor metrics reset');
   }
 
   /**

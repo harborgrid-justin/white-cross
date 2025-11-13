@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BudgetService } from './budget.service';
+import { BaseController } from '../../common/base';
 import {
   BudgetTransactionFiltersDto,
   CreateBudgetCategoryDto,
@@ -39,7 +40,7 @@ import {
 @ApiTags('Budget')
 @ApiBearerAuth()
 @Controller('budget')
-export class BudgetController {
+export class BudgetController extends BaseController {
   constructor(private readonly budgetService: BudgetService) {}
 
   // ==================== Budget Category Endpoints ====================

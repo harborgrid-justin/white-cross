@@ -24,11 +24,12 @@ import { IncidentFiltersDto } from './dto/incident-filters.dto';
 import { UpdateFollowUpActionDto } from './dto/update-follow-up-action.dto';
 import { UpdateIncidentReportDto } from './dto/update-incident-report.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('incident-report')
 @Controller('incident-report')
 @ApiBearerAuth()
 // @UseGuards(JwtAuthGuard) // Uncomment when auth is set up
-export class IncidentReportController {
+export class IncidentReportController extends BaseController {
   constructor(
     private readonly coreService: IncidentCoreService,
     private readonly followUpService: IncidentFollowUpService,

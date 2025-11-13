@@ -8,6 +8,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { BaseService } from '../../common/base';
 import {
   Alert,
   AlertConfig,
@@ -29,9 +30,7 @@ import {
  * ```
  */
 @Injectable()
-export class AlertManagementService {
-  private readonly logger = new Logger(AlertManagementService.name);
-
+export class AlertManagementService extends BaseService {
   // Alert storage
   private alerts: Map<string, Alert> = new Map();
 
@@ -76,7 +75,7 @@ export class AlertManagementService {
       ),
     };
 
-    this.logger.log('Alert configuration loaded', this.alertConfig);
+    this.logInfo('Alert configuration loaded', this.alertConfig);
   }
 
   /**
@@ -91,7 +90,7 @@ export class AlertManagementService {
    */
   updateAlertConfig(config: Partial<AlertConfig>): void {
     this.alertConfig = { ...this.alertConfig, ...config };
-    this.logger.log('Alert configuration updated', this.alertConfig);
+    this.logInfo('Alert configuration updated', this.alertConfig);
   }
 
   /**
@@ -188,7 +187,7 @@ export class AlertManagementService {
     // Store new alerts
     alerts.forEach((alert) => {
       this.alerts.set(alert.id, alert);
-      this.logger.warn(`Alert triggered: ${alert.title}`, alert);
+      this.logWarning(`Alert triggered: ${alert.title}`, alert);
     });
 
     // Clean up old alerts (older than 1 hour)
@@ -247,7 +246,7 @@ export class AlertManagementService {
     const alert = this.alerts.get(alertId);
     if (alert) {
       alert.acknowledged = true;
-      this.logger.log(`Alert acknowledged: ${alertId}`);
+      this.logInfo(`Alert acknowledged: ${alertId}`);
       return true;
     }
     return false;
@@ -263,7 +262,7 @@ export class AlertManagementService {
     const alert = this.alerts.get(alertId);
     if (alert) {
       alert.resolvedAt = new Date().toISOString();
-      this.logger.log(`Alert resolved: ${alertId}`);
+      this.logInfo(`Alert resolved: ${alertId}`);
       return true;
     }
     return false;
@@ -274,7 +273,7 @@ export class AlertManagementService {
    */
   clearAllAlerts(): void {
     this.alerts.clear();
-    this.logger.log('All alerts cleared');
+    this.logInfo('All alerts cleared');
   }
 
   /**
@@ -286,6 +285,6 @@ export class AlertManagementService {
         this.alerts.delete(id);
       }
     });
-    this.logger.log('Resolved alerts cleared');
+    this.logInfo('Resolved alerts cleared');
   }
 }

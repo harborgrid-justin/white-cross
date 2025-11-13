@@ -21,6 +21,7 @@ import {
 import { User } from '../../database/models/user.model';
 import { AppointmentSchedulingService } from './appointment-scheduling.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Appointment Query Service
  *
@@ -31,9 +32,7 @@ import { AppointmentSchedulingService } from './appointment-scheduling.service';
  * - Get available time slots (delegates to AppointmentSchedulingService)
  */
 @Injectable()
-export class AppointmentQueryService {
-  private readonly logger = new Logger(AppointmentQueryService.name);
-
+export class AppointmentQueryService extends BaseService {
   constructor(
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
@@ -46,7 +45,7 @@ export class AppointmentQueryService {
    * Get appointments by a specific date
    */
   async getAppointmentsByDate(dateStr: string): Promise<{ data: AppointmentEntity[] }> {
-    this.logger.log(`Fetching appointments for date: ${dateStr}`);
+    this.logInfo(`Fetching appointments for date: ${dateStr}`);
 
     try {
       // Parse the date string and create start/end of day boundaries
@@ -84,7 +83,7 @@ export class AppointmentQueryService {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error(`Error fetching appointments by date: ${error.message}`, error.stack);
+      this.logError(`Error fetching appointments by date: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch appointments by date');
     }
   }
@@ -93,7 +92,7 @@ export class AppointmentQueryService {
    * Get upcoming appointments for a specific nurse
    */
   async getUpcomingAppointments(nurseId: string, limit: number = 10): Promise<AppointmentEntity[]> {
-    this.logger.log(`Fetching upcoming appointments for nurse: ${nurseId}`);
+    this.logInfo(`Fetching upcoming appointments for nurse: ${nurseId}`);
 
     try {
       const now = new Date();
@@ -121,7 +120,7 @@ export class AppointmentQueryService {
 
       return appointments.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(`Error fetching upcoming appointments: ${error.message}`, error.stack);
+      this.logError(`Error fetching upcoming appointments: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to fetch upcoming appointments');
     }
   }
@@ -132,7 +131,7 @@ export class AppointmentQueryService {
   async getGeneralUpcomingAppointments(
     limit: number = 50,
   ): Promise<{ data: AppointmentEntity[] }> {
-    this.logger.log(`Fetching general upcoming appointments`);
+    this.logInfo(`Fetching general upcoming appointments`);
 
     try {
       const now = new Date();
@@ -163,7 +162,7 @@ export class AppointmentQueryService {
       const data = appointments.map((apt) => this.mapToEntity(apt));
       return { data };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error fetching general upcoming appointments: ${error.message}`,
         error.stack,
       );
@@ -192,7 +191,7 @@ export class AppointmentQueryService {
     dateTo?: string,
     duration: number = 30,
   ): Promise<any[]> {
-    this.logger.log(`Getting available slots for nurse: ${nurseId}`);
+    this.logInfo(`Getting available slots for nurse: ${nurseId}`);
 
     try {
       // Default to today if no date range provided
@@ -218,7 +217,7 @@ export class AppointmentQueryService {
 
       return allSlots;
     } catch (error) {
-      this.logger.error(`Error getting available slots: ${error.message}`, error.stack);
+      this.logError(`Error getting available slots: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get available slots');
     }
   }

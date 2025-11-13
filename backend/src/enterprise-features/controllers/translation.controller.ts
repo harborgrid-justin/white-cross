@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { LanguageTranslationService } from '../language-translation.service';
 import { DetectLanguageDto, TranslateBulkMessagesDto, TranslateMessageDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Language Translation')
 @Controller('enterprise-features/translate')
 @ApiBearerAuth()
-export class TranslationController {
+export class TranslationController extends BaseController {
   constructor(private readonly translationService: LanguageTranslationService) {}
 
   @Post()

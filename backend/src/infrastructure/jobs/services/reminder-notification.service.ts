@@ -4,7 +4,9 @@
  * @description Service for sending medication reminder notifications
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { EmailService } from '@/infrastructure/email';
@@ -42,9 +44,7 @@ interface ReminderContact {
  * Service for sending medication reminder notifications
  */
 @Injectable()
-export class ReminderNotificationService {
-  private readonly logger = new Logger(ReminderNotificationService.name);
-
+export class ReminderNotificationService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
     private readonly emailService: EmailService,
@@ -72,11 +72,11 @@ export class ReminderNotificationService {
     });
 
     if (dueReminders.length === 0) {
-      this.logger.debug('No reminders due for notification at this time');
+      this.logDebug('No reminders due for notification at this time');
       return { sent, failed };
     }
 
-    this.logger.log(`Sending notifications for ${dueReminders.length} due reminders`);
+    this.logInfo(`Sending notifications for ${dueReminders.length} due reminders`);
 
     // Group reminders by student for batch processing
     const remindersByStudent = this.groupRemindersByStudent(dueReminders);
@@ -88,7 +88,7 @@ export class ReminderNotificationService {
         const contacts = await this.getStudentContacts(studentId);
 
         if (contacts.length === 0) {
-          this.logger.warn(`No contact information found for student ${studentId}`);
+          this.logWarning(`No contact information found for student ${studentId}`);
           failed += studentReminders.length;
           continue;
         }
@@ -100,23 +100,23 @@ export class ReminderNotificationService {
               await this.sendEmailReminder(contact, studentReminders, jobId);
               sent++;
             } catch (error) {
-              this.logger.error(`Failed to send email reminder to ${contact.email}`, error);
+              this.logError(`Failed to send email reminder to ${contact.email}`, error);
               failed++;
             }
           }
 
           // SMS notifications - placeholder for future implementation
           if (contact.phone) {
-            this.logger.debug(`SMS reminder would be sent to ${contact.phone} (not implemented)`);
+            this.logDebug(`SMS reminder would be sent to ${contact.phone} (not implemented)`);
           }
         }
       } catch (error) {
-        this.logger.error(`Failed to send notifications for student ${studentId}`, error);
+        this.logError(`Failed to send notifications for student ${studentId}`, error);
         failed += studentReminders.length;
       }
     }
 
-    this.logger.log(`Notification delivery complete: ${sent} sent, ${failed} failed`);
+    this.logInfo(`Notification delivery complete: ${sent} sent, ${failed} failed`);
     return { sent, failed };
   }
 
@@ -159,7 +159,7 @@ export class ReminderNotificationService {
         failureReason: result.error,
       });
 
-      this.logger.log(`Email reminder sent to ${contact.email}`);
+      this.logInfo(`Email reminder sent to ${contact.email}`);
     } catch (error) {
       // Update delivery record with failure
       await delivery.update({
@@ -299,7 +299,7 @@ export class ReminderNotificationService {
         guardianName: c.guardian_name,
       }));
     } catch (error) {
-      this.logger.error(`Failed to get contacts for student ${studentId}`, error);
+      this.logError(`Failed to get contacts for student ${studentId}`, error);
       return [];
     }
   }

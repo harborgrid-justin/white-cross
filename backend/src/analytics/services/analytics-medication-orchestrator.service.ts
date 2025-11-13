@@ -5,6 +5,7 @@ import { TrendDirection } from '../enums/trend-direction.enum';
 import { GetMedicationUsageQueryDto } from '../dto/medication-analytics.dto';
 import { GetMedicationAdherenceQueryDto } from '../dto/medication-analytics.dto';
 
+import { BaseService } from '../../common/base';
 interface MedicationTrend {
   medicationName: string;
   category: string;
@@ -66,9 +67,7 @@ interface MedicationAdherenceResponse {
  * - Analyze medication trends by category
  */
 @Injectable()
-export class AnalyticsMedicationOrchestratorService {
-  private readonly logger = new Logger(AnalyticsMedicationOrchestratorService.name);
-
+export class AnalyticsMedicationOrchestratorService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
   ) {}
@@ -106,7 +105,7 @@ export class AnalyticsMedicationOrchestratorService {
         adherenceIncluded: query.includeAdherenceRate !== false,
       };
     } catch (error) {
-      this.logger.error('Error getting medication usage', error);
+      this.logError('Error getting medication usage', error);
       throw error;
     }
   }
@@ -148,7 +147,7 @@ export class AnalyticsMedicationOrchestratorService {
         },
       };
     } catch (error) {
-      this.logger.error('Error getting medication adherence', error);
+      this.logError('Error getting medication adherence', error);
       throw error;
     }
   }

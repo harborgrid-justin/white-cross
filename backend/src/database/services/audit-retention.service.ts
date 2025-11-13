@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { AuditLog, ComplianceType } from '../models/audit-log.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Interface for retention policy execution results
  */
@@ -28,9 +29,7 @@ export interface RetentionPolicyResult {
  * - Detailed reporting of expired logs
  */
 @Injectable()
-export class AuditRetentionService {
-  private readonly logger = new Logger(AuditRetentionService.name);
-
+export class AuditRetentionService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -114,11 +113,11 @@ export class AuditRetentionService {
           },
         });
 
-        this.logger.log(
+        this.logInfo(
           `Retention policy executed: deleted ${totalToDelete} logs, retained ${retained} logs`,
         );
       } else {
-        this.logger.log(
+        this.logInfo(
           `Retention policy dry run: would delete ${totalToDelete} logs, retain ${retained} logs`,
         );
       }
@@ -129,7 +128,7 @@ export class AuditRetentionService {
         details,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to execute retention policy: ${error.message}`,
         error.stack,
       );

@@ -21,6 +21,10 @@ import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
 import type { WorkerInfo, WorkerPoolOptions, WorkerPoolStats, WorkerTask } from './worker-pool.interfaces';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   Cleanup,
   CPUIntensive,
@@ -64,7 +68,6 @@ export class WorkerPoolService
   extends EventEmitter
   implements OnModuleInit, OnModuleDestroy
 {
-  private readonly logger = new Logger(WorkerPoolService.name);
   private workers: WorkerInfo[] = [];
   private taskQueue: WorkerTask[] = [];
   private taskIdCounter = 0;
@@ -80,7 +83,16 @@ export class WorkerPoolService
    * @param workerScript - Absolute path to the compiled worker script (.js file)
    * @param options - Pool configuration options
    */
-  constructor(workerScript: string, options: WorkerPoolOptions = {}) {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    workerScript: string, options: WorkerPoolOptions = {}
+  ) {
+    super({
+      serviceName: 'WorkerPoolService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super();
 
     this.workerScript = workerScript;
@@ -108,18 +120,18 @@ export class WorkerPoolService
    */
   private initializePool(): void {
     if (this.isInitialized) {
-      this.logger.warn('Worker pool already initialized');
+      this.logWarning('Worker pool already initialized');
       return;
     }
 
-    this.logger.log(`Initializing worker pool with ${this.poolSize} workers`);
+    this.logInfo(`Initializing worker pool with ${this.poolSize} workers`);
 
     for (let i = 0; i < this.poolSize; i++) {
       this.createWorker();
     }
 
     this.isInitialized = true;
-    this.logger.log(
+    this.logInfo(
       `Worker pool initialized with ${this.workers.length} workers`,
     );
   }
@@ -171,7 +183,7 @@ export class WorkerPoolService
    */
   private handleWorkerError(workerInfo: WorkerInfo, error: Error): void {
     workerInfo.errors++;
-    this.logger.error('Worker error', {
+    this.logError('Worker error', {
       error: error.message,
       errorCount: workerInfo.errors,
       stack: error.stack,
@@ -179,7 +191,7 @@ export class WorkerPoolService
 
     // Restart worker if error count exceeds threshold
     if (workerInfo.errors > 5) {
-      this.logger.warn(`Worker error threshold exceeded, restarting worker`);
+      this.logWarning(`Worker error threshold exceeded, restarting worker`);
       this.restartWorker(workerInfo);
     }
   }
@@ -190,7 +202,7 @@ export class WorkerPoolService
    */
   private handleWorkerExit(workerInfo: WorkerInfo, code: number): void {
     if (code !== 0 && !this.isShuttingDown) {
-      this.logger.warn(`Worker exited with code ${code}, restarting...`);
+      this.logWarning(`Worker exited with code ${code}, restarting...`);
       this.restartWorker(workerInfo);
     }
   }
@@ -205,7 +217,7 @@ export class WorkerPoolService
 
     // Terminate old worker
     workerInfo.worker.terminate().catch((error: Error) => {
-      this.logger.error('Error terminating worker', error);
+      this.logError('Error terminating worker', error);
     });
 
     // Remove from pool
@@ -214,7 +226,7 @@ export class WorkerPoolService
     // Create new worker
     this.createWorker();
 
-    this.logger.log('Worker restarted successfully');
+    this.logInfo('Worker restarted successfully');
   }
 
   /**
@@ -358,12 +370,12 @@ export class WorkerPoolService
   @Cleanup('high')
   public async shutdown(): Promise<void> {
     if (this.isShuttingDown) {
-      this.logger.warn('Worker pool already shutting down');
+      this.logWarning('Worker pool already shutting down');
       return;
     }
 
     this.isShuttingDown = true;
-    this.logger.log('Shutting down worker pool...');
+    this.logInfo('Shutting down worker pool...');
 
     // Clear task queue and reject pending tasks
     this.taskQueue.forEach((task) => {
@@ -378,13 +390,13 @@ export class WorkerPoolService
         try {
           await workerInfo.worker.terminate();
         } catch (error) {
-          this.logger.error('Error terminating worker', error);
+          this.logError('Error terminating worker', error);
         }
       }),
     );
 
     this.workers = [];
     this.isInitialized = false;
-    this.logger.log('Worker pool shutdown complete');
+    this.logInfo('Worker pool shutdown complete');
   }
 }

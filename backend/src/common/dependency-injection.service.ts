@@ -93,6 +93,7 @@ import {
 } from '@nestjs/core';
 import { randomUUID } from 'crypto';
 
+import { BaseService } from '../../common/base';
 /**
  * Provider token type for injection
  */
@@ -371,7 +372,7 @@ export function registerConditionalProviders(
  *
  * // Inject in service
  * @Injectable()
- * export class AuditService {
+ * export class AuditService extends BaseService {
  *   constructor(
  *     @Inject('REQUEST_CONTEXT') private context: RequestContextService
  *   ) {}
@@ -543,15 +544,13 @@ export function createProviderToken(name: string, namespace?: string): string {
  */
 export class ProviderTokenRegistry {
   private tokens = new Map<string, ProviderToken>();
-  private readonly logger = new Logger('ProviderTokenRegistry');
-
   register(key: string, token: ProviderToken): void {
     if (this.tokens.has(key)) {
-      this.logger.warn(`Token already registered: ${key}`);
+      this.logWarning(`Token already registered: ${key}`);
     }
 
     this.tokens.set(key, token);
-    this.logger.debug(`Token registered: ${key}`);
+    this.logDebug(`Token registered: ${key}`);
   }
 
   get(key: string): ProviderToken | undefined {
@@ -568,7 +567,7 @@ export class ProviderTokenRegistry {
 
   clear(): void {
     this.tokens.clear();
-    this.logger.debug('All tokens cleared');
+    this.logDebug('All tokens cleared');
   }
 }
 
@@ -713,7 +712,7 @@ export class ProviderIntrospector {
     try {
       return await this.moduleRef.resolve<T>(token, undefined, options);
     } catch (error) {
-      this.logger.warn(`Provider not found: ${String(token)}`);
+      this.logWarning(`Provider not found: ${String(token)}`);
       return undefined;
     }
   }
@@ -893,11 +892,11 @@ export class LazyProvider<T> {
     }
 
     this.initializing = true;
-    this.logger.debug(`Initializing lazy provider: ${this.name}`);
+    this.logDebug(`Initializing lazy provider: ${this.name}`);
 
     try {
       this.instance = await this.factory();
-      this.logger.debug(`Lazy provider initialized: ${this.name}`);
+      this.logDebug(`Lazy provider initialized: ${this.name}`);
       return this.instance;
     } finally {
       this.initializing = false;
@@ -911,7 +910,7 @@ export class LazyProvider<T> {
   reset(): void {
     this.instance = undefined;
     this.initializing = false;
-    this.logger.debug(`Lazy provider reset: ${this.name}`);
+    this.logDebug(`Lazy provider reset: ${this.name}`);
   }
 }
 
@@ -998,7 +997,7 @@ export class ProviderDependencyResolver {
     dependencies: ProviderToken[],
   ): void {
     this.dependencyGraph.set(provider, new Set(dependencies));
-    this.logger.debug(`Dependencies registered for: ${String(provider)}`);
+    this.logDebug(`Dependencies registered for: ${String(provider)}`);
   }
 
   /**
@@ -1136,7 +1135,7 @@ export class ProviderFactoryRegistry {
    */
   register(token: ProviderToken, factory: (...args: any[]) => any): void {
     this.factories.set(token, factory);
-    this.logger.debug(`Factory registered: ${String(token)}`);
+    this.logDebug(`Factory registered: ${String(token)}`);
   }
 
   /**
@@ -1178,7 +1177,7 @@ export class ProviderFactoryRegistry {
    */
   clear(): void {
     this.factories.clear();
-    this.logger.debug('All factories cleared');
+    this.logDebug('All factories cleared');
   }
 }
 
@@ -1197,7 +1196,7 @@ export class ProviderLifecycleManager {
    */
   onInit(token: ProviderToken, hook: () => Promise<void>): void {
     this.initHooks.set(token, hook);
-    this.logger.debug(`Init hook registered: ${String(token)}`);
+    this.logDebug(`Init hook registered: ${String(token)}`);
   }
 
   /**
@@ -1207,7 +1206,7 @@ export class ProviderLifecycleManager {
    */
   onDestroy(token: ProviderToken, hook: () => Promise<void>): void {
     this.destroyHooks.set(token, hook);
-    this.logger.debug(`Destroy hook registered: ${String(token)}`);
+    this.logDebug(`Destroy hook registered: ${String(token)}`);
   }
 
   /**
@@ -1218,7 +1217,7 @@ export class ProviderLifecycleManager {
     const hook = this.initHooks.get(token);
 
     if (hook) {
-      this.logger.debug(`Executing init hook: ${String(token)}`);
+      this.logDebug(`Executing init hook: ${String(token)}`);
       await hook();
     }
   }
@@ -1231,7 +1230,7 @@ export class ProviderLifecycleManager {
     const hook = this.destroyHooks.get(token);
 
     if (hook) {
-      this.logger.debug(`Executing destroy hook: ${String(token)}`);
+      this.logDebug(`Executing destroy hook: ${String(token)}`);
       await hook();
     }
   }
@@ -1347,7 +1346,7 @@ export class ProviderCollection {
    */
   add(provider: Provider): this {
     this.providers.push(provider);
-    this.logger.debug(`Provider added to collection`);
+    this.logDebug(`Provider added to collection`);
     return this;
   }
 
@@ -1357,7 +1356,7 @@ export class ProviderCollection {
    */
   addAll(providers: Provider[]): this {
     this.providers.push(...providers);
-    this.logger.debug(`${providers.length} providers added to collection`);
+    this.logDebug(`${providers.length} providers added to collection`);
     return this;
   }
 
@@ -1402,7 +1401,7 @@ export class ProviderCollection {
    */
   clear(): void {
     this.providers = [];
-    this.logger.debug('Collection cleared');
+    this.logDebug('Collection cleared');
   }
 }
 
@@ -1446,7 +1445,7 @@ export class ProviderValidator {
     }
 
     if ((provider as any).useFactory && !(provider as any).inject) {
-      this.logger.warn('Factory provider without inject array may cause issues');
+      this.logWarning('Factory provider without inject array may cause issues');
     }
 
     return {

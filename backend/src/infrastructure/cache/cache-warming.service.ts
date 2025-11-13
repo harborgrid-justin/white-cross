@@ -16,6 +16,13 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { CacheService } from './cache.service';
 import { CacheEvent, CacheWarmingStrategy } from './cache.interfaces';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Cache miss event payload
  */
@@ -30,7 +37,6 @@ interface CacheMissPayload {
  */
 @Injectable()
 export class CacheWarmingService implements OnModuleInit {
-  private readonly logger = new Logger(CacheWarmingService.name);
   private strategies: Map<string, CacheWarmingStrategy> = new Map();
   private warmingInProgress = false;
   private lastWarmingTime?: Date;
@@ -41,16 +47,23 @@ export class CacheWarmingService implements OnModuleInit {
   };
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly cacheService: CacheService,
     private readonly eventEmitter: EventEmitter2,
     private readonly schedulerRegistry: SchedulerRegistry,
-  ) {}
+  ) {
+    super({
+      serviceName: 'CacheWarmingService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Initialize warming strategies on module init
    */
   async onModuleInit(): Promise<void> {
-    this.logger.log('Cache warming service initialized');
+    this.logInfo('Cache warming service initialized');
   }
 
   /**
@@ -59,7 +72,7 @@ export class CacheWarmingService implements OnModuleInit {
    */
   registerStrategy(strategy: CacheWarmingStrategy): void {
     this.strategies.set(strategy.name, strategy);
-    this.logger.log(`Registered cache warming strategy: ${strategy.name} (${strategy.type})`);
+    this.logInfo(`Registered cache warming strategy: ${strategy.name} (${strategy.type})`);
 
     // Schedule cron-based strategies
     if (strategy.type === 'scheduled' && strategy.schedule) {
@@ -81,7 +94,7 @@ export class CacheWarmingService implements OnModuleInit {
       }
     }
     this.strategies.delete(name);
-    this.logger.log(`Unregistered cache warming strategy: ${name}`);
+    this.logInfo(`Unregistered cache warming strategy: ${name}`);
   }
 
   /**
@@ -91,7 +104,7 @@ export class CacheWarmingService implements OnModuleInit {
   async warmByStrategy(strategyName: string): Promise<number> {
     const strategy = this.strategies.get(strategyName);
     if (!strategy) {
-      this.logger.warn(`Cache warming strategy not found: ${strategyName}`);
+      this.logWarning(`Cache warming strategy not found: ${strategyName}`);
       return 0;
     }
 
@@ -104,7 +117,7 @@ export class CacheWarmingService implements OnModuleInit {
    */
   async warmAll(filterType?: 'scheduled' | 'on-demand' | 'lazy' | 'priority'): Promise<number> {
     if (this.warmingInProgress) {
-      this.logger.warn('Cache warming already in progress, skipping');
+      this.logWarning('Cache warming already in progress, skipping');
       return 0;
     }
 
@@ -126,7 +139,7 @@ export class CacheWarmingService implements OnModuleInit {
           const count = await this.executeStrategy(strategy);
           totalWarmed += count;
         } catch (error) {
-          this.logger.error(`Failed to execute warming strategy ${strategy.name}:`, error);
+          this.logError(`Failed to execute warming strategy ${strategy.name}:`, error);
           this.warmingStats.failures++;
         }
       }
@@ -135,7 +148,7 @@ export class CacheWarmingService implements OnModuleInit {
       this.warmingStats.lastCount = totalWarmed;
       this.lastWarmingTime = new Date();
 
-      this.logger.log(
+      this.logInfo(
         `Cache warming completed: ${totalWarmed} entries warmed using ${sortedStrategies.length} strategies`,
       );
 
@@ -151,7 +164,7 @@ export class CacheWarmingService implements OnModuleInit {
    * @private
    */
   private async executeStrategy(strategy: CacheWarmingStrategy): Promise<number> {
-    this.logger.log(`Executing cache warming strategy: ${strategy.name}`);
+    this.logInfo(`Executing cache warming strategy: ${strategy.name}`);
     const startTime = Date.now();
 
     try {
@@ -169,12 +182,12 @@ export class CacheWarmingService implements OnModuleInit {
           });
           warmed++;
         } catch (error) {
-          this.logger.error(`Failed to warm cache key ${entry.key}:`, error);
+          this.logError(`Failed to warm cache key ${entry.key}:`, error);
         }
       }
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `Cache warming strategy ${strategy.name} completed: ${warmed}/${entries.length} entries in ${duration}ms`,
       );
 
@@ -186,7 +199,7 @@ export class CacheWarmingService implements OnModuleInit {
 
       return warmed;
     } catch (error) {
-      this.logger.error(`Cache warming strategy ${strategy.name} failed:`, error);
+      this.logError(`Cache warming strategy ${strategy.name} failed:`, error);
       throw error;
     }
   }
@@ -209,7 +222,7 @@ export class CacheWarmingService implements OnModuleInit {
       const job = new CronJob(
         strategy.schedule,
         async () => {
-          this.logger.log(`Running scheduled cache warming: ${strategy.name}`);
+          this.logInfo(`Running scheduled cache warming: ${strategy.name}`);
           await this.warmByStrategy(strategy.name);
         },
         null,
@@ -218,11 +231,11 @@ export class CacheWarmingService implements OnModuleInit {
 
       this.schedulerRegistry.addCronJob(jobName, job);
 
-      this.logger.log(
+      this.logInfo(
         `Scheduled cache warming strategy ${strategy.name} with schedule: ${strategy.schedule}`,
       );
     } catch (error) {
-      this.logger.error(`Failed to schedule warming strategy ${strategy.name}:`, error);
+      this.logError(`Failed to schedule warming strategy ${strategy.name}:`, error);
     }
   }
 
@@ -241,7 +254,7 @@ export class CacheWarmingService implements OnModuleInit {
           try {
             await this.executeStrategy(strategy);
           } catch (error) {
-            this.logger.error(`Lazy warming failed for strategy ${strategy.name}:`, error);
+            this.logError(`Lazy warming failed for strategy ${strategy.name}:`, error);
           }
         });
       }
@@ -281,7 +294,7 @@ export class CacheWarmingService implements OnModuleInit {
       return;
     }
 
-    this.logger.log('Running scheduled cache warming job');
+    this.logInfo('Running scheduled cache warming job');
     await this.warmAll('scheduled');
   }
 

@@ -20,6 +20,7 @@ import {
 } from '../../database/models/appointment-reminder.model';
 import { Appointment } from '../../database/models/appointment.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Reminder Service
  *
@@ -29,9 +30,7 @@ import { Appointment } from '../../database/models/appointment.model';
  * - Create appointment reminders
  */
 @Injectable()
-export class ReminderService {
-  private readonly logger = new Logger(ReminderService.name);
-
+export class ReminderService extends BaseService {
   constructor(
     @InjectModel(AppointmentReminder)
     private readonly reminderModel: typeof AppointmentReminder,
@@ -43,7 +42,7 @@ export class ReminderService {
    * Process pending reminders
    */
   async processPendingReminders(): Promise<ReminderProcessingResultDto> {
-    this.logger.log('Processing pending reminders');
+    this.logInfo('Processing pending reminders');
 
     try {
       const now = new Date();
@@ -89,7 +88,7 @@ export class ReminderService {
         errors: errors.length > 0 ? errors : undefined,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error processing reminders: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );
@@ -101,7 +100,7 @@ export class ReminderService {
    * Get appointment reminders
    */
   async getAppointmentReminders(appointmentId: string): Promise<{ reminders: any[] }> {
-    this.logger.log(`Getting reminders for appointment: ${appointmentId}`);
+    this.logInfo(`Getting reminders for appointment: ${appointmentId}`);
 
     try {
       const reminders = await this.reminderModel.findAll({
@@ -111,7 +110,7 @@ export class ReminderService {
 
       return { reminders };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error getting appointment reminders: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );
@@ -126,7 +125,7 @@ export class ReminderService {
     appointmentId: string,
     createDto: { scheduledFor: Date; type: string; message: string },
   ) {
-    this.logger.log(`Creating reminder for appointment: ${appointmentId}`);
+    this.logInfo(`Creating reminder for appointment: ${appointmentId}`);
 
     try {
       // Verify appointment exists
@@ -151,7 +150,7 @@ export class ReminderService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
+      this.logError(
         `Error creating reminder: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );

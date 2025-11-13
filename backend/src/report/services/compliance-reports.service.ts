@@ -6,14 +6,13 @@ import { AuditLog } from '../../database/models/audit-log.model';
 import { ComplianceReport } from '../interfaces/report-types.interface';
 import { BaseReportDto } from '../dto/base-report.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Compliance Reports Service
  * Handles HIPAA compliance reporting and regulatory audit trails
  */
 @Injectable()
-export class ComplianceReportsService {
-  private readonly logger = new Logger(ComplianceReportsService.name);
-
+export class ComplianceReportsService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private auditLogModel: typeof AuditLog,
@@ -121,7 +120,7 @@ export class ComplianceReportsService {
         raw: true,
       });
 
-      this.logger.log('Compliance report generated successfully');
+      this.logInfo('Compliance report generated successfully');
 
       return {
         hipaaLogs,
@@ -130,7 +129,7 @@ export class ComplianceReportsService {
         vaccinationRecords: (vaccinationRecords as any)[0]?.count || 0,
       };
     } catch (error) {
-      this.logger.error('Error generating compliance report:', error);
+      this.logError('Error generating compliance report:', error);
       throw error;
     }
   }

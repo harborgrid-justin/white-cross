@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { BulkMessagingService } from '../bulk-messaging.service';
 import { BulkMessageResponseDto, SendBulkMessageDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Bulk Messaging')
 @Controller('enterprise-features/bulk-messages')
 @ApiBearerAuth()
-export class BulkMessagingController {
+export class BulkMessagingController extends BaseController {
   constructor(private readonly bulkMessagingService: BulkMessagingService) {}
 
   @Post()

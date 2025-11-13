@@ -5,10 +5,11 @@ import { CreateNoteDto } from '../dto/note/create-note.dto';
 import { UpdateNoteDto } from '../dto/note/update-note.dto';
 import { NoteFiltersDto } from '../dto/note/note-filters.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Clinical - Clinical Notes')
 @ApiBearerAuth()
 @Controller('clinical/notes')
-export class ClinicalNoteController {
+export class ClinicalNoteController extends BaseController {
   constructor(private readonly noteService: ClinicalNoteService) {}
 
   @Post()

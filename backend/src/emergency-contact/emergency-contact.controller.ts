@@ -18,18 +18,27 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
+  Logger,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { EmergencyContactService } from './emergency-contact.service';
 import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
 import { EmergencyContactUpdateDto } from './dto/update-emergency-contact.dto';
 import { EmergencyVerifyContactDto } from './dto/verify-contact.dto';
 import { NotificationDto } from './dto/notification.dto';
+import { BaseController } from '../../common/base';
+import { 
+  ControllerUtilities, 
+  ApiTagsAndAuth,
+  ApiResponseWrapper 
+} from '../common/shared/controller-utilities';
 
-@ApiTags('Emergency Contacts')
-@ApiBearerAuth()
+@ApiTagsAndAuth(['Emergency Contacts'])
 @Controller('emergency-contact')
-export class EmergencyContactController {
+export class EmergencyContactController extends BaseController {
+  private readonly logger = ControllerUtilities.createControllerLogger('EmergencyContactController');
+
   constructor(
     private readonly emergencyContactService: EmergencyContactService,
   ) {}
@@ -39,48 +48,16 @@ export class EmergencyContactController {
    * GET /emergency-contact/student/:studentId
    */
   @Get('student/:studentId')
-  @ApiOperation({
-    summary: 'Get student emergency contacts',
-    description:
-      'Retrieves all active emergency contacts for a specific student, ordered by priority',
-  })
-  @ApiParam({
-    name: 'studentId',
-    description: 'Student UUID',
-    type: 'string',
-    format: 'uuid',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Emergency contacts retrieved successfully',
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', format: 'uuid' },
-          studentId: { type: 'string', format: 'uuid' },
-          firstName: { type: 'string', example: 'Jane' },
-          lastName: { type: 'string', example: 'Doe' },
-          relationship: { type: 'string', example: 'Mother' },
-          phoneNumber: { type: 'string', example: '+1-555-123-4567' },
-          email: { type: 'string', example: 'jane.doe@example.com' },
-          priority: {
-            type: 'string',
-            enum: ['PRIMARY', 'SECONDARY', 'EMERGENCY_ONLY'],
-          },
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
   async getStudentEmergencyContacts(
     @Param('studentId', ParseUUIDPipe) studentId: string,
-  ) {
-    return this.emergencyContactService.getStudentEmergencyContacts(studentId);
+    @Req() req: Request,
+  ): Promise<ApiResponseWrapper<any[]>> {
+    return await ControllerUtilities.executeEndpoint(
+      () => this.emergencyContactService.getStudentEmergencyContacts(studentId),
+      this.logger,
+      'get student emergency contacts',
+      req,
+    );
   }
 
   /**
@@ -88,34 +65,17 @@ export class EmergencyContactController {
    * GET /emergency-contact/:id
    */
   @Get(':id')
-  @ApiOperation({
-    summary: 'Get emergency contact by ID',
-    description: 'Retrieves a single emergency contact record by UUID',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Emergency Contact UUID',
-    type: 'string',
-    format: 'uuid',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Emergency contact retrieved successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid UUID format',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Emergency contact not found',
-  })
-  async getEmergencyContactById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.emergencyContactService.getEmergencyContactById(id);
+  async getEmergencyContactById(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
+  ): Promise<ApiResponseWrapper<any>> {
+    ControllerUtilities.validateUuidParam(id);
+    return await ControllerUtilities.executeEndpoint(
+      () => this.emergencyContactService.getEmergencyContactById(id),
+      this.logger,
+      'get emergency contact by ID',
+      req,
+    );
   }
 
   /**
@@ -124,37 +84,15 @@ export class EmergencyContactController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({
-    summary: 'Create emergency contact',
-    description:
-      'Creates a new emergency contact with validation and primary contact enforcement',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Emergency contact created successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description:
-      'Invalid input data - validation errors or business rule violations',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - authentication required',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Student not found',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal server error',
-  })
   async createEmergencyContact(
     @Body() createEmergencyContactDto: EmergencyContactCreateDto,
-  ) {
-    return this.emergencyContactService.createEmergencyContact(
-      createEmergencyContactDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseWrapper<any>> {
+    return await ControllerUtilities.executeEndpoint(
+      () => this.emergencyContactService.createEmergencyContact(createEmergencyContactDto),
+      this.logger,
+      'create emergency contact',
+      req,
     );
   }
 
@@ -163,40 +101,17 @@ export class EmergencyContactController {
    * PATCH /emergency-contact/:id
    */
   @Patch(':id')
-  @ApiOperation({
-    summary: 'Update emergency contact',
-    description:
-      'Updates an existing emergency contact with validation and business rule enforcement',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Emergency Contact UUID',
-    type: 'string',
-    format: 'uuid',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Emergency contact updated successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid input data or business rule violation',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Emergency contact not found',
-  })
   async updateEmergencyContact(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateEmergencyContactDto: EmergencyContactUpdateDto,
-  ) {
-    return this.emergencyContactService.updateEmergencyContact(
-      id,
-      updateEmergencyContactDto,
+    @Req() req: Request,
+  ): Promise<ApiResponseWrapper<any>> {
+    ControllerUtilities.validateUuidParam(id);
+    return await ControllerUtilities.executeEndpoint(
+      () => this.emergencyContactService.updateEmergencyContact(id, updateEmergencyContactDto),
+      this.logger,
+      'update emergency contact',
+      req,
     );
   }
 
@@ -206,41 +121,17 @@ export class EmergencyContactController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Delete emergency contact',
-    description:
-      'Soft deletes an emergency contact (marks as inactive). Cannot delete the only active primary contact.',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Emergency Contact UUID',
-    type: 'string',
-    format: 'uuid',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Emergency contact deleted successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        success: { type: 'boolean', example: true },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Cannot delete - business rule violation',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Emergency contact not found',
-  })
-  async deleteEmergencyContact(@Param('id', ParseUUIDPipe) id: string) {
-    return this.emergencyContactService.deleteEmergencyContact(id);
+  async deleteEmergencyContact(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Req() req: Request,
+  ): Promise<ApiResponseWrapper<any>> {
+    ControllerUtilities.validateUuidParam(id);
+    return await ControllerUtilities.executeEndpoint(
+      () => this.emergencyContactService.deleteEmergencyContact(id),
+      this.logger,
+      'delete emergency contact',
+      req,
+    );
   }
 
   /**

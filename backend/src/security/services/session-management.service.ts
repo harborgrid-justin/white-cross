@@ -4,13 +4,13 @@ import { Op } from 'sequelize';
 import { SessionEntity } from '../entities/session.entity';
 import { randomBytes } from 'crypto';
 
+import { BaseService } from '../../common/base';
 /**
  * Session Management Service
  * Manages user sessions for security tracking and concurrent session limits
  */
 @Injectable()
-export class SessionManagementService {
-  private readonly logger = new Logger(SessionManagementService.name);
+export class SessionManagementService extends BaseService {
   private readonly MAX_CONCURRENT_SESSIONS = 5;
   private readonly SESSION_DURATION_HOURS = 24;
 
@@ -46,14 +46,14 @@ export class SessionManagementService {
         isActive: true,
         metadata: data.metadata,
       });
-      this.logger.log('Session created', {
+      this.logInfo('Session created', {
         userId: data.userId,
         sessionId: session.id,
       });
 
       return session;
     } catch (error) {
-      this.logger.error('Error creating session', { error });
+      this.logError('Error creating session', { error });
       throw error;
     }
   }
@@ -86,7 +86,7 @@ export class SessionManagementService {
 
       return session;
     } catch (error) {
-      this.logger.error('Error validating session', { error, sessionToken });
+      this.logError('Error validating session', { error, sessionToken });
       return null;
     }
   }
@@ -97,10 +97,10 @@ export class SessionManagementService {
   async invalidateSession(sessionId: string): Promise<boolean> {
     try {
       await this.sessionModel.update({ isActive: false }, { where: { id: sessionId } });
-      this.logger.log('Session invalidated', { sessionId });
+      this.logInfo('Session invalidated', { sessionId });
       return true;
     } catch (error) {
-      this.logger.error('Error invalidating session', { error, sessionId });
+      this.logError('Error invalidating session', { error, sessionId });
       return false;
     }
   }
@@ -115,14 +115,14 @@ export class SessionManagementService {
         { where: { userId, isActive: true } },
       );
 
-      this.logger.log('User sessions invalidated', {
+      this.logInfo('User sessions invalidated', {
         userId,
         count: affectedCount,
       });
 
       return affectedCount;
     } catch (error) {
-      this.logger.error('Error invalidating user sessions', { error, userId });
+      this.logError('Error invalidating user sessions', { error, userId });
       return 0;
     }
   }
@@ -143,7 +143,7 @@ export class SessionManagementService {
         order: [['createdAt', 'DESC']],
       });
     } catch (error) {
-      this.logger.error('Error fetching active sessions', { error, userId });
+      this.logError('Error fetching active sessions', { error, userId });
       return [];
     }
   }
@@ -159,13 +159,13 @@ export class SessionManagementService {
         // Invalidate the oldest session
         const oldestSession = activeSessions[activeSessions.length - 1];
         await this.invalidateSession(oldestSession.id);
-        this.logger.warn('Concurrent session limit reached, oldest session invalidated', {
+        this.logWarning('Concurrent session limit reached, oldest session invalidated', {
           userId,
           limit: this.MAX_CONCURRENT_SESSIONS,
         });
       }
     } catch (error) {
-      this.logger.error('Error enforcing session limit', { error, userId });
+      this.logError('Error enforcing session limit', { error, userId });
     }
   }
 
@@ -194,14 +194,14 @@ export class SessionManagementService {
       );
 
       if (affectedCount > 0) {
-        this.logger.log('Expired sessions cleaned up', {
+        this.logInfo('Expired sessions cleaned up', {
           count: affectedCount,
         });
       }
 
       return affectedCount;
     } catch (error) {
-      this.logger.error('Error cleaning up expired sessions', { error });
+      this.logError('Error cleaning up expired sessions', { error });
       return 0;
     }
   }

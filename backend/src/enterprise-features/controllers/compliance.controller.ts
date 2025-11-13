@@ -4,10 +4,11 @@ import { HipaaComplianceService } from '../hipaa-compliance.service';
 import { RegulationTrackingService } from '../regulation-tracking.service';
 import { GenerateComplianceReportDto, HIPAAComplianceCheckResponseDto, RegulationUpdateResponseDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Compliance & Regulations')
 @Controller('enterprise-features')
 @ApiBearerAuth()
-export class ComplianceController {
+export class ComplianceController extends BaseController {
   constructor(
     private readonly hipaaComplianceService: HipaaComplianceService,
     private readonly regulationTrackingService: RegulationTrackingService,

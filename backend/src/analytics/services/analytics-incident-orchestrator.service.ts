@@ -4,6 +4,7 @@ import { TimePeriod } from '../enums/time-period.enum';
 import { GetIncidentTrendsQueryDto } from '../dto/incident-analytics.dto';
 import { GetIncidentsByLocationQueryDto } from '../dto/incident-analytics.dto';
 
+import { BaseService } from '../../common/base';
 interface IncidentTrendsResponse {
   trends: unknown;
   byType: unknown;
@@ -40,9 +41,7 @@ interface IncidentsByLocationResponse {
  * - Support heatmap generation for location-based analysis
  */
 @Injectable()
-export class AnalyticsIncidentOrchestratorService {
-  private readonly logger = new Logger(AnalyticsIncidentOrchestratorService.name);
-
+export class AnalyticsIncidentOrchestratorService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
   ) {}
@@ -74,7 +73,7 @@ export class AnalyticsIncidentOrchestratorService {
         },
       };
     } catch (error) {
-      this.logger.error('Error getting incident trends', error);
+      this.logError('Error getting incident trends', error);
       throw error;
     }
   }
@@ -101,7 +100,7 @@ export class AnalyticsIncidentOrchestratorService {
         heatMapIncluded: query.includeHeatMap || false,
       };
     } catch (error) {
-      this.logger.error('Error getting incidents by location', error);
+      this.logError('Error getting incidents by location', error);
       throw error;
     }
   }

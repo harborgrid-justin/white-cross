@@ -14,6 +14,10 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { Model, ModelCtor } from 'sequelize-typescript';
 import * as crypto from 'crypto';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 export interface CacheOptions {
   ttl?: number; // Time to live in seconds (default: 300)
   keyPrefix?: string; // Prefix for cache key
@@ -34,8 +38,6 @@ export interface CacheStats {
 
 @Injectable()
 export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(QueryCacheService.name);
-
   // Local in-memory cache
   private localCache = new Map<string, { data: any; expires: number }>();
 
@@ -61,10 +63,18 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
   // Model invalidation hooks storage
   private modelHooks = new Map<string, Set<string>>();
 
-  constructor() {} // @Inject('REDIS_CLIENT') private readonly redis?: any // Redis client would be injected here when implemented
+  constructor(
+    @Inject(LoggerService) logger: LoggerService
+  ) {
+    super({
+      serviceName: 'QueryCacheService',
+      logger,
+      enableAuditLogging: true,
+    });
+  } // @Inject('REDIS_CLIENT') private readonly redis?: any // Redis client would be injected here when implemented
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Initializing Query Cache Service');
+    this.logInfo('Initializing Query Cache Service');
     this.startCleanupTask();
   }
 
@@ -93,7 +103,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
     }
 
     if (cleanedCount > 0) {
-      this.logger.debug(`Cleaned up ${cleanedCount} expired cache entries`);
+      this.logDebug(`Cleaned up ${cleanedCount} expired cache entries`);
     }
 
     this.stats.localCacheSize = this.localCache.size;
@@ -287,7 +297,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
     // }
 
     if (deletedCount > 0) {
-      this.logger.debug(
+      this.logDebug(
         `Invalidated ${deletedCount} cache entries matching pattern: ${pattern}`,
       );
     }
@@ -331,7 +341,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.modelHooks.set(hookKey, registeredHooks);
-    this.logger.debug(`Registered cache invalidation hooks for ${modelName}`);
+    this.logDebug(`Registered cache invalidation hooks for ${modelName}`);
   }
 
   /**
@@ -421,7 +431,7 @@ export class QueryCacheService implements OnModuleInit, OnModuleDestroy {
     //   await this.clearRedis();
     // }
 
-    this.logger.log(`Cleared ${size} entries from cache`);
+    this.logInfo(`Cleared ${size} entries from cache`);
   }
 
   /**

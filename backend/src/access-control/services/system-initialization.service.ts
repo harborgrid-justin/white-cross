@@ -4,6 +4,7 @@ import { Sequelize } from 'sequelize';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { PermissionInstance, PermissionModel, SequelizeModelClass } from '../types/sequelize-models.types';
 
+import { BaseService } from '../../common/base';
 /**
  * System Initialization Service
  *
@@ -14,9 +15,7 @@ import { PermissionInstance, PermissionModel, SequelizeModelClass } from '../typ
  * - One-time system setup
  */
 @Injectable()
-export class SystemInitializationService {
-  private readonly logger = new Logger(SystemInitializationService.name);
-
+export class SystemInitializationService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
   ) {}
@@ -43,7 +42,7 @@ export class SystemInitializationService {
       // Check if roles already exist
       const existingRolesCount = await Role.count({ transaction });
       if (existingRolesCount > 0) {
-        this.logger.log('Roles already initialized');
+        this.logInfo('Roles already initialized');
         await transaction.rollback();
         return;
       }
@@ -100,10 +99,10 @@ export class SystemInitializationService {
       }
 
       await transaction.commit();
-      this.logger.log('Initialized default roles and permissions successfully');
+      this.logInfo('Initialized default roles and permissions successfully');
     } catch (error) {
       await transaction.rollback();
-      this.logger.error('Error initializing default roles:', error);
+      this.logError('Error initializing default roles:', error);
       throw error;
     }
   }
@@ -191,7 +190,7 @@ export class SystemInitializationService {
       permissions.push(permission);
     }
 
-    this.logger.log(`Initialized ${permissions.length} default permissions`);
+    this.logInfo(`Initialized ${permissions.length} default permissions`);
     return permissions;
   }
 }

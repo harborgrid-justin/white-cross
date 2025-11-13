@@ -3,9 +3,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MessageTemplate } from './enterprise-features-interfaces';
 import { TemplateValidationHelper } from './helpers/template-validation.helper';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class MessageTemplateLibraryService {
-  private readonly logger = new Logger(MessageTemplateLibraryService.name);
+export class MessageTemplateLibraryService extends BaseService {
   private messageTemplates: MessageTemplate[] = [];
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -50,7 +50,7 @@ export class MessageTemplateLibraryService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Message template created', {
+      this.logInfo('Message template created', {
         templateId: template.id,
         name,
         category,
@@ -58,7 +58,7 @@ export class MessageTemplateLibraryService {
       });
       return template;
     } catch (error) {
-      this.logger.error('Error creating message template', {
+      this.logError('Error creating message template', {
         error: error instanceof Error ? error.message : String(error),
         name,
         category,
@@ -104,14 +104,14 @@ export class MessageTemplateLibraryService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Message template updated', {
+      this.logInfo('Message template updated', {
         templateId,
         updatedBy,
         changes: Object.keys(updates),
       });
       return updatedTemplate;
     } catch (error) {
-      this.logger.error('Error updating message template', {
+      this.logError('Error updating message template', {
         error: error instanceof Error ? error.message : String(error),
         templateId,
       });
@@ -128,14 +128,14 @@ export class MessageTemplateLibraryService {
 
       const template = this.messageTemplates.find((t) => t.id === templateId);
       if (!template) {
-        this.logger.warn('Message template not found', { templateId });
+        this.logWarning('Message template not found', { templateId });
         return null;
       }
 
-      this.logger.log('Message template retrieved', { templateId });
+      this.logInfo('Message template retrieved', { templateId });
       return template;
     } catch (error) {
-      this.logger.error('Error retrieving message template', {
+      this.logError('Error retrieving message template', {
         error: error instanceof Error ? error.message : String(error),
         templateId,
       });
@@ -152,13 +152,13 @@ export class MessageTemplateLibraryService {
 
       const templates = this.messageTemplates.filter((t) => t.category === category && t.isActive);
 
-      this.logger.log('Message templates retrieved by category', {
+      this.logInfo('Message templates retrieved by category', {
         category,
         count: templates.length,
       });
       return templates;
     } catch (error) {
-      this.logger.error('Error retrieving message templates by category', {
+      this.logError('Error retrieving message templates by category', {
         error: error instanceof Error ? error.message : String(error),
         category,
       });
@@ -173,12 +173,12 @@ export class MessageTemplateLibraryService {
     try {
       const activeTemplates = this.messageTemplates.filter((t) => t.isActive);
 
-      this.logger.log('All active message templates retrieved', {
+      this.logInfo('All active message templates retrieved', {
         count: activeTemplates.length,
       });
       return activeTemplates;
     } catch (error) {
-      this.logger.error('Error retrieving active message templates', {
+      this.logError('Error retrieving active message templates', {
         error: error instanceof Error ? error.message : String(error),
       });
       return [];
@@ -224,13 +224,13 @@ export class MessageTemplateLibraryService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Message template rendered', {
+      this.logInfo('Message template rendered', {
         templateId,
         variablesCount: Object.keys(variables).length,
       });
       return renderedContent;
     } catch (error) {
-      this.logger.error('Error rendering message template', {
+      this.logError('Error rendering message template', {
         error: error instanceof Error ? error.message : String(error),
         templateId,
       });
@@ -259,10 +259,10 @@ export class MessageTemplateLibraryService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Message template deleted', { templateId, deletedBy });
+      this.logInfo('Message template deleted', { templateId, deletedBy });
       return true;
     } catch (error) {
-      this.logger.error('Error deleting message template', {
+      this.logError('Error deleting message template', {
         error: error instanceof Error ? error.message : String(error),
         templateId,
       });
@@ -283,12 +283,12 @@ export class MessageTemplateLibraryService {
         }
       }
 
-      this.logger.log('Template usage statistics retrieved', {
+      this.logInfo('Template usage statistics retrieved', {
         templateCount: Object.keys(stats).length,
       });
       return stats;
     } catch (error) {
-      this.logger.error('Error retrieving template usage statistics', {
+      this.logError('Error retrieving template usage statistics', {
         error: error instanceof Error ? error.message : String(error),
       });
       return {};
@@ -326,14 +326,14 @@ export class MessageTemplateLibraryService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Message template cloned', {
+      this.logInfo('Message template cloned', {
         originalTemplateId: templateId,
         newTemplateId: clonedTemplate.id,
         clonedBy,
       });
       return clonedTemplate;
     } catch (error) {
-      this.logger.error('Error cloning message template', {
+      this.logError('Error cloning message template', {
         error: error instanceof Error ? error.message : String(error),
         templateId,
       });

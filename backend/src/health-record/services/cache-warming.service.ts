@@ -14,9 +14,15 @@ import { Vaccination   } from "../../database/models";
 import { Allergy   } from "../../database/models";
 import { ChronicCondition   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class CacheWarmingService implements OnModuleInit {
-  private readonly logger = new Logger(CacheWarmingService.name);
   private isWarming = false;
 
   constructor(
@@ -36,11 +42,11 @@ export class CacheWarmingService implements OnModuleInit {
     const warmingEnabled = process.env.CACHE_WARMING_ENABLED === 'true';
 
     if (warmingEnabled) {
-      this.logger.log('Cache warming enabled - initial warm starting');
+      this.logInfo('Cache warming enabled - initial warm starting');
       // Warm cache on startup (after a short delay)
       setTimeout(() => this.warmCriticalData(), 5000);
     } else {
-      this.logger.log('Cache warming disabled');
+      this.logInfo('Cache warming disabled');
     }
   }
 
@@ -63,7 +69,7 @@ export class CacheWarmingService implements OnModuleInit {
    */
   async warmCriticalData(): Promise<void> {
     if (this.isWarming) {
-      this.logger.warn('Cache warming already in progress, skipping');
+      this.logWarning('Cache warming already in progress, skipping');
       return;
     }
 
@@ -71,7 +77,7 @@ export class CacheWarmingService implements OnModuleInit {
     const startTime = Date.now();
 
     try {
-      this.logger.log('Starting cache warming for critical health data');
+      this.logInfo('Starting cache warming for critical health data');
 
       // Warm cache in parallel for efficiency
       const [
@@ -87,7 +93,7 @@ export class CacheWarmingService implements OnModuleInit {
       ]);
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `Cache warming completed in ${duration}ms: ` +
           `${activeStudentsWarmed} students, ` +
           `${allergiesWarmed} allergies, ` +
@@ -95,7 +101,7 @@ export class CacheWarmingService implements OnModuleInit {
           `${vaccinationsWarmed} vaccinations`,
       );
     } catch (error) {
-      this.logger.error('Error during cache warming:', error);
+      this.logError('Error during cache warming:', error);
     } finally {
       this.isWarming = false;
     }
@@ -129,7 +135,7 @@ export class CacheWarmingService implements OnModuleInit {
               await this.warmStudentHealthData(student.id);
               warmedCount++;
             } catch (error) {
-              this.logger.error(
+              this.logError(
                 `Error warming cache for student ${student.id}:`,
                 error,
               );
@@ -140,7 +146,7 @@ export class CacheWarmingService implements OnModuleInit {
 
       return warmedCount;
     } catch (error) {
-      this.logger.error('Error warming active students cache:', error);
+      this.logError('Error warming active students cache:', error);
       return 0;
     }
   }
@@ -192,7 +198,7 @@ export class CacheWarmingService implements OnModuleInit {
         healthSummary,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error warming health data for student ${studentId}:`,
         error,
       );
@@ -243,7 +249,7 @@ export class CacheWarmingService implements OnModuleInit {
 
       return allergyMap.size;
     } catch (error) {
-      this.logger.error('Error warming critical allergies cache:', error);
+      this.logError('Error warming critical allergies cache:', error);
       return 0;
     }
   }
@@ -289,7 +295,7 @@ export class CacheWarmingService implements OnModuleInit {
 
       return conditionMap.size;
     } catch (error) {
-      this.logger.error('Error warming chronic conditions cache:', error);
+      this.logError('Error warming chronic conditions cache:', error);
       return 0;
     }
   }
@@ -339,7 +345,7 @@ export class CacheWarmingService implements OnModuleInit {
 
       return vaccinationMap.size;
     } catch (error) {
-      this.logger.error('Error warming vaccinations cache:', error);
+      this.logError('Error warming vaccinations cache:', error);
       return 0;
     }
   }
@@ -350,10 +356,10 @@ export class CacheWarmingService implements OnModuleInit {
   async warmStudent(studentId: string): Promise<boolean> {
     try {
       await this.warmStudentHealthData(studentId);
-      this.logger.log(`Cache warmed for student ${studentId}`);
+      this.logInfo(`Cache warmed for student ${studentId}`);
       return true;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to warm cache for student ${studentId}:`,
         error,
       );

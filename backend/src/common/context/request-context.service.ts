@@ -8,6 +8,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
 
+import { BaseService } from '../../common/base';
 /**
  * Request context interface
  */
@@ -57,7 +58,7 @@ export interface IRequestContext {
  * Request context service
  */
 @Injectable({ scope: Scope.REQUEST })
-export class RequestContextService {
+export class RequestContextService extends BaseService {
   private static readonly storage = new AsyncLocalStorage<IRequestContext>();
 
   /**

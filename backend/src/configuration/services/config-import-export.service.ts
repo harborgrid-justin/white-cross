@@ -10,10 +10,9 @@ import { FilterConfigurationDto, ImportConfigurationsDto } from '../dto';
 import { ConfigCrudService } from './config-crud.service';
 import { ConfigValidationService } from './config-validation.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ConfigImportExportService {
-  private readonly logger = new Logger(ConfigImportExportService.name);
-
+export class ConfigImportExportService extends BaseService {
   constructor(
     private readonly configCrudService: ConfigCrudService,
     private readonly configValidationService: ConfigValidationService,
@@ -49,10 +48,10 @@ export class ConfigImportExportService {
         sortOrder: config.sortOrder,
       }));
 
-      this.logger.log(`Exported ${exportData.length} configurations`);
+      this.logInfo(`Exported ${exportData.length} configurations`);
       return JSON.stringify(exportData, null, 2);
     } catch (error) {
-      this.logger.error('Error exporting configurations:', error);
+      this.logError('Error exporting configurations:', error);
       throw error;
     }
   }
@@ -115,12 +114,12 @@ export class ConfigImportExportService {
         }
       }
 
-      this.logger.log(
+      this.logInfo(
         `Import completed: ${results.created} created, ${results.updated} updated, ${results.errors.length} errors`,
       );
       return results;
     } catch (error) {
-      this.logger.error('Error importing configurations:', error);
+      this.logError('Error importing configurations:', error);
       throw error;
     }
   }
@@ -173,10 +172,10 @@ export class ConfigImportExportService {
         csvRows.push(row.join(','));
       }
 
-      this.logger.log(`Exported ${configs.length} configurations to CSV`);
+      this.logInfo(`Exported ${configs.length} configurations to CSV`);
       return csvRows.join('\n');
     } catch (error) {
-      this.logger.error('Error exporting configurations to CSV:', error);
+      this.logError('Error exporting configurations to CSV:', error);
       throw error;
     }
   }
@@ -212,10 +211,10 @@ export class ConfigImportExportService {
         },
       };
 
-      this.logger.log(`Created backup with ${configs.length} configurations`);
+      this.logInfo(`Created backup with ${configs.length} configurations`);
       return backup;
     } catch (error) {
-      this.logger.error('Error creating configuration backup:', error);
+      this.logError('Error creating configuration backup:', error);
       throw error;
     }
   }
@@ -242,12 +241,12 @@ export class ConfigImportExportService {
 
       const result = await this.importConfigurations(importData);
 
-      this.logger.log(
+      this.logInfo(
         `Restored from backup: ${result.created} created, ${result.updated} updated`,
       );
       return result;
     } catch (error) {
-      this.logger.error('Error restoring from backup:', error);
+      this.logError('Error restoring from backup:', error);
       throw error;
     }
   }

@@ -7,6 +7,7 @@ import {
 } from '../dto/create-security-incident.dto';
 import { LogLoginAttemptDto } from '../dto/log-login-attempt.dto';
 import { SecurityStatistics } from '../interfaces/security-statistics.interface';
+import { BaseService } from '../../common/base';
 import {
   LoginAttemptInstance,
   PaginationResult,
@@ -35,9 +36,7 @@ enum SecurityIncidentStatus {
  * - Failed login detection
  */
 @Injectable()
-export class SecurityMonitoringService {
-  private readonly logger = new Logger(SecurityMonitoringService.name);
-
+export class SecurityMonitoringService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
   ) {}
@@ -67,12 +66,12 @@ export class SecurityMonitoringService {
         failureReason: data.failureReason,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Logged login attempt for ${data.email}: ${data.success ? 'success' : 'failure'}`,
       );
       return attempt;
     } catch (error) {
-      this.logger.error('Error logging login attempt:', error);
+      this.logError('Error logging login attempt:', error);
       // Don't throw - logging failures shouldn't break login
       return undefined;
     }
@@ -100,12 +99,12 @@ export class SecurityMonitoringService {
         order: [['createdAt', 'DESC']],
       });
 
-      this.logger.log(
+      this.logInfo(
         `Retrieved ${attempts.length} failed login attempts for ${email}`,
       );
       return attempts;
     } catch (error) {
-      this.logger.error('Error getting failed login attempts:', error);
+      this.logError('Error getting failed login attempts:', error);
       throw error;
     }
   }
@@ -131,12 +130,12 @@ export class SecurityMonitoringService {
         status: SecurityIncidentStatus.OPEN,
       });
 
-      this.logger.warn(
+      this.logWarning(
         `Security incident created: ${incident.id} - ${data.type}`,
       );
       return incident;
     } catch (error) {
-      this.logger.error('Error creating security incident:', error);
+      this.logError('Error creating security incident:', error);
       throw error;
     }
   }
@@ -177,10 +176,10 @@ export class SecurityMonitoringService {
 
       await incident.update(updateData);
 
-      this.logger.log(`Updated security incident: ${id}`);
+      this.logInfo(`Updated security incident: ${id}`);
       return incident;
     } catch (error) {
-      this.logger.error(`Error updating security incident ${id}:`, error);
+      this.logError(`Error updating security incident ${id}:`, error);
       throw error;
     }
   }
@@ -218,7 +217,7 @@ export class SecurityMonitoringService {
           order: [['createdAt', 'DESC']],
         });
 
-      this.logger.log(`Retrieved ${incidents.length} security incidents`);
+      this.logInfo(`Retrieved ${incidents.length} security incidents`);
 
       return {
         incidents,
@@ -230,7 +229,7 @@ export class SecurityMonitoringService {
         },
       };
     } catch (error) {
-      this.logger.error('Error getting security incidents:', error);
+      this.logError('Error getting security incidents:', error);
       throw error;
     }
   }
@@ -300,10 +299,10 @@ export class SecurityMonitoringService {
         ipRestrictions: activeIpRestrictions,
       };
 
-      this.logger.log('Retrieved security statistics');
+      this.logInfo('Retrieved security statistics');
       return statistics;
     } catch (error) {
-      this.logger.error('Error getting security statistics:', error);
+      this.logError('Error getting security statistics:', error);
       throw error;
     }
   }

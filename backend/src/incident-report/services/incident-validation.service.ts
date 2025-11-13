@@ -6,10 +6,9 @@ import { ActionPriority } from '../enums/action-priority.enum';
 import { ActionStatus } from '../enums/action-status.enum';
 import { IncidentType } from '../enums/incident-type.enum';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class IncidentValidationService {
-  private readonly logger = new Logger(IncidentValidationService.name);
-
+export class IncidentValidationService extends BaseService {
   /**
    * Validate incident report data before creation
    */
@@ -46,7 +45,7 @@ export class IncidentValidationService {
     // 5. Auto-set follow-up required for INJURY type
     if (data.type === IncidentType.INJURY && !data.followUpRequired) {
       data.followUpRequired = true;
-      this.logger.log('Auto-setting followUpRequired=true for INJURY incident');
+      this.logInfo('Auto-setting followUpRequired=true for INJURY incident');
     }
 
     // 6. Validate medication errors have detailed description
@@ -59,7 +58,7 @@ export class IncidentValidationService {
       );
     }
 
-    this.logger.log('Incident report validation passed');
+    this.logInfo('Incident report validation passed');
   }
 
   /**
@@ -80,7 +79,7 @@ export class IncidentValidationService {
       );
     }
 
-    this.logger.log('Witness statement validation passed');
+    this.logInfo('Witness statement validation passed');
   }
 
   /**
@@ -113,13 +112,13 @@ export class IncidentValidationService {
       const hoursDiff = (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60);
 
       if (hoursDiff > 24) {
-        this.logger.warn(
+        this.logWarning(
           `URGENT priority action with due date more than 24 hours away`,
         );
       }
     }
 
-    this.logger.log('Follow-up action validation passed');
+    this.logInfo('Follow-up action validation passed');
   }
 
   /**
@@ -138,11 +137,11 @@ export class IncidentValidationService {
         );
       }
       if (!notes || notes.trim().length === 0) {
-        this.logger.warn('Follow-up action completed without notes');
+        this.logWarning('Follow-up action completed without notes');
       }
     }
 
-    this.logger.log('Follow-up action status update validation passed');
+    this.logInfo('Follow-up action status update validation passed');
   }
 
   /**
@@ -160,7 +159,7 @@ export class IncidentValidationService {
       );
     }
 
-    this.logger.log('Evidence URL validation passed');
+    this.logInfo('Evidence URL validation passed');
   }
 
   /**

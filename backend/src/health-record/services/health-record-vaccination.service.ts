@@ -15,6 +15,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Vaccination   } from "../../database/models";
 import { Student   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * HealthRecordVaccinationService
  *
@@ -28,9 +29,7 @@ import { Student   } from "../../database/models";
  * - Provide ordered vaccination lists
  */
 @Injectable()
-export class HealthRecordVaccinationService {
-  private readonly logger = new Logger(HealthRecordVaccinationService.name);
-
+export class HealthRecordVaccinationService extends BaseService {
   constructor(
     @InjectModel(Vaccination)
     private readonly vaccinationModel: typeof Vaccination,
@@ -78,7 +77,7 @@ export class HealthRecordVaccinationService {
     }
 
     // PHI Creation Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Vaccination ${data.vaccineName} for student ${student.firstName} ${student.lastName}`,
     );
 
@@ -98,7 +97,7 @@ export class HealthRecordVaccinationService {
     });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Vaccinations retrieved for student ${studentId}, count: ${vaccinations.length}`,
     );
 
@@ -147,7 +146,7 @@ export class HealthRecordVaccinationService {
     }
 
     // PHI Modification Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Modified: Vaccination ${vaccinationWithRelations.vaccineName} updated for student ${vaccinationWithRelations.student!.firstName} ${vaccinationWithRelations.student!.lastName}`,
     );
 
@@ -173,7 +172,7 @@ export class HealthRecordVaccinationService {
     await this.vaccinationModel.destroy({ where: { id } });
 
     // PHI Deletion Audit Log
-    this.logger.warn(
+    this.logWarning(
       `Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student!.firstName} ${vaccination.student!.lastName}`,
     );
 

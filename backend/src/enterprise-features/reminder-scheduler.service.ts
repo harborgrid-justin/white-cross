@@ -3,6 +3,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { BaseService } from '../../common/base';
 import {
   ReminderSchedule,
   ReminderPreferences,
@@ -11,8 +12,7 @@ import {
 } from './enterprise-features-interfaces';
 
 @Injectable()
-export class ReminderSchedulerService {
-  private readonly logger = new Logger(ReminderSchedulerService.name);
+export class ReminderSchedulerService extends BaseService {
   private reminderSchedules: ReminderSchedule[] = []; // In production, this would be a database
   private reminderPreferences: Map<string, ReminderPreferences> = new Map(); // studentId -> preferences
 
@@ -34,7 +34,7 @@ export class ReminderSchedulerService {
 
       this.reminderSchedules.push(schedule);
 
-      this.logger.log('Reminders scheduled for appointment', {
+      this.logInfo('Reminders scheduled for appointment', {
         appointmentId,
         reminderCount: schedule.reminders.length,
       });
@@ -48,7 +48,7 @@ export class ReminderSchedulerService {
 
       return Promise.resolve(schedule);
     } catch (error) {
-      this.logger.error('Error scheduling reminders', {
+      this.logError('Error scheduling reminders', {
         error: error instanceof Error ? error.message : String(error),
         appointmentId,
       });
@@ -74,7 +74,7 @@ export class ReminderSchedulerService {
             reminder.sentAt = now;
             sentCount++;
 
-            this.logger.log('Reminder sent', {
+            this.logInfo('Reminder sent', {
               appointmentId: schedule.appointmentId,
               timing: reminder.timing,
               channel: reminder.channel,
@@ -83,7 +83,7 @@ export class ReminderSchedulerService {
         }
       }
 
-      this.logger.log('Due reminders sent', { sentCount });
+      this.logInfo('Due reminders sent', { sentCount });
 
       // Emit event for audit logging
       this.eventEmitter.emit('reminders.sent', {
@@ -93,7 +93,7 @@ export class ReminderSchedulerService {
 
       return Promise.resolve(sentCount);
     } catch (error) {
-      this.logger.error('Error sending due reminders', {
+      this.logError('Error sending due reminders', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -113,7 +113,7 @@ export class ReminderSchedulerService {
 
       this.reminderPreferences.set(studentId, preferences);
 
-      this.logger.log('Reminder preferences updated', {
+      this.logInfo('Reminder preferences updated', {
         studentId,
         preferences: {
           emailEnabled: preferences.emailEnabled,
@@ -132,7 +132,7 @@ export class ReminderSchedulerService {
 
       return Promise.resolve(true);
     } catch (error) {
-      this.logger.error('Error customizing reminder preferences', {
+      this.logError('Error customizing reminder preferences', {
         error: error instanceof Error ? error.message : String(error),
         studentId,
       });
@@ -148,14 +148,14 @@ export class ReminderSchedulerService {
       const preferences = this.reminderPreferences.get(studentId);
 
       if (preferences) {
-        this.logger.log('Reminder preferences retrieved', { studentId });
+        this.logInfo('Reminder preferences retrieved', { studentId });
       } else {
-        this.logger.log('No reminder preferences found for student', { studentId });
+        this.logInfo('No reminder preferences found for student', { studentId });
       }
 
       return preferences || null;
     } catch (error) {
-      this.logger.error('Error getting reminder preferences', {
+      this.logError('Error getting reminder preferences', {
         error: error instanceof Error ? error.message : String(error),
         studentId,
       });
@@ -171,14 +171,14 @@ export class ReminderSchedulerService {
       const schedule = this.reminderSchedules.find((s) => s.appointmentId === appointmentId);
 
       if (schedule) {
-        this.logger.log('Reminder schedule retrieved', { appointmentId });
+        this.logInfo('Reminder schedule retrieved', { appointmentId });
       } else {
-        this.logger.log('No reminder schedule found for appointment', { appointmentId });
+        this.logInfo('No reminder schedule found for appointment', { appointmentId });
       }
 
       return schedule || null;
     } catch (error) {
-      this.logger.error('Error getting reminder schedule', {
+      this.logError('Error getting reminder schedule', {
         error: error instanceof Error ? error.message : String(error),
         appointmentId,
       });
@@ -214,10 +214,10 @@ export class ReminderSchedulerService {
         preferencesSet: this.reminderPreferences.size,
       };
 
-      this.logger.log('Reminder statistics retrieved', stats);
+      this.logInfo('Reminder statistics retrieved', stats);
       return stats;
     } catch (error) {
-      this.logger.error('Error getting reminder statistics', {
+      this.logError('Error getting reminder statistics', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

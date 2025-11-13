@@ -13,6 +13,13 @@
 import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { AppConfigService } from '../../config/app-config.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 export interface QueuedNotification {
   id: string;
   timestamp: Date;
@@ -22,7 +29,6 @@ export interface QueuedNotification {
 
 @Injectable()
 export class NotificationQueueService implements OnModuleDestroy {
-  private readonly logger = new Logger(NotificationQueueService.name);
   private notificationQueue: QueuedNotification[] = [];
   private queueProcessingInterval?: NodeJS.Timeout;
 
@@ -42,7 +48,7 @@ export class NotificationQueueService implements OnModuleDestroy {
       () => this.processNotificationQueue(),
       60 * 1000, // Process queue every minute
     );
-    this.logger.log(
+    this.logInfo(
       'Notification queue service initialized with periodic processing',
     );
   }
@@ -55,7 +61,7 @@ export class NotificationQueueService implements OnModuleDestroy {
    */
   async enqueueNotification(notification: QueuedNotification): Promise<void> {
     this.notificationQueue.push(notification);
-    this.logger.debug(
+    this.logDebug(
       `Notification queued: ${notification.id} (Queue size: ${this.notificationQueue.length})`,
     );
   }
@@ -72,17 +78,17 @@ export class NotificationQueueService implements OnModuleDestroy {
     const batchSize = this.config?.get<number>('notification.batchSize', 10);
     const batch = this.notificationQueue.splice(0, batchSize);
 
-    this.logger.log(`Processing notification batch: ${batch.length} notifications`);
+    this.logInfo(`Processing notification batch: ${batch.length} notifications`);
 
     for (const notification of batch) {
       try {
         // Process notification based on type
         await this.processNotification(notification);
-        this.logger.debug(
+        this.logDebug(
           `Processed notification ${notification.id} (${notification.type})`,
         );
       } catch (error) {
-        this.logger.error(
+        this.logError(
           `Failed to process notification ${notification.id}: ${error.message}`,
         );
         // In production, could re-queue failed notifications or send to dead letter queue
@@ -101,7 +107,7 @@ export class NotificationQueueService implements OnModuleDestroy {
   ): Promise<void> {
     // Actual notification processing logic would go here
     // This could integrate with NotificationDeliveryService
-    this.logger.debug(
+    this.logDebug(
       `Processing notification: ${notification.id} - ${notification.type}`,
     );
   }
@@ -124,7 +130,7 @@ export class NotificationQueueService implements OnModuleDestroy {
   clearQueue(): void {
     const size = this.notificationQueue.length;
     this.notificationQueue = [];
-    this.logger.warn(`Queue cleared: ${size} notifications removed`);
+    this.logWarning(`Queue cleared: ${size} notifications removed`);
   }
 
   /**
@@ -158,31 +164,31 @@ export class NotificationQueueService implements OnModuleDestroy {
    * Implements graceful shutdown for notification queues and intervals
    */
   async onModuleDestroy() {
-    this.logger.log(
+    this.logInfo(
       'NotificationQueueService shutting down - cleaning up resources',
     );
 
     // Clear intervals
     if (this.queueProcessingInterval) {
       clearInterval(this.queueProcessingInterval);
-      this.logger.log('Queue processing interval cleared');
+      this.logInfo('Queue processing interval cleared');
     }
 
     // Process remaining notifications in queue
     if (this.notificationQueue.length > 0) {
-      this.logger.log(
+      this.logInfo(
         `Processing ${this.notificationQueue.length} remaining notifications before shutdown`,
       );
       try {
         await this.processNotificationQueue();
       } catch (error) {
-        this.logger.warn(
+        this.logWarning(
           `Error processing notification queue during shutdown: ${error.message}`,
         );
       }
     }
 
-    this.logger.log(
+    this.logInfo(
       'NotificationQueueService destroyed, resources cleaned up',
     );
   }

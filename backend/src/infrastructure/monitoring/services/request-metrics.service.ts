@@ -7,10 +7,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RequestMetrics } from '../types/metrics.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class RequestMetricsService {
-  private readonly logger = new Logger(RequestMetricsService.name);
-
+export class RequestMetricsService extends BaseService {
   private readonly MAX_ENDPOINT_METRICS = 500;
   private requestMetrics = new Map<string, RequestMetrics>();
   private requestDurations: number[] = [];
@@ -169,7 +168,7 @@ export class RequestMetricsService {
     }
 
     if (cleaned > 0) {
-      this.logger.debug(`Cleaned up ${cleaned} old endpoint metrics`);
+      this.logDebug(`Cleaned up ${cleaned} old endpoint metrics`);
     }
 
     return cleaned;
@@ -183,6 +182,6 @@ export class RequestMetricsService {
     this.requestDurations = [];
     this.totalRequests = 0;
     this.totalErrors = 0;
-    this.logger.log('Request metrics reset');
+    this.logInfo('Request metrics reset');
   }
 }

@@ -10,6 +10,7 @@ import { Op } from 'sequelize';
 import { DrugCatalog } from '../entities/drug-catalog.entity';
 import { DrugInteraction } from '../entities/drug-interaction.entity';
 import { StudentDrugAllergy } from '../entities/student-drug-allergy.entity';
+import { BaseService } from '../../common/base';
 import {
   InteractionResult,
   InteractionCheckDto,
@@ -18,9 +19,7 @@ import {
 } from '../types/drug-interaction.types';
 
 @Injectable()
-export class InteractionCheckerService {
-  private readonly logger = new Logger(InteractionCheckerService.name);
-
+export class InteractionCheckerService extends BaseService {
   constructor(
     @InjectModel(DrugCatalog)
     private drugCatalogModel: typeof DrugCatalog,
@@ -34,7 +33,7 @@ export class InteractionCheckerService {
    * Check drug interactions for a list of drugs
    */
   async checkInteractions(data: InteractionCheckDto): Promise<InteractionResult> {
-    this.logger.log(`Checking interactions for ${data.drugIds.length} drugs`);
+    this.logInfo(`Checking interactions for ${data.drugIds.length} drugs`);
 
     const result: InteractionResult = {
       hasInteractions: false,
@@ -65,7 +64,7 @@ export class InteractionCheckerService {
     // Determine overall risk level
     result.riskLevel = this.calculateRiskLevel(result);
 
-    this.logger.log(
+    this.logInfo(
       `Interaction check complete: ${result.riskLevel} risk level`,
     );
     return result;

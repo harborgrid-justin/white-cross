@@ -9,10 +9,9 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Alert, DeliveryLog } from '@/database';
 import { AlertDeliveryService } from './alert-delivery.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class AlertRetryService {
-  private readonly logger = new Logger(AlertRetryService.name);
-
+export class AlertRetryService extends BaseService {
   constructor(
     @InjectModel(Alert)
     private readonly alertModel: typeof Alert,
@@ -25,7 +24,7 @@ export class AlertRetryService {
    * Retry failed alert deliveries with exponential backoff
    */
   async retryFailedAlerts(): Promise<void> {
-    this.logger.log('Checking for failed alert deliveries to retry...');
+    this.logInfo('Checking for failed alert deliveries to retry...');
 
     let retriedCount = 0;
 
@@ -51,21 +50,21 @@ export class AlertRetryService {
         await this.deliveryService.retryDelivery(alert, log.channel, log.recipientId);
         retriedCount++;
       } catch (error) {
-        this.logger.error(
+        this.logError(
           `Retry failed for alert ${log.alertId} on ${log.channel}`,
           error,
         );
       }
     }
 
-    this.logger.log(`Retried ${retriedCount} failed alert deliveries`);
+    this.logInfo(`Retried ${retriedCount} failed alert deliveries`);
   }
 
   /**
    * Schedule auto-escalation
    */
   scheduleAutoEscalation(alertId: string, delayMinutes: number): void {
-    this.logger.log(
+    this.logInfo(
       `Scheduling auto-escalation for alert ${alertId} in ${delayMinutes} minutes`,
     );
 
@@ -79,7 +78,7 @@ export class AlertRetryService {
         ) {
           alert.escalationLevel = (alert.escalationLevel || 0) + 1;
           await alert.save();
-          this.logger.warn(
+          this.logWarning(
             `Alert ${alertId} auto-escalated to level ${alert.escalationLevel}`,
           );
           // Note: In the refactored version, we would need to call the main service
@@ -105,7 +104,7 @@ export class AlertRetryService {
       if (alert && alert.status === 'ACTIVE') {
         alert.status = 'EXPIRED';
         await alert.save();
-        this.logger.log(`Alert ${alertId} expired`);
+        this.logInfo(`Alert ${alertId} expired`);
       }
     }, delay);
   }
@@ -157,7 +156,7 @@ export class AlertRetryService {
       // Retry specific channel
       const deliveryChannel = channel as any; // Type assertion for delivery channel
       await this.deliveryService.retryDelivery(alert, deliveryChannel);
-      this.logger.log(`Force retried alert ${alertId} on ${channel}`);
+      this.logInfo(`Force retried alert ${alertId} on ${channel}`);
     } else {
       // Retry all failed channels for this alert
       const failedLogs = await this.deliveryLogModel.findAll({
@@ -171,14 +170,14 @@ export class AlertRetryService {
         try {
           await this.deliveryService.retryDelivery(alert, log.channel, log.recipientId);
         } catch (error) {
-          this.logger.error(
+          this.logError(
             `Force retry failed for alert ${alertId} on ${log.channel}`,
             error,
           );
         }
       }
 
-      this.logger.log(`Force retried all failed deliveries for alert ${alertId}`);
+      this.logInfo(`Force retried all failed deliveries for alert ${alertId}`);
     }
   }
 
@@ -198,7 +197,7 @@ export class AlertRetryService {
       },
     });
 
-    this.logger.log(`Cleaned up ${deletedCount} old failed delivery logs`);
+    this.logInfo(`Cleaned up ${deletedCount} old failed delivery logs`);
     return deletedCount;
   }
 }

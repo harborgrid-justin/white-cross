@@ -14,10 +14,9 @@ import {
 } from '../dto';
 import { ContactPriority, VerificationStatus } from '../enums';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class EmergencyContactService {
-  private readonly logger = new Logger(EmergencyContactService.name);
-
+export class EmergencyContactService extends BaseService {
   constructor(
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
@@ -59,7 +58,7 @@ export class EmergencyContactService {
         ],
       });
 
-    this.logger.log(
+    this.logInfo(
       `Retrieved ${contacts.length} emergency contacts (page ${page}, total ${total})`,
     );
 
@@ -89,7 +88,7 @@ export class EmergencyContactService {
       ],
     });
 
-    this.logger.log(
+    this.logInfo(
       `Retrieved ${contacts.length} emergency contacts for student ${studentId}`,
     );
     return contacts;
@@ -140,7 +139,7 @@ export class EmergencyContactService {
     } as any);
 
     await contact.save();
-    this.logger.log(
+    this.logInfo(
       `Created emergency contact ${contact.id} for student ${contact.studentId}`,
     );
 
@@ -169,7 +168,7 @@ export class EmergencyContactService {
     });
 
     await contact.save();
-    this.logger.log(`Updated emergency contact ${id}`);
+    this.logInfo(`Updated emergency contact ${id}`);
 
     return contact;
   }
@@ -196,7 +195,7 @@ export class EmergencyContactService {
     }
 
     await contact.destroy();
-    this.logger.log(`Removed emergency contact ${id}`);
+    this.logInfo(`Removed emergency contact ${id}`);
 
     return { success: true, message: 'Emergency contact deleted successfully' };
   }
@@ -221,7 +220,7 @@ export class EmergencyContactService {
     }
 
     await contact.save();
-    this.logger.log(
+    this.logInfo(
       `Verified emergency contact ${id} with status ${dto.verificationStatus}`,
     );
 
@@ -249,7 +248,7 @@ export class EmergencyContactService {
       (c) => c.priority === ContactPriority.EMERGENCY_ONLY,
     );
 
-    this.logger.log(
+    this.logInfo(
       `Notification routing for student ${studentId}: ${primary.length} primary, ${secondary.length} secondary, ${emergencyOnly.length} emergency-only`,
     );
 
@@ -294,7 +293,7 @@ export class EmergencyContactService {
       ],
     });
 
-    this.logger.log(
+    this.logInfo(
       `Retrieved ${contacts.length} authorized pickup contacts for student ${studentId}`,
     );
     return contacts;
@@ -325,7 +324,7 @@ export class EmergencyContactService {
       // Return in same order as input, null for missing
       return ids.map((id) => contactMap.get(id) || null);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch emergency contacts: ${error.message}`,
       );
       throw new Error('Failed to batch fetch emergency contacts');
@@ -371,7 +370,7 @@ export class EmergencyContactService {
       // Return in same order as input, empty array for missing
       return studentIds.map((id) => grouped.get(id) || []);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch emergency contacts by student IDs: ${error.message}`,
       );
       throw new Error(

@@ -6,6 +6,7 @@ import { IPaginatedResult } from '../interfaces/paginated-result.interface';
 import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
 import { PHIAccessLogFilters } from '../types/audit.types';
 
+import { BaseService } from '../../common/base';
 /**
  * PHIAccessService - HIPAA compliant PHI access logging
  *
@@ -14,9 +15,7 @@ import { PHIAccessLogFilters } from '../types/audit.types';
  * compliance as required by the HIPAA Security Rule (45 CFR § 164.308(a)(1)(ii)(D)).
  */
 @Injectable()
-export class PHIAccessService {
-  private readonly logger = new Logger(PHIAccessService.name);
-
+export class PHIAccessService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -49,12 +48,12 @@ export class PHIAccessService {
         userAgent: entry.userAgent || null,
       });
 
-      this.logger.log(
+      this.logInfo(
         `PHI Access: ${entry.accessType} ${entry.dataCategory} for student ${entry.studentId} by user ${entry.userId || 'SYSTEM'}`,
       );
     } catch (error) {
       // FAIL-SAFE: Never throw - audit logging should not break the main flow
-      this.logger.error('Failed to create PHI access log:', error);
+      this.logError('Failed to create PHI access log:', error);
     }
   }
 
@@ -123,7 +122,7 @@ export class PHIAccessService {
         },
       };
     } catch (error) {
-      this.logger.error('Error fetching PHI access logs:', error);
+      this.logError('Error fetching PHI access logs:', error);
       throw new Error('Failed to fetch PHI access logs');
     }
   }

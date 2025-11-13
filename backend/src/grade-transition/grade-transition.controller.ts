@@ -4,6 +4,7 @@ import { GradeTransitionService } from './grade-transition.service';
 import { BulkTransitionDto, BulkTransitionResultDto, TransitionStudentDto } from './dto';
 import { Student } from '../student/entities/student.entity';
 
+import { BaseController } from '../../common/base';
 /**
  * Grade Transition Controller
  * Handles API endpoints for automated grade transitions
@@ -12,7 +13,7 @@ import { Student } from '../student/entities/student.entity';
 @Controller('student-management/grade-transitions')
 // @UseGuards(JwtAuthGuard) // Uncomment when auth is set up
 // @ApiBearerAuth()
-export class GradeTransitionController {
+export class GradeTransitionController extends BaseController {
   constructor(
     private readonly gradeTransitionService: GradeTransitionService,
   ) {}

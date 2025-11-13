@@ -22,6 +22,7 @@ import { CreateRecurringAppointmentDto } from '../dto/recurring.dto';
 import { BulkCancelDto } from '../dto/statistics.dto';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Appointment Advanced Operations Controller
  *
@@ -35,7 +36,7 @@ import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
 @ApiTags('appointments-advanced')
 @ApiBearerAuth()
 @Controller('appointments')
-export class AppointmentAdvancedController {
+export class AppointmentAdvancedController extends BaseController {
   private readonly logger = new Logger(AppointmentAdvancedController.name);
 
   constructor(

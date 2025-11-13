@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+import { BaseService } from '../../common/base';
 /**
  * Export Service
  * Handles data export functionality
  */
 @Injectable()
-export class ExportService {
-  private readonly logger = new Logger(ExportService.name);
-
+export class ExportService extends BaseService {
   constructor(private eventEmitter: EventEmitter2) {}
 
   /**
@@ -23,7 +22,7 @@ export class ExportService {
       const filename = `dashboard-${period}-${Date.now()}.${format}`;
       const filepath = `/exports/${filename}`;
 
-      this.logger.log('Dashboard data exported', {
+      this.logInfo('Dashboard data exported', {
         period,
         format,
         filename,
@@ -39,7 +38,7 @@ export class ExportService {
 
       return filepath;
     } catch (error) {
-      this.logger.error('Error exporting dashboard data', {
+      this.logError('Error exporting dashboard data', {
         error: error instanceof Error ? error.message : String(error),
         period,
         format,

@@ -126,7 +126,6 @@ export interface HealthMetrics {
  */
 @Injectable()
 export class DatabaseHealthIndicator {
-  private readonly logger = new Logger(DatabaseHealthIndicator.name);
   private lastHealthInfo: DatabaseHealthInfo | null = null;
   private connectionStartTime = Date.now();
 
@@ -151,7 +150,7 @@ export class DatabaseHealthIndicator {
         },
       };
     } catch (error) {
-      this.logger.error('Database health check failed', error);
+      this.logError('Database health check failed', error);
       
       return {
         [key]: {
@@ -234,7 +233,6 @@ export class DatabaseHealthIndicator {
  */
 @Injectable()
 export class ExternalServiceHealthIndicator {
-  private readonly logger = new Logger(ExternalServiceHealthIndicator.name);
   private serviceHealthCache = new Map<string, ExternalServiceHealthInfo>();
 
   /**
@@ -261,7 +259,7 @@ export class ExternalServiceHealthIndicator {
           ...healthInfo,
         };
       } catch (error) {
-        this.logger.error(`Health check failed for service ${service.name}`, error);
+        this.logError(`Health check failed for service ${service.name}`, error);
         
         const failedInfo: ExternalServiceHealthInfo = {
           name: service.name,
@@ -349,8 +347,6 @@ export class ExternalServiceHealthIndicator {
  */
 @Injectable()
 export class ResourceHealthIndicator {
-  private readonly logger = new Logger(ResourceHealthIndicator.name);
-
   /**
    * Checks system resource utilization
    */
@@ -481,7 +477,6 @@ export class ResourceHealthIndicator {
  */
 @Injectable()
 export class ApplicationHealthIndicator {
-  private readonly logger = new Logger(ApplicationHealthIndicator.name);
   private readonly startTime = new Date();
 
   /**
@@ -568,6 +563,7 @@ export class ProductionHealthCheckService {
   private isShuttingDown = false;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly healthCheckService: HealthCheckService,
     private readonly databaseHealth: DatabaseHealthIndicator,
     private readonly externalServiceHealth: ExternalServiceHealthIndicator,
@@ -575,7 +571,13 @@ export class ProductionHealthCheckService {
     private readonly applicationHealth: ApplicationHealthIndicator,
     private readonly memoryHealth: MemoryHealthIndicator,
     private readonly diskHealth: DiskHealthIndicator
-  ) {}
+  ) {
+    super({
+      serviceName: 'ExternalService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Performs comprehensive health check
@@ -683,7 +685,7 @@ export class ProductionHealthCheckService {
 
       return healthStatus;
     } catch (error) {
-      this.logger.error('Health check failed', error);
+      this.logError('Health check failed', error);
       
       const errorStatus: OverallHealthStatus = {
         status: 'DOWN',
@@ -753,7 +755,7 @@ export class ProductionHealthCheckService {
    * Initiates graceful shutdown
    */
   async gracefulShutdown(timeout: number = 30000): Promise<void> {
-    this.logger.log('Initiating graceful shutdown...');
+    this.logInfo('Initiating graceful shutdown...');
     this.isShuttingDown = true;
 
     const startTime = Date.now();
@@ -761,7 +763,7 @@ export class ProductionHealthCheckService {
     try {
       // Perform final health check
       const finalHealth = await this.performHealthCheck();
-      this.logger.log('Final health check completed', { status: finalHealth.status });
+      this.logInfo('Final health check completed', { status: finalHealth.status });
 
       // Wait for ongoing requests to complete (mock implementation)
       await this.waitForOngoingRequests(timeout);
@@ -770,9 +772,9 @@ export class ProductionHealthCheckService {
       await this.closeConnections();
 
       const shutdownDuration = Date.now() - startTime;
-      this.logger.log(`Graceful shutdown completed in ${shutdownDuration}ms`);
+      this.logInfo(`Graceful shutdown completed in ${shutdownDuration}ms`);
     } catch (error) {
-      this.logger.error('Error during graceful shutdown', error);
+      this.logError('Error during graceful shutdown', error);
       throw error;
     }
   }
@@ -785,7 +787,7 @@ export class ProductionHealthCheckService {
       const health = await this.performHealthCheck({ timeout: 5000 });
       return health.status !== 'DOWN';
     } catch (error) {
-      this.logger.error('Readiness check failed', error);
+      this.logError('Readiness check failed', error);
       return false;
     }
   }
@@ -807,7 +809,7 @@ export class ProductionHealthCheckService {
 
       return basicChecks.every(result => result.status === 'fulfilled');
     } catch (error) {
-      this.logger.error('Liveness check failed', error);
+      this.logError('Liveness check failed', error);
       return false;
     }
   }
@@ -852,7 +854,7 @@ export class ProductionHealthCheckService {
     if (result.status === 'fulfilled') {
       return result.value;
     } else {
-      this.logger.error(`Health check failed for ${category}`, result.reason);
+      this.logError(`Health check failed for ${category}`, result.reason);
       return {
         [category]: {
           status: 'down',
@@ -907,7 +909,7 @@ export class ProductionHealthCheckService {
 
   private async closeConnections(): Promise<void> {
     // Mock implementation - in production, close actual database connections
-    this.logger.log('Closing database connections...');
+    this.logInfo('Closing database connections...');
   }
 }
 
@@ -923,8 +925,15 @@ export class HealthController {
   private readonly logger = new Logger(HealthController.name);
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly healthCheckService: ProductionHealthCheckService
-  ) {}
+  ) {
+    super({
+      serviceName: 'ExternalService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Comprehensive health check endpoint
@@ -935,7 +944,7 @@ export class HealthController {
     try {
       return await this.healthCheckService.performHealthCheck();
     } catch (error) {
-      this.logger.error('Health check endpoint failed', error);
+      this.logError('Health check endpoint failed', error);
       throw new HttpException(
         'Health check failed',
         HttpStatus.SERVICE_UNAVAILABLE
@@ -1023,7 +1032,7 @@ export class HealthMonitoringService {
       this.stopMonitoring();
     }
 
-    this.logger.log(`Starting health monitoring with ${intervalMs}ms interval`);
+    this.logInfo(`Starting health monitoring with ${intervalMs}ms interval`);
     
     this.monitoringInterval = setInterval(async () => {
       await this.performMonitoringCheck();
@@ -1037,7 +1046,7 @@ export class HealthMonitoringService {
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
-      this.logger.log('Health monitoring stopped');
+      this.logInfo('Health monitoring stopped');
     }
   }
 
@@ -1046,7 +1055,7 @@ export class HealthMonitoringService {
    */
   setAlertThresholds(thresholds: Partial<typeof this.alertThresholds>): void {
     this.alertThresholds = { ...this.alertThresholds, ...thresholds };
-    this.logger.log('Alert thresholds updated', this.alertThresholds);
+    this.logInfo('Alert thresholds updated', this.alertThresholds);
   }
 
   private async performMonitoringCheck(): Promise<void> {
@@ -1057,13 +1066,13 @@ export class HealthMonitoringService {
       // Check for alerts
       await this.checkAlertConditions(health, metrics);
 
-      this.logger.debug('Health monitoring check completed', {
+      this.logDebug('Health monitoring check completed', {
         status: health.status,
         duration: health.duration,
         issues: health.issues.length,
       });
     } catch (error) {
-      this.logger.error('Health monitoring check failed', error);
+      this.logError('Health monitoring check failed', error);
       
       // Send critical alert for monitoring failure
       await this.sendAlert('CRITICAL', 'Health monitoring check failed', {
@@ -1122,7 +1131,7 @@ export class HealthMonitoringService {
     metadata: Record<string, any>
   ): Promise<void> {
     // Mock alert implementation - replace with actual alerting system
-    this.logger.warn(`[${level}] HEALTH ALERT: ${message}`, metadata);
+    this.logWarning(`[${level}] HEALTH ALERT: ${message}`, metadata);
 
     // In production, integrate with:
     // - Slack/Discord notifications

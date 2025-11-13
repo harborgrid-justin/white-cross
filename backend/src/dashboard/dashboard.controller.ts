@@ -3,8 +3,17 @@
  * Provides REST API endpoints for dashboard statistics, analytics, and real-time data
  */
 
-import { Controller, Delete, Get, HttpCode, HttpStatus, Logger, Query, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BaseController } from '../common/base/base-controller';
 import { DashboardService } from './dashboard.service';
 import {
   DashboardChartDataDto,
@@ -30,10 +39,10 @@ import {
 @ApiTags('dashboard')
 @ApiBearerAuth()
 @Controller('dashboard')
-export class DashboardController {
-  private readonly logger = new Logger(DashboardController.name);
-
-  constructor(private readonly dashboardService: DashboardService) {}
+export class DashboardController extends BaseController {
+  constructor(private readonly dashboardService: DashboardService) {
+    super('DashboardController');
+  }
 
   /**
    * GET /dashboard/stats
@@ -70,7 +79,7 @@ export class DashboardController {
     description: 'Internal server error',
   })
   async getDashboardStats(): Promise<DashboardStatsDto> {
-    this.logger.log('GET /dashboard/stats');
+    this.logInfo('GET /dashboard/stats');
     return this.dashboardService.getDashboardStats();
   }
 
@@ -118,9 +127,7 @@ export class DashboardController {
     @Query(new ValidationPipe({ transform: true }))
     query: GetRecentActivitiesDto,
   ): Promise<RecentActivityDto[]> {
-    this.logger.log(
-      `GET /dashboard/recent-activities?limit=${query.limit || 5}`,
-    );
+    this.logInfo(`GET /dashboard/recent-activities?limit=${query.limit || 5}`);
     return this.dashboardService.getRecentActivities(query.limit);
   }
 
@@ -169,9 +176,7 @@ export class DashboardController {
     @Query(new ValidationPipe({ transform: true }))
     query: GetUpcomingAppointmentsDto,
   ): Promise<UpcomingAppointmentDto[]> {
-    this.logger.log(
-      `GET /dashboard/upcoming-appointments?limit=${query.limit || 5}`,
-    );
+    this.logInfo(`GET /dashboard/upcoming-appointments?limit=${query.limit || 5}`);
     return this.dashboardService.getUpcomingAppointments(query.limit);
   }
 
@@ -219,9 +224,7 @@ export class DashboardController {
   async getChartData(
     @Query(new ValidationPipe({ transform: true })) query: GetChartDataDto,
   ): Promise<DashboardChartDataDto> {
-    this.logger.log(
-      `GET /dashboard/chart-data?period=${query.period || 'week'}`,
-    );
+    this.logInfo(`GET /dashboard/chart-data?period=${query.period || 'week'}`);
     return this.dashboardService.getChartData(query.period);
   }
 
@@ -271,13 +274,10 @@ export class DashboardController {
   async getDashboardStatsByScope(
     @Query(new ValidationPipe({ transform: true })) query: GetStatsByScopeDto,
   ): Promise<DashboardStatsDto> {
-    this.logger.log(
+    this.logInfo(
       `GET /dashboard/stats-by-scope?schoolId=${query.schoolId || 'none'}&districtId=${query.districtId || 'none'}`,
     );
-    return this.dashboardService.getDashboardStatsByScope(
-      query.schoolId,
-      query.districtId,
-    );
+    return this.dashboardService.getDashboardStatsByScope(query.schoolId, query.districtId);
   }
 
   /**
@@ -304,7 +304,7 @@ export class DashboardController {
     description: 'Internal server error',
   })
   clearCache(): void {
-    this.logger.log('DELETE /dashboard/cache');
+    this.logInfo('DELETE /dashboard/cache');
     this.dashboardService.clearCache();
   }
 }

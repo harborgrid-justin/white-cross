@@ -31,18 +31,30 @@ import { ContactStatisticsService } from './services/contact-statistics.service'
 import { NotificationOrchestrationService } from './services/notification-orchestration.service';
 import { NotificationQueueService } from './services/notification-queue.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class EmergencyContactService implements OnModuleDestroy {
-  private readonly logger = new Logger(EmergencyContactService.name);
-
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly contactManagementService: ContactManagementService,
     private readonly contactVerificationService: ContactVerificationService,
     private readonly contactStatisticsService: ContactStatisticsService,
     private readonly notificationOrchestrationService: NotificationOrchestrationService,
     private readonly notificationQueueService: NotificationQueueService,
   ) {
-    this.logger.log('Emergency contact service initialized');
+    super({
+      serviceName: 'EmergencyContactService',
+      logger,
+      enableAuditLogging: true,
+    });
+
+    this.logInfo('Emergency contact service initialized');
   }
 
   /**
@@ -50,9 +62,9 @@ export class EmergencyContactService implements OnModuleDestroy {
    * Delegates to NotificationQueueService for graceful shutdown
    */
   async onModuleDestroy() {
-    this.logger.log('EmergencyContactService shutting down');
+    this.logInfo('EmergencyContactService shutting down');
     await this.notificationQueueService.onModuleDestroy();
-    this.logger.log('EmergencyContactService destroyed');
+    this.logInfo('EmergencyContactService destroyed');
   }
 
   // ==================== Contact Management Operations ====================

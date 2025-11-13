@@ -4,6 +4,7 @@ import { SyncQueueItem } from '../../database/models/sync-queue-item.model';
 import { SyncEntityType } from '../enums';
 import { SyncWatermark } from './offline-sync-types.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * Watermark Service
  * Manages sync watermarks for incremental synchronization
@@ -26,15 +27,14 @@ import { SyncWatermark } from './offline-sync-types.interface';
  * ```
  */
 @Injectable()
-export class OfflineSyncWatermarkService {
-  private readonly logger = new Logger(OfflineSyncWatermarkService.name);
+export class OfflineSyncWatermarkService extends BaseService {
   private readonly syncWatermarks: Map<string, SyncWatermark> = new Map();
 
   constructor(
     @InjectModel(SyncQueueItem)
     private readonly queueModel: typeof SyncQueueItem,
   ) {
-    this.logger.log('OfflineSyncWatermarkService initialized');
+    this.logInfo('OfflineSyncWatermarkService initialized');
   }
 
   /**
@@ -89,7 +89,7 @@ export class OfflineSyncWatermarkService {
     watermark.lastSyncTimestamp = timestamp;
     this.syncWatermarks.set(key, watermark);
 
-    this.logger.log(
+    this.logInfo(
       `Updated sync watermark for ${deviceId}:${entityType} to ${timestamp.toISOString()}`,
     );
   }
@@ -138,7 +138,7 @@ export class OfflineSyncWatermarkService {
     if (entityType) {
       const key = `${deviceId}:${entityType}`;
       this.syncWatermarks.delete(key);
-      this.logger.log(`Cleared watermark for ${key}`);
+      this.logInfo(`Cleared watermark for ${key}`);
     } else {
       // Clear all watermarks for device
       const keysToDelete: string[] = [];
@@ -148,7 +148,7 @@ export class OfflineSyncWatermarkService {
         }
       });
       keysToDelete.forEach((key) => this.syncWatermarks.delete(key));
-      this.logger.log(`Cleared all watermarks for device ${deviceId}`);
+      this.logInfo(`Cleared all watermarks for device ${deviceId}`);
     }
   }
 
@@ -158,6 +158,6 @@ export class OfflineSyncWatermarkService {
    */
   clearAllWatermarks(): void {
     this.syncWatermarks.clear();
-    this.logger.log('All watermarks cleared from cache');
+    this.logInfo('All watermarks cleared from cache');
   }
 }

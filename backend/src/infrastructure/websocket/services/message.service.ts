@@ -8,10 +8,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { BroadcastService } from './broadcast.service';
 import { MessageEventDto, MessageDeliveryDto, ReadReceiptDto, TypingIndicatorDto } from '../types/websocket.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class MessageService {
-  private readonly logger = new Logger(MessageService.name);
-
+export class MessageService extends BaseService {
   constructor(private readonly broadcastService: BroadcastService) {}
 
   /**
@@ -25,12 +24,12 @@ export class MessageService {
         message.toPayload(),
       );
 
-      this.logger.log(`Message sent to conversation ${conversationId}`, {
+      this.logInfo(`Message sent to conversation ${conversationId}`, {
         messageId: message.messageId,
         senderId: message.senderId,
       });
     } catch (error) {
-      this.logger.error(`Failed to send message to conversation ${conversationId}`, error);
+      this.logError(`Failed to send message to conversation ${conversationId}`, error);
       throw error;
     }
   }
@@ -48,13 +47,13 @@ export class MessageService {
         message.toPayload(),
       );
 
-      this.logger.log(`Direct message sent to ${userIds.length} users`, {
+      this.logInfo(`Direct message sent to ${userIds.length} users`, {
         messageId: message.messageId,
         senderId: message.senderId,
         recipientCount: userIds.length,
       });
     } catch (error) {
-      this.logger.error('Failed to send direct message', error);
+      this.logError('Failed to send direct message', error);
       throw error;
     }
   }
@@ -73,12 +72,12 @@ export class MessageService {
         typingIndicator.toPayload(),
       );
 
-      this.logger.debug(`Typing indicator broadcasted to conversation ${conversationId}`, {
+      this.logDebug(`Typing indicator broadcasted to conversation ${conversationId}`, {
         userId: typingIndicator.userId,
         isTyping: typingIndicator.isTyping,
       });
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to broadcast typing indicator to conversation ${conversationId}`,
         error,
       );
@@ -97,12 +96,12 @@ export class MessageService {
         readReceipt.toPayload(),
       );
 
-      this.logger.log(`Read receipt broadcasted to conversation ${conversationId}`, {
+      this.logInfo(`Read receipt broadcasted to conversation ${conversationId}`, {
         messageId: readReceipt.messageId,
         userId: readReceipt.userId,
       });
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to broadcast read receipt to conversation ${conversationId}`,
         error,
       );
@@ -121,12 +120,12 @@ export class MessageService {
         delivery.toPayload(),
       );
 
-      this.logger.debug(`Delivery confirmation sent to user ${senderId}`, {
+      this.logDebug(`Delivery confirmation sent to user ${senderId}`, {
         messageId: delivery.messageId,
         status: delivery.status,
       });
     } catch (error) {
-      this.logger.error(`Failed to broadcast delivery confirmation to user ${senderId}`, error);
+      this.logError(`Failed to broadcast delivery confirmation to user ${senderId}`, error);
       throw error;
     }
   }

@@ -11,10 +11,9 @@ import { SystemConfig } from '../../database/models/system-config.model';
 import { ConfigurationHistory } from '../../database/models/configuration-history.model';
 import { UpdateConfigurationDto } from '../dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ConfigHistoryService {
-  private readonly logger = new Logger(ConfigHistoryService.name);
-
+export class ConfigHistoryService extends BaseService {
   constructor(
     @InjectModel(SystemConfig)
     private readonly configModel: typeof SystemConfig,
@@ -71,7 +70,7 @@ export class ConfigHistoryService {
 
       return history;
     } catch (error) {
-      this.logger.error(`Error fetching history for ${key}:`, error);
+      this.logError(`Error fetching history for ${key}:`, error);
       throw error;
     }
   }
@@ -98,7 +97,7 @@ export class ConfigHistoryService {
 
       return history;
     } catch (error) {
-      this.logger.error(`Error fetching user changes for ${userId}:`, error);
+      this.logError(`Error fetching user changes for ${userId}:`, error);
       throw error;
     }
   }
@@ -121,7 +120,7 @@ export class ConfigHistoryService {
 
       return history;
     } catch (error) {
-      this.logger.error('Error fetching recent changes:', error);
+      this.logError('Error fetching recent changes:', error);
       throw error;
     }
   }
@@ -153,7 +152,7 @@ export class ConfigHistoryService {
 
       return history;
     } catch (error) {
-      this.logger.error('Error fetching changes by date range:', error);
+      this.logError('Error fetching changes by date range:', error);
       throw error;
     }
   }
@@ -227,7 +226,7 @@ export class ConfigHistoryService {
         changesOverTime: changesOverTime as Array<{ date: string; count: number }>,
       };
     } catch (error) {
-      this.logger.error('Error getting change statistics:', error);
+      this.logError('Error getting change statistics:', error);
       throw error;
     }
   }

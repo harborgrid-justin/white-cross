@@ -12,6 +12,7 @@ import { ComplianceReportBuilderService } from './compliance-report-builder.serv
 import { ComplianceReportExporterService } from './compliance-report-exporter.service';
 import { ComplianceReportPersistenceService } from './compliance-report-persistence.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Compliance Report Generation Service
  *
@@ -35,8 +36,7 @@ import { ComplianceReportPersistenceService } from './compliance-report-persiste
  * - ComplianceReportPersistenceService: Database and caching operations
  */
 @Injectable()
-export class ComplianceReportGeneratorService {
-  private readonly logger = new Logger(ComplianceReportGeneratorService.name);
+export class ComplianceReportGeneratorService extends BaseService {
   private scheduledConfigs: ScheduledReportConfig[] = [];
 
   constructor(
@@ -59,7 +59,7 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(
+      this.logInfo(
         `Generating immunization compliance report for school ${params.schoolId}`,
       );
 
@@ -67,7 +67,7 @@ export class ComplianceReportGeneratorService {
       const cacheKey = `immunization-report:${params.schoolId}:${params.periodStart}-${params.periodEnd}`;
       const cached = await this.reportPersistence.getCachedReport(cacheKey);
       if (cached && cached.format === params.format) {
-        this.logger.debug('Cache hit for immunization report');
+        this.logDebug('Cache hit for immunization report');
         return cached;
       }
 
@@ -95,10 +95,10 @@ export class ComplianceReportGeneratorService {
       // Cache for 10 minutes
       await this.reportPersistence.cacheReport(cacheKey, report, 600000);
 
-      this.logger.log(`Immunization compliance report generated: ${report.id}`);
+      this.logInfo(`Immunization compliance report generated: ${report.id}`);
       return report;
     } catch (error) {
-      this.logger.error('Error generating immunization report', error.stack);
+      this.logError('Error generating immunization report', error.stack);
       throw error;
     }
   }
@@ -115,7 +115,7 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(
+      this.logInfo(
         `Generating controlled substance report for school ${params.schoolId}`,
       );
 
@@ -140,10 +140,10 @@ export class ComplianceReportGeneratorService {
       // Persist report
       await this.reportPersistence.saveReport(report);
 
-      this.logger.log(`Controlled substance report generated: ${report.id}`);
+      this.logInfo(`Controlled substance report generated: ${report.id}`);
       return report;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         'Error generating controlled substance report',
         error.stack,
       );
@@ -163,7 +163,7 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(
+      this.logInfo(
         `Generating HIPAA audit report for school ${params.schoolId}`,
       );
 
@@ -179,10 +179,10 @@ export class ComplianceReportGeneratorService {
       // Persist report
       await this.reportPersistence.saveReport(report);
 
-      this.logger.log(`HIPAA audit report generated: ${report.id}`);
+      this.logInfo(`HIPAA audit report generated: ${report.id}`);
       return report;
     } catch (error) {
-      this.logger.error('Error generating HIPAA audit report', error.stack);
+      this.logError('Error generating HIPAA audit report', error.stack);
       throw error;
     }
   }
@@ -199,7 +199,7 @@ export class ComplianceReportGeneratorService {
     generatedBy: string;
   }): Promise<ComplianceReport> {
     try {
-      this.logger.log(
+      this.logInfo(
         `Generating health screening report for school ${params.schoolId}`,
       );
 
@@ -224,10 +224,10 @@ export class ComplianceReportGeneratorService {
       // Persist report
       await this.reportPersistence.saveReport(report);
 
-      this.logger.log(`Health screening report generated: ${report.id}`);
+      this.logInfo(`Health screening report generated: ${report.id}`);
       return report;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         'Error generating health screening report',
         error.stack,
       );
@@ -269,13 +269,13 @@ export class ComplianceReportGeneratorService {
       };
 
       this.scheduledConfigs.push(scheduledConfig);
-      this.logger.log(
+      this.logInfo(
         `Recurring report scheduled: ${scheduledConfig.id} - ${config.reportType} ${config.frequency}`,
       );
 
       return scheduledConfig;
     } catch (error) {
-      this.logger.error('Error scheduling recurring report', error.stack);
+      this.logError('Error scheduling recurring report', error.stack);
       throw error;
     }
   }
@@ -308,10 +308,10 @@ export class ComplianceReportGeneratorService {
         fileSize,
       );
 
-      this.logger.log(`Report exported: ${reportId} to ${format} format`);
+      this.logInfo(`Report exported: ${reportId} to ${format} format`);
       return fileUrl;
     } catch (error) {
-      this.logger.error(`Error exporting report ${reportId}`, error.stack);
+      this.logError(`Error exporting report ${reportId}`, error.stack);
       throw error;
     }
   }
@@ -353,11 +353,11 @@ export class ComplianceReportGeneratorService {
         recipients,
       );
 
-      this.logger.log(
+      this.logInfo(
         `Report distributed: ${reportId} to ${recipients.length} recipients`,
       );
     } catch (error) {
-      this.logger.error(`Error distributing report ${reportId}`, error.stack);
+      this.logError(`Error distributing report ${reportId}`, error.stack);
       throw error;
     }
   }

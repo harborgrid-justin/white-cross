@@ -13,6 +13,7 @@ import {
   DataTypes,
   Transaction,
 } from 'sequelize';
+import { buildTableAttributes } from './table-attributes-builder';
 import {
   TableCreationOptions,
   IndexDefinition,
@@ -53,30 +54,8 @@ export async function createTableWithDefaults(
     comment,
   } = options;
 
-  // Build complete attribute definition with defaults
-  const completeAttributes: Record<string, unknown> = {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-      allowNull: false,
-    },
-    ...attributes,
-  };
-
-  // Add timestamp fields if enabled
-  if (timestamps) {
-    completeAttributes.createdAt = {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-    };
-    completeAttributes.updatedAt = {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-    };
-  }
+  // Build complete attribute definition with defaults using shared utility
+  const completeAttributes = buildTableAttributes(attributes, { timestamps, paranoid });
 
   // Add soft delete field if paranoid
   if (paranoid) {

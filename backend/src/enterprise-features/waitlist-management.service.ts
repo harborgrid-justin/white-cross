@@ -12,9 +12,9 @@ import {
 } from './enterprise-features-interfaces';
 import { WAITLIST_CONSTANTS, ENTERPRISE_CONSTANTS } from './enterprise-features-constants';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class WaitlistManagementService {
-  private readonly logger = new Logger(WaitlistManagementService.name);
+export class WaitlistManagementService extends BaseService {
   private waitlist: WaitlistEntry[] = []; // In production, this would be a database
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -39,7 +39,7 @@ export class WaitlistManagementService {
 
       this.waitlist.push(entry);
 
-      this.logger.log('Student added to waitlist', {
+      this.logInfo('Student added to waitlist', {
         studentId,
         appointmentType,
         priority,
@@ -54,7 +54,7 @@ export class WaitlistManagementService {
 
       return entry;
     } catch (error) {
-      this.logger.error('Error adding to waitlist', {
+      this.logError('Error adding to waitlist', {
         error: error instanceof Error ? error.message : String(error),
         studentId,
         appointmentType,
@@ -83,7 +83,7 @@ export class WaitlistManagementService {
         });
 
       if (eligibleEntries.length === 0) {
-        this.logger.log('No eligible waitlist entries found', { appointmentType });
+        this.logInfo('No eligible waitlist entries found', { appointmentType });
         return false;
       }
 
@@ -92,7 +92,7 @@ export class WaitlistManagementService {
       // In production: Create appointment and notify student
       selectedEntry.status = WaitlistStatus.SCHEDULED;
 
-      this.logger.log('Auto-filling appointment from waitlist', {
+      this.logInfo('Auto-filling appointment from waitlist', {
         appointmentSlot,
         appointmentType,
         studentId: selectedEntry.studentId,
@@ -108,7 +108,7 @@ export class WaitlistManagementService {
 
       return true;
     } catch (error) {
-      this.logger.error('Error auto-filling from waitlist', {
+      this.logError('Error auto-filling from waitlist', {
         error: error instanceof Error ? error.message : String(error),
         appointmentSlot,
         appointmentType,
@@ -138,7 +138,7 @@ export class WaitlistManagementService {
         totalCount: high.length + routine.length,
       };
 
-      this.logger.log('Retrieved waitlist by priority', {
+      this.logInfo('Retrieved waitlist by priority', {
         highCount: high.length,
         routineCount: routine.length,
         totalCount: result.totalCount,
@@ -146,7 +146,7 @@ export class WaitlistManagementService {
 
       return result;
     } catch (error) {
-      this.logger.error('Error getting waitlist by priority', error);
+      this.logError('Error getting waitlist by priority', error);
       throw error;
     }
   }
@@ -163,14 +163,14 @@ export class WaitlistManagementService {
         entry.status === WaitlistStatus.WAITING
       );
 
-      this.logger.log('Getting waitlist status for student', {
+      this.logInfo('Getting waitlist status for student', {
         studentId,
         waitlistCount: studentWaitlists.length,
       });
 
       return { waitlists: studentWaitlists };
     } catch (error) {
-      this.logger.error('Error getting waitlist status', {
+      this.logError('Error getting waitlist status', {
         error,
         studentId,
       });
@@ -190,14 +190,14 @@ export class WaitlistManagementService {
       const entryIndex = this.waitlist.findIndex(entry => entry.id === entryId);
 
       if (entryIndex === -1) {
-        this.logger.warn('Waitlist entry not found', { entryId });
+        this.logWarning('Waitlist entry not found', { entryId });
         return false;
       }
 
       const entry = this.waitlist[entryIndex];
       entry.status = WaitlistStatus.CANCELLED;
 
-      this.logger.log('Student removed from waitlist', {
+      this.logInfo('Student removed from waitlist', {
         entryId,
         studentId: entry.studentId,
         removedBy,
@@ -214,7 +214,7 @@ export class WaitlistManagementService {
 
       return true;
     } catch (error) {
-      this.logger.error('Error removing from waitlist', {
+      this.logError('Error removing from waitlist', {
         error,
         entryId,
         removedBy,
@@ -247,10 +247,10 @@ export class WaitlistManagementService {
         },
       };
 
-      this.logger.log('Retrieved waitlist statistics', stats);
+      this.logInfo('Retrieved waitlist statistics', stats);
       return stats;
     } catch (error) {
-      this.logger.error('Error getting waitlist statistics', error);
+      this.logError('Error getting waitlist statistics', error);
       throw error;
     }
   }
@@ -272,14 +272,14 @@ export class WaitlistManagementService {
         entry.status = WaitlistStatus.CANCELLED;
       });
 
-      this.logger.log('Cleaned up expired waitlist entries', {
+      this.logInfo('Cleaned up expired waitlist entries', {
         expiredCount: expiredEntries.length,
         expiryDays: WAITLIST_CONSTANTS.WAITLIST_EXPIRY_DAYS,
       });
 
       return expiredEntries.length;
     } catch (error) {
-      this.logger.error('Error cleaning up expired entries', error);
+      this.logError('Error cleaning up expired entries', error);
       throw error;
     }
   }

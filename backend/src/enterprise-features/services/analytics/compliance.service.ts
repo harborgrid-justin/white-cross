@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+import { BaseService } from '../../common/base';
 /**
  * Compliance Service
  * Handles compliance metrics and monitoring
  */
 @Injectable()
-export class ComplianceService {
-  private readonly logger = new Logger(ComplianceService.name);
-
+export class ComplianceService extends BaseService {
   constructor(private eventEmitter: EventEmitter2) {}
 
   /**
@@ -31,7 +30,7 @@ export class ComplianceService {
         documentRetention: 97.2,
       };
 
-      this.logger.log('Compliance metrics retrieved', metrics);
+      this.logInfo('Compliance metrics retrieved', metrics);
 
       // Emit compliance event if any metric is below threshold
       const lowMetrics = Object.entries(metrics).filter(([, value]) => value < 95);
@@ -44,7 +43,7 @@ export class ComplianceService {
 
       return metrics;
     } catch (error) {
-      this.logger.error('Error getting compliance metrics', {
+      this.logError('Error getting compliance metrics', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

@@ -13,6 +13,13 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { join } from 'path';
 import { WorkerPoolService } from './worker-pool.service';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   Cleanup,
   CPUIntensive,
@@ -103,7 +110,6 @@ export interface StatisticalAggregations {
 export class HealthCalculationsService
   implements OnModuleInit, OnModuleDestroy
 {
-  private readonly logger = new Logger(HealthCalculationsService.name);
   private workerPool: WorkerPoolService | null = null;
 
   /**
@@ -127,7 +133,7 @@ export class HealthCalculationsService
       workerScript = join(__dirname, 'healthCalculations.worker.js');
     }
 
-    this.logger.log(
+    this.logInfo(
       `Initializing health calculations worker pool with script: ${workerScript}`,
     );
 
@@ -139,7 +145,7 @@ export class HealthCalculationsService
     // Initialize the pool
     await this.workerPool.onModuleInit();
 
-    this.logger.log('Health calculations worker pool initialized');
+    this.logInfo('Health calculations worker pool initialized');
   }
 
   /**
@@ -149,7 +155,7 @@ export class HealthCalculationsService
   @Cleanup('high')
   async onModuleDestroy(): Promise<void> {
     if (this.workerPool) {
-      this.logger.log('Shutting down health calculations worker pool');
+      this.logInfo('Shutting down health calculations worker pool');
       await this.workerPool.shutdown();
       this.workerPool = null;
     }

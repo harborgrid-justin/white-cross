@@ -27,6 +27,13 @@ import { AuditComplianceService, ComplianceReport } from './audit-compliance.ser
 import { AuditExportService } from './audit-export.service';
 import { AuditRetentionService, RetentionPolicyResult } from './audit-retention.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // Re-export interfaces for backward compatibility
 export type { AuditLogFilters, AuditLogQueryOptions, AuditStatistics, ComplianceReport };
 
@@ -45,8 +52,6 @@ export type { AuditLogFilters, AuditLogQueryOptions, AuditStatistics, Compliance
  */
 @Injectable()
 export class AuditService implements IAuditLogger {
-  private readonly logger = new Logger(AuditService.name);
-
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -57,7 +62,7 @@ export class AuditService implements IAuditLogger {
     private readonly auditExport: AuditExportService,
     private readonly auditRetention: AuditRetentionService,
   ) {
-    this.logger.log('Audit service initialized with database support');
+    this.logInfo('Audit service initialized with database support');
   }
 
   // ============================================================================

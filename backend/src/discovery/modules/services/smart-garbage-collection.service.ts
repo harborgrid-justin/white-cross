@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { ProviderMetadata, SmartGCOptions } from '../types/resource.types';
 
+import { BaseService } from '../../common/base';
 export interface GcProviderConfig {
   priority: 'low' | 'normal' | 'high';
   cleanupStrategy: 'standard' | 'aggressive' | 'custom';
@@ -35,8 +36,7 @@ export interface GcEvent {
  * Manages intelligent garbage collection based on Discovery Service patterns
  */
 @Injectable()
-export class SmartGarbageCollectionService {
-  private readonly logger = new Logger(SmartGarbageCollectionService.name);
+export class SmartGarbageCollectionService extends BaseService {
   private memoryIntensiveProviders = new Map<string, GcProviderConfig>();
   private computationIntensiveProviders = new Map<string, ProviderMetadata>();
   private gcHistory: GcEvent[] = [];
@@ -63,12 +63,12 @@ export class SmartGarbageCollectionService {
    */
   startMonitoring(): void {
     if (this.isMonitoring) {
-      this.logger.warn('GC monitoring already started');
+      this.logWarning('GC monitoring already started');
       return;
     }
 
     this.isMonitoring = true;
-    this.logger.log('Starting smart garbage collection monitoring');
+    this.logInfo('Starting smart garbage collection monitoring');
 
     // Monitor memory usage and trigger GC as needed
     this.monitoringInterval = setInterval(
@@ -89,7 +89,7 @@ export class SmartGarbageCollectionService {
     }
 
     this.isMonitoring = false;
-    this.logger.log('GC monitoring stopped');
+    this.logInfo('GC monitoring stopped');
   }
 
   /**
@@ -100,7 +100,7 @@ export class SmartGarbageCollectionService {
     config: GcProviderConfig,
   ): void {
     this.memoryIntensiveProviders.set(name, config);
-    this.logger.log(`Registered memory-intensive provider: ${name}`, {
+    this.logInfo(`Registered memory-intensive provider: ${name}`, {
       priority: config.priority,
       strategy: config.cleanupStrategy,
       threshold: config.memoryThreshold,
@@ -115,7 +115,7 @@ export class SmartGarbageCollectionService {
     metadata: ProviderMetadata,
   ): void {
     this.computationIntensiveProviders.set(name, metadata);
-    this.logger.log(`Registered computation-intensive provider: ${name}`);
+    this.logInfo(`Registered computation-intensive provider: ${name}`);
   }
 
   /**
@@ -125,7 +125,7 @@ export class SmartGarbageCollectionService {
     const startTime = Date.now();
     const memoryBefore = process.memoryUsage();
 
-    this.logger.log('Performing smart garbage collection');
+    this.logInfo('Performing smart garbage collection');
 
     try {
       // Execute custom cleanup for high-priority providers first
@@ -156,7 +156,7 @@ export class SmartGarbageCollectionService {
 
       this.updateMetrics(memoryFreed, duration);
 
-      this.logger.log(
+      this.logInfo(
         `Smart GC completed: freed ${(memoryFreed / 1024 / 1024).toFixed(2)}MB in ${duration}ms`,
       );
     } catch (error) {
@@ -171,7 +171,7 @@ export class SmartGarbageCollectionService {
         success: false,
       });
 
-      this.logger.error('Smart GC failed:', error);
+      this.logError('Smart GC failed:', error);
     }
   }
 
@@ -182,7 +182,7 @@ export class SmartGarbageCollectionService {
     const startTime = Date.now();
     const memoryBefore = process.memoryUsage();
 
-    this.logger.warn('Performing aggressive garbage collection');
+    this.logWarning('Performing aggressive garbage collection');
 
     try {
       // Execute all custom cleanups regardless of priority
@@ -215,7 +215,7 @@ export class SmartGarbageCollectionService {
 
       this.updateMetrics(memoryFreed, duration);
 
-      this.logger.warn(
+      this.logWarning(
         `Aggressive GC completed: freed ${(memoryFreed / 1024 / 1024).toFixed(2)}MB in ${duration}ms`,
       );
     } catch (error) {
@@ -230,7 +230,7 @@ export class SmartGarbageCollectionService {
         success: false,
       });
 
-      this.logger.error('Aggressive GC failed:', error);
+      this.logError('Aggressive GC failed:', error);
     }
   }
 
@@ -265,7 +265,7 @@ export class SmartGarbageCollectionService {
    * Perform final cleanup on shutdown
    */
   async performFinalCleanup(): Promise<void> {
-    this.logger.log('Performing final cleanup before shutdown');
+    this.logInfo('Performing final cleanup before shutdown');
 
     try {
       await this.executeAllCustomCleanups();
@@ -277,9 +277,9 @@ export class SmartGarbageCollectionService {
       // Clear history and metrics
       this.gcHistory.length = 0;
 
-      this.logger.log('Final cleanup completed');
+      this.logInfo('Final cleanup completed');
     } catch (error) {
-      this.logger.error('Final cleanup failed:', error);
+      this.logError('Final cleanup failed:', error);
     }
   }
 
@@ -379,10 +379,10 @@ export class SmartGarbageCollectionService {
     for (const [name, config] of providers) {
       if (config.customCleanup) {
         try {
-          this.logger.debug(`Executing custom cleanup for ${name}`);
+          this.logDebug(`Executing custom cleanup for ${name}`);
           await config.customCleanup();
         } catch (error) {
-          this.logger.error(`Custom cleanup failed for ${name}:`, error);
+          this.logError(`Custom cleanup failed for ${name}:`, error);
         }
       }
     }
@@ -412,9 +412,9 @@ export class SmartGarbageCollectionService {
         if (typeof wrapper.instance.clearCache === 'function') {
           try {
             await wrapper.instance.clearCache();
-            this.logger.debug(`Cleared cache for provider: ${wrapper.name}`);
+            this.logDebug(`Cleared cache for provider: ${wrapper.name}`);
           } catch (error) {
-            this.logger.error(
+            this.logError(
               `Failed to clear cache for ${wrapper.name}:`,
               error,
             );

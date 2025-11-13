@@ -3,6 +3,7 @@ import { ComplianceStatus } from '../enums/compliance-status.enum';
 import { ReportFormat } from '../enums/report-format.enum';
 import { ReportStatus } from '../enums/report-status.enum';
 import { ReportType } from '../enums/report-type.enum';
+import { BaseService } from '../../common/base';
 import {
   ComplianceReport,
   Finding,
@@ -23,9 +24,7 @@ import {
  * - Apply severity levels to findings
  */
 @Injectable()
-export class ComplianceReportBuilderService {
-  private readonly logger = new Logger(ComplianceReportBuilderService.name);
-
+export class ComplianceReportBuilderService extends BaseService {
   /**
    * Build immunization compliance report
    */

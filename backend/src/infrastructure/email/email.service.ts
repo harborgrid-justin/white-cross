@@ -4,8 +4,10 @@
  * @description Main email service orchestrating all email functionality
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { EmailValidatorService } from './services/email-validator.service';
 import { EmailSenderService } from './services/email-sender.service';
 import { EmailStatisticsService } from './services/email-statistics.service';
@@ -22,12 +24,12 @@ import {
 } from './types/email.types';
 
 @Injectable()
-export class EmailService {
-  private readonly logger = new Logger(EmailService.name);
+export class EmailService extends BaseService {
   private readonly queueEnabled: boolean;
   private readonly isProduction: boolean;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly configService: ConfigService,
     private readonly validatorService: EmailValidatorService,
     private readonly senderService: EmailSenderService,
@@ -35,17 +37,23 @@ export class EmailService {
     private readonly queueService: EmailQueueService,
     private readonly rateLimiterService: EmailRateLimiterService,
   ) {
+    super({
+      serviceName: 'EmailService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.isProduction = this.configService.get<string>('NODE_ENV') === 'production';
     this.queueEnabled = this.configService.get<boolean>('EMAIL_QUEUE_ENABLED', true);
 
-    this.logger.log('EmailService initialized');
+    this.logInfo('EmailService initialized');
   }
 
   /**
    * Send alert notification email
    */
   async sendAlertEmail(to: string, data: AlertEmailData): Promise<EmailDeliveryResult> {
-    this.logger.log(`Sending alert email to ${to}: [${data.severity}] ${data.title}`);
+    this.logInfo(`Sending alert email to ${to}: [${data.severity}] ${data.title}`);
 
     // Validate email
     const validation = this.validatorService.validateEmail(to);
@@ -70,7 +78,7 @@ export class EmailService {
    * Send generic email
    */
   async sendEmail(to: string, data: GenericEmailData): Promise<EmailDeliveryResult> {
-    this.logger.log(`Sending email to ${to}: ${data.subject}`);
+    this.logInfo(`Sending email to ${to}: ${data.subject}`);
 
     return this.senderService.sendGenericEmail([to], data.subject, data.body, data.html);
   }
@@ -89,12 +97,12 @@ export class EmailService {
     recipients: string[],
     data: GenericEmailData,
   ): Promise<EmailDeliveryResult[]> {
-    this.logger.log(`Sending bulk email to ${recipients.length} recipients`);
+    this.logInfo(`Sending bulk email to ${recipients.length} recipients`);
 
     // Validate all emails first
     const validationSummary = this.validatorService.getValidationSummary(recipients);
     if (validationSummary.invalid > 0) {
-      this.logger.warn(`${validationSummary.invalid} invalid emails found, filtering them out`);
+      this.logWarning(`${validationSummary.invalid} invalid emails found, filtering them out`);
     }
 
     const validRecipients = validationSummary.validEmails;
@@ -134,7 +142,7 @@ export class EmailService {
   async sendBatchEmails(
     emails: Array<{ to: string; data: GenericEmailData }>,
   ): Promise<EmailDeliveryResult[]> {
-    this.logger.log(`Sending batch of ${emails.length} personalized emails`);
+    this.logInfo(`Sending batch of ${emails.length} personalized emails`);
 
     const promises = emails.map(({ to, data }) =>
       this.sendEmail(to, data).catch((error) => ({
@@ -174,6 +182,6 @@ export class EmailService {
    */
   async close(): Promise<void> {
     await this.senderService.close();
-    this.logger.log('Email service closed');
+    this.logInfo('Email service closed');
   }
 }

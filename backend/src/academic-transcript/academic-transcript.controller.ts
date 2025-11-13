@@ -12,6 +12,7 @@ import { AcademicGenerateReportDto } from './dto/generate-report.dto';
 import { SyncSISDto } from './dto/sync-sis.dto';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Academic Transcript Controller
  *
@@ -25,7 +26,7 @@ import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 @ApiTags('academic-transcript')
 @Controller('academic-transcript')
 // @ApiBearerAuth() // Uncomment when authentication is implemented
-export class AcademicTranscriptController {
+export class AcademicTranscriptController extends BaseController {
   constructor(
     private readonly academicTranscriptService: AcademicTranscriptService,
   ) {}

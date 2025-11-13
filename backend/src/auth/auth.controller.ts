@@ -21,9 +21,10 @@ import { OAuthService } from './services/oauth.service';
 import { PasswordResetService } from './services/password-reset.service';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Authentication')
 @Controller('auth')
-export class AuthController {
+export class AuthController extends BaseController {
   constructor(
     private readonly authService: AuthService,
     private readonly tokenBlacklistService: TokenBlacklistService,

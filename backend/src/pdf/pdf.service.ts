@@ -1,7 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject } from '@nestjs/common';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { PDFDocument, rgb } from 'pdf-lib';
+import { BaseService } from '../shared/base/BaseService';
+import { LoggerService } from '../shared/logging/logger.service';
 import {
   GenerateImmunizationReportDto,
   GenerateIncidentReportDto,
@@ -28,8 +30,16 @@ declare module 'jspdf' {
  * Also provides advanced features like PDF merging, watermarking, and digital signatures.
  */
 @Injectable()
-export class PdfService {
-  private readonly logger = new Logger(PdfService.name);
+export class PdfService extends BaseService {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+  ) {
+    super({
+      serviceName: 'PdfService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Generate student health summary PDF
@@ -123,11 +133,11 @@ export class PdfService {
       });
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-      this.logger.log(`Student health summary PDF generated for ID: ${data.id}`);
+      this.logInfo(`Student health summary PDF generated for ID: ${data.id}`);
 
       return pdfBuffer;
     } catch (error) {
-      this.logger.error('Error generating student health summary PDF', error);
+      this.logError('Error generating student health summary PDF', error as Error);
       throw new BadRequestException('Failed to generate student health summary PDF');
     }
   }
@@ -175,11 +185,11 @@ export class PdfService {
       });
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-      this.logger.log(`Medication log PDF generated for ID: ${data.id}`);
+      this.logInfo(`Medication log PDF generated for ID: ${data.id}`);
 
       return pdfBuffer;
     } catch (error) {
-      this.logger.error('Error generating medication log PDF', error);
+      this.logError('Error generating medication log PDF', error as Error);
       throw new BadRequestException('Failed to generate medication log PDF');
     }
   }
@@ -231,11 +241,11 @@ export class PdfService {
       });
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-      this.logger.log('Immunization compliance report PDF generated');
+      this.logInfo('Immunization compliance report PDF generated');
 
       return pdfBuffer;
     } catch (error) {
-      this.logger.error('Error generating immunization report PDF', error);
+      this.logError('Error generating immunization report PDF', error as Error);
       throw new BadRequestException('Failed to generate immunization report PDF');
     }
   }
@@ -285,11 +295,11 @@ export class PdfService {
       });
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-      this.logger.log(`Incident report PDF generated for ID: ${data.id}`);
+      this.logInfo(`Incident report PDF generated for ID: ${data.id}`);
 
       return pdfBuffer;
     } catch (error) {
-      this.logger.error('Error generating incident report PDF', error);
+      this.logError('Error generating incident report PDF', error as Error);
       throw new BadRequestException('Failed to generate incident report PDF');
     }
   }
@@ -358,11 +368,11 @@ export class PdfService {
       });
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-      this.logger.log(`Custom report PDF generated: ${data.title}`);
+      this.logInfo(`Custom report PDF generated: ${data.title}`);
 
       return pdfBuffer;
     } catch (error) {
-      this.logger.error('Error generating custom report PDF', error);
+      this.logError('Error generating custom report PDF', error as Error);
       throw new BadRequestException('Failed to generate custom report PDF');
     }
   }
@@ -382,11 +392,11 @@ export class PdfService {
       }
 
       const mergedBuffer = await mergedPdf.save();
-      this.logger.log(`Merged ${pdfBuffers.length} PDFs`);
+      this.logInfo(`Merged ${pdfBuffers.length} PDFs`);
 
       return Buffer.from(mergedBuffer);
     } catch (error) {
-      this.logger.error('Error merging PDFs', error);
+      this.logError('Error merging PDFs', error as Error);
       throw new BadRequestException('Failed to merge PDFs');
     }
   }
@@ -414,11 +424,11 @@ export class PdfService {
       }
 
       const watermarkedBuffer = await pdfDoc.save();
-      this.logger.log('PDF watermark added');
+      this.logInfo('PDF watermark added');
 
       return Buffer.from(watermarkedBuffer);
     } catch (error) {
-      this.logger.error('Error adding watermark to PDF', error);
+      this.logError('Error adding watermark to PDF', error as Error);
       throw new BadRequestException('Failed to add watermark to PDF');
     }
   }
@@ -444,11 +454,11 @@ export class PdfService {
       // 4. Add signature appearance
 
       const signedBuffer = await pdfDoc.save();
-      this.logger.log('PDF signed');
+      this.logInfo('PDF signed');
 
       return Buffer.from(signedBuffer);
     } catch (error) {
-      this.logger.error('Error signing PDF', error);
+      this.logError('Error signing PDF', error as Error);
       throw new BadRequestException('Failed to sign PDF');
     }
   }

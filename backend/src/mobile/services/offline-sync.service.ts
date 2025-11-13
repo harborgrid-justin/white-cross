@@ -16,6 +16,7 @@ import { OfflineSyncWatermarkService } from './offline-sync-watermark.service';
 import { OfflineSyncQueueService } from './offline-sync-queue.service';
 import { OfflineSyncConflictService } from './offline-sync-conflict.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Offline Sync Service - Main orchestrator for offline data synchronization
  *
@@ -25,9 +26,7 @@ import { OfflineSyncConflictService } from './offline-sync-conflict.service';
  * - Incremental sync with watermarks
  */
 @Injectable()
-export class OfflineSyncService {
-  private readonly logger = new Logger(OfflineSyncService.name);
-
+export class OfflineSyncService extends BaseService {
   constructor(
     @InjectModel(SyncQueueItem)
     private readonly queueModel: typeof SyncQueueItem,
@@ -38,7 +37,7 @@ export class OfflineSyncService {
     private readonly queueService: OfflineSyncQueueService,
     private readonly conflictService: OfflineSyncConflictService,
   ) {
-    this.logger.log('OfflineSyncService initialized');
+    this.logInfo('OfflineSyncService initialized');
   }
 
   /** Register an entity service for sync operations */
@@ -193,17 +192,17 @@ export class OfflineSyncService {
           );
           result.failed++;
           result.errors.push(`Item ${item.id}: ${error}`);
-          this.logger.error('Error syncing item', error);
+          this.logError('Error syncing item', error);
         }
       }
 
-      this.logger.log(
+      this.logInfo(
         `Sync completed for device ${deviceId}: ${result.synced} synced, ${result.failed} failed, ${result.conflicts} conflicts`,
       );
 
       return result;
     } catch (error) {
-      this.logger.error('Error syncing pending actions', error);
+      this.logError('Error syncing pending actions', error);
       throw error;
     }
   }
@@ -213,7 +212,7 @@ export class OfflineSyncService {
     const entityService = this.entityRegistry.getEntityService(item.entityType);
 
     try {
-      this.logger.log(
+      this.logInfo(
         `Applying sync action: ${item.actionType} on ${item.entityType} (${item.entityId})`,
       );
 
@@ -231,7 +230,7 @@ export class OfflineSyncService {
             item.data as Record<string, unknown>,
             item.userId,
           );
-          this.logger.log(`Created ${item.entityType}:${item.entityId}`);
+          this.logInfo(`Created ${item.entityType}:${item.entityId}`);
           break;
 
         case SyncActionType.UPDATE:
@@ -240,25 +239,25 @@ export class OfflineSyncService {
             item.data as Record<string, unknown>,
             item.userId,
           );
-          this.logger.log(`Updated ${item.entityType}:${item.entityId}`);
+          this.logInfo(`Updated ${item.entityType}:${item.entityId}`);
           break;
 
         case SyncActionType.DELETE:
           await entityService.delete(item.entityId, item.userId);
-          this.logger.log(`Deleted ${item.entityType}:${item.entityId}`);
+          this.logInfo(`Deleted ${item.entityType}:${item.entityId}`);
           break;
 
         case SyncActionType.READ:
           // Just fetch to validate
           await entityService.findById(item.entityId);
-          this.logger.log(`Validated ${item.entityType}:${item.entityId}`);
+          this.logInfo(`Validated ${item.entityType}:${item.entityId}`);
           break;
 
         default:
           throw new Error(`Unknown sync action type: ${item.actionType}`);
       }
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to apply sync action for ${item.entityType}:${item.entityId}`,
         error,
       );
@@ -335,7 +334,7 @@ export class OfflineSyncService {
         } catch (error) {
           result.failed++;
           result.errors.push(`Item ${item.id}: ${error}`);
-          this.logger.error('Error in batch sync item', error);
+          this.logError('Error in batch sync item', error);
 
           // Rollback transaction on error
           await transaction.rollback();
@@ -346,13 +345,13 @@ export class OfflineSyncService {
       // Commit transaction if all successful
       await transaction.commit();
 
-      this.logger.log(
+      this.logInfo(
         `Batch sync completed: ${result.synced} synced, ${result.failed} failed, ${result.conflicts} conflicts`,
       );
 
       return result;
     } catch (error) {
-      this.logger.error('Batch sync failed, transaction rolled back', error);
+      this.logError('Batch sync failed, transaction rolled back', error);
       throw error;
     }
   }

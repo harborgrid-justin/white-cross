@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { PushNotification } from '../entities';
 import { NotificationCategory, NotificationStatus } from '../enums';
 
+import { BaseService } from '../../common/base';
 /**
  * Notification Analytics Service
  *
@@ -34,9 +35,7 @@ import { NotificationCategory, NotificationStatus } from '../enums';
  * ```
  */
 @Injectable()
-export class NotificationAnalyticsService {
-  private readonly logger = new Logger(NotificationAnalyticsService.name);
-
+export class NotificationAnalyticsService extends BaseService {
   constructor(
     @InjectModel(PushNotification)
     private readonly notificationModel: typeof PushNotification,
@@ -73,7 +72,7 @@ export class NotificationAnalyticsService {
 
     await notification.save();
 
-    this.logger.log(`Interaction tracked: ${notificationId} - ${action}`);
+    this.logInfo(`Interaction tracked: ${notificationId} - ${action}`);
   }
 
   /**

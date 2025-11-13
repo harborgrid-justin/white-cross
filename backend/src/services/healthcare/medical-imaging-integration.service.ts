@@ -5,6 +5,7 @@ import { Student   } from "../../database/models";
 import { HealthRecord   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Medical Imaging Integration Service
  *
@@ -24,9 +25,7 @@ import { VitalSigns   } from "../../database/models";
  * @hipaa-requirement PHI protection for medical images
  */
 @Injectable()
-export class MedicalImagingIntegrationService {
-  private readonly logger = new Logger(MedicalImagingIntegrationService.name);
-
+export class MedicalImagingIntegrationService extends BaseService {
   // Imaging modalities and their characteristics
   private readonly IMAGING_MODALITIES = {
     XRAY: {
@@ -169,7 +168,7 @@ export class MedicalImagingIntegrationService {
           await this.triggerAIAnalysis(processedImage.id, imagingRequest.modality);
         }
       } catch (error) {
-        this.logger.error(`Failed to process image file: ${file.filename}`, error);
+        this.logError(`Failed to process image file: ${file.filename}`, error);
         return {
           success: false,
           error: `Failed to process image: ${file.filename}`,

@@ -6,6 +6,7 @@ import { ValidationResult, AuditRequest, SanitizableData } from '../types/audit.
 import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
 import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * AuditUtilsService - Utility functions and helpers for audit operations
  *
@@ -13,7 +14,7 @@ import { IPHIAccessLog } from '../interfaces/phi-access-log.interface';
  * and shared functionality used across all audit services.
  */
 @Injectable()
-export class AuditUtilsService {
+export class AuditUtilsService extends BaseService {
   /**
    * Validate audit log entry data
    *

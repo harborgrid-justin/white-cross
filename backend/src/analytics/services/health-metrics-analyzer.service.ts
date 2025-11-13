@@ -18,6 +18,7 @@ import { DateRangeService } from './date-range.service';
 import { TrendCalculationService } from './trend-calculation.service';
 import { ConditionAnalyticsService } from './condition-analytics.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Health Metrics Analyzer Service
  * Analyzes population health metrics and generates comprehensive summaries
@@ -30,9 +31,7 @@ import { ConditionAnalyticsService } from './condition-analytics.service';
  * - Cohort comparison analysis
  */
 @Injectable()
-export class HealthMetricsAnalyzerService {
-  private readonly logger = new Logger(HealthMetricsAnalyzerService.name);
-
+export class HealthMetricsAnalyzerService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -60,7 +59,7 @@ export class HealthMetricsAnalyzerService {
       const cached =
         await this.cacheManager.get<PopulationHealthSummary>(cacheKey);
       if (cached) {
-        this.logger.debug(`Cache hit for population summary: ${schoolId}`);
+        this.logDebug(`Cache hit for population summary: ${schoolId}`);
         return cached;
       }
 
@@ -199,12 +198,12 @@ export class HealthMetricsAnalyzerService {
       // Cache for 5 minutes
       await this.cacheManager.set(cacheKey, summary, 300000);
 
-      this.logger.log(
+      this.logInfo(
         `Population health summary generated for school ${schoolId}`,
       );
       return summary;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error generating population summary for school ${schoolId}`,
         error.stack,
       );
@@ -515,7 +514,7 @@ export class HealthMetricsAnalyzerService {
         },
       ];
     } catch (error) {
-      this.logger.error('Error getting health metrics', error.stack);
+      this.logError('Error getting health metrics', error.stack);
       throw error;
     }
   }

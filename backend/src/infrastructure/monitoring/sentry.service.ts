@@ -13,10 +13,19 @@
  * - HIPAA-compliant (no PHI in error reports)
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import * as Sentry from '@sentry/node';
 import { ConfigService } from '@nestjs/config';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Sentry Service
  *
@@ -25,7 +34,16 @@ import { ConfigService } from '@nestjs/config';
  *
  * @example
  * // In a service
- * constructor(private readonly sentry: SentryService) {}
+ * constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly sentry: SentryService
+  ) {
+    super({
+      serviceName: 'SentryService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
  *
  * try {
  *   // risky operation
@@ -35,10 +53,18 @@ import { ConfigService } from '@nestjs/config';
  */
 @Injectable()
 export class SentryService implements OnModuleInit {
-  private readonly logger = new Logger(SentryService.name);
   private isInitialized = false;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly configService: ConfigService
+  ) {
+    super({
+      serviceName: 'SentryService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   onModuleInit(): void {
     this.initialize();
@@ -57,7 +83,7 @@ export class SentryService implements OnModuleInit {
 
     // Only initialize if DSN is configured and not in test environment
     if (!dsn || environment === 'test') {
-      this.logger.warn(
+      this.logWarning(
         'Sentry not initialized: DSN not configured or test environment',
       );
       return;
@@ -95,9 +121,9 @@ export class SentryService implements OnModuleInit {
       });
 
       this.isInitialized = true;
-      this.logger.log(`Sentry initialized for environment: ${environment}`);
+      this.logInfo(`Sentry initialized for environment: ${environment}`);
     } catch (error) {
-      this.logger.error('Failed to initialize Sentry', error);
+      this.logError('Failed to initialize Sentry', error);
     }
   }
 
@@ -161,7 +187,7 @@ export class SentryService implements OnModuleInit {
         }
       });
     } catch (error) {
-      this.logger.error('Failed to capture exception in Sentry', error);
+      this.logError('Failed to capture exception in Sentry', error);
     }
   }
 
@@ -204,7 +230,7 @@ export class SentryService implements OnModuleInit {
         Sentry.captureMessage(message, level);
       });
     } catch (error) {
-      this.logger.error('Failed to capture message in Sentry', error);
+      this.logError('Failed to capture message in Sentry', error);
     }
   }
 
@@ -230,7 +256,7 @@ export class SentryService implements OnModuleInit {
         timestamp: Date.now() / 1000,
       });
     } catch (error) {
-      this.logger.error('Failed to add breadcrumb to Sentry', error);
+      this.logError('Failed to add breadcrumb to Sentry', error);
     }
   }
 
@@ -257,7 +283,7 @@ export class SentryService implements OnModuleInit {
         Sentry.setUser(null);
       }
     } catch (error) {
-      this.logger.error('Failed to set user in Sentry', error);
+      this.logError('Failed to set user in Sentry', error);
     }
   }
 
@@ -457,7 +483,7 @@ export class SentryService implements OnModuleInit {
     try {
       return await Sentry.close(timeout);
     } catch (error) {
-      this.logger.error('Failed to flush Sentry', error);
+      this.logError('Failed to flush Sentry', error);
       return false;
     }
   }

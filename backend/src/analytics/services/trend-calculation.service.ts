@@ -4,6 +4,7 @@ import { TimeSeriesDataPoint } from '../interfaces/health-analytics.interfaces';
 import { HealthRecord } from '../../database/models/health-record.model';
 import { DateRangeService } from './date-range.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Trend Calculation Service
  * Provides statistical analysis and trend calculation methods
@@ -15,7 +16,7 @@ import { DateRangeService } from './date-range.service';
  * - Statistical utilities and calculations
  */
 @Injectable()
-export class TrendCalculationService {
+export class TrendCalculationService extends BaseService {
   constructor(private readonly dateRangeService: DateRangeService) {}
 
   /**

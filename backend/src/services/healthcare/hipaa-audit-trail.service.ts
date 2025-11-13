@@ -5,6 +5,7 @@ import { AuditLog, ComplianceType, AuditSeverity   } from "../../database/models
 import { User   } from "../../database/models";
 import { Patient   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * HIPAA Audit Trail Service
  *
@@ -21,9 +22,7 @@ import { Patient   } from "../../database/models";
  * @hipaa-requirement §164.312(b) - Audit Controls
  */
 @Injectable()
-export class HipaaAuditTrailService {
-  private readonly logger = new Logger(HipaaAuditTrailService.name);
-
+export class HipaaAuditTrailService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -83,12 +82,12 @@ export class HipaaAuditTrailService {
 
       await transaction.commit();
 
-      this.logger.log(
+      this.logInfo(
         `PHI access logged: ${auditEntry.id} - User: ${event.userId}, Patient: ${event.patientId}`,
       );
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to log PHI access: ${error.message}`, error.stack);
+      this.logError(`Failed to log PHI access: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -121,7 +120,7 @@ export class HipaaAuditTrailService {
       await this.triggerSecurityAlert(auditEntry);
     }
 
-    this.logger.warn(`Security event logged: ${auditEntry.id} - ${event.action}`);
+    this.logWarning(`Security event logged: ${auditEntry.id} - ${event.action}`);
   }
 
   /**
@@ -336,7 +335,7 @@ export class HipaaAuditTrailService {
 
   private async triggerSecurityAlert(auditEntry: AuditLog): Promise<void> {
     // Implementation would send alerts to security team
-    this.logger.error(`SECURITY ALERT: ${auditEntry.action} - ${auditEntry.id}`);
+    this.logError(`SECURITY ALERT: ${auditEntry.action} - ${auditEntry.id}`);
   }
 
   private analyzeTopViolations(violations: AuditLog[]): ViolationSummary[] {

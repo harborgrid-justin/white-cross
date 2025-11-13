@@ -1,5 +1,13 @@
-import { Controller, Get, HttpCode, HttpStatus, Logger, Param, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { BaseController } from '../common/base/base-controller';
 import { HealthRiskAssessmentService } from './health-risk-assessment.service';
 import { HealthRiskScoreDto, HighRiskQueryDto, HighRiskStudentDto } from './dto';
 
@@ -13,12 +21,10 @@ import { HealthRiskScoreDto, HighRiskQueryDto, HighRiskStudentDto } from './dto'
 @ApiTags('Health Risk Assessment')
 @ApiBearerAuth()
 @Controller('health-risk-assessment')
-export class HealthRiskAssessmentController {
-  private readonly logger = new Logger(HealthRiskAssessmentController.name);
-
-  constructor(
-    private readonly healthRiskAssessmentService: HealthRiskAssessmentService,
-  ) {}
+export class HealthRiskAssessmentController extends BaseController {
+  constructor(private readonly healthRiskAssessmentService: HealthRiskAssessmentService) {
+    super('HealthRiskAssessmentController');
+  }
 
   /**
    * Calculate comprehensive health risk score for a specific student
@@ -53,10 +59,8 @@ export class HealthRiskAssessmentController {
     status: 500,
     description: 'Internal server error during risk calculation',
   })
-  async calculateRiskScore(
-    @Param('studentId') studentId: string,
-  ): Promise<HealthRiskScoreDto> {
-    this.logger.log(`Calculating risk score for student: ${studentId}`);
+  async calculateRiskScore(@Param('studentId') studentId: string): Promise<HealthRiskScoreDto> {
+    this.logInfo(`Calculating risk score for student: ${studentId}`);
     return this.healthRiskAssessmentService.calculateRiskScore(studentId);
   }
 
@@ -95,11 +99,9 @@ export class HealthRiskAssessmentController {
     status: 500,
     description: 'Internal server error during student retrieval',
   })
-  async getHighRiskStudents(
-    @Query() query: HighRiskQueryDto,
-  ): Promise<HighRiskStudentDto[]> {
+  async getHighRiskStudents(@Query() query: HighRiskQueryDto): Promise<HighRiskStudentDto[]> {
     const minScore = query.minScore ?? 50;
-    this.logger.log(`Retrieving high-risk students (minScore: ${minScore})`);
+    this.logInfo(`Retrieving high-risk students (minScore: ${minScore})`);
     return this.healthRiskAssessmentService.getHighRiskStudents(minScore);
   }
 }

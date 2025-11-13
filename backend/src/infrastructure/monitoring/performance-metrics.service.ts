@@ -11,9 +11,11 @@ import { CacheMetricsService } from './services/cache-metrics.service';
 import { SystemMetricsService } from './services/system-metrics.service';
 import { PerformanceAnalyzerService } from './services/performance-analyzer.service';
 
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(PerformanceMetricsService.name);
   private readonly METRICS_RETENTION_HOURS = 24;
 
   // Intervals
@@ -21,14 +23,21 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly requestMetrics: RequestMetricsService,
     private readonly cacheMetrics: CacheMetricsService,
     private readonly systemMetrics: SystemMetricsService,
     private readonly performanceAnalyzer: PerformanceAnalyzerService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'PerformanceMetricsService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Initializing Performance Metrics Service');
+    this.logInfo('Initializing Performance Metrics Service');
     this.startMetricsCollection();
   }
 
@@ -47,7 +56,7 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
       this.cleanupOldMetrics();
     }, 3600000);
 
-    this.logger.log('Performance metrics collection started');
+    this.logInfo('Performance metrics collection started');
   }
 
   /**
@@ -136,7 +145,7 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
     this.cacheMetrics.reset();
     this.systemMetrics.reset();
     this.performanceAnalyzer.reset();
-    this.logger.log('All performance metrics reset');
+    this.logInfo('All performance metrics reset');
   }
 
   /**
@@ -164,7 +173,7 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
     }
-    this.logger.log('Performance metrics service stopped');
+    this.logInfo('Performance metrics service stopped');
   }
     }, 60000);
 
@@ -173,7 +182,7 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
       this.cleanupOldMetrics();
     }, 3600000);
 
-    this.logger.log('Performance metrics collection started');
+    this.logInfo('Performance metrics collection started');
   }
 
   /**
@@ -356,7 +365,7 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
         }
       }
     } catch (error) {
-      this.logger.error('Error collecting pool metrics:', error);
+      this.logError('Error collecting pool metrics:', error);
     }
   }
 
@@ -454,7 +463,7 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
     }
 
     if (cleaned > 0) {
-      this.logger.debug(`Cleaned up ${cleaned} old endpoint metrics`);
+      this.logDebug(`Cleaned up ${cleaned} old endpoint metrics`);
     }
   }
 
@@ -639,7 +648,7 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
     this.totalRequests = 0;
     this.totalErrors = 0;
     this.startTime = Date.now();
-    this.logger.log('Performance metrics reset');
+    this.logInfo('Performance metrics reset');
   }
 
   /**
@@ -671,6 +680,6 @@ export class PerformanceMetricsService implements OnModuleInit, OnModuleDestroy 
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
     }
-    this.logger.log('Performance metrics service stopped');
+    this.logInfo('Performance metrics service stopped');
   }
 }

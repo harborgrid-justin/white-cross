@@ -4,7 +4,7 @@
  * @description Barcode scanning and verification for student identification
  */
 
-import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Student } from '../../database/models/student.model';
@@ -24,7 +24,6 @@ import { VerifyMedicationDto } from '../dto/verify-medication.dto';
  */
 @Injectable()
 export class StudentBarcodeService extends BaseService {
-  protected readonly logger = new Logger(StudentBarcodeService.name);
 
   constructor(
     @InjectModel(Student)

@@ -10,8 +10,9 @@ import {
 import { ViolationStatus } from '../../database/models/compliance-violation.model';
 import { RemediationStatus } from '../../database/models/remediation-action.model';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ViolationService {
+export class ViolationService extends BaseService {
   constructor(private readonly violationRepository: ViolationRepository) {}
 
   async listViolations(query: QueryViolationDto) {

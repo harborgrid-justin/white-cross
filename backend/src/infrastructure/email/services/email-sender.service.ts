@@ -4,7 +4,9 @@
  * @description Service for sending emails via nodemailer with template support
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
@@ -14,18 +16,24 @@ import { EmailTemplateService } from '../email-template.service';
 import { EmailStatisticsService } from './email-statistics.service';
 
 @Injectable()
-export class EmailSenderService {
-  private readonly logger = new Logger(EmailSenderService.name);
+export class EmailSenderService extends BaseService {
   private readonly transporter: Transporter<SMTPTransport.SentMessageInfo>;
   private readonly defaultFrom: string;
   private readonly defaultReplyTo?: string;
   private readonly isProduction: boolean;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly configService: ConfigService,
     private readonly templateService: EmailTemplateService,
     private readonly statisticsService: EmailStatisticsService,
   ) {
+    super({
+      serviceName: 'EmailSenderService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.isProduction = this.configService.get<string>('NODE_ENV') === 'production';
     this.defaultFrom = this.configService.get<string>(
       'EMAIL_FROM',
@@ -61,7 +69,7 @@ export class EmailSenderService {
 
     // Development fallback
     if (!this.isProduction) {
-      this.logger.warn('Using development transport (logging only)');
+      this.logWarning('Using development transport (logging only)');
       return nodemailer.createTransporter({
         streamTransport: true,
         newline: 'unix',
@@ -69,7 +77,7 @@ export class EmailSenderService {
     }
 
     const error = new Error(`Unsupported email transport type: ${transportType}`);
-    this.logger.error(error.message);
+    this.logError(error.message);
     throw error;
   }
 
@@ -94,7 +102,7 @@ export class EmailSenderService {
           textContent = rendered.text;
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          this.logger.warn(`Template rendering failed, using plain content: ${errorMessage}`);
+          this.logWarning(`Template rendering failed, using plain content: ${errorMessage}`);
         }
       }
 
@@ -125,17 +133,17 @@ export class EmailSenderService {
 
       // Log in development
       if (!this.isProduction) {
-        this.logger.debug('========== EMAIL ==========');
-        this.logger.debug(`From: ${String(mailOptions.from)}`);
-        this.logger.debug(`To: ${String(mailOptions.to)}`);
-        if (mailOptions.cc) this.logger.debug(`CC: ${String(mailOptions.cc)}`);
-        if (mailOptions.bcc) this.logger.debug(`BCC: ${String(mailOptions.bcc)}`);
-        this.logger.debug(`Subject: ${mailOptions.subject}`);
-        this.logger.debug(`Body:\n${textContent?.substring(0, 500)}...`);
+        this.logDebug('========== EMAIL ==========');
+        this.logDebug(`From: ${String(mailOptions.from)}`);
+        this.logDebug(`To: ${String(mailOptions.to)}`);
+        if (mailOptions.cc) this.logDebug(`CC: ${String(mailOptions.cc)}`);
+        if (mailOptions.bcc) this.logDebug(`BCC: ${String(mailOptions.bcc)}`);
+        this.logDebug(`Subject: ${mailOptions.subject}`);
+        this.logDebug(`Body:\n${textContent?.substring(0, 500)}...`);
         if (mailOptions.attachments) {
-          this.logger.debug(`Attachments: ${mailOptions.attachments.length}`);
+          this.logDebug(`Attachments: ${mailOptions.attachments.length}`);
         }
-        this.logger.debug('===========================');
+        this.logDebug('===========================');
       }
 
       const info = await this.transporter.sendMail(mailOptions);
@@ -154,7 +162,7 @@ export class EmailSenderService {
       this.statisticsService.recordFailed();
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const errorStack = error instanceof Error ? error.stack : undefined;
-      this.logger.error(`Email send failed: ${errorMessage}`, errorStack);
+      this.logError(`Email send failed: ${errorMessage}`, errorStack);
 
       return {
         success: false,
@@ -216,7 +224,7 @@ export class EmailSenderService {
    */
   async testConnection(to: string): Promise<boolean> {
     try {
-      this.logger.log(`Testing email connection with recipient: ${to}`);
+      this.logInfo(`Testing email connection with recipient: ${to}`);
 
       const result = await this.sendGenericEmail(
         [to],
@@ -224,10 +232,10 @@ export class EmailSenderService {
         'This is a test email from White Cross Healthcare Platform. If you receive this, the email service is working correctly.',
       );
 
-      this.logger.log('Email test successful');
+      this.logInfo('Email test successful');
       return result.success;
     } catch (error) {
-      this.logger.error('Email test failed:', error);
+      this.logError('Email test failed:', error);
       return false;
     }
   }
@@ -276,6 +284,6 @@ Do not reply to this email.
    */
   async close(): Promise<void> {
     this.transporter.close();
-    this.logger.log('Email transporter closed');
+    this.logInfo('Email transporter closed');
   }
 }

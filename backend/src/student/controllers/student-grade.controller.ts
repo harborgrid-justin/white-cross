@@ -11,6 +11,7 @@ import { StudentService } from '../student.service';
 import { GradeTransitionDto } from '../dto/grade-transition.dto';
 import { GraduationDto } from '../dto/graduation.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Grade Controller
  *
@@ -23,7 +24,7 @@ import { GraduationDto } from '../dto/graduation.dto';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentGradeController {
+export class StudentGradeController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

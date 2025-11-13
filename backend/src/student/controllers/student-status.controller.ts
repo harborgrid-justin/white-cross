@@ -20,6 +20,7 @@ import { StudentStatusService } from '../services/student-status.service';
 import { TransferStudentDto } from '../dto/transfer-student.dto';
 import { Student } from '@/database';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Status Controller
  *
@@ -32,7 +33,7 @@ import { Student } from '@/database';
 @Controller('students')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)
-export class StudentStatusController {
+export class StudentStatusController extends BaseController {
   constructor(private readonly statusService: StudentStatusService) {}
 
   @Patch(':id/deactivate')

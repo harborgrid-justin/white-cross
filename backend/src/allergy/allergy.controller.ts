@@ -32,10 +32,11 @@ import { CreateAllergyDto } from './dto/create-allergy.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { VerifyAllergyDto } from './dto/verify-allergy.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Allergies')
 @ApiBearerAuth()
 @Controller('allergy')
-export class AllergyController {
+export class AllergyController extends BaseController {
   constructor(
     private readonly allergyCrudService: AllergyCrudService,
     private readonly allergyQueryService: AllergyQueryService,

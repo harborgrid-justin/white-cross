@@ -19,6 +19,10 @@ import { performance } from 'perf_hooks';
 import * as os from 'os';
 import * as process from 'process';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // Performance Metric Interfaces
 export interface PerformanceMetric {
   id: string;
@@ -106,7 +110,6 @@ export interface OptimizationRecommendation {
 // Performance Monitoring Service
 @Injectable()
 export class ProductionPerformanceMonitoringService extends EventEmitter {
-  private readonly logger = new Logger('PerformanceMonitoring');
   private metrics: PerformanceMetric[] = [];
   private queryPerformance: QueryPerformance[] = [];
   private systemMetrics: SystemMetrics[] = [];
@@ -116,7 +119,15 @@ export class ProductionPerformanceMonitoringService extends EventEmitter {
   private slowQueryThreshold = 1000; // 1 second
   private alertThresholds = new Map<string, number>();
 
-  constructor() {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService
+  ) {
+    super({
+      serviceName: 'ProductionPerformanceMonitoringService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super();
     this.initializeAlertThresholds();
     this.startSystemMonitoring();
@@ -401,7 +412,7 @@ export class ProductionPerformanceMonitoringService extends EventEmitter {
         recommendations
       };
     } catch (error) {
-      this.logger.error('Database performance analysis failed:', error);
+      this.logError('Database performance analysis failed:', error);
       return {
         indexUsage: [],
         tableStats: [],
@@ -578,7 +589,7 @@ ${this.generateAPIResponseTimeHistogram()}
         
         this.emit('systemMetricsUpdated', metrics);
       } catch (error) {
-        this.logger.error('System monitoring error:', error);
+        this.logError('System monitoring error:', error);
       }
     }, 30000); // Every 30 seconds
 
@@ -594,7 +605,7 @@ ${this.generateAPIResponseTimeHistogram()}
         this.queryPerformance = this.queryPerformance.filter(q => q.timestamp > weekAgo);
         this.alerts = this.alerts.filter(a => a.timestamp > weekAgo);
       } catch (error) {
-        this.logger.error('Metric aggregation error:', error);
+        this.logError('Metric aggregation error:', error);
       }
     }, 60 * 60 * 1000); // Every hour
 
@@ -756,7 +767,7 @@ ${this.generateAPIResponseTimeHistogram()}
         systemHealth: recentSystemMetrics.length > 0
       };
     } catch (error) {
-      this.logger.error('Performance monitoring health check failed:', error);
+      this.logError('Performance monitoring health check failed:', error);
       return {
         monitoring: false,
         metrics: false,

@@ -15,6 +15,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Student, User, UserRole } from '@/database';
 
+import { BaseService } from '../../common/base';
 /**
  * Student Validation Service
  *
@@ -27,9 +28,7 @@ import { Student, User, UserRole } from '@/database';
  * - Data normalization
  */
 @Injectable()
-export class StudentValidationService {
-  private readonly logger = new Logger(StudentValidationService.name);
-
+export class StudentValidationService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -119,7 +118,7 @@ export class StudentValidationService {
       throw new NotFoundException('Assigned nurse not found. Please select a valid, active nurse.');
     }
 
-    this.logger.log(`Nurse validation successful: ${nurse.fullName} (${nurseId})`);
+    this.logInfo(`Nurse validation successful: ${nurse.fullName} (${nurseId})`);
   }
 
   /**

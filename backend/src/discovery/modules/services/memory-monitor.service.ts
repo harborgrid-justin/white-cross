@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 
+import { BaseService } from '../../common/base';
 export interface MemoryMonitorOptions {
   checkInterval: number; // seconds
   warningThreshold: number; // MB
@@ -22,8 +23,7 @@ export interface MonitoredProvider {
  * and trigger alerts when thresholds are exceeded
  */
 @Injectable()
-export class MemoryMonitorService {
-  private readonly logger = new Logger(MemoryMonitorService.name);
+export class MemoryMonitorService extends BaseService {
   private monitoringInterval?: NodeJS.Timeout;
   private monitoredProviders = new Map<string, MonitoredProvider>();
   private memoryHistory: number[] = [];
@@ -45,11 +45,11 @@ export class MemoryMonitorService {
     },
   ): void {
     if (this.monitoringInterval) {
-      this.logger.warn('Memory monitoring already started');
+      this.logWarning('Memory monitoring already started');
       return;
     }
 
-    this.logger.log('Starting memory monitoring', {
+    this.logInfo('Starting memory monitoring', {
       interval: options.checkInterval,
       warningThreshold: options.warningThreshold,
       criticalThreshold: options.criticalThreshold,
@@ -67,7 +67,7 @@ export class MemoryMonitorService {
     if (this.monitoringInterval) {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = undefined;
-      this.logger.log('Memory monitoring stopped');
+      this.logInfo('Memory monitoring stopped');
     }
   }
 
@@ -76,7 +76,7 @@ export class MemoryMonitorService {
    */
   addMonitoredProvider(providerName: string, options: MonitoredProvider): void {
     this.monitoredProviders.set(providerName, options);
-    this.logger.log(`Added monitored provider: ${providerName}`, options);
+    this.logInfo(`Added monitored provider: ${providerName}`, options);
   }
 
   /**
@@ -136,13 +136,13 @@ export class MemoryMonitorService {
 
     // Check thresholds
     if (heapUsedMB >= options.criticalThreshold) {
-      this.logger.error(`Critical memory usage: ${heapUsedMB.toFixed(2)}MB`);
+      this.logError(`Critical memory usage: ${heapUsedMB.toFixed(2)}MB`);
       if (options.alertCallback) {
         options.alertCallback('critical', heapUsedMB);
       }
       await this.handleCriticalMemory();
     } else if (heapUsedMB >= options.warningThreshold) {
-      this.logger.warn(`High memory usage: ${heapUsedMB.toFixed(2)}MB`);
+      this.logWarning(`High memory usage: ${heapUsedMB.toFixed(2)}MB`);
       if (options.alertCallback) {
         options.alertCallback('warning', heapUsedMB);
       }
@@ -150,7 +150,7 @@ export class MemoryMonitorService {
     }
 
     // Log periodic status
-    this.logger.debug(
+    this.logDebug(
       `Memory usage: ${heapUsedMB.toFixed(2)}MB (heap), ${(memUsage.external / 1024 / 1024).toFixed(2)}MB (external)`,
     );
   }
@@ -159,12 +159,12 @@ export class MemoryMonitorService {
    * Handle critical memory situations
    */
   private async handleCriticalMemory(): Promise<void> {
-    this.logger.error('Handling critical memory situation');
+    this.logError('Handling critical memory situation');
 
     // Force garbage collection if available
     if (global.gc) {
       global.gc();
-      this.logger.log('Forced garbage collection');
+      this.logInfo('Forced garbage collection');
     }
 
     // Discover and analyze memory-intensive providers
@@ -175,12 +175,12 @@ export class MemoryMonitorService {
    * Handle warning memory situations
    */
   private async handleWarningMemory(): Promise<void> {
-    this.logger.warn('Handling warning memory situation');
+    this.logWarning('Handling warning memory situation');
 
     // Suggest garbage collection
     if (global.gc) {
       global.gc();
-      this.logger.debug('Suggested garbage collection');
+      this.logDebug('Suggested garbage collection');
     }
   }
 
@@ -206,7 +206,7 @@ export class MemoryMonitorService {
         // Check if provider has specific memory limits
         const monitoredProvider = this.monitoredProviders.get(providerName);
         if (monitoredProvider?.maxMemory) {
-          this.logger.warn(
+          this.logWarning(
             `Memory-intensive provider detected: ${providerName} (limit: ${monitoredProvider.maxMemory}MB)`,
           );
         }
@@ -216,14 +216,14 @@ export class MemoryMonitorService {
       const cacheMetadata = this.reflector.get('cacheable', wrapper.metatype);
       if (cacheMetadata?.enabled) {
         const providerName = wrapper.name || 'unknown';
-        this.logger.debug(
+        this.logDebug(
           `Cacheable provider: ${providerName} - consider cache eviction`,
         );
       }
     }
 
     if (memoryIntensiveProviders.length > 0) {
-      this.logger.error(
+      this.logError(
         `Found ${memoryIntensiveProviders.length} memory-intensive providers:`,
         memoryIntensiveProviders,
       );

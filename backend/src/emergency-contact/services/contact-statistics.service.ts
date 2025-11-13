@@ -17,6 +17,7 @@ import { EmergencyContact } from '../../database/models/emergency-contact.model'
 import { Student } from '../../database/models/student.model';
 import { ContactPriority } from '../../contact/enums';
 
+import { BaseService } from '../../common/base';
 export interface ContactStatistics {
   totalContacts: number;
   studentsWithoutContacts: number;
@@ -24,9 +25,7 @@ export interface ContactStatistics {
 }
 
 @Injectable()
-export class ContactStatisticsService {
-  private readonly logger = new Logger(ContactStatisticsService.name);
-
+export class ContactStatisticsService extends BaseService {
   constructor(
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
@@ -122,7 +121,7 @@ export class ContactStatisticsService {
         allStudents -
         (parseInt(studentsWithContactsResult[0]?.count || '0', 10) || 0);
 
-      this.logger.log(
+      this.logInfo(
         `Contact statistics: ${totalContacts} total, ${studentsWithoutContacts} students without contacts`,
       );
 
@@ -132,7 +131,7 @@ export class ContactStatisticsService {
         byPriority,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error fetching contact statistics: ${error.message}`,
         error.stack,
       );
@@ -173,7 +172,7 @@ export class ContactStatisticsService {
       // Return in same order as input, null for missing
       return ids.map((id) => contactMap.get(id) || null);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch emergency contacts: ${error.message}`,
         error.stack,
       );
@@ -224,7 +223,7 @@ export class ContactStatisticsService {
         (studentId) => contactsByStudent.get(studentId) || [],
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch emergency contacts by student IDs: ${error.message}`,
         error.stack,
       );
@@ -255,13 +254,13 @@ export class ContactStatisticsService {
         ],
       });
 
-      this.logger.log(
+      this.logInfo(
         `Retrieved ${contacts.length} contacts with ${priority} priority`,
       );
 
       return contacts;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error fetching contacts by priority: ${error.message}`,
         error.stack,
       );
@@ -298,13 +297,13 @@ export class ContactStatisticsService {
         },
       );
 
-      this.logger.log(
+      this.logInfo(
         `Found ${result.length} students without emergency contacts`,
       );
 
       return result.map((row) => row.studentId);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error fetching students without contacts: ${error.message}`,
         error.stack,
       );

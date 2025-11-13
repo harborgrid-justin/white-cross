@@ -4,13 +4,13 @@
  * @description Service for tracking email delivery statistics and metrics
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { EmailStatistics } from '../types/email.types';
 
 @Injectable()
-export class EmailStatisticsService {
-  private readonly logger = new Logger(EmailStatisticsService.name);
-
+export class EmailStatisticsService extends BaseService {
   private stats = {
     sent: 0,
     failed: 0,
@@ -96,7 +96,7 @@ export class EmailStatisticsService {
       queued: 0,
       totalDeliveryTime: 0,
     };
-    this.logger.log('Email statistics reset');
+    this.logInfo('Email statistics reset');
   }
 
   /**

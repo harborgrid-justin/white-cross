@@ -8,6 +8,7 @@ import { PaginationDto } from './dto/pagination.dto';
 import { UpdateCarePlanDto } from './dto/update-care-plan.dto';
 import { AccommodationType } from './enums/accommodation-type.enum';
 
+import { BaseController } from '../../common/base';
 /**
  * ChronicConditionController
  *
@@ -18,7 +19,7 @@ import { AccommodationType } from './enums/accommodation-type.enum';
 @ApiTags('Chronic Conditions')
 @ApiBearerAuth()
 @Controller('chronic-conditions')
-export class ChronicConditionController {
+export class ChronicConditionController extends BaseController {
   constructor(
     private readonly chronicConditionService: ChronicConditionService,
   ) {}

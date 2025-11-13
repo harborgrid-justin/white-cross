@@ -6,15 +6,14 @@ import { StatisticsService } from './services/analytics/statistics.service';
 import { ComplianceService } from './services/analytics/compliance.service';
 import { ExportService } from './services/analytics/export.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Analytics Dashboard Service
  * Provides real-time analytics and health trends
  * Delegates to specialized sub-services for different functionality
  */
 @Injectable()
-export class AnalyticsDashboardService {
-  private readonly logger = new Logger(AnalyticsDashboardService.name);
-
+export class AnalyticsDashboardService extends BaseService {
   constructor(
     private eventEmitter: EventEmitter2,
     private metricsService: MetricsService,

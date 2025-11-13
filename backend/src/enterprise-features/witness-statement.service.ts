@@ -6,9 +6,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { WitnessStatement, CaptureMethod, WitnessRole } from './enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS, WITNESS_CONSTANTS } from './enterprise-features-constants';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class WitnessStatementService {
-  private readonly logger = new Logger(WitnessStatementService.name);
+export class WitnessStatementService extends BaseService {
   private statements: WitnessStatement[] = []; // In production, this would be a database
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -32,7 +32,7 @@ export class WitnessStatementService {
 
       this.statements.push(statement);
 
-      this.logger.log('Witness statement captured', {
+      this.logInfo('Witness statement captured', {
         statementId: statement.id,
         incidentId: statement.incidentId,
         witnessName: statement.witnessName,
@@ -47,7 +47,7 @@ export class WitnessStatementService {
 
       return Promise.resolve(statement);
     } catch (error) {
-      this.logger.error('Error capturing witness statement', {
+      this.logError('Error capturing witness statement', {
         error: error instanceof Error ? error.message : String(error),
         incidentId: data.incidentId,
         witnessName: data.witnessName,
@@ -64,7 +64,7 @@ export class WitnessStatementService {
       const statementIndex = this.statements.findIndex((s) => s.id === statementId);
 
       if (statementIndex === -1) {
-        this.logger.warn('Witness statement not found for verification', { statementId });
+        this.logWarning('Witness statement not found for verification', { statementId });
         return Promise.resolve(false);
       }
 
@@ -73,7 +73,7 @@ export class WitnessStatementService {
       statement.verifiedBy = verifiedBy;
       statement.verifiedAt = new Date();
 
-      this.logger.log('Witness statement verified', {
+      this.logInfo('Witness statement verified', {
         statementId,
         verifiedBy,
         incidentId: statement.incidentId,
@@ -89,7 +89,7 @@ export class WitnessStatementService {
 
       return Promise.resolve(true);
     } catch (error) {
-      this.logger.error('Error verifying witness statement', {
+      this.logError('Error verifying witness statement', {
         error: error instanceof Error ? error.message : String(error),
         statementId,
         verifiedBy,
@@ -110,7 +110,7 @@ export class WitnessStatementService {
       // For now, simulate transcription
       const transcribedText = this.simulateTranscription(audioData);
 
-      this.logger.log('Voice statement transcribed', {
+      this.logInfo('Voice statement transcribed', {
         audioDataLength: audioData.length,
         transcribedLength: transcribedText.length,
       });
@@ -124,7 +124,7 @@ export class WitnessStatementService {
 
       return Promise.resolve(transcribedText);
     } catch (error) {
-      this.logger.error('Error transcribing voice statement', {
+      this.logError('Error transcribing voice statement', {
         error: error instanceof Error ? error.message : String(error),
         audioDataLength: audioData.length,
       });
@@ -139,14 +139,14 @@ export class WitnessStatementService {
     try {
       const statements = this.statements.filter((s) => s.incidentId === incidentId);
 
-      this.logger.log('Retrieved witness statements for incident', {
+      this.logInfo('Retrieved witness statements for incident', {
         incidentId,
         count: statements.length,
       });
 
       return statements;
     } catch (error) {
-      this.logger.error('Error getting statements by incident', {
+      this.logError('Error getting statements by incident', {
         error: error instanceof Error ? error.message : String(error),
         incidentId,
       });
@@ -162,17 +162,17 @@ export class WitnessStatementService {
       const statement = this.statements.find((s) => s.id === statementId);
 
       if (statement) {
-        this.logger.log('Witness statement retrieved', {
+        this.logInfo('Witness statement retrieved', {
           statementId,
           incidentId: statement.incidentId,
         });
       } else {
-        this.logger.log('Witness statement not found', { statementId });
+        this.logInfo('Witness statement not found', { statementId });
       }
 
       return statement || null;
     } catch (error) {
-      this.logger.error('Error getting witness statement', {
+      this.logError('Error getting witness statement', {
         error: error instanceof Error ? error.message : String(error),
         statementId,
       });
@@ -211,10 +211,10 @@ export class WitnessStatementService {
           (stats.statementsByMethod[statement.captureMethod] || 0) + 1;
       }
 
-      this.logger.log('Retrieved witness statement statistics', stats);
+      this.logInfo('Retrieved witness statement statistics', stats);
       return stats;
     } catch (error) {
-      this.logger.error('Error getting statement statistics', {
+      this.logError('Error getting statement statistics', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

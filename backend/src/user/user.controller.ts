@@ -33,12 +33,13 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { UserStatisticsDto } from './dto/user-statistics.dto';
 import { UserRole } from '@/user/enums';
 
+import { BaseController } from '../../common/base';
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-export class UserController {
+export class UserController extends BaseController {
   constructor(private readonly userService: UserService) {}
 
   /**

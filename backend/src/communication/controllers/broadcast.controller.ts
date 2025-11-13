@@ -4,10 +4,11 @@ import { CreateBroadcastDto } from '../dto/create-broadcast.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BroadcastService } from '../services/broadcast.service';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Broadcasts')
 @ApiBearerAuth()
 @Controller('broadcasts')
-export class BroadcastController {
+export class BroadcastController extends BaseController {
   constructor(private readonly broadcastService: BroadcastService) {}
 
   @Post()

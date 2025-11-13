@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GetAppointmentTrendsQueryDto } from '../dto/appointment-analytics.dto';
 import { GetNoShowRateQueryDto } from '../dto/appointment-analytics.dto';
 
+import { BaseService } from '../../common/base';
 interface AppointmentByType {
   type: string;
   count: number;
@@ -91,9 +92,7 @@ interface NoShowRateResponse {
  * - Support forecasting of appointment capacity needs
  */
 @Injectable()
-export class AnalyticsAppointmentOrchestratorService {
-  private readonly logger = new Logger(AnalyticsAppointmentOrchestratorService.name);
-
+export class AnalyticsAppointmentOrchestratorService extends BaseService {
   /**
    * Get appointment trends
    */
@@ -135,7 +134,7 @@ export class AnalyticsAppointmentOrchestratorService {
         },
       };
     } catch (error) {
-      this.logger.error('Error getting appointment trends', error);
+      this.logError('Error getting appointment trends', error);
       throw error;
     }
   }
@@ -183,7 +182,7 @@ export class AnalyticsAppointmentOrchestratorService {
         },
       };
     } catch (error) {
-      this.logger.error('Error getting no-show rate', error);
+      this.logError('Error getting no-show rate', error);
       throw error;
     }
   }

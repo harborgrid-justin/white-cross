@@ -9,10 +9,9 @@ import { Contact } from '../../database/models/contact.model';
 import { ContactQueryDto, CreateContactDto, UpdateContactDto } from '../dto';
 import { ContactType } from '../enums';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ContactService {
-  private readonly logger = new Logger(ContactService.name);
-
+export class ContactService extends BaseService {
   constructor(
     @InjectModel(Contact)
     private readonly contactModel: typeof Contact,
@@ -68,7 +67,7 @@ export class ContactService {
         order: [[orderBy, orderDirection]],
       });
 
-    this.logger.log(
+    this.logInfo(
       `Retrieved ${contacts.length} contacts (page ${page}, total ${total})`,
     );
 
@@ -87,14 +86,14 @@ export class ContactService {
    * Get contact by ID
    */
   async getContactById(id: string): Promise<Contact> {
-    this.logger.log(`Retrieving contact with ID: ${id}`);
+    this.logInfo(`Retrieving contact with ID: ${id}`);
 
     const contact = await this.contactModel.findByPk(id);
     if (!contact) {
       throw new NotFoundException(`Contact with ID ${id} not found`);
     }
 
-    this.logger.log(
+    this.logInfo(
       `Retrieved contact: ${contact.firstName} ${contact.lastName}`,
     );
     return contact;
@@ -137,7 +136,7 @@ export class ContactService {
 
     await contact.save();
 
-    this.logger.log(
+    this.logInfo(
       `Created contact ${contact.id} (${contact.firstName} ${contact.lastName})`,
     );
 
@@ -171,7 +170,7 @@ export class ContactService {
     Object.assign(contact, dto);
     await contact.save();
 
-    this.logger.log(`Updated contact ${contact.id}`);
+    this.logInfo(`Updated contact ${contact.id}`);
     return contact;
   }
 
@@ -185,7 +184,7 @@ export class ContactService {
     contact.isActive = false;
     await contact.save();
 
-    this.logger.log(`Soft deleted contact ${id}`);
+    this.logInfo(`Soft deleted contact ${id}`);
     return { success: true, message: 'Contact deleted successfully' };
   }
 
@@ -200,7 +199,7 @@ export class ContactService {
     }
 
     await contact.save();
-    this.logger.log(`Deactivated contact ${id}`);
+    this.logInfo(`Deactivated contact ${id}`);
 
     return contact;
   }
@@ -216,7 +215,7 @@ export class ContactService {
     }
 
     await contact.save();
-    this.logger.log(`Reactivated contact ${id}`);
+    this.logInfo(`Reactivated contact ${id}`);
 
     return contact;
   }
@@ -242,7 +241,7 @@ export class ContactService {
       order: [['lastName', 'ASC']],
     });
 
-    this.logger.log(
+    this.logInfo(
       `Retrieved ${contacts.length} contacts for relation ${relationTo}`,
     );
     return contacts;
@@ -263,7 +262,7 @@ export class ContactService {
       order: [['lastName', 'ASC']],
     });
 
-    this.logger.log(
+    this.logInfo(
       `Search for "${query}" returned ${contacts.length} results`,
     );
     return contacts;
@@ -300,7 +299,7 @@ export class ContactService {
       byType[result.type] = parseInt(result.count, 10);
     });
 
-    this.logger.log(
+    this.logInfo(
       `Contact statistics: ${total} total, ${Object.keys(byType).length} types`,
     );
 
@@ -325,7 +324,7 @@ export class ContactService {
       // Return in same order as requested IDs, null for missing
       return ids.map((id) => contactMap.get(id) || null);
     } catch (error) {
-      this.logger.error(`Failed to batch fetch contacts: ${error.message}`);
+      this.logError(`Failed to batch fetch contacts: ${error.message}`);
       throw new Error('Failed to batch fetch contacts');
     }
   }
@@ -362,7 +361,7 @@ export class ContactService {
       // Return contacts array for each student, empty array for missing
       return studentIds.map((id) => contactsByStudent.get(id) || []);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch contacts by student IDs: ${error.message}`,
       );
       throw new Error('Failed to batch fetch contacts by student IDs');

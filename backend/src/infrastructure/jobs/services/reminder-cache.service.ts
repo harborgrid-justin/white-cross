@@ -4,7 +4,9 @@
  * @description Service for caching medication reminders with TTL and invalidation
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { CacheService } from '../../../shared/cache/cache.service';
 
 interface MedicationReminder {
@@ -29,10 +31,17 @@ const CACHE_TAG_PREFIX = 'reminders';
  * Service for caching medication reminders
  */
 @Injectable()
-export class ReminderCacheService {
-  private readonly logger = new Logger(ReminderCacheService.name);
-
-  constructor(private readonly cacheService: CacheService) {}
+export class ReminderCacheService extends BaseService {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly cacheService: CacheService
+  ) {
+    super({
+      serviceName: 'ReminderCacheService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Cache medication reminders with appropriate TTL and tags
@@ -47,7 +56,7 @@ export class ReminderCacheService {
     const tags = this.buildCacheTags(organizationId, studentId, reminders);
 
     this.cacheService.set(cacheKey, reminders, CACHE_TTL, tags);
-    this.logger.debug(`Cached ${reminders.length} reminders with key: ${cacheKey}`);
+    this.logDebug(`Cached ${reminders.length} reminders with key: ${cacheKey}`);
   }
 
   /**
@@ -61,7 +70,7 @@ export class ReminderCacheService {
     const cacheKey = this.buildCacheKey(date, organizationId, studentId);
     const cached = this.cacheService.get<MedicationReminder[]>(cacheKey);
     if (cached) {
-      this.logger.debug(`Returning cached reminders for ${cacheKey}`);
+      this.logDebug(`Returning cached reminders for ${cacheKey}`);
       return cached;
     }
     return undefined;
@@ -117,7 +126,7 @@ export class ReminderCacheService {
   async invalidateStudentReminders(studentId: string): Promise<void> {
     const tag = `student:${studentId}`;
     const count = this.cacheService.invalidateByTag(tag);
-    this.logger.debug(`Invalidated ${count} cached reminder entries for student ${studentId}`);
+    this.logDebug(`Invalidated ${count} cached reminder entries for student ${studentId}`);
   }
 
   /**
@@ -127,7 +136,7 @@ export class ReminderCacheService {
   async invalidateOrganizationReminders(organizationId: string): Promise<void> {
     const tag = `org:${organizationId}`;
     const count = this.cacheService.invalidateByTag(tag);
-    this.logger.debug(
+    this.logDebug(
       `Invalidated ${count} cached reminder entries for organization ${organizationId}`,
     );
   }

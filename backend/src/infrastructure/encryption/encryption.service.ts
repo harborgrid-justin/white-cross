@@ -4,7 +4,9 @@
  * @description Main service orchestrating all encryption functionality
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
 import {
   EncryptionResult,
@@ -19,17 +21,30 @@ import { CryptoService } from './services/crypto.service';
 import { SessionKeyManagerService } from './services/session-key-manager.service';
 import { MessageEncryptionService } from './services/message-encryption.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class EncryptionService implements IEncryptionService {
-  private readonly logger = new Logger(EncryptionService.name);
   private readonly config: EncryptionConfig;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly configService: ConfigService,
     private readonly cryptoService: CryptoService,
     private readonly sessionKeyManager: SessionKeyManagerService,
     private readonly messageEncryption: MessageEncryptionService,
   ) {
+    super({
+      serviceName: 'EncryptionService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.config = {
       algorithm: 'aes-256-gcm' as any,
       rsaKeySize: 4096,
@@ -38,9 +53,9 @@ export class EncryptionService implements IEncryptionService {
       keyRotationInterval: 7 * 24 * 60 * 60,
       version: '1.0.0',
       enabled: this.configService.get<boolean>('ENCRYPTION_ENABLED', true),
-    };
+  };
 
-    this.logger.log('Encryption service initialized', {
+    this.logInfo('Encryption service initialized', {
       enabled: this.config.enabled,
       version: this.config.version,
       algorithm: this.config.algorithm,
@@ -54,7 +69,7 @@ export class EncryptionService implements IEncryptionService {
     try {
       // Check if encryption is enabled
       if (!this.isEncryptionEnabled()) {
-        this.logger.warn('Encryption is disabled, returning unencrypted data');
+        this.logWarning('Encryption is disabled, returning unencrypted data');
         return {
           success: false,
           error: 'failed' as any,
@@ -73,7 +88,7 @@ export class EncryptionService implements IEncryptionService {
 
       return this.cryptoService.encrypt(data, encryptionKey, options);
     } catch (error) {
-      this.logger.error('Encryption failed', {
+      this.logError('Encryption failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         conversationId: options.conversationId,
       });
@@ -107,7 +122,7 @@ export class EncryptionService implements IEncryptionService {
 
       return this.cryptoService.decrypt(encryptedData, metadata, decryptionKey, options);
     } catch (error) {
-      this.logger.error('Decryption failed', {
+      this.logError('Decryption failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         keyId: metadata?.keyId,
       });

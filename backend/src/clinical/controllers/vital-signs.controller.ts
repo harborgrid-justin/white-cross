@@ -5,10 +5,11 @@ import { RecordVitalsDto } from '../dto/vitals/record-vitals.dto';
 import { UpdateVitalsDto } from '../dto/vitals/update-vitals.dto';
 import { VitalsFiltersDto } from '../dto/vitals/vitals-filters.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Clinical - Vital Signs')
 @ApiBearerAuth()
 @Controller('clinical/vital-signs')
-export class VitalSignsController {
+export class VitalSignsController extends BaseController {
   constructor(private readonly vitalsService: VitalSignsService) {}
 
   @Post()

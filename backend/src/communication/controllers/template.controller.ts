@@ -4,10 +4,11 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 import { TemplateService } from '../services/template.service';
 import { CreateTemplateDto, UpdateTemplateDto } from '../dto/create-template.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Message Templates')
 @ApiBearerAuth()
 @Controller('templates')
-export class TemplateController {
+export class TemplateController extends BaseController {
   constructor(private readonly templateService: TemplateService) {}
 
   @Post()

@@ -9,6 +9,7 @@ import { PHIAccessFilterDto } from './dto/phi-access-filter.dto';
 import { CreateBasicAuditLogDto } from './dto/create-audit-log.dto';
 import { CreatePHIAccessLogDto } from './dto/create-phi-access-log.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Audit Controller
  *
@@ -21,7 +22,7 @@ import { CreatePHIAccessLogDto } from './dto/create-phi-access-log.dto';
 @ApiTags('Audit')
 @Controller('audit')
 @ApiBearerAuth()
-export class AuditController {
+export class AuditController extends BaseController {
   constructor(private readonly auditService: AuditService) {}
 
   // ========== AUDIT LOG CREATION ENDPOINTS ==========

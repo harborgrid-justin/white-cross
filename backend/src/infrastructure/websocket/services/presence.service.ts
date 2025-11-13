@@ -9,10 +9,9 @@ import { WebSocketGateway } from '../websocket.gateway';
 import { BroadcastService } from './broadcast.service';
 import { PresenceData, UserPresence } from '../types/websocket.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class PresenceService {
-  private readonly logger = new Logger(PresenceService.name);
-
+export class PresenceService extends BaseService {
   constructor(
     private readonly websocketGateway: WebSocketGateway,
     private readonly broadcastService: BroadcastService,
@@ -39,12 +38,12 @@ export class PresenceService {
         presenceData,
       );
 
-      this.logger.debug(`Presence update broadcasted for user ${userId}`, {
+      this.logDebug(`Presence update broadcasted for user ${userId}`, {
         status,
         organizationId,
       });
     } catch (error) {
-      this.logger.error(`Failed to broadcast presence update for user ${userId}`, error);
+      this.logError(`Failed to broadcast presence update for user ${userId}`, error);
       throw error;
     }
   }

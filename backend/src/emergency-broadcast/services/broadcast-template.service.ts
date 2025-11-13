@@ -8,10 +8,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EmergencyType } from '../emergency-broadcast.enums';
 import { EmergencyTemplateDto } from '../dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class BroadcastTemplateService {
-  private readonly logger = new Logger(BroadcastTemplateService.name);
-
+export class BroadcastTemplateService extends BaseService {
   /**
    * Get emergency broadcast templates
    */

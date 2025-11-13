@@ -15,6 +15,7 @@ import {
 } from '../../database/models/appointment.model';
 import { User } from '../../database/models/user.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Appointment Scheduling Service
  *
@@ -26,9 +27,7 @@ import { User } from '../../database/models/user.model';
  * - Business hours and weekend validation
  */
 @Injectable()
-export class AppointmentSchedulingService {
-  private readonly logger = new Logger(AppointmentSchedulingService.name);
-
+export class AppointmentSchedulingService extends BaseService {
   constructor(
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
@@ -53,7 +52,7 @@ export class AppointmentSchedulingService {
     duration: number,
     excludeAppointmentId?: string,
   ): Promise<AppointmentEntity[]> {
-    this.logger.log(`Checking availability for nurse: ${nurseId}`);
+    this.logInfo(`Checking availability for nurse: ${nurseId}`);
 
     // Calculate time range including buffer
     const bufferMinutes = AppointmentValidation.BUFFER_TIME_MINUTES;
@@ -111,7 +110,7 @@ export class AppointmentSchedulingService {
 
       return conflicts.map((apt) => this.mapToEntity(apt));
     } catch (error) {
-      this.logger.error(`Error checking availability: ${error.message}`, error.stack);
+      this.logError(`Error checking availability: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to check availability');
     }
   }
@@ -131,7 +130,7 @@ export class AppointmentSchedulingService {
     date: Date,
     slotDuration: number = 30,
   ): Promise<AvailabilitySlot[]> {
-    this.logger.log(`Getting available slots for nurse: ${nurseId} on ${date}`);
+    this.logInfo(`Getting available slots for nurse: ${nurseId} on ${date}`);
 
     const businessHours = AppointmentValidation.getBusinessHours();
     const slots: AvailabilitySlot[] = [];
@@ -193,7 +192,7 @@ export class AppointmentSchedulingService {
     conflicts: AppointmentEntity[];
     availableSlots: AvailabilitySlot[];
   }> {
-    this.logger.log('Checking scheduling conflicts');
+    this.logInfo('Checking scheduling conflicts');
 
     try {
       const startDateTime = new Date(startTime);
@@ -212,7 +211,7 @@ export class AppointmentSchedulingService {
         availableSlots: availableSlots.filter((slot) => slot.isAvailable),
       };
     } catch (error) {
-      this.logger.error(`Error checking conflicts: ${error.message}`, error.stack);
+      this.logError(`Error checking conflicts: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to check conflicts');
     }
   }

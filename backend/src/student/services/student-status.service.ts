@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Student } from '@/database';
 import { TransferStudentDto } from '../dto/transfer-student.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Student Status Service
  *
@@ -17,9 +18,7 @@ import { TransferStudentDto } from '../dto/transfer-student.dto';
  * - Transfer students between schools
  */
 @Injectable()
-export class StudentStatusService {
-  private readonly logger = new Logger(StudentStatusService.name);
-
+export class StudentStatusService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -42,13 +41,13 @@ export class StudentStatusService {
         deactivatedAt: new Date(),
       });
 
-      this.logger.log(`Student deactivated: ${id}`);
+      this.logInfo(`Student deactivated: ${id}`);
       return student;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error deactivating student ${id}:`, error);
+      this.logError(`Error deactivating student ${id}:`, error);
       throw error;
     }
   }
@@ -70,13 +69,13 @@ export class StudentStatusService {
         deactivatedAt: null,
       });
 
-      this.logger.log(`Student reactivated: ${id}`);
+      this.logInfo(`Student reactivated: ${id}`);
       return student;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error reactivating student ${id}:`, error);
+      this.logError(`Error reactivating student ${id}:`, error);
       throw error;
     }
   }
@@ -99,13 +98,13 @@ export class StudentStatusService {
         transferReason: transferDto.reason,
       });
 
-      this.logger.log(`Student transferred: ${id} to school ${transferDto.newSchoolId}`);
+      this.logInfo(`Student transferred: ${id} to school ${transferDto.newSchoolId}`);
       return student;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(`Error transferring student ${id}:`, error);
+      this.logError(`Error transferring student ${id}:`, error);
       throw error;
     }
   }

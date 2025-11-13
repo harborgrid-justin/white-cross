@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TimePeriod } from '../enums/time-period.enum';
 
+import { BaseService } from '../../common/base';
 /**
  * Date Range Service
  * Handles all date and time period calculations for analytics
@@ -12,7 +13,7 @@ import { TimePeriod } from '../enums/time-period.enum';
  * - Calculate week numbers and date utilities
  */
 @Injectable()
-export class DateRangeService {
+export class DateRangeService extends BaseService {
   /**
    * Get date range from period enum
    */

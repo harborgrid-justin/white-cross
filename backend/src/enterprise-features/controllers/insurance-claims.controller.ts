@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { InsuranceClaimService } from '../insurance-claim.service';
 import { GenerateClaimDto, InsuranceClaimResponseDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Insurance Claims')
 @Controller('enterprise-features/insurance-claims')
 @ApiBearerAuth()
-export class InsuranceClaimsController {
+export class InsuranceClaimsController extends BaseController {
   constructor(
     private readonly insuranceClaimService: InsuranceClaimService,
   ) {}

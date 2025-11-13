@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '../../common/base';
 /**
  * Shared Enterprise Cache Configuration
  */
@@ -43,8 +44,7 @@ export interface EnterpriseCacheEntry<T = any> {
 }
 
 @Injectable()
-export class EnterpriseCacheService {
-  private readonly logger = new Logger(EnterpriseCacheService.name);
+export class EnterpriseCacheService extends BaseService {
   private cache = new Map<string, EnterpriseCacheEntry>();
   private stats: EnterpriseCacheStats;
   private cleanupInterval: NodeJS.Timeout | null = null;
@@ -89,17 +89,17 @@ export class EnterpriseCacheService {
 
       // HIPAA compliance check
       if (options?.compliance?.phiData && !options?.compliance?.encrypted) {
-        this.logger.warn(`Setting PHI data without encryption: ${key}`);
+        this.logWarning(`Setting PHI data without encryption: ${key}`);
       }
 
       this.cache.set(fullKey, entry);
       this.updateStats();
 
-      this.logger.debug(
+      this.logDebug(
         `Cache set: ${fullKey} (TTL: ${ttl}s, Module: ${this.moduleName})`,
       );
     } catch (error) {
-      this.logger.error(`Failed to set cache entry: ${key}`, error);
+      this.logError(`Failed to set cache entry: ${key}`, error);
       throw error;
     }
   }
@@ -126,13 +126,13 @@ export class EnterpriseCacheService {
         this.cache.delete(fullKey);
         this.stats.misses++;
         this.updateHitRate();
-        this.logger.debug(`Cache expired: ${fullKey}`);
+        this.logDebug(`Cache expired: ${fullKey}`);
         return null;
       }
 
       // Log PHI access for compliance
       if (entry.compliance?.phiData) {
-        this.logger.log(
+        this.logInfo(
           `PHI cache access: ${key} (Module: ${this.moduleName})`,
         );
       }
@@ -141,7 +141,7 @@ export class EnterpriseCacheService {
       this.updateHitRate();
       return entry.data;
     } catch (error) {
-      this.logger.error(`Failed to get cache entry: ${key}`, error);
+      this.logError(`Failed to get cache entry: ${key}`, error);
       this.stats.misses++;
       return null;
     }
@@ -157,12 +157,12 @@ export class EnterpriseCacheService {
       this.updateStats();
 
       if (deleted) {
-        this.logger.debug(`Cache deleted: ${fullKey}`);
+        this.logDebug(`Cache deleted: ${fullKey}`);
       }
 
       return deleted;
     } catch (error) {
-      this.logger.error(`Failed to delete cache entry: ${key}`, error);
+      this.logError(`Failed to delete cache entry: ${key}`, error);
       return false;
     }
   }
@@ -183,12 +183,12 @@ export class EnterpriseCacheService {
     }
 
       this.updateStats();
-      this.logger.log(
+      this.logInfo(
         `Cleared ${deletedCount} cache entries matching pattern: ${pattern}`,
       );
       return deletedCount;
     } catch (error) {
-      this.logger.error(`Failed to clear cache pattern: ${pattern}`, error);
+      this.logError(`Failed to clear cache pattern: ${pattern}`, error);
       return 0;
     }
   }
@@ -208,11 +208,11 @@ export class EnterpriseCacheService {
       }
 
       this.updateStats();
-      this.logger.log(
+      this.logInfo(
         `Cleared ${deletedCount} cache entries for module: ${this.moduleName}`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to clear cache for module: ${this.moduleName}`,
         error,
       );
@@ -269,14 +269,14 @@ export class EnterpriseCacheService {
       this.updateStats();
 
       if (deletedCount > 0) {
-        this.logger.debug(
+        this.logDebug(
           `Cleaned up ${deletedCount} expired cache entries for module: ${this.moduleName}`,
         );
       }
 
       return deletedCount;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to cleanup cache for module: ${this.moduleName}`,
         error,
       );
@@ -335,7 +335,7 @@ export class EnterpriseCacheService {
       5 * 60 * 1000,
     ); // Every 5 minutes
 
-    this.logger.debug(
+    this.logDebug(
       `Started cache cleanup interval for module: ${this.moduleName}`,
     );
   }
@@ -347,7 +347,7 @@ export class EnterpriseCacheService {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = null;
-      this.logger.debug(
+      this.logDebug(
         `Stopped cache cleanup interval for module: ${this.moduleName}`,
       );
     }
@@ -394,7 +394,7 @@ export class EnterpriseCacheService {
    */
   onModuleDestroy(): void {
     this.stopCleanupInterval();
-    this.logger.log(
+    this.logInfo(
       `Enterprise cache service destroyed for module: ${this.moduleName}`,
     );
   }

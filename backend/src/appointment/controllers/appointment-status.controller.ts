@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { AppointmentStatusService } from '../services/appointment-status.service';
 
+import { BaseController } from '../../common/base';
 /**
  * Appointment Status Controller
  *
@@ -26,7 +27,7 @@ import { AppointmentStatusService } from '../services/appointment-status.service
 @ApiTags('appointments-status')
 @ApiBearerAuth()
 @Controller('appointments')
-export class AppointmentStatusController {
+export class AppointmentStatusController extends BaseController {
   private readonly logger = new Logger(AppointmentStatusController.name);
 
   constructor(private readonly appointmentStatusService: AppointmentStatusService) {}

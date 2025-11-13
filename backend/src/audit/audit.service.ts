@@ -10,6 +10,7 @@ import { IAuditLogEntry } from './interfaces/audit-log-entry.interface';
 import { IPHIAccessLog } from './interfaces/phi-access-log.interface';
 import { AuditLogFilters, AuditLogSearchCriteria, AuditRequest, PHIAccessLogFilters, ValidationResult } from './types/audit.types';
 
+import { BaseService } from '../../common/base';
 /**
  * Unified Audit Service Facade
  *
@@ -21,7 +22,7 @@ import { AuditLogFilters, AuditLogSearchCriteria, AuditRequest, PHIAccessLogFilt
  * trail for regulatory compliance, security monitoring, and forensic analysis.
  */
 @Injectable()
-export class AuditService {
+export class AuditService extends BaseService {
   constructor(
     private readonly auditLogService: AuditLogService,
     private readonly phiAccessService: PHIAccessService,

@@ -3,13 +3,13 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RecurringTemplate } from '../../enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS } from '../../enterprise-features-constants';
 
+import { BaseService } from '../../common/base';
 /**
  * Template Service
  * Handles CRUD operations for recurring appointment templates
  */
 @Injectable()
-export class RecurringTemplateService {
-  private readonly logger = new Logger(RecurringTemplateService.name);
+export class RecurringTemplateService extends BaseService {
   private templates: RecurringTemplate[] = []; // In production, this would be a database
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -27,7 +27,7 @@ export class RecurringTemplateService {
 
       this.templates.push(template);
 
-      this.logger.log('Recurring appointment template created', {
+      this.logInfo('Recurring appointment template created', {
         templateId: template.id,
         appointmentType: template.appointmentType,
         frequency: template.recurrenceRule.frequency,
@@ -41,7 +41,7 @@ export class RecurringTemplateService {
 
       return template;
     } catch (error) {
-      this.logger.error('Error creating recurring template', {
+      this.logError('Error creating recurring template', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -54,10 +54,10 @@ export class RecurringTemplateService {
   getActiveTemplates(): RecurringTemplate[] {
     try {
       const activeTemplates = this.templates.filter(template => template.isActive);
-      this.logger.log('Active templates retrieved', { count: activeTemplates.length });
+      this.logInfo('Active templates retrieved', { count: activeTemplates.length });
       return activeTemplates;
     } catch (error) {
-      this.logger.error('Error getting active templates', {
+      this.logError('Error getting active templates', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -72,13 +72,13 @@ export class RecurringTemplateService {
       const filteredTemplates = this.templates.filter(
         template => template.appointmentType === appointmentType && template.isActive
       );
-      this.logger.log('Templates retrieved by appointment type', {
+      this.logInfo('Templates retrieved by appointment type', {
         appointmentType,
         count: filteredTemplates.length,
       });
       return filteredTemplates;
     } catch (error) {
-      this.logger.error('Error getting templates by appointment type', {
+      this.logError('Error getting templates by appointment type', {
         error: error instanceof Error ? error.message : String(error),
         appointmentType,
       });
@@ -97,7 +97,7 @@ export class RecurringTemplateService {
       const templateIndex = this.templates.findIndex(template => template.id === templateId);
 
       if (templateIndex === -1) {
-        this.logger.warn('Template not found for update', { templateId });
+        this.logWarning('Template not found for update', { templateId });
         return null;
       }
 
@@ -113,7 +113,7 @@ export class RecurringTemplateService {
 
       const updatedTemplate = this.templates[templateIndex];
 
-      this.logger.log('Recurring template updated', {
+      this.logInfo('Recurring template updated', {
         templateId,
         updates: Object.keys(updates),
       });
@@ -127,7 +127,7 @@ export class RecurringTemplateService {
 
       return updatedTemplate;
     } catch (error) {
-      this.logger.error('Error updating recurring template', {
+      this.logError('Error updating recurring template', {
         error: error instanceof Error ? error.message : String(error),
         templateId,
       });
@@ -143,7 +143,7 @@ export class RecurringTemplateService {
       const templateIndex = this.templates.findIndex(template => template.id === templateId);
 
       if (templateIndex === -1) {
-        this.logger.warn('Template not found for cancellation', { templateId });
+        this.logWarning('Template not found for cancellation', { templateId });
         return false;
       }
 
@@ -152,7 +152,7 @@ export class RecurringTemplateService {
       this.templates[templateIndex].cancellationReason = reason;
       this.templates[templateIndex].updatedAt = new Date();
 
-      this.logger.log('Recurring series cancelled', {
+      this.logInfo('Recurring series cancelled', {
         templateId,
         cancelledBy,
         reason,
@@ -168,7 +168,7 @@ export class RecurringTemplateService {
 
       return true;
     } catch (error) {
-      this.logger.error('Error cancelling recurring series', {
+      this.logError('Error cancelling recurring series', {
         error: error instanceof Error ? error.message : String(error),
         templateId,
       });

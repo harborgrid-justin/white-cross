@@ -8,7 +8,6 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   Optional,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
@@ -33,7 +32,6 @@ import { PaginatedResponse } from '../types';
  */
 @Injectable()
 export class StudentQueryService extends BaseService {
-  protected readonly logger = new Logger(StudentQueryService.name);
 
   constructor(
     @InjectModel(Student)

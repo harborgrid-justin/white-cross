@@ -4,14 +4,15 @@
  * @description Service for handling table creation, alteration, and management operations
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { QueryInterface, Sequelize, DataTypes, Transaction } from 'sequelize';
 import { IndexDefinition, ColumnDefinition } from '../types/migration-utilities.types';
+import { buildTableAttributes } from '../utilities/table-attributes-builder';
 
 @Injectable()
-export class TableOperationsService {
-  private readonly logger = new Logger(TableOperationsService.name);
-
+export class TableOperationsService extends BaseService {
   /**
    * Creates a comprehensive table with all standard fields and configurations
    */
@@ -36,38 +37,8 @@ export class TableOperationsService {
       comment,
     } = options;
 
-    // Build complete attribute definition with defaults
-    const completeAttributes: Record<string, any> = {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-        allowNull: false,
-      },
-      ...attributes,
-    };
-
-    // Add timestamp fields if enabled
-    if (timestamps) {
-      completeAttributes.createdAt = {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      };
-      completeAttributes.updatedAt = {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      };
-    }
-
-    // Add soft delete field if paranoid
-    if (paranoid) {
-      completeAttributes.deletedAt = {
-        type: DataTypes.DATE,
-        allowNull: true,
-      };
-    }
+    // Build complete attribute definition with defaults using shared utility
+    const completeAttributes = buildTableAttributes(attributes, { timestamps, paranoid });
 
     // Create table
     await queryInterface.createTable(tableName, completeAttributes, {
@@ -83,7 +54,7 @@ export class TableOperationsService {
       });
     }
 
-    this.logger.log(`Created table ${tableName} with ${indexes.length} indexes`);
+    this.logInfo(`Created table ${tableName} with ${indexes.length} indexes`);
   }
 
   /**
@@ -107,13 +78,13 @@ export class TableOperationsService {
         await t.commit();
       }
 
-      this.logger.log(`Successfully altered table ${tableName}`);
+      this.logInfo(`Successfully altered table ${tableName}`);
     } catch (error) {
       // Rollback if we created the transaction
       if (!transaction) {
         await t.rollback();
       }
-      this.logger.error(`Failed to alter table ${tableName}`, error);
+      this.logError(`Failed to alter table ${tableName}`, error);
       throw error;
     }
   }
@@ -141,7 +112,7 @@ export class TableOperationsService {
     let totalModified = 0;
     let errors = 0;
 
-    this.logger.log(`Starting data migration from ${sourceTable} to ${targetTable}...`);
+    this.logInfo(`Starting data migration from ${sourceTable} to ${targetTable}...`);
 
     while (true) {
       const transaction = await sequelize.transaction();
@@ -198,7 +169,7 @@ export class TableOperationsService {
             if (onError) {
               onError(error as Error, row);
             } else {
-              this.logger.error(`Error transforming row:`, error);
+              this.logError(`Error transforming row:`, error);
             }
           }
         }
@@ -206,18 +177,18 @@ export class TableOperationsService {
         await transaction.commit();
 
         offset += batchSize;
-        this.logger.debug(`Processed ${totalProcessed} records...`);
+        this.logDebug(`Processed ${totalProcessed} records...`);
 
         // Small delay to prevent overwhelming the database
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
         await transaction.rollback();
-        this.logger.error(`Error processing batch at offset ${offset}:`, error);
+        this.logError(`Error processing batch at offset ${offset}:`, error);
         throw error;
       }
     }
 
-    this.logger.log(
+    this.logInfo(
       `Data migration complete. Processed: ${totalProcessed}, Modified: ${totalModified}, Errors: ${errors}`,
     );
   }
@@ -251,7 +222,7 @@ export class TableOperationsService {
       });
 
       if (!passed) {
-        this.logger.warn(
+        this.logWarning(
           `Validation failed for ${column}: ${failedCount} rows do not satisfy ${rule}`,
         );
       }
@@ -326,6 +297,6 @@ export class TableOperationsService {
       rowsUpdated = (countResult[0] as any).count;
     }
 
-    this.logger.log(`Backfilled ${rowsUpdated} rows in ${tableName}.${columnName}`);
+    this.logInfo(`Backfilled ${rowsUpdated} rows in ${tableName}.${columnName}`);
   }
 }

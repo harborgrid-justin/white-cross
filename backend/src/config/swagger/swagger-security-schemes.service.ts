@@ -12,6 +12,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { BaseService } from '../../common/base';
 // Local type definitions to avoid import issues
 interface JwtSecurityOptions {
   secret?: string;
@@ -50,9 +51,7 @@ interface SecuritySchemeConfig {
 }
 
 @Injectable()
-export class SwaggerSecuritySchemesService {
-  private readonly logger = new Logger(SwaggerSecuritySchemesService.name);
-
+export class SwaggerSecuritySchemesService extends BaseService {
   constructor(private readonly configService: ConfigService) {}
 
   /**

@@ -10,10 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import { Alert, DeliveryChannel, DeliveryLog } from '@/database';
 import { AlertDeliveryException } from '../exceptions/alert.exceptions';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class AlertDeliveryService {
-  private readonly logger = new Logger(AlertDeliveryService.name);
-
+export class AlertDeliveryService extends BaseService {
   constructor(
     @InjectModel(DeliveryLog)
     private readonly deliveryLogModel: typeof DeliveryLog,
@@ -48,14 +47,14 @@ export class AlertDeliveryService {
         rooms.push('alerts:critical');
       }
 
-      this.logger.log(
+      this.logInfo(
         `Broadcasting alert ${alert.id} to rooms: ${rooms.join(', ')}`,
       );
 
       // Log successful delivery
       await this.logDelivery(alert.id, DeliveryChannel.WEBSOCKET, undefined, true);
     } catch (error: any) {
-      this.logger.error(
+      this.logError(
         `WebSocket delivery failed for alert ${alert.id}`,
         error,
       );
@@ -83,16 +82,16 @@ export class AlertDeliveryService {
       };
 
       // For now, log the email that would be sent
-      this.logger.log(`Sending email alert ${alert.id} to user ${userId}`);
-      this.logger.debug(`Email subject: [${alert.severity}] ${alert.title}`);
-      this.logger.debug(`Email body: ${alert.message}`);
+      this.logInfo(`Sending email alert ${alert.id} to user ${userId}`);
+      this.logDebug(`Email subject: [${alert.severity}] ${alert.title}`);
+      this.logDebug(`Email body: ${alert.message}`);
 
       // Simulate email sending
       await this.simulateDelay(100);
 
       await this.logDelivery(alert.id, DeliveryChannel.EMAIL, userId, true);
     } catch (error: any) {
-      this.logger.error(`Email delivery failed for alert ${alert.id}`, error);
+      this.logError(`Email delivery failed for alert ${alert.id}`, error);
       await this.logDelivery(
         alert.id,
         DeliveryChannel.EMAIL,
@@ -122,15 +121,15 @@ export class AlertDeliveryService {
         100,
       )}`;
 
-      this.logger.log(`Sending SMS alert ${alert.id} to user ${userId}`);
-      this.logger.debug(`SMS message: ${smsMessage}`);
+      this.logInfo(`Sending SMS alert ${alert.id} to user ${userId}`);
+      this.logDebug(`SMS message: ${smsMessage}`);
 
       // Simulate SMS sending
       await this.simulateDelay(150);
 
       await this.logDelivery(alert.id, DeliveryChannel.SMS, userId, true);
     } catch (error: any) {
-      this.logger.error(`SMS delivery failed for alert ${alert.id}`, error);
+      this.logError(`SMS delivery failed for alert ${alert.id}`, error);
       await this.logDelivery(
         alert.id,
         DeliveryChannel.SMS,
@@ -166,10 +165,10 @@ export class AlertDeliveryService {
         },
       };
 
-      this.logger.log(
+      this.logInfo(
         `Sending push notification for alert ${alert.id} to user ${userId}`,
       );
-      this.logger.debug(`Push payload: ${JSON.stringify(pushPayload)}`);
+      this.logDebug(`Push payload: ${JSON.stringify(pushPayload)}`);
 
       // Simulate push notification sending
       await this.simulateDelay(120);
@@ -181,7 +180,7 @@ export class AlertDeliveryService {
         true,
       );
     } catch (error: any) {
-      this.logger.error(
+      this.logError(
         `Push notification delivery failed for alert ${alert.id}`,
         error,
       );
@@ -204,7 +203,7 @@ export class AlertDeliveryService {
     channel: DeliveryChannel,
     recipientId?: string,
   ): Promise<void> {
-    this.logger.log(`Retrying delivery for alert ${alert.id} via ${channel}`);
+    this.logInfo(`Retrying delivery for alert ${alert.id} via ${channel}`);
 
     switch (channel) {
       case DeliveryChannel.EMAIL:

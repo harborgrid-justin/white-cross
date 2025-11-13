@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { IncidentStatusService } from '../services/incident-status.service';
 
+import { BaseController } from '../../common/base';
 /**
  * Incident Status Controller
  *
@@ -30,7 +31,7 @@ import { IncidentStatusService } from '../services/incident-status.service';
 @ApiTags('incident-reports-status')
 @ApiBearerAuth()
 @Controller('incident-reports')
-export class IncidentStatusController {
+export class IncidentStatusController extends BaseController {
   constructor(private readonly statusService: IncidentStatusService) {}
 
   @Post(':id/follow-up-notes')

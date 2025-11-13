@@ -8,10 +8,9 @@ import { IncidentValidationService } from './incident-validation.service';
 import { ActionPriority } from '../enums/action-priority.enum';
 import { ActionStatus } from '../enums/action-status.enum';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class IncidentFollowUpService {
-  private readonly logger = new Logger(IncidentFollowUpService.name);
-
+export class IncidentFollowUpService extends BaseService {
   constructor(
     @InjectModel(FollowUpAction)
     private followUpActionModel: typeof FollowUpAction,
@@ -43,10 +42,10 @@ export class IncidentFollowUpService {
         status: ActionStatus.PENDING,
       } as any);
 
-      this.logger.log(`Follow-up action added to incident ${incidentReportId}`);
+      this.logInfo(`Follow-up action added to incident ${incidentReportId}`);
       return savedAction;
     } catch (error) {
-      this.logger.error('Error adding follow-up action:', error);
+      this.logError('Error adding follow-up action:', error);
       throw error;
     }
   }
@@ -83,10 +82,10 @@ export class IncidentFollowUpService {
 
       const updatedAction = await action.save();
 
-      this.logger.log(`Follow-up action ${actionId} updated`);
+      this.logInfo(`Follow-up action ${actionId} updated`);
       return updatedAction;
     } catch (error) {
-      this.logger.error('Error updating follow-up action:', error);
+      this.logError('Error updating follow-up action:', error);
       throw error;
     }
   }
@@ -105,7 +104,7 @@ export class IncidentFollowUpService {
 
       return actions;
     } catch (error) {
-      this.logger.error('Error fetching follow-up actions:', error);
+      this.logError('Error fetching follow-up actions:', error);
       throw error;
     }
   }
@@ -128,7 +127,7 @@ export class IncidentFollowUpService {
 
       return actions;
     } catch (error) {
-      this.logger.error('Error fetching overdue actions:', error);
+      this.logError('Error fetching overdue actions:', error);
       throw error;
     }
   }
@@ -148,7 +147,7 @@ export class IncidentFollowUpService {
 
       return actions;
     } catch (error) {
-      this.logger.error('Error fetching user pending actions:', error);
+      this.logError('Error fetching user pending actions:', error);
       throw error;
     }
   }
@@ -174,7 +173,7 @@ export class IncidentFollowUpService {
 
       return actions;
     } catch (error) {
-      this.logger.error('Error fetching urgent actions:', error);
+      this.logError('Error fetching urgent actions:', error);
       throw error;
     }
   }
@@ -199,10 +198,10 @@ export class IncidentFollowUpService {
 
       await action.destroy();
 
-      this.logger.log(`Follow-up action ${actionId} deleted`);
+      this.logInfo(`Follow-up action ${actionId} deleted`);
       return true;
     } catch (error) {
-      this.logger.error('Error deleting follow-up action:', error);
+      this.logError('Error deleting follow-up action:', error);
       throw error;
     }
   }
@@ -257,7 +256,7 @@ export class IncidentFollowUpService {
         completionRate: total > 0 ? (completed / total) * 100 : 0,
       };
     } catch (error) {
-      this.logger.error('Error fetching follow-up statistics:', error);
+      this.logError('Error fetching follow-up statistics:', error);
       throw error;
     }
   }

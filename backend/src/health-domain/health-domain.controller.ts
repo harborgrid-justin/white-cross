@@ -17,6 +17,7 @@ import {
   VaccinationFiltersDto,
 } from './dto';
 import { ExemptionFilterDto, HealthDomainCreateExemptionDto, UpdateExemptionDto } from './dto/exemption.dto';
+import { BaseController } from '../../common/base';
 import {
   CheckContraindicationsDto,
   GetCatchUpScheduleDto,
@@ -30,7 +31,7 @@ import {
 @ApiTags('health-domain')
 @ApiBearerAuth()
 @Controller('health-domain')
-export class HealthDomainController {
+export class HealthDomainController extends BaseController {
   constructor(private readonly healthDomainService: HealthDomainService) {}
 
   // ============================================================================

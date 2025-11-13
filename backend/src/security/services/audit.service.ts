@@ -11,9 +11,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuditLogEntry, AuditCategory } from '../interfaces/security.interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class EnhancedAuditService {
-  private readonly logger = new Logger(EnhancedAuditService.name);
+export class EnhancedAuditService extends BaseService {
   private auditLog: AuditLogEntry[] = [];
   private readonly maxLogSize = 10000;
 
@@ -67,7 +67,7 @@ export class EnhancedAuditService {
 
       // In production, persist to database or external audit system
     } catch (error) {
-      this.logger.error('Failed to log audit event:', error);
+      this.logError('Failed to log audit event:', error);
     }
   }
 

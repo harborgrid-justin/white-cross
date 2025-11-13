@@ -9,10 +9,9 @@ import { IncidentNotificationService } from './incident-notification.service';
 import { IncidentValidationService } from './incident-validation.service';
 import { IncidentSeverity } from '../enums/incident-severity.enum';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class IncidentCoreService {
-  private readonly logger = new Logger(IncidentCoreService.name);
-
+export class IncidentCoreService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
@@ -161,7 +160,7 @@ export class IncidentCoreService {
       // Create the report
       const savedReport = await this.incidentReportModel.create(dto as any);
 
-      this.logger.log(
+      this.logInfo(
         `Incident report created: ${dto.type} (${dto.severity}) for student ${dto.studentId} by ${dto.reportedById}`,
       );
 
@@ -175,13 +174,13 @@ export class IncidentCoreService {
         this.notificationService
           .notifyEmergencyContacts(savedReport.id)
           .catch((error) => {
-            this.logger.error('Failed to send emergency notifications', error);
+            this.logError('Failed to send emergency notifications', error);
           });
       }
 
       return savedReport;
     } catch (error) {
-      this.logger.error('Error creating incident report:', error);
+      this.logError('Error creating incident report:', error);
       throw error;
     }
   }
@@ -201,10 +200,10 @@ export class IncidentCoreService {
 
       const updatedReport = await existingReport.save();
 
-      this.logger.log(`Incident report updated: ${id}`);
+      this.logInfo(`Incident report updated: ${id}`);
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error updating incident report:', error);
+      this.logError('Error updating incident report:', error);
       throw error;
     }
   }
@@ -219,7 +218,7 @@ export class IncidentCoreService {
         order: [['occurredAt', 'DESC']],
       });
     } catch (error) {
-      this.logger.error('Error fetching incidents requiring follow-up:', error);
+      this.logError('Error fetching incidents requiring follow-up:', error);
       throw error;
     }
   }
@@ -238,7 +237,7 @@ export class IncidentCoreService {
         limit,
       });
     } catch (error) {
-      this.logger.error('Error fetching student recent incidents:', error);
+      this.logError('Error fetching student recent incidents:', error);
       throw error;
     }
   }
@@ -259,12 +258,12 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(
+      this.logInfo(
         `Follow-up notes added for incident ${id} by ${completedBy}`,
       );
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error adding follow-up notes:', error);
+      this.logError('Error adding follow-up notes:', error);
       throw error;
     }
   }
@@ -296,10 +295,10 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(`Parent notification marked for incident ${id}`);
+      this.logInfo(`Parent notification marked for incident ${id}`);
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error marking parent as notified:', error);
+      this.logError('Error marking parent as notified:', error);
       throw error;
     }
   }
@@ -335,12 +334,12 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(
+      this.logInfo(
         `${evidenceType} evidence added to incident ${id}: ${evidenceUrls.length} files`,
       );
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error adding evidence:', error);
+      this.logError('Error adding evidence:', error);
       throw error;
     }
   }
@@ -361,12 +360,12 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(
+      this.logInfo(
         `Insurance claim updated for incident ${id}: ${claimNumber}`,
       );
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error updating insurance claim:', error);
+      this.logError('Error updating insurance claim:', error);
       throw error;
     }
   }
@@ -385,12 +384,12 @@ export class IncidentCoreService {
 
       const updatedReport = await report.save();
 
-      this.logger.log(
+      this.logInfo(
         `Compliance status updated for incident ${id}: ${status}`,
       );
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error updating compliance status:', error);
+      this.logError('Error updating compliance status:', error);
       throw error;
     }
   }
@@ -439,7 +438,7 @@ export class IncidentCoreService {
       // Return in same order as input, null for missing
       return ids.map((id) => incidentMap.get(id) || null);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch incident reports: ${error.message}`,
         error.stack,
       );
@@ -499,7 +498,7 @@ export class IncidentCoreService {
         (studentId) => incidentsByStudent.get(studentId) || [],
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch incident reports by student IDs: ${error.message}`,
         error.stack,
       );

@@ -6,6 +6,7 @@ import { DrugInteraction   } from "../../database/models";
 import { Student   } from "../../database/models";
 import { HealthRecord   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Medication Interaction Checker Service
  *
@@ -24,9 +25,7 @@ import { HealthRecord   } from "../../database/models";
  * @hipaa-requirement Medication management and safety
  */
 @Injectable()
-export class MedicationInteractionCheckerService {
-  private readonly logger = new Logger(MedicationInteractionCheckerService.name);
-
+export class MedicationInteractionCheckerService extends BaseService {
   // Drug interaction severity levels
   private readonly SEVERITY_LEVELS = {
     MINOR: 1,

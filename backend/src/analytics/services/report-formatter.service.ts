@@ -6,10 +6,9 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ReportFormatterService {
-  private readonly logger = new Logger(ReportFormatterService.name);
-
+export class ReportFormatterService extends BaseService {
   /**
    * Format report content based on requested format
    */
@@ -32,7 +31,7 @@ export class ReportFormatterService {
           return this.formatAsJSON(content);
       }
     } catch (error) {
-      this.logger.error(`Failed to format report as ${format}`, error);
+      this.logError(`Failed to format report as ${format}`, error);
       // Fallback to JSON
       return this.formatAsJSON(content);
     }

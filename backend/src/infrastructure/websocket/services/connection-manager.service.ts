@@ -9,10 +9,9 @@ import { Server } from 'socket.io';
 import { AuthenticatedSocket } from '../interfaces';
 import { ConnectionConfirmedDto } from '../dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ConnectionManagerService {
-  private readonly logger = new Logger(ConnectionManagerService.name);
-
+export class ConnectionManagerService extends BaseService {
   /**
    * Handles new WebSocket connections
    * Authenticates the client, joins appropriate rooms, and sends confirmation
@@ -26,7 +25,7 @@ export class ConnectionManagerService {
       const token = this.extractToken(client);
 
       if (!token) {
-        this.logger.warn(`Connection rejected: No authentication token provided`);
+        this.logWarning(`Connection rejected: No authentication token provided`);
         client.disconnect();
         return;
       }
@@ -37,12 +36,12 @@ export class ConnectionManagerService {
 
       const user = client.user;
       if (!user) {
-        this.logger.warn(`Connection rejected: Authentication failed`);
+        this.logWarning(`Connection rejected: Authentication failed`);
         client.disconnect();
         return;
       }
 
-      this.logger.log(`WebSocket connected: ${client.id} (user: ${user.userId})`);
+      this.logInfo(`WebSocket connected: ${client.id} (user: ${user.userId})`);
 
       // Join organization room for multi-tenant isolation
       const orgRoom = `org:${user.organizationId}`;
@@ -51,7 +50,7 @@ export class ConnectionManagerService {
       await client.join(orgRoom);
       await client.join(userRoom);
 
-      this.logger.log(`Socket ${client.id} joined rooms: ${orgRoom}, ${userRoom}`);
+      this.logInfo(`Socket ${client.id} joined rooms: ${orgRoom}, ${userRoom}`);
 
       // Send connection confirmation
       const confirmation = new ConnectionConfirmedDto({
@@ -63,7 +62,7 @@ export class ConnectionManagerService {
 
       client.emit('connection:confirmed', confirmation);
     } catch (error) {
-      this.logger.error(`Connection error for ${client.id}:`, error);
+      this.logError(`Connection error for ${client.id}:`, error);
       client.disconnect();
     }
   }
@@ -78,9 +77,9 @@ export class ConnectionManagerService {
     const user = client.user;
 
     if (user) {
-      this.logger.log(`WebSocket disconnected: ${client.id} (user: ${user.userId})`);
+      this.logInfo(`WebSocket disconnected: ${client.id} (user: ${user.userId})`);
     } else {
-      this.logger.log(`WebSocket disconnected: ${client.id}`);
+      this.logInfo(`WebSocket disconnected: ${client.id}`);
     }
   }
 
@@ -111,10 +110,10 @@ export class ConnectionManagerService {
     // Ensure users can only subscribe to their organization's channels
     if (channel.startsWith(`org:${user.organizationId}:`)) {
       await client.join(channel);
-      this.logger.log(`Socket ${client.id} subscribed to ${channel}`);
+      this.logInfo(`Socket ${client.id} subscribed to ${channel}`);
       client.emit('subscribed', { channel });
     } else {
-      this.logger.warn(
+      this.logWarning(
         `Socket ${client.id} attempted to subscribe to unauthorized channel: ${channel}`,
       );
       client.emit('error', { message: 'Unauthorized channel subscription' });
@@ -129,7 +128,7 @@ export class ConnectionManagerService {
    */
   async handleUnsubscribe(client: AuthenticatedSocket, channel: string): Promise<void> {
     await client.leave(channel);
-    this.logger.log(`Socket ${client.id} unsubscribed from ${channel}`);
+    this.logInfo(`Socket ${client.id} unsubscribed from ${channel}`);
     client.emit('unsubscribed', { channel });
   }
 
@@ -148,7 +147,7 @@ export class ConnectionManagerService {
       return;
     }
 
-    this.logger.log(`Notification ${notificationId} marked as read by user ${user.userId}`);
+    this.logInfo(`Notification ${notificationId} marked as read by user ${user.userId}`);
 
     // Broadcast to other user sessions that notification was read
     client.to(`user:${user.userId}`).emit('notification:read', { notificationId });

@@ -9,6 +9,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../database/models/user.model';
 import type { Request as ExpressRequest } from 'express';
 
+import { BaseController } from '../../common/base';
 interface AuthenticatedRequest extends ExpressRequest {
   user: {
     id: string;
@@ -29,7 +30,7 @@ interface AuthenticatedRequest extends ExpressRequest {
 @Controller('api/v1/api-keys')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
-export class ApiKeyAuthController {
+export class ApiKeyAuthController extends BaseController {
   constructor(private readonly apiKeyAuthService: ApiKeyAuthService) {}
 
   @Post()

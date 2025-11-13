@@ -8,6 +8,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { StudentRepository } from '../../database/repositories/impl/student.repository';
 import { EmergencyBroadcastRepository } from '../../database/repositories/impl/emergency-broadcast.repository';
 
+import { BaseService } from '../../common/base';
 export interface BroadcastRecipient {
   id: string;
   type: 'STUDENT' | 'PARENT' | 'STAFF';
@@ -37,9 +38,7 @@ interface QueryWhereClause {
 }
 
 @Injectable()
-export class BroadcastRecipientService {
-  private readonly logger = new Logger(BroadcastRecipientService.name);
-
+export class BroadcastRecipientService extends BaseService {
   constructor(
     private readonly studentRepository: StudentRepository,
     private readonly broadcastRepository: EmergencyBroadcastRepository,
@@ -50,7 +49,7 @@ export class BroadcastRecipientService {
    */
   async getRecipients(broadcastId: string): Promise<BroadcastRecipient[]> {
     try {
-      this.logger.log('Retrieving recipients for broadcast', { broadcastId });
+      this.logInfo('Retrieving recipients for broadcast', { broadcastId });
 
       // Get broadcast details to determine audience
       const broadcast = await this.broadcastRepository.findById(broadcastId);
@@ -72,11 +71,11 @@ export class BroadcastRecipientService {
       // const staff = await this.getStaffRecipients(broadcast);
       // recipients.push(...staff);
 
-      this.logger.log(`Found ${recipients.length} recipients for broadcast ${broadcastId}`);
+      this.logInfo(`Found ${recipients.length} recipients for broadcast ${broadcastId}`);
 
       return recipients;
     } catch (error) {
-      this.logger.error('Error retrieving recipients:', error);
+      this.logError('Error retrieving recipients:', error);
       return [];
     }
   }
@@ -204,7 +203,7 @@ export class BroadcastRecipientService {
     }
 
     if (invalid.length > 0) {
-      this.logger.warn(`${invalid.length} recipients excluded due to missing contact information`);
+      this.logWarning(`${invalid.length} recipients excluded due to missing contact information`);
     }
 
     return { valid, invalid };

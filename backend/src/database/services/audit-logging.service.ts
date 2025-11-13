@@ -11,6 +11,7 @@ import { AuditAction, isPHIEntity } from '../types/database.enums';
 import { AuditLog, AuditSeverity, ComplianceType } from '../models/audit-log.model';
 import { AuditHelperService } from './audit-helper.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Audit Logging Service
  *
@@ -27,9 +28,7 @@ import { AuditHelperService } from './audit-helper.service';
  * - Failed operation logging
  */
 @Injectable()
-export class AuditLoggingService {
-  private readonly logger = new Logger(AuditLoggingService.name);
-
+export class AuditLoggingService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -262,10 +261,10 @@ export class AuditLoggingService {
           tags: ['cache', 'system'],
         });
       } catch (error) {
-        this.logger.warn(`Failed to log cache access: ${error.message}`);
+        this.logWarning(`Failed to log cache access: ${error.message}`);
       }
     } else {
-      this.logger.debug(`Cache ${action}: ${cacheKey}`);
+      this.logDebug(`Cache ${action}: ${cacheKey}`);
     }
   }
 
@@ -516,11 +515,11 @@ export class AuditLoggingService {
         await (this.auditLogModel as any).create(createOptions);
       }
 
-      this.logger.debug(
+      this.logDebug(
         `AUDIT [${action}] ${entityType}:${entityId || 'bulk'} by ${context.userId || 'SYSTEM'} - ${success ? 'SUCCESS' : 'FAILED'}${transaction ? ' [IN TRANSACTION]' : ''}`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to create audit entry: ${error.message}`,
         error.stack,
       );

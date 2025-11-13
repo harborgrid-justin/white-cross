@@ -9,6 +9,7 @@ import { ReportType } from '../enums/report-type.enum';
 import { ComplianceReport } from '../interfaces/compliance-report.interfaces';
 import { AnalyticsReport } from '../entities/analytics-report.entity';
 
+import { BaseService } from '../../common/base';
 /**
  * Compliance Report Persistence Service
  *
@@ -23,9 +24,7 @@ import { AnalyticsReport } from '../entities/analytics-report.entity';
  * - Handle report queries with filters
  */
 @Injectable()
-export class ComplianceReportPersistenceService {
-  private readonly logger = new Logger(ComplianceReportPersistenceService.name);
-
+export class ComplianceReportPersistenceService extends BaseService {
   constructor(
     @InjectModel(AnalyticsReport)
     private readonly analyticsReportModel: typeof AnalyticsReport,
@@ -59,10 +58,10 @@ export class ComplianceReportPersistenceService {
         generatedBy: report.generatedBy,
       });
 
-      this.logger.log(`Report saved to database: ${report.id}`);
+      this.logInfo(`Report saved to database: ${report.id}`);
       return dbReport;
     } catch (error) {
-      this.logger.error('Error saving report to database', error.stack);
+      this.logError('Error saving report to database', error.stack);
       throw error;
     }
   }
@@ -75,7 +74,7 @@ export class ComplianceReportPersistenceService {
       const cacheKey = `report:${reportId}`;
       const cached = await this.cacheManager.get<ComplianceReport>(cacheKey);
       if (cached) {
-        this.logger.debug(`Cache hit for report ${reportId}`);
+        this.logDebug(`Cache hit for report ${reportId}`);
         return cached;
       }
 
@@ -94,7 +93,7 @@ export class ComplianceReportPersistenceService {
 
       return report;
     } catch (error) {
-      this.logger.error(`Error retrieving report ${reportId}`, error.stack);
+      this.logError(`Error retrieving report ${reportId}`, error.stack);
       throw error;
     }
   }
@@ -138,7 +137,7 @@ export class ComplianceReportPersistenceService {
 
       return dbReports.map((r) => this.mapDbReportToCompliance(r));
     } catch (error) {
-      this.logger.error('Error retrieving reports', error.stack);
+      this.logError('Error retrieving reports', error.stack);
       throw error;
     }
   }
@@ -153,9 +152,9 @@ export class ComplianceReportPersistenceService {
   ): Promise<void> {
     try {
       await this.cacheManager.set(cacheKey, report, ttl);
-      this.logger.debug(`Report cached with key: ${cacheKey}`);
+      this.logDebug(`Report cached with key: ${cacheKey}`);
     } catch (error) {
-      this.logger.error('Error caching report', error.stack);
+      this.logError('Error caching report', error.stack);
       // Don't throw - caching is not critical
     }
   }
@@ -167,7 +166,7 @@ export class ComplianceReportPersistenceService {
     try {
       return await this.cacheManager.get<ComplianceReport>(cacheKey);
     } catch (error) {
-      this.logger.error('Error retrieving cached report', error.stack);
+      this.logError('Error retrieving cached report', error.stack);
       return null;
     }
   }
@@ -187,9 +186,9 @@ export class ComplianceReportPersistenceService {
       // Update cache
       await this.cacheManager.set(`report:${reportId}`, updatedReport, 300000);
 
-      this.logger.debug(`Report export info updated: ${reportId}`);
+      this.logDebug(`Report export info updated: ${reportId}`);
     } catch (error) {
-      this.logger.error('Error updating report export info', error.stack);
+      this.logError('Error updating report export info', error.stack);
       // Don't throw - this is supplementary data
     }
   }
@@ -212,9 +211,9 @@ export class ComplianceReportPersistenceService {
       // Update cache
       await this.cacheManager.set(`report:${reportId}`, updatedReport, 300000);
 
-      this.logger.debug(`Report distribution info updated: ${reportId}`);
+      this.logDebug(`Report distribution info updated: ${reportId}`);
     } catch (error) {
-      this.logger.error('Error updating report distribution info', error.stack);
+      this.logError('Error updating report distribution info', error.stack);
       // Don't throw - this is supplementary data
     }
   }

@@ -24,6 +24,28 @@ function delay(ms: number): Promise<void> {
 }
 
 /**
+ * Common batch fetching logic to eliminate duplication
+ */
+async function fetchBatch<M extends Model>(
+  model: ModelCtor<M>,
+  where: WhereOptions<Attributes<M>>,
+  config: StreamConfig,
+  offset: number,
+): Promise<{ batch: M[]; hasMore: boolean; newOffset: number }> {
+  const batch = await model.findAll({
+    where,
+    limit: config.batchSize,
+    offset,
+    transaction: config.transaction,
+  });
+
+  const hasMore = batch.length === config.batchSize;
+  const newOffset = offset + config.batchSize;
+
+  return { batch, hasMore, newOffset };
+}
+
+/**
  * Create a readable stream from Sequelize query results
  */
 export async function createQueryStream<M extends Model>(
@@ -47,23 +69,18 @@ export async function createQueryStream<M extends Model>(
             return;
           }
 
-          const batch = await model.findAll({
-            where,
-            limit: config.batchSize,
-            offset,
-            transaction: config.transaction,
-          });
-
-          if (batch.length === 0) {
+          const result = await fetchBatch(model, where, config, offset);
+          
+          if (result.batch.length === 0) {
             hasMore = false;
             this.push(null);
             return;
           }
 
-          offset += config.batchSize;
-          hasMore = batch.length === config.batchSize;
+          offset = result.newOffset;
+          hasMore = result.hasMore;
 
-          for (const record of batch) {
+          for (const record of result.batch) {
             if (!this.push(record)) {
               break;
             }

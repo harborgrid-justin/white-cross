@@ -7,6 +7,7 @@ import { Patient   } from "../../database/models";
 import { User   } from "../../database/models";
 import { Op } from 'sequelize';
 
+import { BaseService } from '../../common/base';
 /**
  * Patient Consent Management Service
  *
@@ -24,9 +25,7 @@ import { Op } from 'sequelize';
  * @hipaa-requirement §164.508 - Privacy Rule Accounting of Disclosures
  */
 @Injectable()
-export class PatientConsentManagementService {
-  private readonly logger = new Logger(PatientConsentManagementService.name);
-
+export class PatientConsentManagementService extends BaseService {
   constructor(
     @InjectModel(ConsentForm)
     private readonly consentFormModel: typeof ConsentForm,
@@ -68,12 +67,12 @@ export class PatientConsentManagementService {
 
       await transaction.commit();
 
-      this.logger.log(`Consent form created: ${consentForm.id} - ${consentForm.title}`);
+      this.logInfo(`Consent form created: ${consentForm.id} - ${consentForm.title}`);
 
       return consentForm;
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to create consent form: ${error.message}`, error.stack);
+      this.logError(`Failed to create consent form: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -177,14 +176,14 @@ export class PatientConsentManagementService {
 
       await transaction.commit();
 
-      this.logger.log(
+      this.logInfo(
         `Consent form signed: ${signature.id} - Patient: ${signatureData.patientId}, Form: ${signatureData.consentFormId}`,
       );
 
       return signature;
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to sign consent form: ${error.message}`, error.stack);
+      this.logError(`Failed to sign consent form: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -229,10 +228,10 @@ export class PatientConsentManagementService {
 
       await transaction.commit();
 
-      this.logger.log(`Consent revoked: ${signatureId} - Reason: ${revocationData.reason}`);
+      this.logInfo(`Consent revoked: ${signatureId} - Reason: ${revocationData.reason}`);
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to revoke consent: ${error.message}`, error.stack);
+      this.logError(`Failed to revoke consent: ${error.message}`, error.stack);
       throw error;
     }
   }

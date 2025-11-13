@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { AuditAction, AuditLog, AuditSeverity, ComplianceType } from '@/database';
 import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * AuditLogService - Core audit logging functionality
  *
@@ -14,9 +15,7 @@ import { IAuditLogEntry } from '../interfaces/audit-log-entry.interface';
  * that would break the main application flow.
  */
 @Injectable()
-export class AuditLogService {
-  private readonly logger = new Logger(AuditLogService.name);
-
+export class AuditLogService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -51,12 +50,12 @@ export class AuditLogService {
         tags: [],
       });
 
-      this.logger.log(
+      this.logInfo(
         `Audit: ${entry.action} on ${entry.entityType}${entry.entityId ? ` (ID: ${entry.entityId})` : ''} by user ${entry.userId || 'SYSTEM'}`,
       );
     } catch (error) {
       // FAIL-SAFE: Never throw - audit logging should not break the main flow
-      this.logger.error('Failed to create audit log:', error);
+      this.logError('Failed to create audit log:', error);
     }
   }
 
@@ -70,7 +69,7 @@ export class AuditLogService {
     try {
       return await this.auditLogModel.findByPk(id);
     } catch (error) {
-      this.logger.error('Error fetching audit log by ID:', error);
+      this.logError('Error fetching audit log by ID:', error);
       throw new Error('Failed to fetch audit log');
     }
   }
@@ -88,7 +87,7 @@ export class AuditLogService {
         limit: limit,
       });
     } catch (error) {
-      this.logger.error('Error fetching recent audit logs:', error);
+      this.logError('Error fetching recent audit logs:', error);
       throw new Error('Failed to fetch recent audit logs');
     }
   }

@@ -4,7 +4,9 @@
  * @description Service for analyzing health check results and generating insights
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { HealthCheckResponse, HealthStatus } from '../interfaces/health-check.interface';
 import {
   ResourceHealthInfo,
@@ -15,9 +17,7 @@ import {
 } from '../types/health-check.types';
 
 @Injectable()
-export class HealthAnalyzerService {
-  private readonly logger = new Logger(HealthAnalyzerService.name);
-
+export class HealthAnalyzerService extends BaseService {
   /**
    * Determines enhanced overall status
    */

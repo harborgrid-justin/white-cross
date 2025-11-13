@@ -20,6 +20,7 @@ import { CreateIncidentReportDto } from '../dto/create-incident-report.dto';
 import { IncidentFiltersDto } from '../dto/incident-filters.dto';
 import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Incident Core Controller
  *
@@ -32,7 +33,7 @@ import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
 @ApiTags('incident-reports-core')
 @ApiBearerAuth()
 @Controller('incident-reports')
-export class IncidentCoreController {
+export class IncidentCoreController extends BaseController {
   constructor(
     private readonly readService: IncidentReadService,
     private readonly writeService: IncidentWriteService,

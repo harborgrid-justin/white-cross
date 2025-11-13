@@ -11,6 +11,7 @@ import { BaseReportDto } from '../dto/base-report.dto';
 import { ExportOptionsDto } from '../dto/export-options.dto';
 import { ReportType } from '../constants/report.constants';
 
+import { BaseController } from '../../common/base';
 /**
  * Reports Controller
  * Comprehensive reporting system for healthcare analytics, compliance, and operational insights.
@@ -19,7 +20,7 @@ import { ReportType } from '../constants/report.constants';
 @ApiTags('Reports')
 @ApiBearerAuth()
 @Controller('reports')
-export class ReportsController {
+export class ReportsController extends BaseController {
   private readonly logger = new Logger(ReportsController.name);
 
   constructor(

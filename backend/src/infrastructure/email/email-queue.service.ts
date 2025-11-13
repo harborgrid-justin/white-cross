@@ -4,10 +4,19 @@
  * @description Manages email queuing using BullMQ with retry logic and job tracking
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   EmailPriority,
   EmailQueueJobData,
@@ -27,7 +36,6 @@ export const EMAIL_QUEUE_NAME = 'email-queue';
 @Processor(EMAIL_QUEUE_NAME)
 @Injectable()
 export class EmailQueueService implements OnModuleInit {
-  private readonly logger = new Logger(EmailQueueService.name);
   private readonly maxRetries: number;
   private readonly backoffDelay: number;
 
@@ -43,7 +51,7 @@ export class EmailQueueService implements OnModuleInit {
    * Initialize the service
    */
   async onModuleInit(): Promise<void> {
-    this.logger.log('EmailQueueService initialized');
+    this.logInfo('EmailQueueService initialized');
     await this.logQueueStats();
   }
 
@@ -92,7 +100,7 @@ export class EmailQueueService implements OnModuleInit {
       },
     });
 
-    this.logger.log(`Email job added to queue: ${job.id} (priority: ${priority})`);
+    this.logInfo(`Email job added to queue: ${job.id} (priority: ${priority})`);
     return job.id || '';
   }
 
@@ -106,7 +114,7 @@ export class EmailQueueService implements OnModuleInit {
     const { id, emailData, retryCount } = job.data;
     const attemptNumber = job.attemptsMade;
 
-    this.logger.log(`Processing email job: ${id} (attempt ${attemptNumber}/${job.opts.attempts})`);
+    this.logInfo(`Processing email job: ${id} (attempt ${attemptNumber}/${job.opts.attempts})`);
 
     try {
       // The actual email sending will be delegated to EmailService
@@ -120,12 +128,12 @@ export class EmailQueueService implements OnModuleInit {
         completedAt: new Date(),
       };
 
-      this.logger.log(`Email job completed: ${id}`);
+      this.logInfo(`Email job completed: ${id}`);
       await job.updateProgress(100);
 
       return result;
     } catch (error) {
-      this.logger.error(`Email job failed: ${id} - ${error.message}`);
+      this.logError(`Email job failed: ${id} - ${error.message}`);
 
       // Update retry count
       job.data.retryCount = attemptNumber;
@@ -134,12 +142,12 @@ export class EmailQueueService implements OnModuleInit {
 
       if (shouldRetry) {
         const nextRetryDelay = this.calculateBackoffDelay(attemptNumber);
-        this.logger.warn(
+        this.logWarning(
           `Email job will retry in ${nextRetryDelay}ms: ${id} (attempt ${attemptNumber}/${job.opts.attempts})`,
         );
         throw error; // Let BullMQ handle the retry
       } else {
-        this.logger.error(`Email job exhausted all retries: ${id}`);
+        this.logError(`Email job exhausted all retries: ${id}`);
         await this.moveToDeadLetterQueue(job, error);
 
         return {
@@ -195,7 +203,7 @@ export class EmailQueueService implements OnModuleInit {
     }
 
     await job.remove();
-    this.logger.log(`Email job cancelled: ${jobId}`);
+    this.logInfo(`Email job cancelled: ${jobId}`);
   }
 
   /**
@@ -229,13 +237,13 @@ export class EmailQueueService implements OnModuleInit {
   private async logQueueStats(): Promise<void> {
     try {
       const stats = await this.getQueueStats();
-      this.logger.debug(
+      this.logDebug(
         `Queue stats - Waiting: ${stats.waiting}, Active: ${stats.active}, ` +
           `Completed: ${stats.completed}, Failed: ${stats.failed}, ` +
           `Delayed: ${stats.delayed}, Paused: ${stats.paused}`,
       );
     } catch (error) {
-      this.logger.warn(`Failed to log queue stats: ${error.message}`);
+      this.logWarning(`Failed to log queue stats: ${error.message}`);
     }
   }
 
@@ -245,7 +253,7 @@ export class EmailQueueService implements OnModuleInit {
    */
   async clearCompleted(gracePeriodMs: number = 3600000): Promise<void> {
     await this.emailQueue.clean(gracePeriodMs, 100, 'completed');
-    this.logger.log('Cleared completed jobs from queue');
+    this.logInfo('Cleared completed jobs from queue');
   }
 
   /**
@@ -254,7 +262,7 @@ export class EmailQueueService implements OnModuleInit {
    */
   async clearFailed(gracePeriodMs: number = 604800000): Promise<void> {
     await this.emailQueue.clean(gracePeriodMs, 100, 'failed');
-    this.logger.log('Cleared failed jobs from queue');
+    this.logInfo('Cleared failed jobs from queue');
   }
 
   /**
@@ -262,7 +270,7 @@ export class EmailQueueService implements OnModuleInit {
    */
   async pauseQueue(): Promise<void> {
     await this.emailQueue.pause();
-    this.logger.warn('Email queue paused');
+    this.logWarning('Email queue paused');
   }
 
   /**
@@ -270,7 +278,7 @@ export class EmailQueueService implements OnModuleInit {
    */
   async resumeQueue(): Promise<void> {
     await this.emailQueue.resume();
-    this.logger.log('Email queue resumed');
+    this.logInfo('Email queue resumed');
   }
 
   /**
@@ -285,13 +293,13 @@ export class EmailQueueService implements OnModuleInit {
       try {
         await job.retry();
         retriedCount++;
-        this.logger.debug(`Retrying failed job: ${job.id}`);
+        this.logDebug(`Retrying failed job: ${job.id}`);
       } catch (error) {
-        this.logger.warn(`Failed to retry job ${job.id}: ${error.message}`);
+        this.logWarning(`Failed to retry job ${job.id}: ${error.message}`);
       }
     }
 
-    this.logger.log(`Retried ${retriedCount} failed jobs`);
+    this.logInfo(`Retried ${retriedCount} failed jobs`);
     return retriedCount;
   }
 
@@ -330,7 +338,7 @@ export class EmailQueueService implements OnModuleInit {
    */
   private async moveToDeadLetterQueue(job: Job<EmailQueueJobData>, error: Error): Promise<void> {
     // Log to dead letter queue (in production, this could write to a database or separate queue)
-    this.logger.error(
+    this.logError(
       `Dead letter queue: Job ${job.id} failed permanently`,
       JSON.stringify({
         jobId: job.id,
@@ -386,7 +394,7 @@ export class EmailQueueService implements OnModuleInit {
 
       return { healthy, stats };
     } catch (error) {
-      this.logger.error(`Queue health check failed: ${error.message}`);
+      this.logError(`Queue health check failed: ${error.message}`);
       return { healthy: false, stats: {} };
     }
   }

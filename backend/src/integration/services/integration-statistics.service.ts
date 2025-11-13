@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
 import { IntegrationLog } from '../../database/models/integration-log.model';
 
+import { BaseService } from '../../common/base';
 export interface IntegrationStatistics {
   totalIntegrations: number;
   activeIntegrations: number;
@@ -28,9 +29,7 @@ export interface IntegrationStatistics {
  * Provides analytics and statistics for integration operations
  */
 @Injectable()
-export class IntegrationStatisticsService {
-  private readonly logger = new Logger(IntegrationStatisticsService.name);
-
+export class IntegrationStatisticsService extends BaseService {
   constructor(
     @InjectModel(IntegrationConfig)
     private readonly configModel: typeof IntegrationConfig,
@@ -126,7 +125,7 @@ export class IntegrationStatisticsService {
         statsByType,
       };
     } catch (error) {
-      this.logger.error('Error fetching integration statistics', error);
+      this.logError('Error fetching integration statistics', error);
       throw error;
     }
   }

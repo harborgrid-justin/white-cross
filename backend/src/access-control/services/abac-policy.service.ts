@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { BaseService } from '../../common/base';
 import {
   AbacCondition,
   AbacContext,
@@ -22,14 +23,12 @@ import {
  * - Extensible attribute model
  */
 @Injectable()
-export class AbacPolicyService {
-  private readonly logger = new Logger(AbacPolicyService.name);
-
+export class AbacPolicyService extends BaseService {
   // In-memory policy storage (in production, use database)
   private policies: Map<string, AbacPolicyRule> = new Map();
 
   constructor() {
-    this.logger.log('ABAC Policy Service initialized');
+    this.logInfo('ABAC Policy Service initialized');
     this.initializeDefaultPolicies();
   }
 
@@ -44,7 +43,7 @@ export class AbacPolicyService {
     };
 
     this.policies.set(id, newPolicy);
-    this.logger.log(`Created ABAC policy: ${newPolicy.name} (${id})`);
+    this.logInfo(`Created ABAC policy: ${newPolicy.name} (${id})`);
     return newPolicy;
   }
 
@@ -76,7 +75,7 @@ export class AbacPolicyService {
 
     const updated = { ...policy, ...updates, id }; // Preserve ID
     this.policies.set(id, updated);
-    this.logger.log(`Updated ABAC policy: ${id}`);
+    this.logInfo(`Updated ABAC policy: ${id}`);
     return updated;
   }
 
@@ -86,7 +85,7 @@ export class AbacPolicyService {
   deletePolicy(id: string): boolean {
     const deleted = this.policies.delete(id);
     if (deleted) {
-      this.logger.log(`Deleted ABAC policy: ${id}`);
+      this.logInfo(`Deleted ABAC policy: ${id}`);
     }
     return deleted;
   }
@@ -192,7 +191,7 @@ export class AbacPolicyService {
         return false;
 
       default:
-        this.logger.warn(`Unknown operator: ${condition.operator}`);
+        this.logWarning(`Unknown operator: ${condition.operator}`);
         return false;
     }
   }
@@ -241,6 +240,6 @@ export class AbacPolicyService {
       isActive: false, // Disabled by default
     });
 
-    this.logger.log('Default ABAC policies initialized');
+    this.logInfo('Default ABAC policies initialized');
   }
 }

@@ -13,6 +13,7 @@ import { BulkMessagingService } from './bulk-messaging.service';
 import { LanguageTranslationService } from './language-translation.service';
 import { CustomReportBuilderService } from './custom-report-builder.service';
 import { AnalyticsDashboardService } from './analytics-dashboard.service';
+import { BaseService } from '../../common/base';
 import {
   WaitlistEntry,
   RecurringTemplate,
@@ -37,9 +38,7 @@ import {
  * Maintains backward compatibility with existing API
  */
 @Injectable()
-export class EnterpriseFeaturesService {
-  private readonly logger = new Logger(EnterpriseFeaturesService.name);
-
+export class EnterpriseFeaturesService extends BaseService {
   constructor(
     private readonly waitlistService: WaitlistManagementService,
     private readonly recurringAppointmentsService: RecurringAppointmentsService,
@@ -56,7 +55,7 @@ export class EnterpriseFeaturesService {
     private readonly reportBuilderService: CustomReportBuilderService,
     private readonly analyticsService: AnalyticsDashboardService,
   ) {
-    this.logger.log('Enterprise Features Service initialized with all specialized services');
+    this.logInfo('Enterprise Features Service initialized with all specialized services');
   }
 
   // ============================================

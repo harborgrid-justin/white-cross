@@ -15,11 +15,12 @@
  * - AlertRetryService: Retry logic and scheduling
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { CreateAlertDto } from '@/alerts/dto';
 import { Alert, AlertStatus, AlertPreferences } from '@/database';
 import { Op } from 'sequelize';
+import { BaseService } from '../common/base/base.service';
 import { AlertDeliveryService } from './services/alert-delivery.service';
 import { AlertPreferencesService } from './services/alert-preferences.service';
 import { AlertStatisticsService, AlertStatistics } from './services/alert-statistics.service';
@@ -31,9 +32,7 @@ export { AlertStatus } from '@/database';
 export { AlertStatistics } from './services/alert-statistics.service';
 
 @Injectable()
-export class AlertsService {
-  private readonly logger = new Logger(AlertsService.name);
-
+export class AlertsService extends BaseService {
   constructor(
     @InjectModel(Alert)
     private readonly alertModel: typeof Alert,
@@ -41,13 +40,15 @@ export class AlertsService {
     private readonly preferencesService: AlertPreferencesService,
     private readonly statisticsService: AlertStatisticsService,
     private readonly retryService: AlertRetryService,
-  ) {}
+  ) {
+    super('AlertsService');
+  }
 
   /**
    * Create and broadcast a new alert
    */
   async createAlert(data: CreateAlertDto, createdBy: string): Promise<Alert> {
-    this.logger.log(`Creating alert: ${data.title} [${data.severity}]`);
+    this.logInfo(`Creating alert: ${data.title} [${data.severity}]`);
 
     // Create alert in database
     const alert = await this.alertModel.create({
@@ -70,7 +71,7 @@ export class AlertsService {
       this.retryService.scheduleExpiration(alert.id, data.expiresAt);
     }
 
-    this.logger.log(`Alert created successfully: ${alert.id}`);
+    this.logInfo(`Alert created successfully: ${alert.id}`);
     return alert;
   }
 
@@ -90,7 +91,7 @@ export class AlertsService {
 
     await alert.save();
 
-    this.logger.log(`Alert ${alertId} acknowledged by ${userId}`);
+    this.logInfo(`Alert ${alertId} acknowledged by ${userId}`);
 
     // Broadcast acknowledgment via WebSocket
     await this.deliveryService.sendViaWebSocket(userId, alert);
@@ -125,7 +126,7 @@ export class AlertsService {
 
     await alert.save();
 
-    this.logger.log(`Alert ${alertId} resolved by ${userId}`);
+    this.logInfo(`Alert ${alertId} resolved by ${userId}`);
 
     // Broadcast resolution via WebSocket
     await this.deliveryService.sendViaWebSocket(userId, alert);
@@ -204,7 +205,7 @@ export class AlertsService {
     }
 
     await alert.destroy();
-    this.logger.log(`Alert ${alertId} deleted`);
+    this.logInfo(`Alert ${alertId} deleted`);
   }
 
   /**

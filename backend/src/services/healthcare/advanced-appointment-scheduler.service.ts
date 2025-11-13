@@ -5,6 +5,7 @@ import { Student   } from "../../database/models";
 import { Appointment   } from "../../database/models";
 import { HealthRecord   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Advanced Appointment Scheduler Service
  *
@@ -25,9 +26,7 @@ import { HealthRecord   } from "../../database/models";
  * @hipaa-requirement Appointment scheduling and patient privacy
  */
 @Injectable()
-export class AdvancedAppointmentSchedulerService {
-  private readonly logger = new Logger(AdvancedAppointmentSchedulerService.name);
-
+export class AdvancedAppointmentSchedulerService extends BaseService {
   // Scheduling preferences and constraints
   private readonly SCHEDULING_RULES = {
     MIN_APPOINTMENT_DURATION: 15, // minutes
@@ -628,7 +627,7 @@ export class AdvancedAppointmentSchedulerService {
     const reminderSchedule = this.calculateReminderSchedule(patientProfile);
 
     // Implementation would integrate with notification service
-    this.logger.log(`Reminders scheduled for appointment ${appointmentId}`);
+    this.logInfo(`Reminders scheduled for appointment ${appointmentId}`);
   }
 
   private async updatePatientSchedulingPreferences(
@@ -641,7 +640,7 @@ export class AdvancedAppointmentSchedulerService {
 
   private async logSchedulingDecision(appointmentId: string, decision: any): Promise<void> {
     // Log AI scheduling decision for audit
-    this.logger.log(`Scheduling decision for appointment ${appointmentId}`, decision);
+    this.logInfo(`Scheduling decision for appointment ${appointmentId}`, decision);
   }
 
   private getPreparationInstructions(appointmentType: string): string[] {

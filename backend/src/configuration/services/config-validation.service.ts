@@ -7,6 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigValueType, SystemConfig } from '../../database/models/system-config.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Configuration Validation Result Interface
  */
@@ -16,9 +17,7 @@ export interface ConfigurationValidationResult {
 }
 
 @Injectable()
-export class ConfigValidationService {
-  private readonly logger = new Logger(ConfigValidationService.name);
-
+export class ConfigValidationService extends BaseService {
   /**
    * Validate a configuration value against its type and constraints
    */

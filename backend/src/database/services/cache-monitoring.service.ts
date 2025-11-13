@@ -13,6 +13,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryCacheService } from './query-cache.service';
 
+import { BaseService } from '../../common/base';
 export interface ServiceCacheStats {
   serviceName: string;
   totalQueries: number;
@@ -32,9 +33,7 @@ export interface CacheHealthReport {
 }
 
 @Injectable()
-export class CacheMonitoringService {
-  private readonly logger = new Logger(CacheMonitoringService.name);
-
+export class CacheMonitoringService extends BaseService {
   // Track service-level statistics
   private serviceStats = new Map<string, ServiceCacheStats>();
 
@@ -219,7 +218,7 @@ export class CacheMonitoringService {
   resetStatistics(): void {
     this.queryCacheService.resetStats();
     this.serviceStats.clear();
-    this.logger.log('Cache statistics reset');
+    this.logInfo('Cache statistics reset');
   }
 
   /**

@@ -16,9 +16,9 @@ import {
 } from './cache-interfaces';
 import { CACHE_CONSTANTS } from './cache-constants';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class CacheTierManagerService {
-  private readonly logger = new Logger(CacheTierManagerService.name);
+export class CacheTierManagerService extends BaseService {
   private readonly l1Cache = new Map<string, InMemoryCacheEntry>();
   private readonly maxL1Size = CACHE_CONSTANTS.L1_MAX_SIZE;
 
@@ -54,7 +54,7 @@ export class CacheTierManagerService {
         tier: CacheTier.L2,
       };
     } catch (error) {
-      this.logger.error(`L2 cache get failed for key ${key}:`, error);
+      this.logError(`L2 cache get failed for key ${key}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -81,7 +81,7 @@ export class CacheTierManagerService {
         tier: CacheTier.L1,
       };
     } catch (error) {
-      this.logger.error(`L1 cache set failed for key ${key}:`, error);
+      this.logError(`L1 cache set failed for key ${key}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -102,7 +102,7 @@ export class CacheTierManagerService {
         tier: CacheTier.L2,
       };
     } catch (error) {
-      this.logger.error(`L2 cache set failed for key ${key}:`, error);
+      this.logError(`L2 cache set failed for key ${key}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -140,7 +140,7 @@ export class CacheTierManagerService {
         tier: CacheTier.L1,
       };
     } catch (error) {
-      this.logger.error(`L1 promotion failed for key ${key}:`, error);
+      this.logError(`L1 promotion failed for key ${key}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

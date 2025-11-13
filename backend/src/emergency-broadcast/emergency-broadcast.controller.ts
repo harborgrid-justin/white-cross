@@ -18,6 +18,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmergencyBroadcastService } from './emergency-broadcast.service';
+import { BaseController } from '../../common/base';
 import {
   BroadcastStatusResponseDto,
   CancelBroadcastDto,
@@ -33,7 +34,7 @@ import {
 @ApiBearerAuth()
 @Controller('emergency-broadcast')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-export class EmergencyBroadcastController {
+export class EmergencyBroadcastController extends BaseController {
   private readonly logger = new Logger(EmergencyBroadcastController.name);
 
   constructor(

@@ -2,10 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TranslationResult } from './enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class LanguageTranslationService {
-  private readonly logger = new Logger(LanguageTranslationService.name);
-
+export class LanguageTranslationService extends BaseService {
   constructor(private eventEmitter: EventEmitter2) {}
 
   /**
@@ -48,7 +47,7 @@ export class LanguageTranslationService {
         service: 'LanguageTranslationService',
       });
 
-      this.logger.log('Message translated successfully', {
+      this.logInfo('Message translated successfully', {
         targetLanguage,
         textLength: text.length,
         sourceLanguage,
@@ -57,7 +56,7 @@ export class LanguageTranslationService {
       return translatedText;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Translation error', {
+      this.logError('Translation error', {
         error: errorMessage,
         targetLanguage,
         textLength: text?.length,
@@ -81,7 +80,7 @@ export class LanguageTranslationService {
       // For now, simulate detection based on common patterns
       const detectedLanguage = this.performLanguageDetection(text);
 
-      this.logger.log('Language detected', {
+      this.logInfo('Language detected', {
         detectedLanguage,
         textLength: text.length,
       });
@@ -89,7 +88,7 @@ export class LanguageTranslationService {
       return detectedLanguage;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Language detection error', {
+      this.logError('Language detection error', {
         error: errorMessage,
         textLength: text?.length,
       });
@@ -117,7 +116,7 @@ export class LanguageTranslationService {
       const validMessages = messages.filter((msg) => msg && typeof msg === 'string');
 
       if (validMessages.length === 0) {
-        this.logger.warn('No valid messages provided for bulk translation');
+        this.logWarning('No valid messages provided for bulk translation');
         return [];
       }
 
@@ -141,7 +140,7 @@ export class LanguageTranslationService {
         service: 'LanguageTranslationService',
       });
 
-      this.logger.log('Bulk messages translated successfully', {
+      this.logInfo('Bulk messages translated successfully', {
         messageCount: validMessages.length,
         targetLanguage,
         batchCount: Math.ceil(validMessages.length / batchSize),
@@ -150,7 +149,7 @@ export class LanguageTranslationService {
       return translatedMessages;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error('Bulk translation error', {
+      this.logError('Bulk translation error', {
         error: errorMessage,
         targetLanguage,
         messageCount: messages?.length,

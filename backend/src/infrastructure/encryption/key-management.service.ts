@@ -19,10 +19,19 @@
  * - Secure random generation
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { CacheService } from '../cache/cache.service';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   EncryptedKeyStorage,
   IKeyManagementService,
@@ -41,16 +50,22 @@ import {
  */
 @Injectable()
 export class KeyManagementService implements IKeyManagementService {
-  private readonly logger = new Logger(KeyManagementService.name);
   private readonly DEFAULT_KEY_SIZE = 4096;
   private readonly DEFAULT_EXPIRATION = 365 * 24 * 60 * 60; // 1 year
   private readonly PBKDF2_ITERATIONS = 100000;
   private readonly KEY_DERIVATION_LENGTH = 32; // 256 bits
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly cacheService: CacheService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'KeyManagementService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Generate a new RSA key pair for a user
@@ -67,7 +82,7 @@ export class KeyManagementService implements IKeyManagementService {
       const keySize = options.keySize || this.DEFAULT_KEY_SIZE;
       const keyId = options.keyId || this.generateKeyId(options.userId);
 
-      this.logger.log(
+      this.logInfo(
         `Generating RSA-${keySize} key pair for user: ${this.sanitizeUserId(options.userId)}`,
       );
 
@@ -111,7 +126,7 @@ export class KeyManagementService implements IKeyManagementService {
       }
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `Key pair generated successfully in ${duration}ms for user: ${this.sanitizeUserId(options.userId)}`,
       );
 
@@ -122,7 +137,7 @@ export class KeyManagementService implements IKeyManagementService {
         metadata,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Key generation failed for user: ${this.sanitizeUserId(options.userId)}`,
         {
           error: error.message,
@@ -150,19 +165,19 @@ export class KeyManagementService implements IKeyManagementService {
       const cached = await this.cacheService.get<string>(cacheKey);
 
       if (cached) {
-        this.logger.debug(
+        this.logDebug(
           `Public key retrieved from cache for user: ${this.sanitizeUserId(userId)}`,
         );
         return cached;
       }
 
       // In a real implementation, fetch from database here
-      this.logger.debug(
+      this.logDebug(
         `Public key not found for user: ${this.sanitizeUserId(userId)}`,
       );
       return null;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to retrieve public key for user: ${this.sanitizeUserId(userId)}`,
         {
           error: error.message,
@@ -190,7 +205,7 @@ export class KeyManagementService implements IKeyManagementService {
         await this.cacheService.get<EncryptedKeyStorage>(cacheKey);
 
       if (!encryptedStorage) {
-        this.logger.debug(
+        this.logDebug(
           `Private key not found for user: ${this.sanitizeUserId(userId)}`,
         );
         return null;
@@ -202,12 +217,12 @@ export class KeyManagementService implements IKeyManagementService {
         passphrase,
       );
 
-      this.logger.debug(
+      this.logDebug(
         `Private key decrypted for user: ${this.sanitizeUserId(userId)}`,
       );
       return privateKey;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to retrieve/decrypt private key for user: ${this.sanitizeUserId(userId)}`,
         {
           error: error.message,
@@ -249,13 +264,13 @@ export class KeyManagementService implements IKeyManagementService {
       // Store public key (not encrypted)
       await this.cachePublicKey(userId, keyPair.publicKey, keyId);
 
-      this.logger.log(
+      this.logInfo(
         `User keys stored successfully for user: ${this.sanitizeUserId(userId)}`,
       );
 
       return keyId;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to store user keys for user: ${this.sanitizeUserId(userId)}`,
         {
           error: error.message,
@@ -276,7 +291,7 @@ export class KeyManagementService implements IKeyManagementService {
     userId: string,
     options?: KeyRotationOptions,
   ): Promise<KeyGenerationResult> {
-    this.logger.log(`Rotating keys for user: ${this.sanitizeUserId(userId)}`, {
+    this.logInfo(`Rotating keys for user: ${this.sanitizeUserId(userId)}`, {
       reason: options?.reason || 'scheduled_rotation',
     });
 
@@ -301,13 +316,13 @@ export class KeyManagementService implements IKeyManagementService {
         await this.revokeKey(currentKeyId, 'rotated');
       }
 
-      this.logger.log(
+      this.logInfo(
         `Key rotation completed for user: ${this.sanitizeUserId(userId)}`,
       );
 
       return result;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Key rotation failed for user: ${this.sanitizeUserId(userId)}`,
         {
           error: error.message,
@@ -331,7 +346,7 @@ export class KeyManagementService implements IKeyManagementService {
    */
   async revokeUserKeys(userId: string, reason: string): Promise<boolean> {
     try {
-      this.logger.warn(
+      this.logWarning(
         `Revoking keys for user: ${this.sanitizeUserId(userId)}`,
         { reason },
       );
@@ -346,13 +361,13 @@ export class KeyManagementService implements IKeyManagementService {
       await this.cacheService.delete(this.buildCacheKey('private', userId));
       await this.cacheService.delete(this.buildCacheKey('metadata', userId));
 
-      this.logger.log(
+      this.logInfo(
         `Keys revoked successfully for user: ${this.sanitizeUserId(userId)}`,
       );
 
       return true;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Key revocation failed for user: ${this.sanitizeUserId(userId)}`,
         {
           error: error.message,
@@ -373,7 +388,7 @@ export class KeyManagementService implements IKeyManagementService {
       const cacheKey = `encryption:metadata:${keyId}`;
       return await this.cacheService.get<KeyMetadata>(cacheKey);
     } catch (error) {
-      this.logger.error(`Failed to retrieve key metadata for key: ${keyId}`, {
+      this.logError(`Failed to retrieve key metadata for key: ${keyId}`, {
         error: error.message,
       });
       return null;
@@ -412,7 +427,7 @@ export class KeyManagementService implements IKeyManagementService {
 
       return encrypted.toString('base64');
     } catch (error) {
-      this.logger.error('Public key encryption failed', {
+      this.logError('Public key encryption failed', {
         error: error.message,
       });
       throw new Error('Failed to encrypt with public key');
@@ -443,7 +458,7 @@ export class KeyManagementService implements IKeyManagementService {
 
       return decrypted.toString('utf8');
     } catch (error) {
-      this.logger.error('Private key decryption failed', {
+      this.logError('Private key decryption failed', {
         error: error.message,
       });
       throw new Error('Failed to decrypt with private key');
@@ -626,7 +641,7 @@ export class KeyManagementService implements IKeyManagementService {
         namespace: 'encryption',
       });
 
-      this.logger.warn(`Key revoked: ${keyId}`, { reason });
+      this.logWarning(`Key revoked: ${keyId}`, { reason });
     }
   }
 

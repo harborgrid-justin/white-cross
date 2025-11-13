@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags }
 import { ClinicalProtocolService } from '../services/clinical-protocol.service';
 import { ProtocolFiltersDto } from '../dto/protocol/protocol-filters.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Clinical - Protocols')
 @ApiBearerAuth()
 @Controller('clinical/protocols')
-export class ClinicalProtocolQueryController {
+export class ClinicalProtocolQueryController extends BaseController {
   constructor(private readonly protocolService: ClinicalProtocolService) {}
 
   @Get()

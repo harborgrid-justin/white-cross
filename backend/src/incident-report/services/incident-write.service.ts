@@ -14,6 +14,7 @@ import { UpdateIncidentReportDto } from '../dto/update-incident-report.dto';
 import { IncidentNotificationService } from './incident-notification.service';
 import { IncidentValidationService } from './incident-validation.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Incident Write Service
  *
@@ -22,9 +23,7 @@ import { IncidentValidationService } from './incident-validation.service';
  * - Update existing incident report
  */
 @Injectable()
-export class IncidentWriteService {
-  private readonly logger = new Logger(IncidentWriteService.name);
-
+export class IncidentWriteService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
@@ -37,7 +36,7 @@ export class IncidentWriteService {
    * Create new incident report
    */
   async createIncidentReport(dto: CreateIncidentReportDto) {
-    this.logger.log(`Creating incident report for student: ${dto.studentId}`);
+    this.logInfo(`Creating incident report for student: ${dto.studentId}`);
 
     // Validate incident report data
     await this.validationService.validateIncidentReport(dto);
@@ -75,7 +74,7 @@ export class IncidentWriteService {
    * Update existing incident report
    */
   async updateIncidentReport(id: string, dto: UpdateIncidentReportDto) {
-    this.logger.log(`Updating incident report: ${id}`);
+    this.logInfo(`Updating incident report: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {

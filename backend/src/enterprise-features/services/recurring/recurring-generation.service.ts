@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RecurringTemplate, RecurrenceFrequency } from '../../enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 /**
  * Generation Service
  * Handles appointment generation from recurring templates
  */
 @Injectable()
-export class RecurringGenerationService {
-  private readonly logger = new Logger(RecurringGenerationService.name);
-
+export class RecurringGenerationService extends BaseService {
   /**
    * Generate upcoming appointments from all active templates
    */
@@ -41,7 +40,7 @@ export class RecurringGenerationService {
       // Sort by date
       upcomingAppointments.sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime());
 
-      this.logger.log('Upcoming appointments generated', {
+      this.logInfo('Upcoming appointments generated', {
         templateCount: templates.length,
         appointmentCount: upcomingAppointments.length,
         daysAhead,
@@ -49,7 +48,7 @@ export class RecurringGenerationService {
 
       return upcomingAppointments;
     } catch (error) {
-      this.logger.error('Error generating upcoming appointments', {
+      this.logError('Error generating upcoming appointments', {
         error: error instanceof Error ? error.message : String(error),
         daysAhead,
       });

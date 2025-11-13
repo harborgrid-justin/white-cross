@@ -20,6 +20,13 @@
 import { Inject, Injectable, OnModuleDestroy, Optional } from '@nestjs/common';
 import { AppConfigService } from '../../config/app-config.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Cache entry structure with metadata
  */
@@ -79,7 +86,16 @@ export interface CacheConfig {
  * @example
  * ```typescript
  * // In a service
- * constructor(private readonly cacheService: CacheService) {}
+ * constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly cacheService: CacheService
+  ) {
+    super({
+      serviceName: 'CacheService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
  *
  * async getStudent(id: string): Promise<Student> {
  *   const cacheKey = `student:${id}`;

@@ -6,7 +6,9 @@
  * for detailed performance analysis and monitoring.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { PerformanceEntry } from './interfaces/metrics.interface';
 
 /**
@@ -26,9 +28,7 @@ import { PerformanceEntry } from './interfaces/metrics.interface';
  * ```
  */
 @Injectable()
-export class PerformanceTrackingService {
-  private readonly logger = new Logger(PerformanceTrackingService.name);
-
+export class PerformanceTrackingService extends BaseService {
   // Performance tracking storage
   private performanceHistory: PerformanceEntry[] = [];
   private readonly maxPerformanceEntries = 1000;
@@ -180,7 +180,7 @@ export class PerformanceTrackingService {
    */
   clearPerformance(): void {
     this.performanceHistory = [];
-    this.logger.log('Performance history cleared');
+    this.logInfo('Performance history cleared');
   }
 
   /**
@@ -198,7 +198,7 @@ export class PerformanceTrackingService {
     });
 
     const removedCount = initialLength - this.performanceHistory.length;
-    this.logger.log(`Cleared ${removedCount} old performance entries`);
+    this.logInfo(`Cleared ${removedCount} old performance entries`);
   }
 
   /**
@@ -226,7 +226,7 @@ export class PerformanceTrackingService {
       this.performanceHistory = this.performanceHistory.slice(-max);
     }
 
-    this.logger.log(
+    this.logInfo(
       `Maximum performance entries changed from ${oldMax} to ${max}`,
     );
   }

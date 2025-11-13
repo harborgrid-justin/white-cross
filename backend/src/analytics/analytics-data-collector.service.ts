@@ -11,6 +11,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
+import { BaseService } from '../../common/base';
 import {
   HealthRecord,
   MedicationLog,
@@ -42,9 +43,7 @@ import {
 } from './analytics-constants';
 
 @Injectable()
-export class AnalyticsDataCollectorService {
-  private readonly logger = new Logger(AnalyticsDataCollectorService.name);
-
+export class AnalyticsDataCollectorService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
@@ -124,7 +123,7 @@ export class AnalyticsDataCollectorService {
 
       return { success: true, data: healthMetrics };
     } catch (error) {
-      this.logger.error(`Failed to collect health metrics for school ${schoolId}`, error);
+      this.logError(`Failed to collect health metrics for school ${schoolId}`, error);
       return {
         success: false,
         error: `Failed to collect health metrics: ${error.message}`,
@@ -199,7 +198,7 @@ export class AnalyticsDataCollectorService {
 
       return { success: true, data: studentMetrics };
     } catch (error) {
-      this.logger.error(`Failed to collect student health metrics for ${studentId}`, error);
+      this.logError(`Failed to collect student health metrics for ${studentId}`, error);
       return {
         success: false,
         error: `Failed to collect student metrics: ${error.message}`,
@@ -259,7 +258,7 @@ export class AnalyticsDataCollectorService {
 
       return { success: true, data: medicationAnalytics };
     } catch (error) {
-      this.logger.error(`Failed to collect medication analytics for school ${schoolId}`, error);
+      this.logError(`Failed to collect medication analytics for school ${schoolId}`, error);
       return {
         success: false,
         error: `Failed to collect medication analytics: ${error.message}`,
@@ -323,7 +322,7 @@ export class AnalyticsDataCollectorService {
 
       return { success: true, data: appointmentAnalytics };
     } catch (error) {
-      this.logger.error(`Failed to collect appointment analytics for school ${schoolId}`, error);
+      this.logError(`Failed to collect appointment analytics for school ${schoolId}`, error);
       return {
         success: false,
         error: `Failed to collect appointment analytics: ${error.message}`,
@@ -379,7 +378,7 @@ export class AnalyticsDataCollectorService {
 
       return { success: true, data: incidentAnalytics };
     } catch (error) {
-      this.logger.error(`Failed to collect incident analytics for school ${schoolId}`, error);
+      this.logError(`Failed to collect incident analytics for school ${schoolId}`, error);
       return {
         success: false,
         error: `Failed to collect incident analytics: ${error.message}`,

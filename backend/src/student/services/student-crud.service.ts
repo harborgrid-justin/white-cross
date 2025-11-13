@@ -11,7 +11,7 @@
  * - Basic validation
  */
 
-import { ConflictException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize, Transaction } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -38,8 +38,6 @@ import { PaginatedResponse } from '../types';
  */
 @Injectable()
 export class StudentCrudService extends BaseService {
-  protected readonly logger = new Logger(StudentCrudService.name);
-
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,

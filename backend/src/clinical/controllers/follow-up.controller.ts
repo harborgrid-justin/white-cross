@@ -6,10 +6,11 @@ import { UpdateFollowUpDto } from '../dto/follow-up/update-follow-up.dto';
 import { CompleteFollowUpDto } from '../dto/follow-up/complete-follow-up.dto';
 import { FollowUpFiltersDto } from '../dto/follow-up/follow-up-filters.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Clinical - Follow-up Appointments')
 @ApiBearerAuth()
 @Controller('clinical/follow-ups')
-export class FollowUpController {
+export class FollowUpController extends BaseController {
   constructor(private readonly followUpService: FollowUpService) {}
 
   @Post()

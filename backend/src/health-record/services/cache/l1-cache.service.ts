@@ -10,12 +10,11 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ComplianceLevel } from '../../interfaces/health-record-types';
-import { InMemoryCacheEntry, CacheTier, CacheOperationResult } from './cache-types';
+import { InMemoryCacheEntry, CacheTier, CacheOperationResult } from './cache-interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class L1CacheService {
-  private readonly logger = new Logger(L1CacheService.name);
-
+export class L1CacheService extends BaseService {
   // L1 Cache: In-memory storage
   private readonly l1Cache = new Map<string, InMemoryCacheEntry>();
   private readonly maxL1Size = 1000; // Maximum entries in L1
@@ -95,7 +94,7 @@ export class L1CacheService {
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
-      this.logger.error(`L1 cache set failed for key ${key}:`, error);
+      this.logError(`L1 cache set failed for key ${key}:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

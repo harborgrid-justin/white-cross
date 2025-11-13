@@ -10,10 +10,9 @@ import { AuthenticatedSocket } from '../interfaces';
 import { ConversationEventDto } from '../dto';
 import { RateLimiterService } from './rate-limiter.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ConversationHandlerService {
-  private readonly logger = new Logger(ConversationHandlerService.name);
-
+export class ConversationHandlerService extends BaseService {
   constructor(private readonly rateLimiter: RateLimiterService) {}
 
   /**
@@ -66,7 +65,7 @@ export class ConversationHandlerService {
       const room = conversationDto.getRoomId();
       await client.join(room);
 
-      this.logger.log(`User ${user.userId} joined conversation ${conversationDto.conversationId}`);
+      this.logInfo(`User ${user.userId} joined conversation ${conversationDto.conversationId}`);
 
       // Notify other participants in the room
       client.to(room).emit('conversation:join', conversationDto.toPayload());
@@ -77,7 +76,7 @@ export class ConversationHandlerService {
         timestamp: conversationDto.timestamp,
       });
     } catch (error) {
-      this.logger.error(`Conversation join error for user ${user.userId}:`, error);
+      this.logError(`Conversation join error for user ${user.userId}:`, error);
       client.emit('error', {
         type: 'CONVERSATION_JOIN_FAILED',
         message: (error as Error).message || 'Failed to join conversation',
@@ -126,7 +125,7 @@ export class ConversationHandlerService {
 
       await client.leave(room);
 
-      this.logger.log(`User ${user.userId} left conversation ${conversationDto.conversationId}`);
+      this.logInfo(`User ${user.userId} left conversation ${conversationDto.conversationId}`);
 
       // Send confirmation to the leaving user
       client.emit('conversation:left', {
@@ -134,7 +133,7 @@ export class ConversationHandlerService {
         timestamp: conversationDto.timestamp,
       });
     } catch (error) {
-      this.logger.error(`Conversation leave error for user ${user.userId}:`, error);
+      this.logError(`Conversation leave error for user ${user.userId}:`, error);
       client.emit('error', {
         type: 'CONVERSATION_LEAVE_FAILED',
         message: (error as Error).message || 'Failed to leave conversation',

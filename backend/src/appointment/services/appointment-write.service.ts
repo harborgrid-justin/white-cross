@@ -34,6 +34,7 @@ import {
 } from '../../database/models/appointment-waitlist.model';
 import { User } from '../../database/models/user.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Appointment Write Service
  *
@@ -43,9 +44,7 @@ import { User } from '../../database/models/user.model';
  * - Cancel appointment
  */
 @Injectable()
-export class AppointmentWriteService {
-  private readonly logger = new Logger(AppointmentWriteService.name);
-
+export class AppointmentWriteService extends BaseService {
   constructor(
     @InjectConnection()
     private readonly sequelize: Sequelize,
@@ -66,7 +65,7 @@ export class AppointmentWriteService {
    */
 
   async createAppointment(createDto: CreateAppointmentDto): Promise<AppointmentEntity> {
-    this.logger.log(`Creating appointment for student: ${createDto.studentId}`);
+    this.logInfo(`Creating appointment for student: ${createDto.studentId}`);
 
     const transaction = await this.sequelize.transaction();
 
@@ -119,7 +118,7 @@ export class AppointmentWriteService {
       return this.mapToEntity(appointment);
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(
+      this.logError(
         `Error creating appointment: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );
@@ -131,7 +130,7 @@ export class AppointmentWriteService {
    * Update existing appointment
    */
   async updateAppointment(id: string, updateDto: UpdateAppointmentDto): Promise<AppointmentEntity> {
-    this.logger.log(`Updating appointment: ${id}`);
+    this.logInfo(`Updating appointment: ${id}`);
 
     const transaction = await this.sequelize.transaction();
 
@@ -180,7 +179,7 @@ export class AppointmentWriteService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
+      this.logError(
         `Error updating appointment: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );
@@ -192,7 +191,7 @@ export class AppointmentWriteService {
    * Cancel appointment
    */
   async cancelAppointment(id: string, reason?: string): Promise<AppointmentEntity> {
-    this.logger.log(`Cancelling appointment: ${id}`);
+    this.logInfo(`Cancelling appointment: ${id}`);
 
     const transaction = await this.sequelize.transaction();
 
@@ -245,7 +244,7 @@ export class AppointmentWriteService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
+      this.logError(
         `Error cancelling appointment: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );
@@ -389,7 +388,7 @@ export class AppointmentWriteService {
       await waitlistEntries[0].update({ status: WaitlistStatus.NOTIFIED }, { transaction });
 
       // TODO: Send notification to student
-      this.logger.log(`Notified student ${waitlistEntries[0].studentId} about available slot`);
+      this.logInfo(`Notified student ${waitlistEntries[0].studentId} about available slot`);
     }
   }
 

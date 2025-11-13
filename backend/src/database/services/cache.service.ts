@@ -7,16 +7,32 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheConfig, CacheStats, ICacheManager } from '../interfaces/cache/cache-manager.interface';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class CacheService implements ICacheManager {
-  private readonly logger = new Logger(CacheService.name);
   private readonly cache: Map<string, { value: any; expiry: number }>;
   private stats: { hits: number; misses: number };
   private readonly config: CacheConfig;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly configService: ConfigService
+  ) {
+    super({
+      serviceName: 'CacheService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.cache = new Map();
-    this.stats = { hits: 0, misses: 0 };
+    this.stats = { hits: 0, misses: 0
+  };
 
     // Load cache configuration
     this.config = {
@@ -38,7 +54,7 @@ export class CacheService implements ICacheManager {
       ),
     };
 
-    this.logger.log('Cache service initialized (In-Memory implementation)');
+    this.logInfo('Cache service initialized (In-Memory implementation)');
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -94,7 +110,7 @@ export class CacheService implements ICacheManager {
     }
 
     keysToDelete.forEach((key) => this.cache.delete(key));
-    this.logger.debug(
+    this.logDebug(
       `Deleted ${keysToDelete.length} keys matching pattern: ${pattern}`,
     );
   }
@@ -131,7 +147,7 @@ export class CacheService implements ICacheManager {
   async clear(): Promise<void> {
     this.cache.clear();
     this.stats = { hits: 0, misses: 0 };
-    this.logger.warn('Cache cleared');
+    this.logWarning('Cache cleared');
   }
 
   async getStats(): Promise<CacheStats> {

@@ -8,7 +8,9 @@
  * CDC Compliance: CVX codes, dose tracking, VIS documentation, compliance monitoring
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectModel } from '@nestjs/sequelize';
 import { Vaccination   } from "../../database/models";
 import { Student   } from "../../database/models";
@@ -34,9 +36,7 @@ import {
 } from './vaccination.dto';
 
 @Injectable()
-export class VaccinationService {
-  private readonly logger = new Logger(VaccinationService.name);
-
+export class VaccinationService extends BaseService {
   constructor(
     @InjectModel(Vaccination)
     private readonly vaccinationModel: typeof Vaccination,
@@ -51,7 +51,7 @@ export class VaccinationService {
    * Add vaccination with CVX validation, dose tracking, and audit logging
    */
   async addVaccination(data: CreateVaccinationDto): Promise<Vaccination> {
-    this.logger.log(`Adding vaccination for student ${data.studentId}`);
+    this.logInfo(`Adding vaccination for student ${data.studentId}`);
 
     const student = await this.studentModel.findByPk(data.studentId);
     if (!student) {
@@ -59,7 +59,7 @@ export class VaccinationService {
     }
 
     if (data.cvxCode && !this.complianceHelper.validateCVXCode(data.cvxCode)) {
-      this.logger.warn(`Invalid CVX code provided: ${data.cvxCode}`);
+      this.logWarning(`Invalid CVX code provided: ${data.cvxCode}`);
     }
 
     const seriesComplete =
@@ -96,12 +96,12 @@ export class VaccinationService {
       { include: ['student'] },
     );
 
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Vaccination ${data.vaccineName} (CVX: ${data.cvxCode || 'N/A'}) for student ${student.firstName} ${student.lastName}, dose ${data.doseNumber || 'N/A'}/${data.totalDoses || 'N/A'}`,
     );
 
     if (data.adverseEvents || data.reactions) {
-      this.logger.warn(
+      this.logWarning(
         `Adverse event reported for vaccination ${vaccinationWithRelations?.id}: ${data.reactions || JSON.stringify(data.adverseEvents)}`,
       );
     }
@@ -128,7 +128,7 @@ export class VaccinationService {
       order: [['administrationDate', 'DESC']],
     });
 
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Vaccination history retrieved for student ${studentId} (${student.firstName} ${student.lastName}), count: ${vaccinations.length}`,
     );
 
@@ -158,7 +158,7 @@ export class VaccinationService {
     }
 
     if (data.cvxCode && !this.complianceHelper.validateCVXCode(data.cvxCode)) {
-      this.logger.warn(`Invalid CVX code provided: ${data.cvxCode}`);
+      this.logWarning(`Invalid CVX code provided: ${data.cvxCode}`);
     }
 
     if (data.doseNumber !== undefined || data.totalDoses !== undefined) {
@@ -214,7 +214,7 @@ export class VaccinationService {
       throw new Error('Failed to reload vaccination after update');
     }
 
-    this.logger.log(
+    this.logInfo(
       `PHI Modified: Vaccination ${vaccinationWithRelations.vaccineName} updated for student ${vaccinationWithRelations.student?.firstName ?? 'Unknown'} ${vaccinationWithRelations.student?.lastName ?? 'Unknown'}`,
     );
 
@@ -235,7 +235,7 @@ export class VaccinationService {
 
     await vaccination.destroy();
 
-    this.logger.warn(
+    this.logWarning(
       `Vaccination deleted: ${vaccination.vaccineName} for ${vaccination.student?.firstName ?? 'Unknown'} ${vaccination.student?.lastName ?? 'Unknown'}`,
     );
 
@@ -273,7 +273,7 @@ export class VaccinationService {
   async batchImport(
     vaccinations: CreateVaccinationDto[],
   ): Promise<BatchImportResult> {
-    this.logger.log(`Batch importing ${vaccinations.length} vaccinations`);
+    this.logInfo(`Batch importing ${vaccinations.length} vaccinations`);
 
     const results: BatchImportResult = {
       successCount: 0,
@@ -294,11 +294,11 @@ export class VaccinationService {
         results.errors.push(
           `Failed to import vaccination for student ${vaccinationData.studentId}: ${errorMessage}`,
         );
-        this.logger.error(`Batch import error: ${errorMessage}`);
+        this.logError(`Batch import error: ${errorMessage}`);
       }
     }
 
-    this.logger.log(
+    this.logInfo(
       `Batch import completed: ${results.successCount} successful, ${results.errorCount} failed`,
     );
 

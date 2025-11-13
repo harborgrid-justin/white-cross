@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { SyncEntityType } from '../enums';
 import { IEntitySyncService } from './offline-sync-types.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * Entity Registry Service
  * Manages registration and retrieval of entity services for sync operations
@@ -18,8 +19,7 @@ import { IEntitySyncService } from './offline-sync-types.interface';
  * ```
  */
 @Injectable()
-export class OfflineSyncEntityRegistryService {
-  private readonly logger = new Logger(OfflineSyncEntityRegistryService.name);
+export class OfflineSyncEntityRegistryService extends BaseService {
   private readonly entityServiceRegistry: Map<
     SyncEntityType,
     IEntitySyncService
@@ -41,7 +41,7 @@ export class OfflineSyncEntityRegistryService {
     service: IEntitySyncService,
   ): void {
     this.entityServiceRegistry.set(entityType, service);
-    this.logger.log(`Registered entity service for ${entityType}`);
+    this.logInfo(`Registered entity service for ${entityType}`);
   }
 
   /**
@@ -87,6 +87,6 @@ export class OfflineSyncEntityRegistryService {
    */
   clearRegistry(): void {
     this.entityServiceRegistry.clear();
-    this.logger.log('Entity service registry cleared');
+    this.logInfo('Entity service registry cleared');
   }
 }

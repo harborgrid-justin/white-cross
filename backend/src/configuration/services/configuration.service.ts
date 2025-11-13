@@ -32,13 +32,12 @@ import { ConfigHistoryService } from './services/config-history.service';
 import { ConfigImportExportService } from './services/config-import-export.service';
 import { ConfigStatisticsService } from './services/config-statistics.service';
 
+import { BaseService } from '../../common/base';
 // Re-export validation result interface
 export { ConfigurationValidationResult } from './services/config-validation.service';
 
 @Injectable()
-export class ConfigurationService {
-  private readonly logger = new Logger(ConfigurationService.name);
-
+export class ConfigurationService extends BaseService {
   constructor(
     private readonly configCrudService: ConfigCrudService,
     private readonly configValidationService: ConfigValidationService,
@@ -134,12 +133,12 @@ export class ConfigurationService {
         throw new NotFoundException(`Configuration ${key} not found after update`);
       }
 
-      this.logger.log(`Configuration updated: ${key} = ${updateData.value} by ${updateData.changedBy}`);
+      this.logInfo(`Configuration updated: ${key} = ${updateData.value} by ${updateData.changedBy}`);
       return updatedConfig;
     } catch (error) {
       // Rollback transaction on error
       await this.configHistoryService.rollbackTransaction(transaction);
-      this.logger.error(`Error updating configuration ${key}:`, error);
+      this.logError(`Error updating configuration ${key}:`, error);
       throw error;
     }
   }
@@ -165,12 +164,12 @@ export class ConfigurationService {
         );
         results.push(result);
       } catch (error) {
-        this.logger.error(`Error updating ${update.key}:`, error);
+        this.logError(`Error updating ${update.key}:`, error);
         results.push({ key: update.key, error: (error as Error).message });
       }
     }
 
-    this.logger.log(`Bulk update completed: ${results.length} configurations processed`);
+    this.logInfo(`Bulk update completed: ${results.length} configurations processed`);
     return results;
   }
 
@@ -209,10 +208,10 @@ export class ConfigurationService {
         scopeId,
       );
 
-      this.logger.log(`Configuration reset to default: ${key}`);
+      this.logInfo(`Configuration reset to default: ${key}`);
       return result;
     } catch (error) {
-      this.logger.error(`Error resetting configuration ${key}:`, error);
+      this.logError(`Error resetting configuration ${key}:`, error);
       throw error;
     }
   }

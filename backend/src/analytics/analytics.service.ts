@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   AnalyticsDashboardService,
   AnalyticsReportService,
@@ -7,6 +7,7 @@ import {
   AnalyticsMedicationOrchestratorService,
   AnalyticsAppointmentOrchestratorService,
 } from '@/analytics/services';
+import { BaseService } from '../common/base/base.service';
 import { AnalyticsGenerateCustomReportDto } from './dto/custom-reports.dto';
 import { GetAdminDashboardQueryDto } from './dto/dashboard.dto';
 import { GetAppointmentTrendsQueryDto } from './dto/appointment-analytics.dto';
@@ -29,9 +30,7 @@ import { GetStudentHealthMetricsQueryDto } from './dto/health-metrics.dto';
  * Delegates to specialized services for different analytics domains
  */
 @Injectable()
-export class AnalyticsService {
-  private readonly logger = new Logger(AnalyticsService.name);
-
+export class AnalyticsService extends BaseService {
   constructor(
     private readonly dashboardService: AnalyticsDashboardService,
     private readonly reportService: AnalyticsReportService,
@@ -39,7 +38,9 @@ export class AnalyticsService {
     private readonly incidentService: AnalyticsIncidentOrchestratorService,
     private readonly medicationService: AnalyticsMedicationOrchestratorService,
     private readonly appointmentService: AnalyticsAppointmentOrchestratorService,
-  ) {}
+  ) {
+    super('AnalyticsService');
+  }
 
   /**
    * Get module metadata

@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { AuditLog, AuditSeverity } from '../models/audit-log.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Interface for audit statistics
  */
@@ -32,9 +33,7 @@ export interface AuditStatistics {
  * - Aggregation by action, entity type, user, severity, compliance type
  */
 @Injectable()
-export class AuditStatisticsService {
-  private readonly logger = new Logger(AuditStatisticsService.name);
-
+export class AuditStatisticsService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -158,7 +157,7 @@ export class AuditStatisticsService {
         byComplianceType,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to get audit statistics: ${error.message}`,
         error.stack,
       );

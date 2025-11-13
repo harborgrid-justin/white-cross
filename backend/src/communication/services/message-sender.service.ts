@@ -8,6 +8,7 @@ import { EncryptionService } from '../../infrastructure/encryption/encryption.se
 import { QueueIntegrationHelper } from '../helpers/queue-integration.helper';
 import { SendDirectMessageDto } from '../dto/send-direct-message.dto';
 import { SendGroupMessageDto } from '../dto/send-group-message.dto';
+import { BaseService } from '../../common/base';
 import {
   SendDirectMessageResponse,
   SendGroupMessageResponse,
@@ -26,9 +27,7 @@ import {
  * - Manage conversation creation/lookup
  */
 @Injectable()
-export class MessageSenderService {
-  private readonly logger = new Logger(MessageSenderService.name);
-
+export class MessageSenderService extends BaseService {
   constructor(
     @InjectModel(Message) private messageModel: typeof Message,
     @InjectModel(Conversation) private conversationModel: typeof Conversation,
@@ -46,7 +45,7 @@ export class MessageSenderService {
     senderId: string,
     tenantId: string,
   ): Promise<SendDirectMessageResponse> {
-    this.logger.log(`Sending direct message from ${senderId} to ${dto.recipientId}`);
+    this.logInfo(`Sending direct message from ${senderId} to ${dto.recipientId}`);
 
     // Validate recipient exists
     this.validateUser(dto.recipientId);
@@ -74,7 +73,7 @@ export class MessageSenderService {
     senderId: string,
     tenantId: string,
   ): Promise<SendGroupMessageResponse> {
-    this.logger.log(`Sending group message to conversation ${dto.conversationId}`);
+    this.logInfo(`Sending group message to conversation ${dto.conversationId}`);
 
     // Get conversation and verify it exists
     const conversation = await this.conversationModel.findOne({
@@ -191,7 +190,7 @@ export class MessageSenderService {
     });
 
     const jobIds = Object.keys(queueResult.jobIds).join(', ');
-    this.logger.log(
+    this.logInfo(
       `Message ${message.id} queued for delivery. Jobs: ${jobIds}`,
     );
 
@@ -299,6 +298,6 @@ export class MessageSenderService {
   private validateUser(userId: string): void {
     // TODO: Implement user validation via UserService
     // For now, assume user exists
-    this.logger.debug(`Validating user ${userId}`);
+    this.logDebug(`Validating user ${userId}`);
   }
 }

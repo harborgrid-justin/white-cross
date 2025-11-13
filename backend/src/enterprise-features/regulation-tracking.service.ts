@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RegulationUpdate } from './enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class RegulationTrackingService {
-  private readonly logger = new Logger(RegulationTrackingService.name);
+export class RegulationTrackingService extends BaseService {
   private regulationUpdates: RegulationUpdate[] = [];
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -48,13 +48,13 @@ export class RegulationTrackingService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Regulation changes tracked', {
+      this.logInfo('Regulation changes tracked', {
         state,
         updatesFound: mockUpdates.length,
       });
       return mockUpdates;
     } catch (error) {
-      this.logger.error('Error tracking regulation changes', {
+      this.logError('Error tracking regulation changes', {
         error,
         state,
       });
@@ -91,13 +91,13 @@ export class RegulationTrackingService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Regulation impact assessed', {
+      this.logInfo('Regulation impact assessed', {
         regulationId,
         impactsCount: impacts.length,
       });
       return impacts;
     } catch (error) {
-      this.logger.error('Error assessing regulation impact', {
+      this.logError('Error assessing regulation impact', {
         error,
         regulationId,
       });
@@ -114,13 +114,13 @@ export class RegulationTrackingService {
 
       const stateUpdates = this.regulationUpdates.filter((update) => update.state === state);
 
-      this.logger.log('Regulation updates retrieved by state', {
+      this.logInfo('Regulation updates retrieved by state', {
         state,
         count: stateUpdates.length,
       });
       return stateUpdates;
     } catch (error) {
-      this.logger.error('Error retrieving regulation updates by state', {
+      this.logError('Error retrieving regulation updates by state', {
         error,
         state,
       });
@@ -138,14 +138,14 @@ export class RegulationTrackingService {
       const update = this.regulationUpdates.find((u) => u.id === regulationId);
 
       if (update) {
-        this.logger.log('Regulation update retrieved', { regulationId });
+        this.logInfo('Regulation update retrieved', { regulationId });
       } else {
-        this.logger.warn('Regulation update not found', { regulationId });
+        this.logWarning('Regulation update not found', { regulationId });
       }
 
       return update || null;
     } catch (error) {
-      this.logger.error('Error retrieving regulation update', {
+      this.logError('Error retrieving regulation update', {
         error,
         regulationId,
       });
@@ -158,12 +158,12 @@ export class RegulationTrackingService {
    */
   async getAllRegulationUpdates(): Promise<RegulationUpdate[]> {
     try {
-      this.logger.log('All regulation updates retrieved', {
+      this.logInfo('All regulation updates retrieved', {
         count: this.regulationUpdates.length,
       });
       return [...this.regulationUpdates];
     } catch (error) {
-      this.logger.error('Error retrieving all regulation updates', error);
+      this.logError('Error retrieving all regulation updates', error);
       return [];
     }
   }
@@ -180,13 +180,13 @@ export class RegulationTrackingService {
 
       const filteredUpdates = this.regulationUpdates.filter((update) => update.status === status);
 
-      this.logger.log('Regulation updates retrieved by status', {
+      this.logInfo('Regulation updates retrieved by status', {
         status,
         count: filteredUpdates.length,
       });
       return filteredUpdates;
     } catch (error) {
-      this.logger.error('Error retrieving regulation updates by status', {
+      this.logError('Error retrieving regulation updates by status', {
         error,
         status,
       });
@@ -205,13 +205,13 @@ export class RegulationTrackingService {
         (update) => update.effectiveDate <= cutoffDate && update.status !== 'implemented',
       );
 
-      this.logger.log('Upcoming regulation changes retrieved', {
+      this.logInfo('Upcoming regulation changes retrieved', {
         days,
         count: upcomingChanges.length,
       });
       return upcomingChanges;
     } catch (error) {
-      this.logger.error('Error retrieving upcoming changes', {
+      this.logError('Error retrieving upcoming changes', {
         error,
         days,
       });
@@ -242,13 +242,13 @@ export class RegulationTrackingService {
         timestamp: new Date(),
       });
 
-      this.logger.log('Regulation marked as implemented', {
+      this.logInfo('Regulation marked as implemented', {
         regulationId,
         implementedBy,
       });
       return true;
     } catch (error) {
-      this.logger.error('Error marking regulation as implemented', {
+      this.logError('Error marking regulation as implemented', {
         error,
         regulationId,
         implementedBy,

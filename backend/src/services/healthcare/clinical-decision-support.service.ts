@@ -7,6 +7,7 @@ import { Medication   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 import { Student   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Clinical Decision Support Service
  *
@@ -25,9 +26,7 @@ import { Student   } from "../../database/models";
  * @hipaa-requirement Clinical decision support systems
  */
 @Injectable()
-export class ClinicalDecisionSupportService {
-  private readonly logger = new Logger(ClinicalDecisionSupportService.name);
-
+export class ClinicalDecisionSupportService extends BaseService {
   constructor(
     @InjectModel(ClinicalProtocol)
     private readonly clinicalProtocolModel: typeof ClinicalProtocol,

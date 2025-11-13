@@ -5,6 +5,7 @@ import { AuditLog } from '@/database';
 import { IPaginatedResult } from '../interfaces/paginated-result.interface';
 import { AuditLogFilters, AuditLogSearchCriteria } from '../types/audit.types';
 
+import { BaseService } from '../../common/base';
 /**
  * AuditQueryService - Advanced querying and filtering for audit logs
  *
@@ -12,9 +13,7 @@ import { AuditLogFilters, AuditLogSearchCriteria } from '../types/audit.types';
  * Optimized for performance with proper indexing and pagination support.
  */
 @Injectable()
-export class AuditQueryService {
-  private readonly logger = new Logger(AuditQueryService.name);
-
+export class AuditQueryService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -68,7 +67,7 @@ export class AuditQueryService {
         },
       };
     } catch (error) {
-      this.logger.error('Error fetching audit logs:', error);
+      this.logError('Error fetching audit logs:', error);
       throw new Error('Failed to fetch audit logs');
     }
   }
@@ -111,7 +110,7 @@ export class AuditQueryService {
         },
       };
     } catch (error) {
-      this.logger.error('Error fetching entity audit history:', error);
+      this.logError('Error fetching entity audit history:', error);
       throw new Error('Failed to fetch entity audit history');
     }
   }
@@ -149,7 +148,7 @@ export class AuditQueryService {
         },
       };
     } catch (error) {
-      this.logger.error('Error fetching user audit history:', error);
+      this.logError('Error fetching user audit history:', error);
       throw new Error('Failed to fetch user audit history');
     }
   }
@@ -191,7 +190,7 @@ export class AuditQueryService {
         },
       };
     } catch (error) {
-      this.logger.error('Error searching audit logs:', error);
+      this.logError('Error searching audit logs:', error);
       throw new Error('Failed to search audit logs');
     }
   }

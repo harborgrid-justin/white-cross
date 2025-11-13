@@ -7,6 +7,7 @@
 import { Sequelize, QueryTypes } from 'sequelize';
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '../../common/base';
 export interface ConnectionMetrics { active: number; idle: number; waiting: number; total: number; maxConnections: number; }
 export interface QueryMetrics { query: string; avgTime: number; maxTime: number; minTime: number; calls: number; rows: number; }
 export interface ResourceMetrics { cpuUsage: number; memoryUsage: number; diskIO: number; networkIO: number; }
@@ -64,8 +65,7 @@ export async function generateAlertReport(alerts: AlertConfig[]): Promise<string
 export async function optimizeAlertRules(history: any[]): Promise<AlertConfig[]> { return []; }
 
 @Injectable()
-export class PerformanceMonitoringService {
-  private readonly logger = new Logger(PerformanceMonitoringService.name);
+export class PerformanceMonitoringService extends BaseService {
   monitorConnections = monitorConnections;
   detectSlowQueries = detectSlowQueries;
   getResourceUtilization = getResourceUtilization;

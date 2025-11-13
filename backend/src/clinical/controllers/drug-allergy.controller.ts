@@ -4,6 +4,7 @@ import { DrugInteractionService } from '../services/drug-interaction.service';
 import { AddAllergyDto } from '../dto/drug/add-allergy.dto';
 import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Drug Allergy Controller
  * Handles student drug allergy operations
@@ -11,7 +12,7 @@ import { ClinicalUpdateAllergyDto } from '../dto/drug/update-allergy.dto';
 @ApiTags('Clinical - Drug Allergies')
 @ApiBearerAuth()
 @Controller('clinical/drugs')
-export class DrugAllergyController {
+export class DrugAllergyController extends BaseController {
   constructor(
     private readonly drugInteractionService: DrugInteractionService,
   ) {}

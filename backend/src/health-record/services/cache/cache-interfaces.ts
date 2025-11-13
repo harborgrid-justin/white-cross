@@ -1,7 +1,11 @@
 /**
  * @fileoverview Cache Strategy Interfaces and Types
  * @module health-record/services/cache
- * @description Type definitions and interfaces for the cache strategy system
+ * @description Consolidated type definitions and interfaces for the cache strategy system
+ *
+ * HIPAA CRITICAL - Type definitions for PHI caching compliance
+ *
+ * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
 export interface InMemoryCacheEntry<T = any> {
@@ -79,6 +83,7 @@ export interface CacheInvalidationResult {
   pattern: string;
   invalidatedCount: number;
   tiersAffected: CacheTier[];
+  reason?: string;
 }
 
 export interface CacheWarmingResult {

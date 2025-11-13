@@ -18,6 +18,7 @@ import {
 } from '../types/message-response.types';
 import { MarkAsReadResult, UnreadCountResult } from '../types/index';
 
+import { BaseService } from '../../common/base';
 /**
  * EnhancedMessageService
  *
@@ -31,9 +32,7 @@ import { MarkAsReadResult, UnreadCountResult } from '../types/index';
  * Provides a unified API while maintaining separation of concerns.
  */
 @Injectable()
-export class EnhancedMessageService {
-  private readonly logger = new Logger(EnhancedMessageService.name);
-
+export class EnhancedMessageService extends BaseService {
   constructor(
     private readonly messageSender: MessageSenderService,
     private readonly messageManagement: MessageManagementService,

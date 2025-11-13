@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { User   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 interface EmailVerificationToken {
   token: string;
   userId: string;
@@ -12,8 +13,7 @@ interface EmailVerificationToken {
 }
 
 @Injectable()
-export class EmailVerificationService {
-  private readonly logger = new Logger(EmailVerificationService.name);
+export class EmailVerificationService extends BaseService {
   // In-memory store for verification tokens
   // In production, use Redis or database table
   private verificationTokens: Map<string, EmailVerificationToken> = new Map();
@@ -64,7 +64,7 @@ export class EmailVerificationService {
     // Send verification email
     await this.sendEmail(user.email, token);
 
-    this.logger.log(`Verification email sent to: ${user.email}`);
+    this.logInfo(`Verification email sent to: ${user.email}`);
 
     return {
       success: true,
@@ -148,7 +148,7 @@ export class EmailVerificationService {
     // Remove used token
     this.verificationTokens.delete(token);
 
-    this.logger.log(`Email verified successfully for user: ${user.email}`);
+    this.logInfo(`Email verified successfully for user: ${user.email}`);
 
     return {
       success: true,
@@ -180,7 +180,7 @@ export class EmailVerificationService {
     }
 
     if (cleaned > 0) {
-      this.logger.debug(`Cleaned up ${cleaned} expired verification tokens`);
+      this.logDebug(`Cleaned up ${cleaned} expired verification tokens`);
     }
   }
 
@@ -199,9 +199,9 @@ export class EmailVerificationService {
     const verificationUrl = `${this.getAppUrl()}/verify-email?token=${token}`;
 
     // TODO: In production, send actual email
-    this.logger.log(`Verification email would be sent to: ${email}`);
-    this.logger.log(`Verification URL: ${verificationUrl}`);
-    this.logger.log(`Token expires in ${this.tokenExpiryHours} hours`);
+    this.logInfo(`Verification email would be sent to: ${email}`);
+    this.logInfo(`Verification URL: ${verificationUrl}`);
+    this.logInfo(`Token expires in ${this.tokenExpiryHours} hours`);
 
     // Mock email sending
     // await emailService.send({

@@ -20,12 +20,17 @@ import {
 } from '../dto';
 import { SmsTemplateService } from './sms-template.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Service for sending different types of SMS messages
  */
 @Injectable()
 export class SmsSenderService extends BaseSmsService {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     configService: any,
     smsQueue: any,
     private readonly twilioProvider: TwilioProvider,
@@ -33,6 +38,12 @@ export class SmsSenderService extends BaseSmsService {
     private readonly rateLimiter: RateLimiterService,
     private readonly templateService: SmsTemplateService,
   ) {
+    super({
+      serviceName: 'SmsSenderService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super(configService, smsQueue);
     this.logger = new Logger(SmsSenderService.name);
   }
@@ -41,7 +52,7 @@ export class SmsSenderService extends BaseSmsService {
    * Send alert notification SMS
    */
   async sendAlertSMS(to: string, data: AlertSmsDto): Promise<void> {
-    this.logger.log(`Sending alert SMS to ${to} - [${data.severity}] ${data.title}`);
+    this.logInfo(`Sending alert SMS to ${to} - [${data.severity}] ${data.title}`);
 
     try {
       // 1. Validate and normalize phone number
@@ -79,9 +90,9 @@ export class SmsSenderService extends BaseSmsService {
       await this.rateLimiter.incrementPhoneNumber(normalizedPhone);
       await this.rateLimiter.incrementAccount('default');
 
-      this.logger.log(`Alert SMS queued successfully for ${normalizedPhone}`);
+      this.logInfo(`Alert SMS queued successfully for ${normalizedPhone}`);
     } catch (error) {
-      this.logger.error(`Failed to send alert SMS to ${to}: ${error.message}`);
+      this.logError(`Failed to send alert SMS to ${to}: ${error.message}`);
       throw error;
     }
   }
@@ -90,7 +101,7 @@ export class SmsSenderService extends BaseSmsService {
    * Send generic SMS
    */
   async sendSMS(to: string, data: GenericSmsDto): Promise<void> {
-    this.logger.log(`Sending SMS to ${to}`);
+    this.logInfo(`Sending SMS to ${to}`);
 
     try {
       // 1. Validate and normalize phone number
@@ -125,9 +136,9 @@ export class SmsSenderService extends BaseSmsService {
       await this.rateLimiter.incrementPhoneNumber(normalizedPhone);
       await this.rateLimiter.incrementAccount('default');
 
-      this.logger.log(`SMS queued successfully for ${normalizedPhone}`);
+      this.logInfo(`SMS queued successfully for ${normalizedPhone}`);
     } catch (error) {
-      this.logger.error(`Failed to send SMS to ${to}: ${error.message}`);
+      this.logError(`Failed to send SMS to ${to}: ${error.message}`);
       throw error;
     }
   }
@@ -136,7 +147,7 @@ export class SmsSenderService extends BaseSmsService {
    * Send SMS with advanced options
    */
   async sendAdvancedSMS(to: string, data: SendSmsDto): Promise<void> {
-    this.logger.log(`Sending advanced SMS to ${to} with priority ${data.priority}`);
+    this.logInfo(`Sending advanced SMS to ${to} with priority ${data.priority}`);
 
     try {
       // Validate phone number
@@ -186,9 +197,9 @@ export class SmsSenderService extends BaseSmsService {
       await this.rateLimiter.incrementPhoneNumber(normalizedPhone);
       await this.rateLimiter.incrementAccount('default');
 
-      this.logger.log(`Advanced SMS queued for ${normalizedPhone}`);
+      this.logInfo(`Advanced SMS queued for ${normalizedPhone}`);
     } catch (error) {
-      this.logger.error(`Failed to send advanced SMS to ${to}: ${error.message}`);
+      this.logError(`Failed to send advanced SMS to ${to}: ${error.message}`);
       throw error;
     }
   }
@@ -197,7 +208,7 @@ export class SmsSenderService extends BaseSmsService {
    * Send SMS using template
    */
   async sendTemplatedSMS(to: string, data: SendTemplatedSmsDto): Promise<void> {
-    this.logger.log(`Sending templated SMS (${data.templateId}) to ${to}`);
+    this.logInfo(`Sending templated SMS (${data.templateId}) to ${to}`);
 
     try {
       // Validate phone number
@@ -237,9 +248,9 @@ export class SmsSenderService extends BaseSmsService {
       await this.rateLimiter.incrementPhoneNumber(normalizedPhone);
       await this.rateLimiter.incrementAccount('default');
 
-      this.logger.log(`Templated SMS queued for ${normalizedPhone}`);
+      this.logInfo(`Templated SMS queued for ${normalizedPhone}`);
     } catch (error) {
-      this.logger.error(`Failed to send templated SMS to ${to}: ${error.message}`);
+      this.logError(`Failed to send templated SMS to ${to}: ${error.message}`);
       throw error;
     }
   }
@@ -248,7 +259,7 @@ export class SmsSenderService extends BaseSmsService {
    * Send bulk SMS to multiple recipients
    */
   async sendBulkSMS(data: BulkSmsDto): Promise<BulkSmsResultDto> {
-    this.logger.log(`Sending bulk SMS to ${data.recipients.length} recipients`);
+    this.logInfo(`Sending bulk SMS to ${data.recipients.length} recipients`);
 
     const results: Array<{ phoneNumber: string; error?: string }> = [];
     let successCount = 0;
@@ -306,7 +317,7 @@ export class SmsSenderService extends BaseSmsService {
       .filter((r) => r.error)
       .map((r) => ({ phoneNumber: r.phoneNumber, error: r.error! }));
 
-    this.logger.log(`Bulk SMS completed - ${successCount} successful, ${failedCount} failed`);
+    this.logInfo(`Bulk SMS completed - ${successCount} successful, ${failedCount} failed`);
 
     return {
       totalRecipients: data.recipients.length,
@@ -325,7 +336,7 @@ export class SmsSenderService extends BaseSmsService {
     // Check per-phone rate limit
     const phoneLimit = await this.rateLimiter.checkPhoneNumberLimit(phoneNumber);
     if (phoneLimit.isLimited) {
-      this.logger.warn(`Rate limit exceeded for ${phoneNumber}`);
+      this.logWarning(`Rate limit exceeded for ${phoneNumber}`);
       throw this.createRateLimitException(
         `Rate limit exceeded for this phone number. Try again in ${phoneLimit.resetInSeconds} seconds.`,
         phoneLimit.resetInSeconds,
@@ -335,7 +346,7 @@ export class SmsSenderService extends BaseSmsService {
     // Check per-account rate limit
     const accountLimit = await this.rateLimiter.checkAccountLimit('default');
     if (accountLimit.isLimited) {
-      this.logger.warn('Account rate limit exceeded');
+      this.logWarning('Account rate limit exceeded');
       throw this.createRateLimitException(
         `Account SMS rate limit exceeded. Try again in ${accountLimit.resetInSeconds} seconds.`,
         accountLimit.resetInSeconds,

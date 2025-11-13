@@ -13,9 +13,9 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { EncryptionOptions } from '../interfaces/security.interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class EnhancedEncryptionService {
-  private readonly logger = new Logger(EnhancedEncryptionService.name);
+export class EnhancedEncryptionService extends BaseService {
   private readonly defaultAlgorithm = 'aes-256-gcm';
   private readonly keyCache = new Map<string, Buffer>();
 
@@ -69,7 +69,7 @@ export class EnhancedEncryptionService {
         salt,
       };
     } catch (error) {
-      this.logger.error('Encryption failed:', error);
+      this.logError('Encryption failed:', error);
       throw new Error(
         `Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
@@ -117,7 +117,7 @@ export class EnhancedEncryptionService {
 
       return decrypted;
     } catch (error) {
-      this.logger.error('Decryption failed:', error);
+      this.logError('Decryption failed:', error);
       throw new Error(
         `Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );

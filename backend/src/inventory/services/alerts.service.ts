@@ -3,6 +3,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
 import { AlertSeverity, AlertSummaryDto, AlertType, InventoryAlertDto } from '../dto/inventory-alert.dto';
 
+import { BaseService } from '../../common/base';
 interface StockQueryResult {
   id: string;
   name: string;
@@ -14,9 +15,7 @@ interface StockQueryResult {
 }
 
 @Injectable()
-export class AlertsService {
-  private readonly logger = new Logger(AlertsService.name);
-
+export class AlertsService extends BaseService {
   constructor(private readonly sequelize: Sequelize) {}
 
   /**
@@ -172,7 +171,7 @@ export class AlertsService {
 
       return alerts;
     } catch (error) {
-      this.logger.error('Error getting inventory alerts:', error);
+      this.logError('Error getting inventory alerts:', error);
       throw error;
     }
   }
@@ -187,7 +186,7 @@ export class AlertsService {
         (alert) => alert.severity === AlertSeverity.CRITICAL,
       );
     } catch (error) {
-      this.logger.error('Error getting critical alerts:', error);
+      this.logError('Error getting critical alerts:', error);
       throw error;
     }
   }
@@ -200,7 +199,7 @@ export class AlertsService {
       const allAlerts = await this.getInventoryAlerts();
       return allAlerts.filter((alert) => alert.type === type);
     } catch (error) {
-      this.logger.error('Error getting alerts by type:', error);
+      this.logError('Error getting alerts by type:', error);
       throw error;
     }
   }
@@ -215,7 +214,7 @@ export class AlertsService {
       const allAlerts = await this.getInventoryAlerts();
       return allAlerts.filter((alert) => alert.severity === severity);
     } catch (error) {
-      this.logger.error('Error getting alerts by severity:', error);
+      this.logError('Error getting alerts by severity:', error);
       throw error;
     }
   }
@@ -253,7 +252,7 @@ export class AlertsService {
 
       return counts;
     } catch (error) {
-      this.logger.error('Error getting alert counts:', error);
+      this.logError('Error getting alert counts:', error);
       throw error;
     }
   }
@@ -266,7 +265,7 @@ export class AlertsService {
       const allAlerts = await this.getInventoryAlerts();
       return allAlerts.filter((alert) => alert.itemId === inventoryItemId);
     } catch (error) {
-      this.logger.error('Error getting item alerts:', error);
+      this.logError('Error getting item alerts:', error);
       throw error;
     }
   }
@@ -293,7 +292,7 @@ export class AlertsService {
 
       return summary;
     } catch (error) {
-      this.logger.error('Error generating alert summary:', error);
+      this.logError('Error generating alert summary:', error);
       throw error;
     }
   }

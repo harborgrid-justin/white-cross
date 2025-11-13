@@ -7,6 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { HealthCheckService, HealthIndicatorResult } from '@nestjs/terminus';
+import { BaseService } from '../../common/base';
 import {
   IAPMetricsProvider,
   MetricData,
@@ -16,8 +17,7 @@ import {
 } from './metrics.provider';
 
 @Injectable()
-export class MonitoringService {
-  private readonly logger = new Logger(MonitoringService.name);
+export class MonitoringService extends BaseService {
   private alerts: AlertConfig[] = [];
   private activeAlerts: Map<string, { triggered: Date; config: AlertConfig }> = new Map();
 
@@ -166,7 +166,7 @@ export class MonitoringService {
    */
   addAlert(config: AlertConfig): void {
     this.alerts.push(config);
-    this.logger.log(`Added alert: ${config.metric} ${config.condition} ${config.threshold}`);
+    this.logInfo(`Added alert: ${config.metric} ${config.condition} ${config.threshold}`);
   }
 
   /**
@@ -285,7 +285,7 @@ export class MonitoringService {
             triggered: new Date()
           });
 
-          this.logger.warn(`Alert triggered: ${alert.description}`, {
+          this.logWarning(`Alert triggered: ${alert.description}`, {
             metric: alert.metric,
             value: metric.value,
             threshold: alert.threshold,
@@ -300,7 +300,7 @@ export class MonitoringService {
         const alertKey = `${alert.metric}:${alert.condition}:${alert.threshold}`;
         if (this.activeAlerts.has(alertKey)) {
           this.activeAlerts.delete(alertKey);
-          this.logger.log(`Alert resolved: ${alert.description}`);
+          this.logInfo(`Alert resolved: ${alert.description}`);
         }
       }
     }

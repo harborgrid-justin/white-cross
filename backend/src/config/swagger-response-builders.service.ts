@@ -19,6 +19,7 @@ import * as paginationBuilders from './swagger/responses/pagination-builders';
 import * as fileBuilders from './swagger/responses/file-builders';
 import * as headerUtilities from './swagger/responses/header-utilities';
 
+import { BaseService } from '../../common/base';
 // Re-export all response builders for backward compatibility
 export * from './swagger/responses';
 
@@ -27,7 +28,7 @@ export * from './swagger/responses';
  * Provides centralized access to all response building utilities.
  */
 @Injectable()
-export class SwaggerResponseBuildersService {
+export class SwaggerResponseBuildersService extends BaseService {
   /**
    * Get success response builders
    */

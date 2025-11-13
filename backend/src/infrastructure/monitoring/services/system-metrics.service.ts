@@ -9,10 +9,9 @@ import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 import { MemoryMetrics, PoolMetrics } from '../types/metrics.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class SystemMetricsService {
-  private readonly logger = new Logger(SystemMetricsService.name);
-
+export class SystemMetricsService extends BaseService {
   private readonly MAX_HISTORY_POINTS = 1440; // 24 hours at 1 min intervals
   private poolMetricsHistory: PoolMetrics[] = [];
   private memoryMetricsHistory: MemoryMetrics[] = [];
@@ -102,7 +101,7 @@ export class SystemMetricsService {
 
       return poolMetrics;
     } catch (error) {
-      this.logger.error('Error collecting pool metrics:', error);
+      this.logError('Error collecting pool metrics:', error);
       return null;
     }
   }
@@ -145,6 +144,6 @@ export class SystemMetricsService {
   reset(): void {
     this.poolMetricsHistory = [];
     this.memoryMetricsHistory = [];
-    this.logger.log('System metrics reset');
+    this.logInfo('System metrics reset');
   }
 }

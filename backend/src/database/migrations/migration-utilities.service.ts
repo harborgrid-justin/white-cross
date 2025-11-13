@@ -4,7 +4,9 @@
  * @description Main service orchestrating all database migration utilities
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { QueryInterface, Transaction } from 'sequelize';
 import {
   MigrationTableDefinition,
@@ -24,14 +26,19 @@ import { ColumnOperationsService } from './services/column-operations.service';
 import { DataMigrationService } from './services/data-migration.service';
 
 @Injectable()
-export class MigrationUtilitiesService {
-  private readonly logger = new Logger(MigrationUtilitiesService.name);
-
+export class MigrationUtilitiesService extends BaseService {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly tableOperations: TableOperationsService,
     private readonly columnOperations: ColumnOperationsService,
     private readonly dataMigration: DataMigrationService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'MigrationUtilitiesService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   // Table Operations
 

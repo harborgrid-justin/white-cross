@@ -13,9 +13,9 @@ import {
 import { CACHE_CONSTANTS } from './cache-constants';
 import { CacheMetricsCollectorService } from './cache-metrics-collector.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class CacheHealthMonitorService {
-  private readonly logger = new Logger(CacheHealthMonitorService.name);
+export class CacheHealthMonitorService extends BaseService {
   private readonly alerts: CacheAlert[] = [];
   private readonly maxAlertsHistory = CACHE_CONSTANTS.METRICS.MAX_ALERTS_HISTORY;
 
@@ -83,7 +83,7 @@ export class CacheHealthMonitorService {
     if (alert && !alert.resolved) {
       alert.resolved = true;
       alert.resolvedAt = new Date();
-      this.logger.log(`Alert resolved: ${alert.message}`);
+      this.logInfo(`Alert resolved: ${alert.message}`);
       return true;
     }
     return false;
@@ -112,7 +112,7 @@ export class CacheHealthMonitorService {
 
   reset(): void {
     this.alerts.length = 0;
-    this.logger.log('Cache health monitor reset');
+    this.logInfo('Cache health monitor reset');
   }
 
   private startHealthMonitoring(): void {
@@ -121,7 +121,7 @@ export class CacheHealthMonitorService {
       try {
         this.performHealthCheck();
       } catch (error) {
-        this.logger.error('Failed to perform health check:', error);
+        this.logError('Failed to perform health check:', error);
       }
     }, 30000);
 
@@ -130,7 +130,7 @@ export class CacheHealthMonitorService {
       try {
         this.cleanupOldAlerts();
       } catch (error) {
-        this.logger.error('Failed to cleanup old alerts:', error);
+        this.logError('Failed to cleanup old alerts:', error);
       }
     }, 60 * 60 * 1000); // 1 hour
   }
@@ -139,9 +139,9 @@ export class CacheHealthMonitorService {
     const health = this.getHealthStatus();
 
     if (health.status === 'critical') {
-      this.logger.error('Cache health status: CRITICAL', { issues: health.issues });
+      this.logError('Cache health status: CRITICAL', { issues: health.issues });
     } else if (health.status === 'warning') {
-      this.logger.warn('Cache health status: WARNING', { issues: health.issues });
+      this.logWarning('Cache health status: WARNING', { issues: health.issues });
     }
 
     // Check for new alerts based on current metrics
@@ -243,7 +243,7 @@ export class CacheHealthMonitorService {
       this.alerts.shift();
     }
 
-    this.logger.log(`Cache alert created: ${message}`, { type, severity, metadata });
+    this.logInfo(`Cache alert created: ${message}`, { type, severity, metadata });
 
     // Emit alert event
     this.eventEmitter.emit('cache.alert.created', alert);
@@ -304,7 +304,7 @@ export class CacheHealthMonitorService {
 
     const removedCount = initialCount - this.alerts.length;
     if (removedCount > 0) {
-      this.logger.debug(`Cleaned up ${removedCount} old alerts`);
+      this.logDebug(`Cleaned up ${removedCount} old alerts`);
     }
   }
 }

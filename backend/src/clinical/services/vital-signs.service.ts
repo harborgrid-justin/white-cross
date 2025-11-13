@@ -6,10 +6,9 @@ import { RecordVitalsDto } from '../dto/vitals/record-vitals.dto';
 import { UpdateVitalsDto } from '../dto/vitals/update-vitals.dto';
 import { VitalsFiltersDto } from '../dto/vitals/vitals-filters.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class VitalSignsService {
-  private readonly logger = new Logger(VitalSignsService.name);
-
+export class VitalSignsService extends BaseService {
   constructor(
     @InjectModel(VitalSigns)
     private vitalsModel: typeof VitalSigns,
@@ -98,6 +97,6 @@ export class VitalSignsService {
     const result = await this.vitalsModel.destroy({ where: { id } });
     if (result === 0)
       throw new NotFoundException(`Vital signs ${id} not found`);
-    this.logger.log(`Deleted vital signs ${id}`);
+    this.logInfo(`Deleted vital signs ${id}`);
   }
 }

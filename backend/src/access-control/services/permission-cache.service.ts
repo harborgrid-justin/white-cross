@@ -3,6 +3,7 @@ import { CacheEntry, CacheStatisticsResult } from '../types/user-context.types';
 
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '../../common/base';
 /**
  * Permission Cache Service
  *
@@ -17,9 +18,7 @@ import { Injectable, Logger } from '@nestjs/common';
  * - Cache warming on service initialization
  */
 @Injectable()
-export class PermissionCacheService {
-  private readonly logger = new Logger(PermissionCacheService.name);
-
+export class PermissionCacheService extends BaseService {
   // Cache stores with TTL
   private userPermissionsCache: Map<string, CacheEntry<UserPermissionsResult>> =
     new Map();
@@ -39,7 +38,7 @@ export class PermissionCacheService {
   constructor() {
     // Start cleanup interval
     this.startCleanupInterval();
-    this.logger.log('Permission cache service initialized');
+    this.logInfo('Permission cache service initialized');
   }
 
   // ============================================================================
@@ -65,7 +64,7 @@ export class PermissionCacheService {
     }
 
     this.stats.userPermissions.hits++;
-    this.logger.debug(`Cache HIT for user permissions: ${userId}`);
+    this.logDebug(`Cache HIT for user permissions: ${userId}`);
     return cached.data;
   }
 
@@ -79,7 +78,7 @@ export class PermissionCacheService {
       expiresAt,
     });
     this.stats.userPermissions.sets++;
-    this.logger.debug(`Cache SET for user permissions: ${userId}`);
+    this.logDebug(`Cache SET for user permissions: ${userId}`);
   }
 
   /**
@@ -88,7 +87,7 @@ export class PermissionCacheService {
   invalidateUserPermissions(userId: string): void {
     this.userPermissionsCache.delete(userId);
     this.stats.userPermissions.invalidations++;
-    this.logger.debug(`Cache INVALIDATE for user permissions: ${userId}`);
+    this.logDebug(`Cache INVALIDATE for user permissions: ${userId}`);
   }
 
   /**
@@ -98,7 +97,7 @@ export class PermissionCacheService {
     const count = this.userPermissionsCache.size;
     this.userPermissionsCache.clear();
     this.stats.userPermissions.invalidations += count;
-    this.logger.log(`Cache INVALIDATE ALL user permissions: ${count} entries`);
+    this.logInfo(`Cache INVALIDATE ALL user permissions: ${count} entries`);
   }
 
   // ============================================================================
@@ -124,7 +123,7 @@ export class PermissionCacheService {
     }
 
     this.stats.rolePermissions.hits++;
-    this.logger.debug(`Cache HIT for role permissions: ${roleId}`);
+    this.logDebug(`Cache HIT for role permissions: ${roleId}`);
     return cached.data;
   }
 
@@ -138,7 +137,7 @@ export class PermissionCacheService {
       expiresAt,
     });
     this.stats.rolePermissions.sets++;
-    this.logger.debug(`Cache SET for role permissions: ${roleId}`);
+    this.logDebug(`Cache SET for role permissions: ${roleId}`);
   }
 
   /**
@@ -147,7 +146,7 @@ export class PermissionCacheService {
   invalidateRolePermissions(roleId: string): void {
     this.rolePermissionsCache.delete(roleId);
     this.stats.rolePermissions.invalidations++;
-    this.logger.debug(`Cache INVALIDATE for role permissions: ${roleId}`);
+    this.logDebug(`Cache INVALIDATE for role permissions: ${roleId}`);
 
     // Also invalidate all user permissions since role permissions changed
     this.invalidateAllUserPermissions();
@@ -160,7 +159,7 @@ export class PermissionCacheService {
     const count = this.rolePermissionsCache.size;
     this.rolePermissionsCache.clear();
     this.stats.rolePermissions.invalidations += count;
-    this.logger.log(`Cache INVALIDATE ALL role permissions: ${count} entries`);
+    this.logInfo(`Cache INVALIDATE ALL role permissions: ${count} entries`);
 
     // Also invalidate all user permissions
     this.invalidateAllUserPermissions();
@@ -176,7 +175,7 @@ export class PermissionCacheService {
   clearAll(): void {
     this.invalidateAllUserPermissions();
     this.invalidateAllRolePermissions();
-    this.logger.log('All caches cleared');
+    this.logInfo('All caches cleared');
   }
 
   /**
@@ -227,7 +226,7 @@ export class PermissionCacheService {
       userPermissions: { hits: 0, misses: 0, sets: 0, invalidations: 0 },
       rolePermissions: { hits: 0, misses: 0, sets: 0, invalidations: 0 },
     };
-    this.logger.log('Cache statistics reset');
+    this.logInfo('Cache statistics reset');
   }
 
   /**
@@ -265,7 +264,7 @@ export class PermissionCacheService {
     }
 
     if (userRemoved > 0 || roleRemoved > 0) {
-      this.logger.debug(
+      this.logDebug(
         `Cache cleanup: removed ${userRemoved} user permissions, ${roleRemoved} role permissions`,
       );
     }
@@ -278,17 +277,17 @@ export class PermissionCacheService {
     getUserPermissionsFn: (userId: string) => Promise<UserPermissionsResult>,
     userIds: string[],
   ): Promise<void> {
-    this.logger.log(`Warming cache for ${userIds.length} users`);
+    this.logInfo(`Warming cache for ${userIds.length} users`);
 
     for (const userId of userIds) {
       try {
         const permissions = await getUserPermissionsFn(userId);
         this.setUserPermissions(userId, permissions);
       } catch (error) {
-        this.logger.error(`Error warming cache for user ${userId}:`, error);
+        this.logError(`Error warming cache for user ${userId}:`, error);
       }
     }
 
-    this.logger.log('Cache warming completed');
+    this.logInfo('Cache warming completed');
   }
 }

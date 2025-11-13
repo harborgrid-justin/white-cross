@@ -4,10 +4,11 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 import { MessageService } from '../services/message.service';
 import { SendMessageDto } from '../dto/send-message.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Messages')
 @ApiBearerAuth()
 @Controller('messages')
-export class MessageController {
+export class MessageController extends BaseController {
   constructor(private readonly messageService: MessageService) {}
 
   @Post()

@@ -9,10 +9,9 @@ import { InjectModel } from '@nestjs/sequelize';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { SystemConfig } from '../../database/models/system-config.model';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ConfigStatisticsService {
-  private readonly logger = new Logger(ConfigStatisticsService.name);
-
+export class ConfigStatisticsService extends BaseService {
   constructor(
     @InjectModel(SystemConfig)
     private readonly configModel: typeof SystemConfig,
@@ -74,10 +73,10 @@ export class ConfigStatisticsService {
         ),
       };
 
-      this.logger.log('Retrieved configuration statistics');
+      this.logInfo('Retrieved configuration statistics');
       return statistics;
     } catch (error) {
-      this.logger.error('Error getting configuration statistics:', error);
+      this.logError('Error getting configuration statistics:', error);
       throw error;
     }
   }
@@ -100,7 +99,7 @@ export class ConfigStatisticsService {
         {} as Record<string, number>,
       );
     } catch (error) {
-      this.logger.error('Error getting value type breakdown:', error);
+      this.logError('Error getting value type breakdown:', error);
       throw error;
     }
   }
@@ -112,7 +111,7 @@ export class ConfigStatisticsService {
     try {
       return this.configModel.count({ where: { requiresRestart: true } });
     } catch (error) {
-      this.logger.error('Error getting restart required count:', error);
+      this.logError('Error getting restart required count:', error);
       throw error;
     }
   }
@@ -172,7 +171,7 @@ export class ConfigStatisticsService {
         healthScore,
       };
     } catch (error) {
-      this.logger.error('Error getting health metrics:', error);
+      this.logError('Error getting health metrics:', error);
       throw error;
     }
   }
@@ -231,7 +230,7 @@ export class ConfigStatisticsService {
 
       return trends as Array<{ date: string; created: number; updated: number }>;
     } catch (error) {
-      this.logger.error('Error getting configuration trends:', error);
+      this.logError('Error getting configuration trends:', error);
       throw error;
     }
   }
@@ -273,7 +272,7 @@ export class ConfigStatisticsService {
         lastChanged: Date;
       }>;
     } catch (error) {
-      this.logger.error('Error getting most changed configurations:', error);
+      this.logError('Error getting most changed configurations:', error);
       throw error;
     }
   }
@@ -312,7 +311,7 @@ export class ConfigStatisticsService {
         configsWithDefaults: number;
       }>;
     } catch (error) {
-      this.logger.error('Error getting category stats:', error);
+      this.logError('Error getting category stats:', error);
       throw error;
     }
   }
@@ -352,7 +351,7 @@ export class ConfigStatisticsService {
         generatedAt: new Date(),
       };
     } catch (error) {
-      this.logger.error('Error generating summary report:', error);
+      this.logError('Error generating summary report:', error);
       throw error;
     }
   }

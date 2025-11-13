@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, Logger, NotFoundExc
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { BudgetCategory, BudgetTransaction } from '@/database';
+import { BaseService } from '../../common/base';
 import {
   BudgetRecommendationDto,
   BudgetRecommendationType,
@@ -28,9 +29,7 @@ import {
  * - Transactions hard-deleted with automatic spent amount adjustment
  */
 @Injectable()
-export class BudgetService {
-  private readonly logger = new Logger(BudgetService.name);
-
+export class BudgetService extends BaseService {
   constructor(
     @InjectModel(BudgetCategory)
     private readonly budgetCategoryModel: typeof BudgetCategory,
@@ -126,7 +125,7 @@ export class BudgetService {
       isActive: true,
     } as any);
 
-    this.logger.log(
+    this.logInfo(
       `Budget category created: ${category.name} for FY${category.fiscalYear}`,
     );
 
@@ -163,7 +162,7 @@ export class BudgetService {
     Object.assign(category, updateDto);
     await category.save();
 
-    this.logger.log(`Budget category updated: ${category.name}`);
+    this.logInfo(`Budget category updated: ${category.name}`);
 
     return category;
   }
@@ -177,7 +176,7 @@ export class BudgetService {
     category.isActive = false;
     await category.save();
 
-    this.logger.log(`Budget category soft deleted: ${category.name}`);
+    this.logInfo(`Budget category soft deleted: ${category.name}`);
 
     return { success: true };
   }
@@ -213,7 +212,7 @@ export class BudgetService {
       const allocated = Number(category.allocatedAmount);
 
       if (newSpent > allocated) {
-        this.logger.warn(
+        this.logWarning(
           `Transaction would exceed budget for ${category.name}: $${newSpent} > $${allocated}`,
         );
       }
@@ -236,7 +235,7 @@ export class BudgetService {
       category.spentAmount = Number(category.spentAmount) + createDto.amount;
       await category.save({ transaction });
 
-      this.logger.log(
+      this.logInfo(
         `Budget transaction created: $${createDto.amount} for ${category.name}`,
       );
 
@@ -308,7 +307,7 @@ export class BudgetService {
       Object.assign(transactionRecord, updateDto);
       await transactionRecord.save({ transaction });
 
-      this.logger.log(`Budget transaction updated: ${transactionRecord.id}`);
+      this.logInfo(`Budget transaction updated: ${transactionRecord.id}`);
 
       const result = await this.budgetTransactionModel.findOne({
         where: { id: transactionRecord.id },
@@ -364,7 +363,7 @@ export class BudgetService {
 
       await transactionRecord.destroy({ transaction });
 
-      this.logger.log(`Budget transaction deleted: ${id} ($${amount})`);
+      this.logInfo(`Budget transaction deleted: ${id} ($${amount})`);
 
       return { success: true };
     });
@@ -730,7 +729,7 @@ export class BudgetService {
       }),
     );
 
-    this.logger.log(`Budget data exported for FY${currentYear}`);
+    this.logInfo(`Budget data exported for FY${currentYear}`);
 
     return {
       exportDate: new Date().toISOString(),

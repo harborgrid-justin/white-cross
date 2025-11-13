@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
+import { BaseService } from '../../common/base';
 export interface BackupMetadata { id: string; type: string; timestamp: Date; size: number; location: string; checksum: string; }
 export interface RestoreOptions { pointInTime?: Date; tables?: string[]; validateOnly?: boolean; }
 
@@ -65,8 +66,7 @@ export async function cancelRestore(sequelize: Sequelize): Promise<void> {}
 export function generateRestoreReport(backup: BackupMetadata, duration: number): string { return 'Restore Report'; }
 
 @Injectable()
-export class BackupRestoreService {
-  private readonly logger = new Logger(BackupRestoreService.name);
+export class BackupRestoreService extends BaseService {
   createFullBackup = createFullBackup;
   createIncrementalBackup = createIncrementalBackup;
   enablePITR = enablePITR;

@@ -20,14 +20,19 @@ import {
 } from './dtos';
 import { FailedJobInfo, QueueHealth, QueueJobOptions, QueueMetrics, QueueStats } from './interfaces';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Message Queue Service
  * Manages all message-related background job queues
  */
 @Injectable()
 export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(MessageQueueService.name);
-
   constructor(
     @InjectQueue(QueueName.MESSAGE_DELIVERY)
     private readonly messageDeliveryQueue: Queue,
@@ -51,13 +56,13 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit() {
-    this.logger.log('Message Queue Service initialized');
-    this.logger.log(`Redis: ${this.queueConfig.getRedisConnectionString()}`);
+    this.logInfo('Message Queue Service initialized');
+    this.logInfo(`Redis: ${this.queueConfig.getRedisConnectionString()}`);
     this.logQueueConfigurations();
   }
 
   async onModuleDestroy() {
-    this.logger.log('Shutting down Message Queue Service...');
+    this.logInfo('Shutting down Message Queue Service...');
     await this.closeAllQueues();
   }
 
@@ -67,7 +72,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   private logQueueConfigurations() {
     const configs = this.queueConfig.getAllQueueConfigs();
     Object.values(configs).forEach((config) => {
-      this.logger.log(
+      this.logInfo(
         `Queue [${config.name}]: concurrency=${config.concurrency}, ` +
           `maxAttempts=${config.maxAttempts}, timeout=${config.timeout}ms`,
       );
@@ -112,7 +117,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_DELIVERY, options),
     );
 
-    this.logger.log(
+    this.logInfo(
       `Message delivery job added: ${job.id} (messageId: ${data.messageId})`,
     );
 
@@ -135,7 +140,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_DELIVERY, options),
     );
 
-    this.logger.log(
+    this.logInfo(
       `Delivery confirmation job added: ${job.id} (messageId: ${data.messageId}, status: ${data.status})`,
     );
 
@@ -158,7 +163,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_NOTIFICATION, options),
     );
 
-    this.logger.log(
+    this.logInfo(
       `Notification job added: ${job.id} (type: ${data.type}, recipientId: ${data.recipientId})`,
     );
 
@@ -181,7 +186,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_ENCRYPTION, options),
     );
 
-    this.logger.log(
+    this.logInfo(
       `Encryption job added: ${job.id} (operation: ${data.operation}, messageId: ${data.messageId})`,
     );
 
@@ -204,7 +209,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_INDEXING, options),
     );
 
-    this.logger.log(
+    this.logInfo(
       `Indexing job added: ${job.id} (operation: ${data.operation}, messageId: ${data.messageId})`,
     );
 
@@ -227,7 +232,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.BATCH_MESSAGE_SENDING, options),
     );
 
-    this.logger.log(
+    this.logInfo(
       `Batch message job added: ${job.id} (recipients: ${data.recipientIds.length})`,
     );
 
@@ -250,7 +255,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
       this.buildJobOptions(QueueName.MESSAGE_CLEANUP, options),
     );
 
-    this.logger.log(`Cleanup job added: ${job.id} (type: ${data.cleanupType})`);
+    this.logInfo(`Cleanup job added: ${job.id} (type: ${data.cleanupType})`);
 
     return job;
   }
@@ -434,7 +439,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   async pauseQueue(queueName: QueueName): Promise<void> {
     const queue = this.getQueue(queueName);
     await queue.pause();
-    this.logger.warn(`Queue paused: ${queueName}`);
+    this.logWarning(`Queue paused: ${queueName}`);
   }
 
   /**
@@ -443,7 +448,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
   async resumeQueue(queueName: QueueName): Promise<void> {
     const queue = this.getQueue(queueName);
     await queue.resume();
-    this.logger.log(`Queue resumed: ${queueName}`);
+    this.logInfo(`Queue resumed: ${queueName}`);
   }
 
   /**
@@ -456,7 +461,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     const queue = this.getQueue(queueName);
     await queue.clean(grace, 'completed');
     await queue.clean(grace * 7, 'failed'); // Keep failed jobs longer
-    this.logger.log(`Queue cleaned: ${queueName}`);
+    this.logInfo(`Queue cleaned: ${queueName}`);
   }
 
   /**
@@ -471,7 +476,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     }
 
     await job.retry();
-    this.logger.log(`Job retried: ${jobId} in queue ${queueName}`);
+    this.logInfo(`Job retried: ${jobId} in queue ${queueName}`);
   }
 
   /**
@@ -486,7 +491,7 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     }
 
     await job.remove();
-    this.logger.log(`Job removed: ${jobId} from queue ${queueName}`);
+    this.logInfo(`Job removed: ${jobId} from queue ${queueName}`);
   }
 
   /**
@@ -503,6 +508,6 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     ];
 
     await Promise.all(queues.map((queue) => queue.close()));
-    this.logger.log('All queues closed');
+    this.logInfo('All queues closed');
   }
 }

@@ -1,13 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '../../common/base';
 /**
  * Statistics Service
  * Handles various statistics calculations
  */
 @Injectable()
-export class StatisticsService {
-  private readonly logger = new Logger(StatisticsService.name);
-
+export class StatisticsService extends BaseService {
   /**
    * Get appointment statistics
    */
@@ -32,14 +31,14 @@ export class StatisticsService {
         peakHours: ['09:00-10:00', '13:00-14:00'],
       };
 
-      this.logger.log('Appointment statistics retrieved', {
+      this.logInfo('Appointment statistics retrieved', {
         period,
         totalAppointments: stats.totalAppointments,
       });
 
       return stats;
     } catch (error) {
-      this.logger.error('Error getting appointment statistics', {
+      this.logError('Error getting appointment statistics', {
         error: error instanceof Error ? error.message : String(error),
         period,
       });
@@ -73,7 +72,7 @@ export class StatisticsService {
         missedDoses: 42,
       };
 
-      this.logger.log('Medication statistics retrieved', {
+      this.logInfo('Medication statistics retrieved', {
         period,
         totalDoses: stats.totalDoses,
         adherenceRate: stats.adherenceRate,
@@ -81,7 +80,7 @@ export class StatisticsService {
 
       return stats;
     } catch (error) {
-      this.logger.error('Error getting medication statistics', {
+      this.logError('Error getting medication statistics', {
         error: error instanceof Error ? error.message : String(error),
         period,
       });
@@ -123,7 +122,7 @@ export class StatisticsService {
         pendingReports: 8,
       };
 
-      this.logger.log('Incident statistics retrieved', {
+      this.logInfo('Incident statistics retrieved', {
         period,
         totalIncidents: stats.totalIncidents,
         pendingReports: stats.pendingReports,
@@ -131,7 +130,7 @@ export class StatisticsService {
 
       return stats;
     } catch (error) {
-      this.logger.error('Error getting incident statistics', {
+      this.logError('Error getting incident statistics', {
         error: error instanceof Error ? error.message : String(error),
         period,
       });

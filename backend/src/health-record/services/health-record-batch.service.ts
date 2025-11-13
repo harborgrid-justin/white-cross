@@ -17,6 +17,7 @@ import { Op } from 'sequelize';
 import { HealthRecord   } from "../../database/models";
 import { Student   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * HealthRecordBatchService
  *
@@ -35,9 +36,7 @@ import { Student   } from "../../database/models";
  * - Performance improvement: ~99% query reduction for batch operations
  */
 @Injectable()
-export class HealthRecordBatchService {
-  private readonly logger = new Logger(HealthRecordBatchService.name);
-
+export class HealthRecordBatchService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
@@ -72,7 +71,7 @@ export class HealthRecordBatchService {
       // Return in same order as input, null for missing
       return ids.map((id) => recordMap.get(id) || null);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch health records: ${error.message}`,
       );
       throw new Error('Failed to batch fetch health records');
@@ -115,7 +114,7 @@ export class HealthRecordBatchService {
       // Return in same order as input, empty array for missing
       return studentIds.map((id) => grouped.get(id) || []);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch health records by student IDs: ${error.message}`,
       );
       throw new Error('Failed to batch fetch health records by student IDs');

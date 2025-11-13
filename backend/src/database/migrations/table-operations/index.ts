@@ -1023,7 +1023,6 @@ export class TableOperationsService {
     }
   }
 }
-}
           const newValue = await config.customFunction(row);
           await sequelize.query(
             `UPDATE "${tableName}" SET "${columnName}" = :newValue WHERE id = :id`,

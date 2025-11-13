@@ -16,6 +16,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // Configuration Interfaces
 export interface ConfigurationValue {
   value: any;
@@ -116,7 +120,16 @@ export class FileConfigurationProvider implements ConfigurationProvider {
   name = 'file';
   priority = 1;
 
-  constructor(private filePath: string) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private filePath: string
+  ) {
+    super({
+      serviceName: 'ProductionConfigurationManagementService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async load(): Promise<Map<string, any>> {
     try {
@@ -201,7 +214,6 @@ export class RemoteConfigurationProvider implements ConfigurationProvider {
 // Main Configuration Management Service
 @Injectable()
 export class ProductionConfigurationManagementService extends EventEmitter {
-  private readonly logger = new Logger('ConfigurationManagement');
   private environments = new Map<string, ConfigurationEnvironment>();
   private providers: ConfigurationProvider[] = [];
   private schema = new Map<string, ConfigurationSchema>();
@@ -295,9 +307,9 @@ export class ProductionConfigurationManagementService extends EventEmitter {
         for (const [key, value] of providerConfigs) {
           allConfigs.set(key, value);
         }
-        this.logger.log(`Loaded ${providerConfigs.size} configurations from ${provider.name} provider`);
+        this.logInfo(`Loaded ${providerConfigs.size} configurations from ${provider.name} provider`);
       } catch (error) {
-        this.logger.error(`Failed to load configurations from ${provider.name} provider:`, error);
+        this.logError(`Failed to load configurations from ${provider.name} provider:`, error);
       }
     }
 
@@ -660,13 +672,13 @@ export class ProductionConfigurationManagementService extends EventEmitter {
 
   // Utility Methods
   private handleProviderChanges(providerName: string, changes: Map<string, any>): void {
-    this.logger.log(`Configuration changes detected from ${providerName} provider`);
+    this.logInfo(`Configuration changes detected from ${providerName} provider`);
     
     for (const [key, value] of changes) {
       try {
         this.set(key, value, providerName, 'Provider update');
       } catch (error) {
-        this.logger.error(`Failed to update configuration ${key} from provider ${providerName}:`, error);
+        this.logError(`Failed to update configuration ${key} from provider ${providerName}:`, error);
       }
     }
   }
@@ -745,7 +757,7 @@ export class ProductionConfigurationManagementService extends EventEmitter {
         configurationsLoaded: environment ? environment.configurations.size > 0 : false
       };
     } catch (error) {
-      this.logger.error('Configuration management health check failed:', error);
+      this.logError('Configuration management health check failed:', error);
       return {
         environments: false,
         providers: false,

@@ -16,6 +16,7 @@ import {
 import { AppointmentStatus } from '../dto/update-appointment.dto';
 import { AppointmentEntity } from '../entities/appointment.entity';
 import { AppointmentValidation } from '../validators/appointment-validation';
+import { BaseService } from '../../common/base';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
@@ -30,9 +31,7 @@ import {
  * - Mark as no-show (SCHEDULED → NO_SHOW)
  */
 @Injectable()
-export class AppointmentStatusService {
-  private readonly logger = new Logger(AppointmentStatusService.name);
-
+export class AppointmentStatusService extends BaseService {
   constructor(
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
@@ -43,7 +42,7 @@ export class AppointmentStatusService {
    * Start an appointment (transition to IN_PROGRESS)
    */
   async startAppointment(id: string): Promise<AppointmentEntity> {
-    this.logger.log(`Starting appointment: ${id}`);
+    this.logInfo(`Starting appointment: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
     if (!appointment) {
@@ -96,7 +95,7 @@ export class AppointmentStatusService {
       followUpDate?: Date;
     },
   ): Promise<AppointmentEntity> {
-    this.logger.log(`Completing appointment: ${id}`);
+    this.logInfo(`Completing appointment: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
     if (!appointment) {
@@ -157,7 +156,7 @@ export class AppointmentStatusService {
    * Mark appointment as no-show
    */
   async markNoShow(id: string): Promise<AppointmentEntity> {
-    this.logger.log(`Marking appointment as no-show: ${id}`);
+    this.logInfo(`Marking appointment as no-show: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
     if (!appointment) {

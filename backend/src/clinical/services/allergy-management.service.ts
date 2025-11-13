@@ -10,10 +10,9 @@ import { StudentDrugAllergy } from '../entities/student-drug-allergy.entity';
 import { DrugCatalogService } from './drug-catalog.service';
 import { AddAllergyDto, UpdateAllergyDto } from '../types/drug-interaction.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class AllergyManagementService {
-  private readonly logger = new Logger(AllergyManagementService.name);
-
+export class AllergyManagementService extends BaseService {
   constructor(
     @InjectModel(StudentDrugAllergy)
     private studentDrugAllergyModel: typeof StudentDrugAllergy,
@@ -24,7 +23,7 @@ export class AllergyManagementService {
    * Add a student drug allergy
    */
   async addAllergy(data: AddAllergyDto): Promise<StudentDrugAllergy> {
-    this.logger.log(`Adding allergy for student ${data.studentId}`);
+    this.logInfo(`Adding allergy for student ${data.studentId}`);
 
     // Validate drug exists
     await this.drugCatalogService.getDrugById(data.drugId);
@@ -76,7 +75,7 @@ export class AllergyManagementService {
       throw new NotFoundException('Allergy not found');
     }
 
-    this.logger.log(`Deleted allergy ${id}`);
+    this.logInfo(`Deleted allergy ${id}`);
   }
 
   /**
@@ -236,7 +235,7 @@ export class AllergyManagementService {
       },
     );
 
-    this.logger.log(`Updated ${affectedRows} allergies for drug ${drugId} from ${oldSeverity} to ${newSeverity}`);
+    this.logInfo(`Updated ${affectedRows} allergies for drug ${drugId} from ${oldSeverity} to ${newSeverity}`);
     return affectedRows;
   }
 
@@ -248,7 +247,7 @@ export class AllergyManagementService {
       where: { studentId },
     });
 
-    this.logger.log(`Removed ${deletedCount} allergies for student ${studentId}`);
+    this.logInfo(`Removed ${deletedCount} allergies for student ${studentId}`);
     return deletedCount;
   }
 

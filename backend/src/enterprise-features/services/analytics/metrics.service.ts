@@ -2,14 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DashboardMetric, HealthTrendData } from '../../enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 /**
  * Metrics Service
  * Handles real-time metrics and health trends
  */
 @Injectable()
-export class MetricsService {
-  private readonly logger = new Logger(MetricsService.name);
-
+export class MetricsService extends BaseService {
   constructor(private eventEmitter: EventEmitter2) {}
 
   /**
@@ -70,7 +69,7 @@ export class MetricsService {
         },
       ];
 
-      this.logger.log('Real-time metrics retrieved', {
+      this.logInfo('Real-time metrics retrieved', {
         metricCount: metrics.length,
         timestamp: new Date(),
       });
@@ -83,7 +82,7 @@ export class MetricsService {
 
       return metrics;
     } catch (error) {
-      this.logger.error('Error getting real-time metrics', {
+      this.logError('Error getting real-time metrics', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;
@@ -142,7 +141,7 @@ export class MetricsService {
         });
       }
 
-      this.logger.log('Health trends retrieved', {
+      this.logInfo('Health trends retrieved', {
         period,
         metricCount: trendData.metrics.length,
         alertCount: trendData.alerts.length,
@@ -157,7 +156,7 @@ export class MetricsService {
 
       return trendData;
     } catch (error) {
-      this.logger.error('Error getting health trends', {
+      this.logError('Error getting health trends', {
         error: error instanceof Error ? error.message : String(error),
         period,
       });

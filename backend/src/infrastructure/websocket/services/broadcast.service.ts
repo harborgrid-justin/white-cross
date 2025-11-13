@@ -8,10 +8,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { WebSocketGateway } from '../websocket.gateway';
 import { BroadcastMessageDto } from '../types/websocket.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class BroadcastService {
-  private readonly logger = new Logger(BroadcastService.name);
-
+export class BroadcastService extends BaseService {
   constructor(private readonly websocketGateway: WebSocketGateway) {}
 
   /**
@@ -22,7 +21,7 @@ export class BroadcastService {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn('WebSocket server not initialized, cannot broadcast message');
+        this.logWarning('WebSocket server not initialized, cannot broadcast message');
         return;
       }
 
@@ -33,13 +32,13 @@ export class BroadcastService {
 
       server.to(room).emit(event, message);
 
-      this.logger.debug(`Broadcasted ${event} to room ${room}`, {
+      this.logDebug(`Broadcasted ${event} to room ${room}`, {
         event,
         room,
         dataKeys: Object.keys(data as any),
       });
     } catch (error) {
-      this.logger.error(`Failed to broadcast to room ${room}`, error);
+      this.logError(`Failed to broadcast to room ${room}`, error);
       throw error;
     }
   }
@@ -52,7 +51,7 @@ export class BroadcastService {
       const server = this.getServer();
 
       if (!server) {
-        this.logger.warn('WebSocket server not initialized, cannot broadcast message');
+        this.logWarning('WebSocket server not initialized, cannot broadcast message');
         return;
       }
 
@@ -65,13 +64,13 @@ export class BroadcastService {
         server.to(room).emit(event, message);
       }
 
-      this.logger.debug(`Broadcasted ${event} to ${rooms.length} rooms`, {
+      this.logDebug(`Broadcasted ${event} to ${rooms.length} rooms`, {
         event,
         rooms,
         dataKeys: Object.keys(data as any),
       });
     } catch (error) {
-      this.logger.error('Failed to broadcast to multiple rooms', error);
+      this.logError('Failed to broadcast to multiple rooms', error);
       throw error;
     }
   }

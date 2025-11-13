@@ -7,10 +7,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SlowQuery, PerformanceAlert } from '../types/query-monitor.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class SlowQueryDetectorService {
-  private readonly logger = new Logger(SlowQueryDetectorService.name);
-
+export class SlowQueryDetectorService extends BaseService {
   // Configuration
   private readonly SLOW_QUERY_THRESHOLD = 1000; // 1 second
   private readonly MAX_SLOW_QUERIES = 100;
@@ -47,7 +46,7 @@ export class SlowQueryDetectorService {
     // Create alert
     this.createAlert(slowQuery);
 
-    this.logger.warn(`SLOW QUERY (${duration}ms):`, {
+    this.logWarning(`SLOW QUERY (${duration}ms):`, {
       model,
       sql: sql.substring(0, 200),
       duration,
@@ -187,6 +186,6 @@ export class SlowQueryDetectorService {
   reset(): void {
     this.slowQueries = [];
     this.alerts = [];
-    this.logger.log('Slow query detector reset');
+    this.logInfo('Slow query detector reset');
   }
 }

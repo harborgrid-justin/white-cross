@@ -7,8 +7,6 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
-  Logger,
   NotFoundException,
   Optional,
 } from '@nestjs/common';
@@ -35,7 +33,6 @@ import { PerformanceTrendsDto } from '../dto/performance-trends.dto';
  */
 @Injectable()
 export class StudentAcademicService extends BaseService {
-  protected readonly logger = new Logger(StudentAcademicService.name);
 
   constructor(
     @InjectModel(Student)

@@ -17,10 +17,9 @@ import { CreateAllergyDto } from '../dto/create-allergy.dto';
 import { AllergyUpdateDto } from '../dto/update-allergy.dto';
 import { Student } from '../../student/models/student.model';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class AllergyCrudService {
-  private readonly logger = new Logger(AllergyCrudService.name);
-
+export class AllergyCrudService extends BaseService {
   constructor(
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
@@ -73,7 +72,7 @@ export class AllergyCrudService {
     const savedAllergy = await this.allergyModel.create(allergyData);
 
     // PHI Audit Log
-    this.logger.log(
+    this.logInfo(
       `Allergy created: ${savedAllergy.allergen} (${savedAllergy.severity}) for student ${savedAllergy.studentId}`,
     );
 
@@ -100,7 +99,7 @@ export class AllergyCrudService {
     }
 
     // PHI Audit Log
-    this.logger.log(`Allergy accessed: ID ${id}, Student ${allergy.studentId}`);
+    this.logInfo(`Allergy accessed: ID ${id}, Student ${allergy.studentId}`);
 
     return allergy;
   }
@@ -143,7 +142,7 @@ export class AllergyCrudService {
     const updatedAllergy = allergy;
 
     // PHI Audit Log
-    this.logger.log(
+    this.logInfo(
       `Allergy updated: ${updatedAllergy.allergen} for student ${updatedAllergy.studentId}. ` +
         `Old values: ${JSON.stringify(oldValues)}`,
     );
@@ -178,7 +177,7 @@ export class AllergyCrudService {
     await allergy.update({ isActive: false });
 
     // PHI Audit Log
-    this.logger.log(
+    this.logInfo(
       `Allergy deactivated: ${allergy.allergen} for student ${allergy.studentId}`,
     );
 
@@ -217,7 +216,7 @@ export class AllergyCrudService {
     await allergy.destroy();
 
     // PHI Audit Log - WARNING level due to permanent deletion
-    this.logger.warn(
+    this.logWarning(
       `Allergy permanently deleted: ${auditData.allergen} for ${auditData.studentName}. ` +
         `Data: ${JSON.stringify(auditData)}`,
     );

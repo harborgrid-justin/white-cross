@@ -5,10 +5,9 @@ import { InventoryItem } from '../database/models/inventory-item.model';
 import { CreateInventoryItemDto } from './dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from './dto/update-inventory-item.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class InventoryService {
-  private readonly logger = new Logger(InventoryService.name);
-
+export class InventoryService extends BaseService {
   constructor(
     @InjectModel(InventoryItem)
     private readonly inventoryItemModel: typeof InventoryItem,
@@ -40,12 +39,12 @@ export class InventoryService {
         isActive: true,
       } as any);
 
-      this.logger.log(
+      this.logInfo(
         `Inventory item created: ${savedItem.name} (${savedItem.category})`,
       );
       return savedItem;
     } catch (error) {
-      this.logger.error('Error creating inventory item:', error);
+      this.logError('Error creating inventory item:', error);
       throw error;
     }
   }
@@ -66,10 +65,10 @@ export class InventoryService {
 
       const updatedItem = await existingItem.update(data);
 
-      this.logger.log(`Inventory item updated: ${updatedItem.name}`);
+      this.logInfo(`Inventory item updated: ${updatedItem.name}`);
       return updatedItem;
     } catch (error) {
-      this.logger.error('Error updating inventory item:', error);
+      this.logError('Error updating inventory item:', error);
       throw error;
     }
   }
@@ -89,7 +88,7 @@ export class InventoryService {
 
       return item;
     } catch (error) {
-      this.logger.error('Error getting inventory item:', error);
+      this.logError('Error getting inventory item:', error);
       throw error;
     }
   }
@@ -126,7 +125,7 @@ export class InventoryService {
 
       return items;
     } catch (error) {
-      this.logger.error('Error getting inventory items:', error);
+      this.logError('Error getting inventory items:', error);
       throw error;
     }
   }
@@ -146,10 +145,10 @@ export class InventoryService {
       item.isActive = false;
       const deletedItem = await item.save();
 
-      this.logger.log(`Inventory item deleted: ${deletedItem.name}`);
+      this.logInfo(`Inventory item deleted: ${deletedItem.name}`);
       return deletedItem;
     } catch (error) {
-      this.logger.error('Error deleting inventory item:', error);
+      this.logError('Error deleting inventory item:', error);
       throw error;
     }
   }
@@ -235,14 +234,14 @@ export class InventoryService {
           },
         );
 
-      this.logger.log(
+      this.logInfo(
         `Full-text search returned ${items.length} results for query: "${query}"`,
       );
       return items;
     } catch (error) {
-      this.logger.error('Error searching inventory items:', error);
+      this.logError('Error searching inventory items:', error);
       // Fallback to ILIKE search if full-text search fails (e.g., column doesn't exist yet)
-      this.logger.warn(
+      this.logWarning(
         'Falling back to ILIKE search - consider running full-text search migration',
       );
       return this.fallbackILikeSearch(query, limit);
@@ -288,7 +287,7 @@ export class InventoryService {
 
       return await this.inventoryItemModel.count({ where });
     } catch (error) {
-      this.logger.error('Error getting inventory items count:', error);
+      this.logError('Error getting inventory items count:', error);
       throw error;
     }
   }

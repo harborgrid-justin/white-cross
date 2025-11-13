@@ -8,10 +8,9 @@ import { UpdateFollowUpDto } from '../dto/follow-up/update-follow-up.dto';
 import { CompleteFollowUpDto } from '../dto/follow-up/complete-follow-up.dto';
 import { FollowUpFiltersDto } from '../dto/follow-up/follow-up-filters.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class FollowUpService {
-  private readonly logger = new Logger(FollowUpService.name);
-
+export class FollowUpService extends BaseService {
   constructor(
     @InjectModel(FollowUpAppointment)
     private followUpModel: typeof FollowUpAppointment,
@@ -137,7 +136,7 @@ export class FollowUpService {
   async remove(id: string): Promise<void> {
     const result = await this.followUpModel.destroy({ where: { id } });
     if (result === 0) throw new NotFoundException(`Follow-up ${id} not found`);
-    this.logger.log(`Deleted follow-up ${id}`);
+    this.logInfo(`Deleted follow-up ${id}`);
   }
 
   async findNeedingReminders(

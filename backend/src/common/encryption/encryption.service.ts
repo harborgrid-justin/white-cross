@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { promisify } from 'util';
 
+import { BaseService } from '../../common/base';
 // Promisify crypto functions
 const scrypt = promisify(crypto.scrypt);
 const randomBytes = promisify(crypto.randomBytes);
@@ -97,8 +98,7 @@ export interface HealthcareSearchableIndex {
  * Healthcare-grade encryption service with HIPAA compliance
  */
 @Injectable()
-export class HealthcareEncryptionService {
-  private readonly logger = new Logger('HealthcareEncryption');
+export class HealthcareEncryptionService extends BaseService {
   private readonly keys: Map<string, Buffer> = new Map();
   private readonly keyMetadata: Map<string, HealthcareKeyMetadata> = new Map();
   private activeKeysByLevel: Map<HealthcareDataLevel, string> = new Map();
@@ -167,7 +167,7 @@ export class HealthcareEncryptionService {
 
       return envelope;
     } catch (error) {
-      this.logger.error(`Healthcare data encryption failed: ${error.message}`, error);
+      this.logError(`Healthcare data encryption failed: ${error.message}`, error);
       throw new Error('Healthcare encryption operation failed');
     }
   }
@@ -207,7 +207,7 @@ export class HealthcareEncryptionService {
 
       return plaintext;
     } catch (error) {
-      this.logger.error(`Healthcare data decryption failed: ${error.message}`, error);
+      this.logError(`Healthcare data decryption failed: ${error.message}`, error);
       throw new Error('Healthcare decryption operation failed or data tampered');
     }
   }
@@ -237,7 +237,7 @@ export class HealthcareEncryptionService {
 
       return await this.decryptHealthcareData(envelope, true);
     } catch (error) {
-      this.logger.error(`PHI decryption failed: ${error.message}`, error);
+      this.logError(`PHI decryption failed: ${error.message}`, error);
       throw new Error('Invalid encrypted PHI data');
     }
   }
@@ -267,11 +267,11 @@ export class HealthcareEncryptionService {
       ) as EncryptedEnvelope;
 
       // Enhanced audit logging for sensitive PHI
-      this.logger.warn(`Sensitive PHI decryption requested for key: ${envelope.keyId}`);
+      this.logWarning(`Sensitive PHI decryption requested for key: ${envelope.keyId}`);
 
       return await this.decryptHealthcareData(envelope, true);
     } catch (error) {
-      this.logger.error(`Sensitive PHI decryption failed: ${error.message}`, error);
+      this.logError(`Sensitive PHI decryption failed: ${error.message}`, error);
       throw new Error('Invalid encrypted sensitive PHI data');
     }
   }
@@ -301,13 +301,13 @@ export class HealthcareEncryptionService {
       ) as EncryptedEnvelope;
 
       // Special audit logging for restricted data
-      this.logger.warn(
+      this.logWarning(
         `Restricted healthcare data decryption requested for key: ${envelope.keyId}`,
       );
 
       return await this.decryptHealthcareData(envelope, true);
     } catch (error) {
-      this.logger.error(`Restricted data decryption failed: ${error.message}`, error);
+      this.logError(`Restricted data decryption failed: ${error.message}`, error);
       throw new Error('Invalid encrypted restricted healthcare data');
     }
   }
@@ -440,7 +440,7 @@ export class HealthcareEncryptionService {
     this.keyMetadata.set(keyId, metadata);
     this.activeKeysByLevel.set(dataLevel, keyId);
     
-    this.logger.log(`Generated healthcare encryption key: ${keyId} for level: ${dataLevel}`);
+    this.logInfo(`Generated healthcare encryption key: ${keyId} for level: ${dataLevel}`);
     this.logEncryptionAudit(keyId, dataLevel, 'KEY_GENERATED');
 
     return metadata;
@@ -490,7 +490,7 @@ export class HealthcareEncryptionService {
       oldMetadata.algorithm as EncryptionAlgorithm,
     );
 
-    this.logger.log(`Rotated healthcare key from ${oldKeyId} to ${newKeyId} for level: ${dataLevel}`);
+    this.logInfo(`Rotated healthcare key from ${oldKeyId} to ${newKeyId} for level: ${dataLevel}`);
     this.logEncryptionAudit(oldKeyId, dataLevel, 'KEY_ROTATED');
 
     return newMetadata;
@@ -623,7 +623,7 @@ export class HealthcareEncryptionService {
             // Keep as string if not valid JSON
           }
         } catch (error) {
-          this.logger.warn(`Failed to decrypt field ${fieldName}: ${error.message}`);
+          this.logWarning(`Failed to decrypt field ${fieldName}: ${error.message}`);
         }
       }
     }
@@ -666,7 +666,7 @@ export class HealthcareEncryptionService {
       this.activeKeysByLevel.set(level, keyId);
     }
 
-    this.logger.warn(
+    this.logWarning(
       'Healthcare encryption keys initialized in memory. ' +
       'For production, integrate with ConfigService and use HSM/KMS.',
     );
@@ -777,7 +777,7 @@ export class HealthcareEncryptionService {
   private validateKeyForDataLevel(keyId: string, dataLevel: HealthcareDataLevel): void {
     const metadata = this.keyMetadata.get(keyId);
     if (metadata && metadata.dataLevel !== dataLevel) {
-      this.logger.warn(
+      this.logWarning(
         `Key ${keyId} data level (${metadata.dataLevel}) doesn't match requested level (${dataLevel})`,
       );
     }
@@ -798,7 +798,7 @@ export class HealthcareEncryptionService {
   private getKey(keyId: string): Buffer {
     const key = this.keys.get(keyId);
     if (!key) {
-      this.logger.error(`Healthcare encryption key not found: ${keyId}`);
+      this.logError(`Healthcare encryption key not found: ${keyId}`);
       throw new Error(`Healthcare encryption key not found: ${keyId}`);
     }
     return key;
@@ -812,7 +812,7 @@ export class HealthcareEncryptionService {
     dataLevel: HealthcareDataLevel,
     operation: string,
   ): void {
-    this.logger.log(
+    this.logInfo(
       `Healthcare encryption audit: ${operation} | Key: ${keyId} | Level: ${dataLevel} | Time: ${new Date().toISOString()}`,
     );
   }
@@ -949,7 +949,7 @@ export class HealthcareEncryptionService {
         keyRotation: keyRotationHealthy,
       };
     } catch (error) {
-      this.logger.error(`Healthcare encryption health check failed: ${error.message}`, error);
+      this.logError(`Healthcare encryption health check failed: ${error.message}`, error);
       return {
         keyManagement: false,
         encryption: false,

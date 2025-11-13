@@ -6,6 +6,7 @@ import { ExecutionContext } from '../../database/types/execution-context.interfa
 import { CreateSessionDto } from '../dto/create-session.dto';
 import { SessionInstance, SequelizeModelClass } from '../types/sequelize-models.types';
 
+import { BaseService } from '../../common/base';
 /**
  * Session Management Service
  *
@@ -17,9 +18,7 @@ import { SessionInstance, SequelizeModelClass } from '../types/sequelize-models.
  * - Audit logging for session operations
  */
 @Injectable()
-export class SessionManagementService {
-  private readonly logger = new Logger(SessionManagementService.name);
-
+export class SessionManagementService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditService: AuditService,
@@ -47,10 +46,10 @@ export class SessionManagementService {
         lastActivity: new Date(),
       });
 
-      this.logger.log(`Created session for user ${data.userId}`);
+      this.logInfo(`Created session for user ${data.userId}`);
       return session;
     } catch (error) {
-      this.logger.error('Error creating session:', error);
+      this.logError('Error creating session:', error);
       throw error;
     }
   }
@@ -71,12 +70,12 @@ export class SessionManagementService {
         order: [['createdAt', 'DESC']],
       });
 
-      this.logger.log(
+      this.logInfo(
         `Retrieved ${sessions.length} active sessions for user ${userId}`,
       );
       return sessions;
     } catch (error) {
-      this.logger.error(`Error getting sessions for user ${userId}:`, error);
+      this.logError(`Error getting sessions for user ${userId}:`, error);
       throw error;
     }
   }
@@ -115,7 +114,7 @@ export class SessionManagementService {
         );
       }
     } catch (error) {
-      this.logger.error('Error updating session activity:', error);
+      this.logError('Error updating session activity:', error);
       // Don't throw - this is a background operation
     }
   }
@@ -134,10 +133,10 @@ export class SessionManagementService {
         throw new NotFoundException('Session not found');
       }
 
-      this.logger.log('Session deleted');
+      this.logInfo('Session deleted');
       return { success: true };
     } catch (error) {
-      this.logger.error('Error deleting session:', error);
+      this.logError('Error deleting session:', error);
       throw error;
     }
   }
@@ -152,10 +151,10 @@ export class SessionManagementService {
         where: { userId },
       });
 
-      this.logger.log(`Deleted ${deletedCount} sessions for user ${userId}`);
+      this.logInfo(`Deleted ${deletedCount} sessions for user ${userId}`);
       return { deleted: deletedCount };
     } catch (error) {
-      this.logger.error(`Error deleting sessions for user ${userId}:`, error);
+      this.logError(`Error deleting sessions for user ${userId}:`, error);
       throw error;
     }
   }
@@ -174,10 +173,10 @@ export class SessionManagementService {
         },
       });
 
-      this.logger.log(`Cleaned up ${deletedCount} expired sessions`);
+      this.logInfo(`Cleaned up ${deletedCount} expired sessions`);
       return { deleted: deletedCount };
     } catch (error) {
-      this.logger.error('Error cleaning up expired sessions:', error);
+      this.logError('Error cleaning up expired sessions:', error);
       throw error;
     }
   }

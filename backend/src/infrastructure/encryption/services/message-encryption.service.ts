@@ -4,19 +4,26 @@
  * @description Service for encrypting and decrypting complete messages
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { EncryptedMessage, DecryptionResult, EncryptionOptions } from '../types/encryption.types';
 import { CryptoService } from './crypto.service';
 import { SessionKeyManagerService } from './session-key-manager.service';
 
 @Injectable()
-export class MessageEncryptionService {
-  private readonly logger = new Logger(MessageEncryptionService.name);
-
+export class MessageEncryptionService extends BaseService {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly cryptoService: CryptoService,
     private readonly sessionKeyManager: SessionKeyManagerService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'MessageEncryptionService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Encrypt a complete message
@@ -55,14 +62,14 @@ export class MessageEncryptionService {
         isEncrypted: true,
       };
 
-      this.logger.log('Message encrypted successfully', {
+      this.logInfo('Message encrypted successfully', {
         conversationId,
         recipientCount: recipientIds.length,
       });
 
       return encryptedMessage;
     } catch (error) {
-      this.logger.error('Message encryption failed', {
+      this.logError('Message encryption failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         conversationId,
       });
@@ -96,7 +103,7 @@ export class MessageEncryptionService {
     try {
       // Check if message is actually encrypted
       if (!encryptedMessage.isEncrypted) {
-        this.logger.debug('Message is not encrypted, returning as-is');
+        this.logDebug('Message is not encrypted, returning as-is');
         return {
           success: true,
           data: encryptedMessage.encryptedContent,
@@ -106,7 +113,7 @@ export class MessageEncryptionService {
 
       // Verify recipient is authorized
       if (!encryptedMessage.recipientIds.includes(recipientId)) {
-        this.logger.warn('Unauthorized decryption attempt', {
+        this.logWarning('Unauthorized decryption attempt', {
           recipientId: this.sessionKeyManager.sanitizeId(recipientId),
           conversationId: encryptedMessage.conversationId,
         });
@@ -144,14 +151,14 @@ export class MessageEncryptionService {
       );
 
       if (result.success) {
-        this.logger.debug('Message decrypted successfully', {
+        this.logDebug('Message decrypted successfully', {
           conversationId: encryptedMessage.conversationId,
         });
       }
 
       return result;
     } catch (error) {
-      this.logger.error('Message decryption failed', {
+      this.logError('Message decryption failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         conversationId: encryptedMessage.conversationId,
       });

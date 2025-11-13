@@ -5,6 +5,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { NotificationService } from '../services/notification.service';
 import { SendNotificationDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Notification Controller
  * Handles push notification operations
@@ -13,7 +14,7 @@ import { SendNotificationDto } from '../dto';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('mobile/notifications')
-export class NotificationController {
+export class NotificationController extends BaseController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @Post()

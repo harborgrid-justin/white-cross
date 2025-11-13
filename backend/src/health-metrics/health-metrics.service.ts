@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CreateVitalsDto } from './dto/create-vitals.dto';
 import { UpdateAlertDto } from './dto/update-alert.dto';
 
+import { BaseService } from '../../common/base';
 export interface VitalSigns {
   heartRate?: number;
   bloodPressure?: {
@@ -56,9 +57,7 @@ export interface HealthAlert {
 }
 
 @Injectable()
-export class HealthMetricsService {
-  private readonly logger = new Logger(HealthMetricsService.name);
-
+export class HealthMetricsService extends BaseService {
   async getMetricsOverview(
     timeRange: string = '24h',
     department?: string,
@@ -119,7 +118,7 @@ export class HealthMetricsService {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error('Error fetching metrics overview:', error);
+      this.logError('Error fetching metrics overview:', error);
       throw new Error('Failed to fetch metrics overview');
     }
   }
@@ -174,7 +173,7 @@ export class HealthMetricsService {
 
       return vitals;
     } catch (error) {
-      this.logger.error('Error fetching live vitals:', error);
+      this.logError('Error fetching live vitals:', error);
       throw new Error('Failed to fetch live vitals');
     }
   }
@@ -223,7 +222,7 @@ export class HealthMetricsService {
 
       return trends;
     } catch (error) {
-      this.logger.error('Error fetching patient trends:', error);
+      this.logError('Error fetching patient trends:', error);
       throw new Error('Failed to fetch patient trends');
     }
   }
@@ -255,7 +254,7 @@ export class HealthMetricsService {
         completion_rate: Math.floor(Math.random() * 20) + 80,
       }));
     } catch (error) {
-      this.logger.error('Error fetching department performance:', error);
+      this.logError('Error fetching department performance:', error);
       throw new Error('Failed to fetch department performance');
     }
   }
@@ -285,7 +284,7 @@ export class HealthMetricsService {
 
       return vitalRecord;
     } catch (error) {
-      this.logger.error('Error recording vitals:', error);
+      this.logError('Error recording vitals:', error);
       throw new Error('Failed to record vital signs');
     }
   }
@@ -341,7 +340,7 @@ export class HealthMetricsService {
 
       return alerts;
     } catch (error) {
-      this.logger.error('Error fetching health alerts:', error);
+      this.logError('Error fetching health alerts:', error);
       throw new Error('Failed to fetch health alerts');
     }
   }
@@ -358,7 +357,7 @@ export class HealthMetricsService {
         updated_at: new Date(),
       };
     } catch (error) {
-      this.logger.error('Error updating alert status:', error);
+      this.logError('Error updating alert status:', error);
       throw new Error('Failed to update alert status');
     }
   }
@@ -425,9 +424,9 @@ export class HealthMetricsService {
       }
 
       // In a real implementation, these alerts would be saved to the database
-      this.logger.log(`Critical vitals detected: ${JSON.stringify(alerts)}`);
+      this.logInfo(`Critical vitals detected: ${JSON.stringify(alerts)}`);
     } catch (error) {
-      this.logger.error('Error checking for critical vitals:', error);
+      this.logError('Error checking for critical vitals:', error);
     }
   }
 

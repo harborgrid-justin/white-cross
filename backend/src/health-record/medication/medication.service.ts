@@ -5,8 +5,9 @@ import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
 import { Op } from 'sequelize';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class MedicationService {
+export class MedicationService extends BaseService {
   constructor(
     @InjectModel(Medication)
     private readonly medicationModel: typeof Medication,

@@ -15,6 +15,10 @@ import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // Healthcare Cache Configuration
 export interface HealthcareCacheConfig {
   defaultTTL: number;
@@ -96,10 +100,18 @@ class HealthcareMemoryCache extends EventEmitter {
   private cache = new Map<string, HealthcareCacheEntry>();
   private timers = new Map<string, NodeJS.Timeout>();
   private stats: HealthcareCacheStats;
-  private readonly logger = new Logger('HealthcareMemoryCache');
   private encryptionKey: Buffer;
 
-  constructor(private config: HealthcareCacheConfig) {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private config: HealthcareCacheConfig
+  ) {
+    super({
+      serviceName: 'HealthcareCacheService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super();
     this.stats = this.initializeStats();
     this.encryptionKey = crypto.randomBytes(32); // 256-bit key
@@ -253,7 +265,7 @@ class HealthcareMemoryCache extends EventEmitter {
 
       this.emit('healthcareSet', { key, dataLevel, encrypted, ttl });
     } catch (error) {
-      this.logger.error(`Failed to set healthcare cache entry for key ${key}:`, error);
+      this.logError(`Failed to set healthcare cache entry for key ${key}:`, error);
       throw error;
     }
   }
@@ -282,7 +294,7 @@ class HealthcareMemoryCache extends EventEmitter {
 
       return existed;
     } catch (error) {
-      this.logger.error(`Failed to delete healthcare cache entry for key ${key}:`, error);
+      this.logError(`Failed to delete healthcare cache entry for key ${key}:`, error);
       throw error;
     }
   }
@@ -301,7 +313,7 @@ class HealthcareMemoryCache extends EventEmitter {
       this.emit('patientDataInvalidated', { patientId, count: invalidatedCount, reason });
       return invalidatedCount;
     } catch (error) {
-      this.logger.error(`Failed to invalidate patient data for ${patientId}:`, error);
+      this.logError(`Failed to invalidate patient data for ${patientId}:`, error);
       throw error;
     }
   }
@@ -320,7 +332,7 @@ class HealthcareMemoryCache extends EventEmitter {
       this.emit('providerDataInvalidated', { providerId, count: invalidatedCount, reason });
       return invalidatedCount;
     } catch (error) {
-      this.logger.error(`Failed to invalidate provider data for ${providerId}:`, error);
+      this.logError(`Failed to invalidate provider data for ${providerId}:`, error);
       throw error;
     }
   }
@@ -339,7 +351,7 @@ class HealthcareMemoryCache extends EventEmitter {
       this.emit('tagsInvalidated', { tags, count: invalidatedCount, reason });
       return invalidatedCount;
     } catch (error) {
-      this.logger.error('Failed to invalidate by tags:', error);
+      this.logError('Failed to invalidate by tags:', error);
       throw error;
     }
   }
@@ -369,7 +381,7 @@ class HealthcareMemoryCache extends EventEmitter {
       this.stats = this.initializeStats();
       this.emit('healthcareClear', { reason, phiKeysCleared: phiKeys.length });
     } catch (error) {
-      this.logger.error('Failed to clear healthcare cache:', error);
+      this.logError('Failed to clear healthcare cache:', error);
       throw error;
     }
   }
@@ -454,7 +466,7 @@ class HealthcareMemoryCache extends EventEmitter {
     dataLevel: string,
     context?: any,
   ): void {
-    this.logger.log(
+    this.logInfo(
       `Healthcare Cache Audit: ${operation} | Key: ${key} | DataLevel: ${dataLevel} | Context: ${JSON.stringify(context)} | Time: ${new Date().toISOString()}`,
     );
   }
@@ -548,7 +560,7 @@ class HealthcareMemoryCache extends EventEmitter {
 
     // Log compliance metrics
     if (phiEntries.length > 0) {
-      this.logger.log(
+      this.logInfo(
         `Healthcare Compliance Check: ${phiEntries.length} PHI entries in cache, ${this.stats.encryptedEntries} encrypted entries`,
       );
     }
@@ -561,8 +573,6 @@ class HealthcareMemoryCache extends EventEmitter {
 @Injectable()
 export class HealthcareCacheService extends EventEmitter {
   private memoryCache: HealthcareMemoryCache;
-  private readonly logger = new Logger('HealthcareCacheService');
-
   constructor(
     private configService: ConfigService,
     private config: HealthcareCacheConfig,
@@ -590,7 +600,7 @@ export class HealthcareCacheService extends EventEmitter {
 
       return value;
     } catch (error) {
-      this.logger.error(`Healthcare cache get failed for key ${key}:`, error);
+      this.logError(`Healthcare cache get failed for key ${key}:`, error);
       throw error;
     }
   }
@@ -614,7 +624,7 @@ export class HealthcareCacheService extends EventEmitter {
       await this.memoryCache.set(key, value, options);
       this.emit('healthcareSet', { key, dataLevel: options.dataLevel, ...options });
     } catch (error) {
-      this.logger.error(`Healthcare cache set failed for key ${key}:`, error);
+      this.logError(`Healthcare cache set failed for key ${key}:`, error);
       throw error;
     }
   }
@@ -658,7 +668,7 @@ export class HealthcareCacheService extends EventEmitter {
 
       return result;
     } catch (error) {
-      this.logger.error(`Healthcare query caching failed for key ${key}:`, error);
+      this.logError(`Healthcare query caching failed for key ${key}:`, error);
       throw error;
     }
   }
@@ -737,7 +747,7 @@ export class HealthcareCacheService extends EventEmitter {
       await Promise.all(promises);
       this.emit('healthcareCacheWarmed', { count: warmingData.length });
     } catch (error) {
-      this.logger.error('Healthcare cache warming failed:', error);
+      this.logError('Healthcare cache warming failed:', error);
       throw error;
     }
   }
@@ -806,7 +816,7 @@ export class HealthcareCacheService extends EventEmitter {
         phiProtection: phiCaching,
       };
     } catch (error) {
-      this.logger.error('Healthcare cache health check failed:', error);
+      this.logError('Healthcare cache health check failed:', error);
       return {
         memory: false,
         encryption: false,

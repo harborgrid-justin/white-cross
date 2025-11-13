@@ -15,6 +15,10 @@ import { Sequelize, QueryTypes } from 'sequelize';
 import * as crypto from 'crypto';
 import { EventEmitter } from 'events';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // Healthcare-specific interfaces extending base security types
 export interface HealthcareEncryptionKey {
   id: string;
@@ -122,7 +126,6 @@ export interface HealthcareSecurityPolicy {
 
 @Injectable()
 export class ProductionSecurityService extends EventEmitter {
-  private readonly logger = new Logger('ProductionSecurity');
   private keyStore = new Map<string, HealthcareEncryptionKey>();
   private encryptedColumns = new Map<string, HealthcareEncryptedColumn>();
   private auditLogs: HealthcareAuditLog[] = [];
@@ -130,7 +133,15 @@ export class ProductionSecurityService extends EventEmitter {
   private threats: HealthcareThreatDetection[] = [];
   private healthcarePiiPatterns = new Map<string, RegExp>();
 
-  constructor() {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService
+  ) {
+    super({
+      serviceName: 'ProductionSecurityService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super();
     this.initializeHealthcarePIIPatterns();
     this.createDefaultSecurityPolicies();
@@ -201,7 +212,7 @@ export class ProductionSecurityService extends EventEmitter {
 
       this.emit('healthcareColumnEncrypted', { table, column, keyId, phiLevel });
     } catch (error: any) {
-      this.logger.error(`Failed to encrypt healthcare column ${table}.${column}:`, error);
+      this.logError(`Failed to encrypt healthcare column ${table}.${column}:`, error);
 
       await this.logHealthcareSecurityEvent({
         timestamp: new Date(),
@@ -275,7 +286,7 @@ export class ProductionSecurityService extends EventEmitter {
 
       this.emit('healthcareColumnDecrypted', { table, column, keyId, userId });
     } catch (error) {
-      this.logger.error(`Failed to decrypt healthcare column ${table}.${column}:`, error);
+      this.logError(`Failed to decrypt healthcare column ${table}.${column}:`, error);
       throw error;
     }
   }
@@ -332,7 +343,7 @@ export class ProductionSecurityService extends EventEmitter {
 
         for (const [columnKey, column] of columnsToRotate) {
           // This would require Sequelize instance - in production, inject it
-          this.logger.log(`Key rotation needed for column: ${columnKey}`);
+          this.logInfo(`Key rotation needed for column: ${columnKey}`);
         }
 
         oldKey.status = 'rotated';
@@ -359,7 +370,7 @@ export class ProductionSecurityService extends EventEmitter {
         });
 
       } catch (error) {
-        this.logger.error(`Failed to rotate healthcare key ${oldKey.id}:`, error);
+        this.logError(`Failed to rotate healthcare key ${oldKey.id}:`, error);
       }
     }
   }
@@ -440,7 +451,7 @@ export class ProductionSecurityService extends EventEmitter {
         (item, index, self) => index === self.findIndex((t) => t.column === item.column),
       );
     } catch (error) {
-      this.logger.error(`Healthcare PHI detection failed for table ${table}:`, error);
+      this.logError(`Healthcare PHI detection failed for table ${table}:`, error);
       return [];
     }
   }
@@ -738,7 +749,7 @@ export class ProductionSecurityService extends EventEmitter {
             await this.rotateHealthcareKeys();
             this.cleanupExpiredThreats();
           } catch (error) {
-            this.logger.error('Healthcare security monitoring error:', error);
+            this.logError('Healthcare security monitoring error:', error);
           }
         })();
       },
@@ -801,7 +812,7 @@ export class ProductionSecurityService extends EventEmitter {
         hipaaCompliance: this.validateHIPAACompliance(),
       };
     } catch (error) {
-      this.logger.error('Healthcare security health check failed:', error);
+      this.logError('Healthcare security health check failed:', error);
       return {
         keyManagement: false,
         encryption: false,

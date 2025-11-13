@@ -5,6 +5,7 @@ import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 import type { IntegrationTestDetails } from '../types/test-details.types';
 
+import { BaseService } from '../../common/base';
 export interface IntegrationTestResult {
   success: boolean;
   message: string;
@@ -17,9 +18,7 @@ export interface IntegrationTestResult {
  * Tests connectivity and validates integration configurations
  */
 @Injectable()
-export class IntegrationTestService {
-  private readonly logger = new Logger(IntegrationTestService.name);
-
+export class IntegrationTestService extends BaseService {
   constructor(
     @InjectModel(IntegrationConfig)
     private readonly configModel: typeof IntegrationConfig,
@@ -69,7 +68,7 @@ export class IntegrationTestService {
         details: testResult.details as any,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Connection test ${testResult.success ? 'succeeded' : 'failed'} for ${integration.name}`,
       );
 
@@ -88,7 +87,7 @@ export class IntegrationTestService {
         { where: { id } },
       );
 
-      this.logger.error('Error testing connection', error);
+      this.logError('Error testing connection', error);
 
       return {
         success: false,

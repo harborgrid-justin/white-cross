@@ -21,6 +21,13 @@ import { Injectable, LoggerService as NestLoggerService, Optional, Scope } from 
 import * as winston from 'winston';
 import { AppConfigService } from '../../config/app-config.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * @class LoggerService
  * @description NestJS-compatible logger service using Winston
@@ -30,11 +37,20 @@ import { AppConfigService } from '../../config/app-config.service';
  * @example
  * ```typescript
  * // In a service
- * constructor(private readonly logger: LoggerService) {}
+ * constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly logger: LoggerService
+  ) {
+    super({
+      serviceName: 'LoggerService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
  *
  * someMethod() {
- *   this.logger.log('Operation started', 'SomeService');
- *   this.logger.error('Operation failed', 'error details', 'SomeService');
+ *   this.logInfo('Operation started', 'SomeService');
+ *   this.logError('Operation failed', 'error details', 'SomeService');
  * }
  * ```
  */

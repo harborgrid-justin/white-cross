@@ -16,9 +16,9 @@ import { PHIAccessLogger } from '../phi-access-logger.service';
 import { InMemoryCacheEntry, ComplianceLevel } from './cache-interfaces';
 import { CacheEntry as CacheEntryModel   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class L3CacheService {
-  private readonly logger = new Logger(L3CacheService.name);
+export class L3CacheService extends BaseService {
   private stats = { hits: 0, misses: 0, queryTime: 0, size: 0 };
 
   constructor(
@@ -58,7 +58,7 @@ export class L3CacheService {
       // Parse and return cached data
       const parsedData = cacheEntry.getParsedData<T>();
       if (parsedData === null) {
-        this.logger.warn(`L3 cache entry found but data parsing failed for key: ${key}`);
+        this.logWarning(`L3 cache entry found but data parsing failed for key: ${key}`);
         this.stats.misses++;
         return null;
       }
@@ -85,7 +85,7 @@ export class L3CacheService {
 
       return parsedData;
     } catch (error) {
-      this.logger.error(`L3 cache get failed for key ${key}:`, error);
+      this.logError(`L3 cache get failed for key ${key}:`, error);
       this.stats.misses++;
       this.stats.queryTime += Date.now() - startTime;
       return null;
@@ -140,11 +140,11 @@ export class L3CacheService {
         });
       }
 
-      this.logger.debug(
+      this.logDebug(
         `L3 cache entry stored: ${cacheKey}, size: ${entry.size} bytes, TTL: ${ttl}s`,
       );
     } catch (error) {
-      this.logger.error(`L3 cache set failed for key ${key}:`, error);
+      this.logError(`L3 cache set failed for key ${key}:`, error);
     }
   }
 
@@ -162,11 +162,11 @@ export class L3CacheService {
       });
 
       this.stats.size = Math.max(0, this.stats.size - deletedCount);
-      this.logger.debug(`L3 cache invalidated ${deletedCount} entries for pattern: ${pattern}`);
+      this.logDebug(`L3 cache invalidated ${deletedCount} entries for pattern: ${pattern}`);
 
       return deletedCount;
     } catch (error) {
-      this.logger.error(`L3 cache invalidation failed for pattern ${pattern}:`, error);
+      this.logError(`L3 cache invalidation failed for pattern ${pattern}:`, error);
       return 0;
     }
   }
@@ -185,13 +185,13 @@ export class L3CacheService {
       });
 
       if (deletedCount > 0) {
-        this.logger.debug(`Cleaned up ${deletedCount} expired L3 cache entries`);
+        this.logDebug(`Cleaned up ${deletedCount} expired L3 cache entries`);
         this.stats.size = Math.max(0, this.stats.size - deletedCount);
       }
 
       return deletedCount;
     } catch (error) {
-      this.logger.error('Failed to cleanup expired L3 cache entries:', error);
+      this.logError('Failed to cleanup expired L3 cache entries:', error);
       return 0;
     }
   }
@@ -229,7 +229,7 @@ export class L3CacheService {
       });
       return count;
     } catch (error) {
-      this.logger.error('Failed to get L3 cache size:', error);
+      this.logError('Failed to get L3 cache size:', error);
       return 0;
     }
   }

@@ -10,6 +10,7 @@ import { DrugInteraction } from '../entities/drug-interaction.entity';
 import { DrugCatalogService } from './drug-catalog.service';
 import { InteractionCheckerService } from './interaction-checker.service';
 import { AllergyManagementService } from './allergy-management.service';
+import { BaseService } from '../../common/base';
 import {
   InteractionResult,
   InteractionCheckDto,
@@ -24,9 +25,7 @@ import {
 } from '../types/drug-interaction.types';
 
 @Injectable()
-export class DrugInteractionService {
-  private readonly logger = new Logger(DrugInteractionService.name);
-
+export class DrugInteractionService extends BaseService {
   constructor(
     @InjectModel(DrugInteraction)
     private drugInteractionModel: typeof DrugInteraction,
@@ -122,7 +121,7 @@ export class DrugInteractionService {
    * Add a drug interaction
    */
   async addInteraction(data: AddInteractionDto) {
-    this.logger.log(
+    this.logInfo(
       `Adding interaction between drugs ${data.drug1Id} and ${data.drug2Id}`,
     );
 
@@ -178,7 +177,7 @@ export class DrugInteractionService {
       throw new NotFoundException('Interaction not found');
     }
 
-    this.logger.log(`Deleted interaction ${id}`);
+    this.logInfo(`Deleted interaction ${id}`);
   }
 
   // Allergy Management Operations

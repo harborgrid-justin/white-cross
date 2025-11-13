@@ -3,8 +3,9 @@ import { DataRetentionRepository } from '../repositories/data-retention.reposito
 import { CreateDataRetentionDto, QueryDataRetentionDto, UpdateDataRetentionDto } from '../dto/data-retention.dto';
 import { RetentionStatus } from '../../database/models/data-retention-policy.model';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class DataRetentionService {
+export class DataRetentionService extends BaseService {
   constructor(private readonly retentionRepository: DataRetentionRepository) {}
 
   async listPolicies(query: QueryDataRetentionDto) {

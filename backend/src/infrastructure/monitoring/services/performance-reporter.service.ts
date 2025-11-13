@@ -16,10 +16,9 @@ import { QueryAnalyzerService } from './query-analyzer.service';
 import { SlowQueryDetectorService } from './slow-query-detector.service';
 import { N1QueryDetectorService } from './n1-query-detector.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class PerformanceReporterService {
-  private readonly logger = new Logger(PerformanceReporterService.name);
-
+export class PerformanceReporterService extends BaseService {
   // Performance targets
   private readonly PERFORMANCE_TARGETS = {
     p50: 100, // ms
@@ -87,7 +86,7 @@ export class PerformanceReporterService {
     const report = this.getPerformanceReport();
 
     // Log summary
-    this.logger.log('Query Performance Summary:', {
+    this.logInfo('Query Performance Summary:', {
       totalQueries: report.totalQueries,
       slowQueries: report.slowQueries,
       avgQueryTime: `${report.avgQueryTime.toFixed(2)}ms`,
@@ -282,6 +281,6 @@ export class PerformanceReporterService {
    */
   reset(): void {
     this.alerts = [];
-    this.logger.log('Performance reporter reset');
+    this.logInfo('Performance reporter reset');
   }
 }

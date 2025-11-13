@@ -9,8 +9,9 @@ import {
 import { ComplianceStatus } from '../entities/compliance-report.entity';
 import { ExecutionContext } from '../../database/types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ComplianceReportService {
+export class ComplianceReportService extends BaseService {
   constructor(
     @Inject('DatabaseComplianceReportRepository')
     private readonly reportRepository: ComplianceReportRepository,

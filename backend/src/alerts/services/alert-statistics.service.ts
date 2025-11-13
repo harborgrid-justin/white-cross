@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Alert } from '@/database';
 import { Op } from 'sequelize';
 
+import { BaseService } from '../../common/base';
 export interface AlertStatistics {
   totalAlerts: number;
   bySeverity: Record<string, number>;
@@ -21,9 +22,7 @@ export interface AlertStatistics {
 }
 
 @Injectable()
-export class AlertStatisticsService {
-  private readonly logger = new Logger(AlertStatisticsService.name);
-
+export class AlertStatisticsService extends BaseService {
   constructor(
     @InjectModel(Alert)
     private readonly alertModel: typeof Alert,
@@ -33,7 +32,7 @@ export class AlertStatisticsService {
    * Get alert statistics
    */
   async getAlertStatistics(filters?: any): Promise<AlertStatistics> {
-    this.logger.log('Calculating alert statistics');
+    this.logInfo('Calculating alert statistics');
 
     const where: any = {};
     if (filters) {

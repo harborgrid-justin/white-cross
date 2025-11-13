@@ -5,12 +5,13 @@ import { ClinicVisit } from '../../database/models/clinic-visit.model';
 import { VisitStatistics } from '../interfaces/visit-statistics.interface';
 import { StudentVisitSummary } from '../interfaces/student-visit-summary.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * Clinic Visit Analytics Service
  * Handles analytics and statistics for clinic visits
  */
 @Injectable()
-export class ClinicVisitAnalyticsService {
+export class ClinicVisitAnalyticsService extends BaseService {
   constructor(
     @InjectModel(ClinicVisit)
     private readonly clinicVisitModel: typeof ClinicVisit,

@@ -15,10 +15,9 @@ import { ChronicCondition   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 import { ClinicVisit   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ImportExportService {
-  private readonly logger = new Logger(ImportExportService.name);
-
+export class ImportExportService extends BaseService {
   // Supported formats
   private readonly SUPPORTED_FORMATS = ['JSON', 'CSV', 'PDF', 'HL7', 'XML'];
 
@@ -38,7 +37,7 @@ export class ImportExportService {
   ) {}
 
   async importRecords(data: any, format: string, user: any): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Importing health records in ${format} format by user ${user.id}`,
     );
 
@@ -113,7 +112,7 @@ export class ImportExportService {
             results.imported += importedRecords.length;
           }
         } catch (error) {
-          this.logger.error(`Bulk import failed for type ${type}:`, error);
+          this.logError(`Bulk import failed for type ${type}:`, error);
           records.forEach((record) => {
             results.failed++;
             results.errors.push({
@@ -124,14 +123,14 @@ export class ImportExportService {
         }
       }
 
-      this.logger.log(
+      this.logInfo(
         `Import completed: ${results.imported} success, ${results.failed} failed`,
       );
-      this.logger.log(
+      this.logInfo(
         `PHI Import: ${results.imported} records imported by user ${user.id}`,
       );
     } catch (error) {
-      this.logger.error(`Import failed: ${error.message}`);
+      this.logError(`Import failed: ${error.message}`);
       throw new BadRequestException(`Import failed: ${error.message}`);
     }
 
@@ -139,7 +138,7 @@ export class ImportExportService {
   }
 
   async exportRecords(filters: any, format: string): Promise<any> {
-    this.logger.log(`Exporting health records in ${format} format`);
+    this.logInfo(`Exporting health records in ${format} format`);
 
     if (!this.SUPPORTED_FORMATS.includes(format.toUpperCase())) {
       throw new BadRequestException(`Unsupported format: ${format}`);
@@ -181,7 +180,7 @@ export class ImportExportService {
   }
 
   async exportStudentRecord(studentId: string, format: string): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Exporting complete record for student ${studentId} in ${format} format`,
     );
 
@@ -310,7 +309,7 @@ export class ImportExportService {
     schoolIds: string[],
     dateRange: any,
   ): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Exporting state report for ${stateCode}, schools: ${schoolIds.join(', ')}`,
     );
 
@@ -715,7 +714,7 @@ export class ImportExportService {
 
   private parseHL7(data: string): any[] {
     // HL7 parsing - simplified implementation
-    this.logger.log('Parsing HL7 message');
+    this.logInfo('Parsing HL7 message');
     const segments = data.split('\n').filter((s) => s.trim());
     const records: any[] = [];
 
@@ -748,7 +747,7 @@ export class ImportExportService {
 
   private parseXML(data: string): any[] {
     // XML parsing - simplified
-    this.logger.log('Parsing XML data');
+    this.logInfo('Parsing XML data');
     // In real implementation would use xml2js or similar
     // For now, return empty array
     return [];
@@ -810,12 +809,12 @@ export class ImportExportService {
 
   private convertToPDF(records: any[]): string {
     // PDF conversion - in real implementation would use pdfmake or similar
-    this.logger.log('Converting to PDF (mock implementation)');
+    this.logInfo('Converting to PDF (mock implementation)');
     return `[PDF Data: ${records.length} records - Full implementation would use pdfmake library]`;
   }
 
   private convertStudentRecordToPDF(data: any): string {
-    this.logger.log(
+    this.logInfo(
       `Converting student record to PDF (mock) for ${data.studentId}`,
     );
     return `[PDF Student Record: ${data.studentId} - ${data.vaccinations.length} vaccinations, ${data.allergies.length} allergies, ${data.chronicConditions.length} conditions]`;

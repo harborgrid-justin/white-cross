@@ -6,6 +6,7 @@ import { HealthRecord   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 import { DeviceReading   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Medical Device Integration Service
  *
@@ -26,9 +27,7 @@ import { DeviceReading   } from "../../database/models";
  * @hipaa-requirement Medical device data handling
  */
 @Injectable()
-export class MedicalDeviceIntegrationService {
-  private readonly logger = new Logger(MedicalDeviceIntegrationService.name);
-
+export class MedicalDeviceIntegrationService extends BaseService {
   // Supported device types
   private readonly SUPPORTED_DEVICES = {
     BLOOD_PRESSURE_MONITOR: 'blood_pressure_monitor',
@@ -621,7 +620,7 @@ export class MedicalDeviceIntegrationService {
     details: any,
   ): Promise<void> {
     // Log device event for audit trail
-    this.logger.log(`Device ${deviceId}: ${eventType}`, details);
+    this.logInfo(`Device ${deviceId}: ${eventType}`, details);
   }
 
   private async authenticateDevice(deviceId: string, authToken: string): Promise<boolean> {
@@ -773,7 +772,7 @@ export class MedicalDeviceIntegrationService {
       });
 
       // Log anomaly alert
-      this.logger.warn(`Anomaly alert generated for patient ${patientId}: ${anomaly.description}`);
+      this.logWarning(`Anomaly alert generated for patient ${patientId}: ${anomaly.description}`);
     }
   }
 

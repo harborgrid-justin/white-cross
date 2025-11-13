@@ -26,7 +26,12 @@ import {
 } from 'sequelize';
 import { Readable, Transform } from 'stream';
 import { EventEmitter } from 'events';
+import { StreamingMetrics } from '../../database/services/operations/interfaces';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Stream configuration for query operations
  */
@@ -49,18 +54,7 @@ export interface CursorPaginationConfig {
   orderDirection?: 'ASC' | 'DESC';
 }
 
-/**
- * Streaming metrics for monitoring
- */
-export interface StreamingMetrics {
-  totalRecords: number;
-  totalBatches: number;
-  averageBatchSize: number;
-  executionTimeMs: number;
-  throughput: number;
-  memoryPeakMb: number;
-  backpressureEvents: number;
-}
+
 
 /**
  * Real-time query subscription configuration
@@ -78,8 +72,6 @@ export interface RealtimeSubscriptionConfig {
  */
 @Injectable()
 export class StreamingQueryService extends EventEmitter {
-  private readonly logger = new Logger(StreamingQueryService.name);
-
   constructor(
     @InjectConnection()
     private readonly sequelize: Sequelize,
@@ -153,7 +145,7 @@ export class StreamingQueryService extends EventEmitter {
       metrics.executionTimeMs = Date.now() - startTime;
       metrics.averageBatchSize = metrics.totalRecords / metrics.totalBatches;
       metrics.throughput = metrics.totalRecords / (metrics.executionTimeMs / 1000);
-      this.logger.log(`Streaming completed: ${JSON.stringify(metrics)}`);
+      this.logInfo(`Streaming completed: ${JSON.stringify(metrics)}`);
     });
 
     return stream;
@@ -211,14 +203,14 @@ export class StreamingQueryService extends EventEmitter {
         if (onError) {
           onError(error as Error);
         } else {
-          this.logger.error('Realtime subscription error:', error);
+          this.logError('Realtime subscription error:', error);
         }
       }
     }, pollIntervalMs);
 
     const unsubscribe = () => {
       clearInterval(interval);
-      this.logger.log('Realtime subscription unsubscribed');
+      this.logInfo('Realtime subscription unsubscribed');
     };
 
     return { unsubscribe };

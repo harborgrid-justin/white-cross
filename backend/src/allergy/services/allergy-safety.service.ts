@@ -18,6 +18,7 @@ import { AllergySeverity } from '../../common/enums';
 import { AllergyCrudService } from './allergy-crud.service';
 import { CreateAllergyDto } from '../dto/create-allergy.dto';
 
+import { BaseService } from '../../common/base';
 export interface DrugAllergyConflict {
   hasConflict: boolean;
   conflictingAllergies: Allergy[];
@@ -26,9 +27,7 @@ export interface DrugAllergyConflict {
 }
 
 @Injectable()
-export class AllergySafetyService {
-  private readonly logger = new Logger(AllergySafetyService.name);
-
+export class AllergySafetyService extends BaseService {
   constructor(
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
@@ -48,7 +47,7 @@ export class AllergySafetyService {
       verifiedBy,
     });
 
-    this.logger.log(
+    this.logInfo(
       `Allergy verified: ID ${id} by healthcare professional ${verifiedBy}`,
     );
 
@@ -156,7 +155,7 @@ export class AllergySafetyService {
     }
 
     // PHI Audit Log - CRITICAL
-    this.logger.error(
+    this.logError(
       `DRUG-ALLERGY CONFLICT DETECTED: Student ${studentId}, ` +
         `Medication: ${medicationName}, Risk Level: ${riskLevel}, ` +
         `Conflicting Allergies: ${conflictingAllergies.map((a) => a.allergen).join(', ')}`,
@@ -189,14 +188,14 @@ export class AllergySafetyService {
           await this.allergyCrudService.createAllergy(allergyData);
         createdAllergies.push(allergy);
       } catch (error) {
-        this.logger.error(
+        this.logError(
           `Failed to create allergy for student ${allergyData.studentId}: ${error.message}`,
         );
         // Continue with next allergy rather than failing entire batch
       }
     }
 
-    this.logger.log(
+    this.logInfo(
       `Bulk allergy creation: ${createdAllergies.length} of ${allergiesData.length} allergies created`,
     );
 

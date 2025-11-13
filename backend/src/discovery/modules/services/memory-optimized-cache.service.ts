@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { CacheableData, MemoryCacheOptions } from '../types/resource.types';
 
+import { BaseService } from '../../common/base';
 export interface CacheProviderConfig {
   ttl: number;
   maxSize: number;
@@ -28,8 +29,7 @@ export interface CacheEntry {
  * - Provide compression and eviction strategies
  */
 @Injectable()
-export class MemoryOptimizedCacheService {
-  private readonly logger = new Logger(MemoryOptimizedCacheService.name);
+export class MemoryOptimizedCacheService extends BaseService {
   private cache = new Map<string, CacheEntry>();
   private providerConfigs = new Map<string, CacheProviderConfig>();
   private memoryUsage = 0;
@@ -50,7 +50,7 @@ export class MemoryOptimizedCacheService {
     config: CacheProviderConfig,
   ): Promise<void> {
     this.providerConfigs.set(providerName, config);
-    this.logger.log(`Registered cacheable provider: ${providerName}`, {
+    this.logInfo(`Registered cacheable provider: ${providerName}`, {
       ttl: config.ttl,
       maxSize: config.maxSize,
       priority: config.priority,
@@ -85,11 +85,11 @@ export class MemoryOptimizedCacheService {
       try {
         finalData = await this.compressData(data);
         compressed = true;
-        this.logger.debug(
+        this.logDebug(
           `Compressed cache entry ${key}: ${dataSize} -> ${this.calculateSize(finalData)} bytes`,
         );
       } catch (error) {
-        this.logger.warn(`Failed to compress cache entry ${key}:`, error);
+        this.logWarning(`Failed to compress cache entry ${key}:`, error);
       }
     }
 
@@ -145,7 +145,7 @@ export class MemoryOptimizedCacheService {
       try {
         data = await this.decompressData(entry.data);
       } catch (error) {
-        this.logger.error(`Failed to decompress cache entry ${key}:`, error);
+        this.logError(`Failed to decompress cache entry ${key}:`, error);
         this.delete(key);
         return null;
       }
@@ -176,7 +176,7 @@ export class MemoryOptimizedCacheService {
         this.delete(key);
       }
     }
-    this.logger.log(`Cleared cache for provider: ${providerName}`);
+    this.logInfo(`Cleared cache for provider: ${providerName}`);
   }
 
   /**
@@ -251,12 +251,12 @@ export class MemoryOptimizedCacheService {
       this.delete(key);
       freedSpace += entry.size;
 
-      this.logger.debug(
+      this.logDebug(
         `Evicted cache entry ${key} (${entry.size} bytes, provider: ${entry.provider})`,
       );
     }
 
-    this.logger.log(`Evicted ${freedSpace} bytes to free memory`);
+    this.logInfo(`Evicted ${freedSpace} bytes to free memory`);
   }
 
   /**
@@ -331,6 +331,6 @@ export class MemoryOptimizedCacheService {
     this.cache.clear();
     this.providerConfigs.clear();
     this.memoryUsage = 0;
-    this.logger.log('Memory optimized cache shutdown complete');
+    this.logInfo('Memory optimized cache shutdown complete');
   }
 }

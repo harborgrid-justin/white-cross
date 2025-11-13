@@ -15,6 +15,7 @@ import { L1CacheService } from './l1-cache.service';
 import { L2CacheService } from './l2-cache.service';
 import { L3CacheService } from './l3-cache.service';
 import { CacheAccessPatternTrackerService } from './cache-access-pattern-tracker.service';
+import { BaseService } from '../../common/base';
 import {
   AccessPattern,
   CacheWarmingResult,
@@ -23,8 +24,7 @@ import {
 } from './cache-interfaces';
 
 @Injectable()
-export class CacheOptimizationService {
-  private readonly logger = new Logger(CacheOptimizationService.name);
+export class CacheOptimizationService extends BaseService {
   private readonly prefetchQueue = new Set<string>();
   private readonly warmingEnabled = true;
   private readonly prefetchEnabled = true;
@@ -43,7 +43,7 @@ export class CacheOptimizationService {
    * Initialize optimization strategies
    */
   private initializeOptimization(): void {
-    this.logger.log('Initializing cache optimization service');
+    this.logInfo('Initializing cache optimization service');
 
     // Schedule initial cache warming after startup
     if (this.warmingEnabled) {
@@ -52,7 +52,7 @@ export class CacheOptimizationService {
       }, 30000); // 30 seconds after startup
     }
 
-    this.logger.log('Cache optimization service initialized');
+    this.logInfo('Cache optimization service initialized');
   }
 
   /**
@@ -65,7 +65,7 @@ export class CacheOptimizationService {
     }
 
     const startTime = Date.now();
-    this.logger.debug('Starting cache warming process');
+    this.logDebug('Starting cache warming process');
 
     const topPatterns = this.getTopAccessPatterns(20);
     let warmedCount = 0;
@@ -77,7 +77,7 @@ export class CacheOptimizationService {
           await this.warmCacheEntry(pattern.key);
           warmedCount++;
         } catch (error) {
-          this.logger.error(`Cache warming failed for ${pattern.key}:`, error);
+          this.logError(`Cache warming failed for ${pattern.key}:`, error);
           failedCount++;
         }
       }
@@ -86,7 +86,7 @@ export class CacheOptimizationService {
     const duration = Date.now() - startTime;
 
     if (warmedCount > 0) {
-      this.logger.log(
+      this.logInfo(
         `Cache warming completed: ${warmedCount} entries warmed, ${failedCount} failed`,
       );
     }
@@ -111,7 +111,7 @@ export class CacheOptimizationService {
     }
 
     const startTime = Date.now();
-    this.logger.debug(`Starting intelligent prefetch: ${this.prefetchQueue.size} candidates`);
+    this.logDebug(`Starting intelligent prefetch: ${this.prefetchQueue.size} candidates`);
 
     const prefetchBatch = Array.from(this.prefetchQueue).slice(0, 10);
     this.prefetchQueue.clear();
@@ -128,7 +128,7 @@ export class CacheOptimizationService {
           failedCount++;
         }
       } catch (error) {
-        this.logger.error(`Prefetch failed for ${key}:`, error);
+        this.logError(`Prefetch failed for ${key}:`, error);
         failedCount++;
       }
     }
@@ -136,7 +136,7 @@ export class CacheOptimizationService {
     const duration = Date.now() - startTime;
 
     if (prefetchedCount > 0) {
-      this.logger.log(
+      this.logInfo(
         `Intelligent prefetch completed: ${prefetchedCount} entries prefetched, ${failedCount} failed`,
       );
     }
@@ -160,7 +160,7 @@ export class CacheOptimizationService {
     l3Cleaned: number;
     patternsCleanedUp: number;
   }> {
-    this.logger.debug('Starting cache optimization');
+    this.logDebug('Starting cache optimization');
 
     // Optimize L1 cache
     const l1Optimized = await this.optimizeL1Cache();
@@ -174,7 +174,7 @@ export class CacheOptimizationService {
     // Update cache metrics
     this.updateCacheMetrics();
 
-    this.logger.log(
+    this.logInfo(
       `Cache optimization completed: L1 optimized: ${l1Optimized}, L3 cleaned: ${l3Cleaned}, patterns cleaned: ${patternsCleanedUp}`,
     );
 
@@ -250,7 +250,7 @@ export class CacheOptimizationService {
       // from the original source, but we don't want to do that in warming
       return false;
     } catch (error) {
-      this.logger.error(`Cache warming failed for key ${key}:`, error);
+      this.logError(`Cache warming failed for key ${key}:`, error);
       return false;
     }
   }
@@ -280,7 +280,7 @@ export class CacheOptimizationService {
 
       return prefetched;
     } catch (error) {
-      this.logger.error(`Prefetch failed for key ${key}:`, error);
+      this.logError(`Prefetch failed for key ${key}:`, error);
       return false;
     }
   }
@@ -312,7 +312,7 @@ export class CacheOptimizationService {
 
       return evicted;
     } catch (error) {
-      this.logger.error('L1 cache optimization failed:', error);
+      this.logError('L1 cache optimization failed:', error);
       return 0;
     }
   }
@@ -337,7 +337,7 @@ export class CacheOptimizationService {
     const l2Stats = this.l2Cache.getStats();
     const l3Stats = this.l3Cache.getStats();
 
-    this.logger.debug('Cache metrics updated', {
+    this.logDebug('Cache metrics updated', {
       l1: l1Stats,
       l2: l2Stats,
       l3: l3Stats,
@@ -430,7 +430,7 @@ export class CacheOptimizationService {
   setWarmingEnabled(enabled: boolean): void {
     // Note: This would typically require restart to take full effect
     // due to the cron jobs being initialized at startup
-    this.logger.log(`Cache warming ${enabled ? 'enabled' : 'disabled'}`);
+    this.logInfo(`Cache warming ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -439,6 +439,6 @@ export class CacheOptimizationService {
   setPrefetchEnabled(enabled: boolean): void {
     // Note: This would typically require restart to take full effect
     // due to the cron jobs being initialized at startup
-    this.logger.log(`Cache prefetching ${enabled ? 'enabled' : 'disabled'}`);
+    this.logInfo(`Cache prefetching ${enabled ? 'enabled' : 'disabled'}`);
   }
 }

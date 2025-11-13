@@ -10,9 +10,15 @@ import { IUnitOfWork } from './unit-of-work.interface';
 import { ExecutionContext } from '../types';
 import type { IAuditLogger } from '../interfaces/audit/audit-logger.interface';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class SequelizeUnitOfWorkService implements IUnitOfWork {
-  private readonly logger = new Logger(SequelizeUnitOfWorkService.name);
   private transaction: Transaction | null = null;
 
   constructor(
@@ -29,7 +35,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
       isolationLevel: Transaction.ISOLATION_LEVELS.READ_COMMITTED,
     });
 
-    this.logger.debug('Transaction begun');
+    this.logDebug('Transaction begun');
   }
 
   async commit(): Promise<void> {
@@ -39,7 +45,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
 
     await this.transaction.commit();
     this.transaction = null;
-    this.logger.debug('Transaction committed');
+    this.logDebug('Transaction committed');
   }
 
   async rollback(): Promise<void> {
@@ -49,7 +55,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
 
     await this.transaction.rollback();
     this.transaction = null;
-    this.logger.debug('Transaction rolled back');
+    this.logDebug('Transaction rolled back');
   }
 
   isInTransaction(): boolean {
@@ -63,7 +69,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
     const transactionId = context.transactionId || this.generateTransactionId();
     const startTime = Date.now();
 
-    this.logger.log(`Starting transaction ${transactionId}`);
+    this.logInfo(`Starting transaction ${transactionId}`);
 
     try {
       const result = await this.sequelize.transaction(
@@ -73,11 +79,11 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
         async (t) => {
           this.transaction = t;
 
-          this.logger.debug(`Transaction ${transactionId} executing operation`);
+          this.logDebug(`Transaction ${transactionId} executing operation`);
 
           const operationResult = await operation(this);
 
-          this.logger.debug(
+          this.logDebug(
             `Transaction ${transactionId} operation completed successfully`,
           );
 
@@ -93,7 +99,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
         success: true,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Transaction ${transactionId} committed successfully (${duration}ms)`,
       );
 
@@ -108,7 +114,7 @@ export class SequelizeUnitOfWorkService implements IUnitOfWork {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
 
-      this.logger.error(
+      this.logError(
         `Transaction ${transactionId} rolled back (${duration}ms)`,
         error instanceof Error ? error.stack : String(error),
       );

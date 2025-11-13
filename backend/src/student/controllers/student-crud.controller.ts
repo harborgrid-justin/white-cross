@@ -27,6 +27,7 @@ import { StudentFilterDto } from '../dto/student-filter.dto';
 import { UpdateStudentDto } from '../dto/update-student.dto';
 import { Student } from '@/database';
 
+import { BaseController } from '../../common/base';
 /**
  * Student CRUD Controller
  *
@@ -40,7 +41,7 @@ import { Student } from '@/database';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentCrudController {
+export class StudentCrudController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

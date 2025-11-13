@@ -40,6 +40,7 @@ import { SearchMessagesDto } from '../dto/search-messages.dto';
 import { MarkAsReadDto, MarkConversationAsReadDto } from '../dto/mark-as-read.dto';
 import { AddParticipantDto, UpdateParticipantDto } from '../dto/conversation-participant.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * EnhancedMessageController
  *
@@ -57,7 +58,7 @@ import { AddParticipantDto, UpdateParticipantDto } from '../dto/conversation-par
 @ApiTags('Enhanced Messaging')
 @ApiBearerAuth()
 @Controller('enhanced-messages')
-export class EnhancedMessageController {
+export class EnhancedMessageController extends BaseController {
   constructor(
     private readonly messageService: EnhancedMessageService,
     private readonly conversationService: ConversationService,

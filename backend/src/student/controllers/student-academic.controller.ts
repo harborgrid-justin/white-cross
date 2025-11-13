@@ -21,6 +21,7 @@ import { AcademicHistoryDto } from '../dto/academic-history.dto';
 import { ImportTranscriptDto } from '../dto/import-transcript.dto';
 import { PerformanceTrendsDto } from '../dto/performance-trends.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Academic Controller
  *
@@ -33,7 +34,7 @@ import { PerformanceTrendsDto } from '../dto/performance-trends.dto';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentAcademicController {
+export class StudentAcademicController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

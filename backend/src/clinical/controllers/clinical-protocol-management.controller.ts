@@ -5,10 +5,11 @@ import { CreateProtocolDto } from '../dto/protocol/create-protocol.dto';
 import { UpdateProtocolDto } from '../dto/protocol/update-protocol.dto';
 import { ActivateProtocolDto } from '../dto/protocol/activate-protocol.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Clinical - Protocols')
 @ApiBearerAuth()
 @Controller('clinical/protocols')
-export class ClinicalProtocolManagementController {
+export class ClinicalProtocolManagementController extends BaseController {
   constructor(private readonly protocolService: ClinicalProtocolService) {}
 
   @Post()

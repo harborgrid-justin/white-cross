@@ -7,6 +7,7 @@ import { User   } from "../../database/models";
 import { Student   } from "../../database/models";
 import { EmergencyContact   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Emergency Notification System
  *
@@ -24,9 +25,7 @@ import { EmergencyContact   } from "../../database/models";
  * @hipaa-requirement Emergency access procedures
  */
 @Injectable()
-export class EmergencyNotificationSystemService {
-  private readonly logger = new Logger(EmergencyNotificationSystemService.name);
-
+export class EmergencyNotificationSystemService extends BaseService {
   constructor(
     @InjectModel(EmergencyBroadcast)
     private readonly emergencyBroadcastModel: typeof EmergencyBroadcast,
@@ -83,7 +82,7 @@ export class EmergencyNotificationSystemService {
 
       await transaction.commit();
 
-      this.logger.warn(
+      this.logWarning(
         `Emergency triggered: ${broadcast.id} - ${emergency.title} (Severity: ${emergency.severity})`,
       );
 
@@ -97,7 +96,7 @@ export class EmergencyNotificationSystemService {
       };
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to trigger emergency: ${error.message}`, error.stack);
+      this.logError(`Failed to trigger emergency: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -141,10 +140,10 @@ export class EmergencyNotificationSystemService {
 
       await transaction.commit();
 
-      this.logger.log(`Emergency acknowledged: ${emergencyId} by ${responder.userName}`);
+      this.logInfo(`Emergency acknowledged: ${emergencyId} by ${responder.userName}`);
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to acknowledge emergency: ${error.message}`, error.stack);
+      this.logError(`Failed to acknowledge emergency: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -197,10 +196,10 @@ export class EmergencyNotificationSystemService {
 
       await transaction.commit();
 
-      this.logger.warn(`Emergency escalated: ${emergencyId} to level ${newLevel}`);
+      this.logWarning(`Emergency escalated: ${emergencyId} to level ${newLevel}`);
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to escalate emergency: ${error.message}`, error.stack);
+      this.logError(`Failed to escalate emergency: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -243,10 +242,10 @@ export class EmergencyNotificationSystemService {
 
       await transaction.commit();
 
-      this.logger.log(`Emergency resolved: ${emergencyId} - ${resolution.resolution}`);
+      this.logInfo(`Emergency resolved: ${emergencyId} - ${resolution.resolution}`);
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to resolve emergency: ${error.message}`, error.stack);
+      this.logError(`Failed to resolve emergency: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -394,7 +393,7 @@ export class EmergencyNotificationSystemService {
       };
     } catch (error) {
       await transaction.rollback();
-      this.logger.error(`Failed to send test emergency: ${error.message}`, error.stack);
+      this.logError(`Failed to send test emergency: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -519,7 +518,7 @@ export class EmergencyNotificationSystemService {
   ): Promise<void> {
     // Implementation would send actual notifications via various channels
     // For now, just log
-    this.logger.log(
+    this.logInfo(
       `Sending ${notification.type} notification to ${target.name}: ${notification.title}`,
     );
   }
@@ -532,7 +531,7 @@ export class EmergencyNotificationSystemService {
     // Implementation would schedule escalation job
     // For now, just log
     const escalationTime = Date.now() + this.getEscalationDelay(broadcast.severity);
-    this.logger.log(
+    this.logInfo(
       `Escalation scheduled for emergency ${broadcast.id} at ${new Date(escalationTime)}`,
     );
   }
@@ -565,7 +564,7 @@ export class EmergencyNotificationSystemService {
 
   private async cancelEscalation(emergencyId: string, transaction: any): Promise<void> {
     // Implementation would cancel scheduled escalation jobs
-    this.logger.log(`Escalation cancelled for emergency ${emergencyId}`);
+    this.logInfo(`Escalation cancelled for emergency ${emergencyId}`);
   }
 
   private async sendAcknowledgmentNotifications(
@@ -574,7 +573,7 @@ export class EmergencyNotificationSystemService {
     transaction: any,
   ): Promise<void> {
     // Send acknowledgment confirmations to relevant parties
-    this.logger.log(`Acknowledgment notifications sent for emergency ${broadcast.id}`);
+    this.logInfo(`Acknowledgment notifications sent for emergency ${broadcast.id}`);
   }
 
   private async getEscalationTargets(
@@ -594,7 +593,7 @@ export class EmergencyNotificationSystemService {
     transaction: any,
   ): Promise<void> {
     // Send escalated notifications with urgency indicators
-    this.logger.warn(`Escalated notifications sent for emergency ${broadcast.id} (Level ${level})`);
+    this.logWarning(`Escalated notifications sent for emergency ${broadcast.id} (Level ${level})`);
   }
 
   private getMaxEscalationLevel(severity: string): number {
@@ -617,14 +616,14 @@ export class EmergencyNotificationSystemService {
   ): Promise<void> {
     // Schedule next escalation
     const escalationTime = Date.now() + this.getEscalationDelay(broadcast.severity);
-    this.logger.log(
+    this.logInfo(
       `Next escalation scheduled for emergency ${broadcast.id} at ${new Date(escalationTime)}`,
     );
   }
 
   private async cancelAllEscalations(emergencyId: string, transaction: any): Promise<void> {
     // Cancel all pending escalations
-    this.logger.log(`All escalations cancelled for emergency ${emergencyId}`);
+    this.logInfo(`All escalations cancelled for emergency ${emergencyId}`);
   }
 
   private async sendResolutionNotifications(
@@ -633,7 +632,7 @@ export class EmergencyNotificationSystemService {
     transaction: any,
   ): Promise<void> {
     // Send resolution notifications
-    this.logger.log(`Resolution notifications sent for emergency ${broadcast.id}`);
+    this.logInfo(`Resolution notifications sent for emergency ${broadcast.id}`);
   }
 
   private async sendTestNotifications(

@@ -6,6 +6,7 @@ import { DeviceTokenService } from './device-token.service';
 import { NotificationAnalyticsService } from './notification-analytics.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
 import { NotificationSchedulerService } from './notification-scheduler.service';
+import { BaseService } from '../../common/base';
 import {
   NotificationTemplate,
   NotificationTemplateService,
@@ -52,9 +53,7 @@ import {
  * ```
  */
 @Injectable()
-export class NotificationService {
-  private readonly logger = new Logger(NotificationService.name);
-
+export class NotificationService extends BaseService {
   constructor(
     private readonly deviceTokenService: DeviceTokenService,
     private readonly deliveryService: NotificationDeliveryService,

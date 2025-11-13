@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { CustomReportBuilderService } from '../custom-report-builder.service';
 import { CreateReportDefinitionDto, ReportDefinitionResponseDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Custom Reports')
 @Controller('enterprise-features/custom-reports')
 @ApiBearerAuth()
-export class CustomReportsController {
+export class CustomReportsController extends BaseController {
   constructor(private readonly reportBuilderService: CustomReportBuilderService) {}
 
   @Post()

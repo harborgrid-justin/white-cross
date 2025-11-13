@@ -6,6 +6,7 @@ import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import * as crypto from 'crypto';
 import { AppConfigService } from '../config/app-config.service';
 
+import { BaseService } from '../../common/base';
 /**
  * API Key Authentication Service
  *
@@ -15,9 +16,7 @@ import { AppConfigService } from '../config/app-config.service';
  * @service ApiKeyAuthService
  */
 @Injectable()
-export class ApiKeyAuthService {
-  private readonly logger = new Logger(ApiKeyAuthService.name);
-
+export class ApiKeyAuthService extends BaseService {
   constructor(
     @InjectModel(ApiKeyEntity)
     private readonly apiKeyModel: typeof ApiKeyEntity,
@@ -69,7 +68,7 @@ export class ApiKeyAuthService {
         usageCount: 0,
       });
 
-      this.logger.log(`API key created: ${keyPrefix}... for user ${userId}`);
+      this.logInfo(`API key created: ${keyPrefix}... for user ${userId}`);
 
       return {
         apiKey, // Plaintext key (only returned once)
@@ -81,7 +80,7 @@ export class ApiKeyAuthService {
         createdAt: apiKeyRecord.createdAt,
       };
     } catch (error) {
-      this.logger.error('Error generating API key', { error, userId });
+      this.logError('Error generating API key', { error, userId });
       throw new BadRequestException('Failed to generate API key');
     }
   }
@@ -104,7 +103,7 @@ export class ApiKeyAuthService {
       });
 
       if (!apiKeyRecord) {
-        this.logger.warn('Invalid API key attempted', {
+        this.logWarning('Invalid API key attempted', {
           keyPrefix: apiKey.substring(0, 12),
         });
         throw new UnauthorizedException('Invalid API key');
@@ -112,7 +111,7 @@ export class ApiKeyAuthService {
 
       // Check if key is active
       if (!apiKeyRecord.isActive) {
-        this.logger.warn('Inactive API key attempted', {
+        this.logWarning('Inactive API key attempted', {
           keyPrefix: apiKeyRecord.keyPrefix,
           id: apiKeyRecord.id,
         });
@@ -121,7 +120,7 @@ export class ApiKeyAuthService {
 
       // Check if key is expired
       if (apiKeyRecord.isExpired()) {
-        this.logger.warn('Expired API key attempted', {
+        this.logWarning('Expired API key attempted', {
           keyPrefix: apiKeyRecord.keyPrefix,
           id: apiKeyRecord.id,
           expiresAt: apiKeyRecord.expiresAt,
@@ -135,7 +134,7 @@ export class ApiKeyAuthService {
         usageCount: apiKeyRecord.usageCount + 1,
       });
 
-      this.logger.log('API key validated successfully', {
+      this.logInfo('API key validated successfully', {
         keyPrefix: apiKeyRecord.keyPrefix,
         id: apiKeyRecord.id,
       });
@@ -146,7 +145,7 @@ export class ApiKeyAuthService {
         throw error;
       }
 
-      this.logger.error('Error validating API key', { error });
+      this.logError('Error validating API key', { error });
       throw new UnauthorizedException('Invalid API key');
     }
   }
@@ -166,7 +165,7 @@ export class ApiKeyAuthService {
 
     await apiKeyRecord.update({ isActive: false });
 
-    this.logger.log(
+    this.logInfo(
       `API key revoked: ${apiKeyRecord.keyPrefix}... by user ${userId}`,
     );
   }
@@ -234,7 +233,7 @@ export class ApiKeyAuthService {
     // Revoke old key
     await oldKey.update({ isActive: false });
 
-    this.logger.log(
+    this.logInfo(
       `API key rotated: ${oldKey.keyPrefix}... -> ${newKey.keyPrefix}...`,
     );
 

@@ -19,6 +19,7 @@ import { Op } from 'sequelize';
 import { AuditLog, AuditSeverity } from '@/database';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+import { BaseService } from '../../common/base';
 export interface BreachAlert {
   id: string;
   type:
@@ -48,9 +49,7 @@ export interface SuspiciousActivity {
 }
 
 @Injectable()
-export class BreachDetectionService {
-  private readonly logger = new Logger(BreachDetectionService.name);
-
+export class BreachDetectionService extends BaseService {
   // Configurable thresholds
   private readonly FAILED_AUTH_THRESHOLD = 5; // Failed logins in time window
   private readonly FAILED_AUTH_WINDOW_MINUTES = 15;
@@ -70,7 +69,7 @@ export class BreachDetectionService {
    */
   @Cron(CronExpression.EVERY_5_MINUTES)
   async performBreachScan(): Promise<BreachAlert[]> {
-    this.logger.log('Starting scheduled breach detection scan');
+    this.logInfo('Starting scheduled breach detection scan');
     const alerts: BreachAlert[] = [];
 
     try {
@@ -90,7 +89,7 @@ export class BreachDetectionService {
       );
 
       if (alerts.length > 0) {
-        this.logger.warn(`Breach detection found ${alerts.length} potential security incidents`);
+        this.logWarning(`Breach detection found ${alerts.length} potential security incidents`);
 
         // Send critical alerts immediately
         const criticalAlerts = alerts.filter((a) => a.severity === 'CRITICAL');
@@ -98,12 +97,12 @@ export class BreachDetectionService {
           await this.sendCriticalAlerts(criticalAlerts);
         }
       } else {
-        this.logger.log('Breach detection scan completed - no threats detected');
+        this.logInfo('Breach detection scan completed - no threats detected');
       }
 
       return alerts;
     } catch (error) {
-      this.logger.error('Error during breach detection scan:', error);
+      this.logError('Error during breach detection scan:', error);
       throw error;
     }
   }
@@ -202,7 +201,7 @@ export class BreachDetectionService {
         }
       }
     } catch (error) {
-      this.logger.error('Error detecting failed authentication spikes:', error);
+      this.logError('Error detecting failed authentication spikes:', error);
     }
 
     return alerts;
@@ -270,7 +269,7 @@ export class BreachDetectionService {
         }
       }
     } catch (error) {
-      this.logger.error('Error detecting unauthorized access:', error);
+      this.logError('Error detecting unauthorized access:', error);
     }
 
     return alerts;
@@ -378,7 +377,7 @@ export class BreachDetectionService {
         }
       }
     } catch (error) {
-      this.logger.error('Error detecting suspicious patterns:', error);
+      this.logError('Error detecting suspicious patterns:', error);
     }
 
     return alerts;
@@ -447,7 +446,7 @@ export class BreachDetectionService {
         }
       }
     } catch (error) {
-      this.logger.error('Error detecting bulk data export:', error);
+      this.logError('Error detecting bulk data export:', error);
     }
 
     return alerts;
@@ -506,7 +505,7 @@ export class BreachDetectionService {
         }
       });
     } catch (error) {
-      this.logger.error('Error detecting privilege escalation:', error);
+      this.logError('Error detecting privilege escalation:', error);
     }
 
     return alerts;
@@ -564,7 +563,7 @@ export class BreachDetectionService {
 
       return Array.from(activitiesByUser.values()).sort((a, b) => b.occurrences - a.occurrences);
     } catch (error) {
-      this.logger.error('Error getting suspicious activity summary:', error);
+      this.logError('Error getting suspicious activity summary:', error);
       throw error;
     }
   }
@@ -573,7 +572,7 @@ export class BreachDetectionService {
    * Send critical security alerts to security team
    */
   private async sendCriticalAlerts(alerts: BreachAlert[]): Promise<void> {
-    this.logger.error('CRITICAL SECURITY ALERTS:', JSON.stringify(alerts, null, 2));
+    this.logError('CRITICAL SECURITY ALERTS:', JSON.stringify(alerts, null, 2));
 
     // TODO: Integrate with notification system
     // - Send email to security team
@@ -582,9 +581,9 @@ export class BreachDetectionService {
     // - Page security incident response team
 
     alerts.forEach((alert) => {
-      this.logger.error(`[CRITICAL BREACH ALERT] ${alert.type}: ${alert.description}`);
+      this.logError(`[CRITICAL BREACH ALERT] ${alert.type}: ${alert.description}`);
       if (alert.requiresBreachNotification) {
-        this.logger.error(`[HIPAA BREACH NOTIFICATION REQUIRED] Alert ID: ${alert.id}`);
+        this.logError(`[HIPAA BREACH NOTIFICATION REQUIRED] Alert ID: ${alert.id}`);
       }
     });
   }

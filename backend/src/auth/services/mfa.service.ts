@@ -7,9 +7,9 @@ import * as crypto from 'crypto';
 import { User   } from "../../database/models";
 import { MfaSetupResponseDto, MfaStatusDto } from '../dto/mfa.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class MfaService {
-  private readonly logger = new Logger(MfaService.name);
+export class MfaService extends BaseService {
   private readonly appName = 'White Cross Healthcare';
 
   constructor(
@@ -54,7 +54,7 @@ export class MfaService {
     user.mfaBackupCodes = JSON.stringify(hashedBackupCodes);
     await user.save();
 
-    this.logger.log(`MFA setup initiated for user: ${user.email}`);
+    this.logInfo(`MFA setup initiated for user: ${user.email}`);
 
     // Format manual entry key with spaces for readability
     const manualEntryKey =
@@ -108,7 +108,7 @@ export class MfaService {
     user.mfaEnabledAt = new Date();
     await user.save();
 
-    this.logger.log(`MFA enabled successfully for user: ${user.email}`);
+    this.logInfo(`MFA enabled successfully for user: ${user.email}`);
 
     return {
       success: true,
@@ -147,13 +147,13 @@ export class MfaService {
     });
 
     if (!verified) {
-      this.logger.warn(
+      this.logWarning(
         `Failed MFA verification attempt for user: ${user.email}`,
       );
       throw new UnauthorizedException('Invalid verification code');
     }
 
-    this.logger.log(`Successful MFA verification for user: ${user.email}`);
+    this.logInfo(`Successful MFA verification for user: ${user.email}`);
     return true;
   }
 
@@ -193,7 +193,7 @@ export class MfaService {
     user.mfaEnabledAt = null;
     await user.save();
 
-    this.logger.log(`MFA disabled for user: ${user.email}`);
+    this.logInfo(`MFA disabled for user: ${user.email}`);
 
     return {
       success: true,
@@ -217,7 +217,7 @@ export class MfaService {
         const codes = JSON.parse(user.mfaBackupCodes);
         backupCodesRemaining = Array.isArray(codes) ? codes.length : 0;
       } catch (error) {
-        this.logger.error(
+        this.logError(
           `Failed to parse backup codes for user ${user.email}:`,
           error,
         );
@@ -269,7 +269,7 @@ export class MfaService {
     user.mfaBackupCodes = JSON.stringify(hashedBackupCodes);
     await user.save();
 
-    this.logger.log(`Backup codes regenerated for user: ${user.email}`);
+    this.logInfo(`Backup codes regenerated for user: ${user.email}`);
 
     return { backupCodes };
   }
@@ -296,7 +296,7 @@ export class MfaService {
     const codeIndex = backupCodes.findIndex((bc) => bc === hashedCode);
 
     if (codeIndex === -1) {
-      this.logger.warn(
+      this.logWarning(
         `Failed backup code verification for user: ${user.email}`,
       );
       throw new UnauthorizedException('Invalid backup code');
@@ -307,7 +307,7 @@ export class MfaService {
     user.mfaBackupCodes = JSON.stringify(backupCodes);
     await user.save();
 
-    this.logger.log(
+    this.logInfo(
       `Backup code used successfully for user: ${user.email}. Remaining: ${backupCodes.length}`,
     );
 

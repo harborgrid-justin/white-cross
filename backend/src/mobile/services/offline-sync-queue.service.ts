@@ -7,6 +7,7 @@ import { QueueSyncActionDto } from '../dto';
 import { SyncPriority, SyncStatus } from '../enums';
 import { SyncStatistics } from './offline-sync-types.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * Queue Management Service
  * Handles sync queue operations and statistics
@@ -35,9 +36,7 @@ import { SyncStatistics } from './offline-sync-types.interface';
  * ```
  */
 @Injectable()
-export class OfflineSyncQueueService {
-  private readonly logger = new Logger(OfflineSyncQueueService.name);
-
+export class OfflineSyncQueueService extends BaseService {
   /**
    * Maximum number of sync attempts before marking an item as permanently failed
    * This should match the default maxAttempts value in SyncQueueItem model
@@ -50,7 +49,7 @@ export class OfflineSyncQueueService {
     @InjectModel(SyncConflict)
     private readonly conflictModel: typeof SyncConflict,
   ) {
-    this.logger.log('OfflineSyncQueueService initialized');
+    this.logInfo('OfflineSyncQueueService initialized');
   }
 
   /**
@@ -81,13 +80,13 @@ export class OfflineSyncQueueService {
         requiresOnline: true,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Sync action queued: ${queueItem.id} - ${dto.actionType} ${dto.entityType}`,
       );
 
       return queueItem;
     } catch (error) {
-      this.logger.error('Error queueing sync action', error);
+      this.logError('Error queueing sync action', error);
       throw error;
     }
   }
@@ -231,7 +230,7 @@ export class OfflineSyncQueueService {
       { synced: true, syncedAt },
       { where: { id: itemId } },
     );
-    this.logger.log(`Queue item ${itemId} marked as synced`);
+    this.logInfo(`Queue item ${itemId} marked as synced`);
   }
 
   /**

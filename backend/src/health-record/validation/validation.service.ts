@@ -15,10 +15,9 @@ import { ChronicCondition   } from "../../database/models";
 import { VitalSigns   } from "../../database/models";
 import { ClinicVisit   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ValidationService {
-  private readonly logger = new Logger(ValidationService.name);
-
+export class ValidationService extends BaseService {
   // Valid CVX codes (subset for demonstration)
   private readonly VALID_CVX_CODES = [
     '03',
@@ -142,7 +141,7 @@ export class ValidationService {
   ) {}
 
   async validateHealthRecord(data: any): Promise<any> {
-    this.logger.log('Validating health record data');
+    this.logInfo('Validating health record data');
 
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -205,7 +204,7 @@ export class ValidationService {
   }
 
   async validateCVXCode(cvxCode: string): Promise<boolean> {
-    this.logger.log(`Validating CVX code: ${cvxCode}`);
+    this.logInfo(`Validating CVX code: ${cvxCode}`);
 
     // Remove leading zeros for comparison
     const normalizedCode = cvxCode.replace(/^0+/, '');
@@ -218,7 +217,7 @@ export class ValidationService {
   }
 
   async validateVitalSigns(vitals: any): Promise<any> {
-    this.logger.log('Validating vital signs');
+    this.logInfo('Validating vital signs');
 
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -351,7 +350,7 @@ export class ValidationService {
   }
 
   async enforceHIPAACompliance(data: any): Promise<any> {
-    this.logger.log('Enforcing HIPAA compliance');
+    this.logInfo('Enforcing HIPAA compliance');
 
     const issues: string[] = [];
 
@@ -392,7 +391,7 @@ export class ValidationService {
    * Validate ICD-10 code format
    */
   validateICDCode(icdCode: string): boolean {
-    this.logger.log(`Validating ICD-10 code: ${icdCode}`);
+    this.logInfo(`Validating ICD-10 code: ${icdCode}`);
     return this.ICD10_PATTERN.test(icdCode);
   }
 
@@ -400,7 +399,7 @@ export class ValidationService {
    * Validate NPI (National Provider Identifier)
    */
   validateNPI(npi: string): boolean {
-    this.logger.log(`Validating NPI: ${npi}`);
+    this.logInfo(`Validating NPI: ${npi}`);
 
     // NPI must be 10 digits
     if (!/^\d{10}$/.test(npi)) {

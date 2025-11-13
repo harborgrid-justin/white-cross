@@ -15,6 +15,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from './cache.service';
 import { RateLimitConfig, RateLimitStatus } from './cache.interfaces';
 
+import { BaseService } from '../../common/base';
 /**
  * Rate limit context
  */
@@ -29,8 +30,7 @@ interface RateLimitContext {
  * Rate limiter service using token bucket algorithm
  */
 @Injectable()
-export class RateLimiterService {
-  private readonly logger = new Logger(RateLimiterService.name);
+export class RateLimiterService extends BaseService {
   private configs: Map<string, RateLimitConfig> = new Map();
   private stats = {
     totalRequests: 0,
@@ -47,7 +47,7 @@ export class RateLimiterService {
    */
   registerConfig(name: string, config: RateLimitConfig): void {
     this.configs.set(name, config);
-    this.logger.log(
+    this.logInfo(
       `Registered rate limit config: ${name} (${config.max} requests per ${config.windowMs}ms)`,
     );
   }
@@ -61,7 +61,7 @@ export class RateLimiterService {
   async checkLimit(configName: string, context: RateLimitContext): Promise<RateLimitStatus> {
     const config = this.configs.get(configName);
     if (!config) {
-      this.logger.warn(`Rate limit config not found: ${configName}`);
+      this.logWarning(`Rate limit config not found: ${configName}`);
       return this.allowRequest();
     }
 
@@ -87,7 +87,7 @@ export class RateLimiterService {
         try {
           await config.handler(context);
         } catch (error) {
-          this.logger.error('Rate limit handler error:', error);
+          this.logError('Rate limit handler error:', error);
         }
       }
 
@@ -252,7 +252,7 @@ export class RateLimiterService {
       const newCount = (current || 0) + amount;
       await this.cacheService.set(windowKey, newCount, { ttl });
     } catch (error) {
-      this.logger.error('Failed to increment rate limit counter:', error);
+      this.logError('Failed to increment rate limit counter:', error);
     }
   }
 

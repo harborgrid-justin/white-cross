@@ -13,12 +13,11 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { ComplianceLevel } from '../../interfaces/health-record-types';
 import { PHIAccessLogger } from '../phi-access-logger.service';
-import { InMemoryCacheEntry, CacheOperationResult } from './cache-types';
+import { InMemoryCacheEntry, CacheOperationResult } from './cache-interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class L2CacheService {
-  private readonly logger = new Logger(L2CacheService.name);
-
+export class L2CacheService extends BaseService {
   // L2 cache metrics
   private l2Hits = 0;
   private l2Misses = 0;
@@ -84,7 +83,7 @@ export class L2CacheService {
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
-      this.logger.error(`L2 cache get failed for key ${key}:`, error);
+      this.logError(`L2 cache get failed for key ${key}:`, error);
       this.l2Misses++;
       this.updateLatencyMetrics(Date.now() - startTime);
       return {
@@ -130,7 +129,7 @@ export class L2CacheService {
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
-      this.logger.error(`L2 cache set failed for key ${key}:`, error);
+      this.logError(`L2 cache set failed for key ${key}:`, error);
       this.updateLatencyMetrics(Date.now() - startTime);
       return {
         success: false,
@@ -158,7 +157,7 @@ export class L2CacheService {
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
-      this.logger.error(`L2 cache delete failed for key ${key}:`, error);
+      this.logError(`L2 cache delete failed for key ${key}:`, error);
       this.updateLatencyMetrics(Date.now() - startTime);
       return {
         success: false,
@@ -177,7 +176,7 @@ export class L2CacheService {
       const result = await this.redisCache.get(cacheKey);
       return result !== undefined && result !== null;
     } catch (error) {
-      this.logger.error(`L2 cache has check failed for key ${key}:`, error);
+      this.logError(`L2 cache has check failed for key ${key}:`, error);
       return false;
     }
   }
@@ -192,7 +191,7 @@ export class L2CacheService {
       // Note: This is a simplified implementation
       // In production, you might want to use Redis SCAN or KEYS for pattern matching
       // For now, we'll just return success
-      this.logger.warn(`L2 cache clear pattern not fully implemented: ${pattern}`);
+      this.logWarning(`L2 cache clear pattern not fully implemented: ${pattern}`);
 
       // Simulate async operation
       await Promise.resolve();
@@ -205,7 +204,7 @@ export class L2CacheService {
         responseTime: Date.now() - startTime,
       };
     } catch (error) {
-      this.logger.error(`L2 cache clear failed for pattern ${pattern}:`, error);
+      this.logError(`L2 cache clear failed for pattern ${pattern}:`, error);
       this.updateLatencyMetrics(Date.now() - startTime);
       return {
         success: false,
@@ -313,7 +312,7 @@ export class L2CacheService {
         success: true,
       });
     } catch (error) {
-      this.logger.error('Failed to log PHI access:', error);
+      this.logError('Failed to log PHI access:', error);
     }
   }
 

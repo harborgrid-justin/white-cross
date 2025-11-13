@@ -10,10 +10,9 @@ import { literal, Op } from 'sequelize';
 import { DrugCatalog } from '../entities/drug-catalog.entity';
 import { AddDrugDto, UpdateDrugDto, BulkImportResult } from '../types/drug-interaction.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class DrugCatalogService {
-  private readonly logger = new Logger(DrugCatalogService.name);
-
+export class DrugCatalogService extends BaseService {
   constructor(
     @InjectModel(DrugCatalog)
     private drugCatalogModel: typeof DrugCatalog,
@@ -23,7 +22,7 @@ export class DrugCatalogService {
    * Search drugs by name
    */
   async searchDrugs(query: string, limit: number = 20): Promise<DrugCatalog[]> {
-    this.logger.log(`Searching drugs with query: ${query}`);
+    this.logInfo(`Searching drugs with query: ${query}`);
 
     return this.drugCatalogModel.findAll({
       where: {
@@ -41,7 +40,7 @@ export class DrugCatalogService {
    * Search drug by RxNorm code
    */
   async searchByRxNorm(rxnormCode: string): Promise<DrugCatalog | null> {
-    this.logger.log(`Searching drug by RxNorm code: ${rxnormCode}`);
+    this.logInfo(`Searching drug by RxNorm code: ${rxnormCode}`);
     return this.drugCatalogModel.findOne({
       where: { rxnormCode },
     });
@@ -64,7 +63,7 @@ export class DrugCatalogService {
    * Add a new drug to catalog
    */
   async addDrug(data: AddDrugDto): Promise<DrugCatalog> {
-    this.logger.log(`Adding new drug: ${data.genericName}`);
+    this.logInfo(`Adding new drug: ${data.genericName}`);
 
     return this.drugCatalogModel.create({ ...data, isActive: true } as any);
   }
@@ -123,7 +122,7 @@ export class DrugCatalogService {
    * Bulk import drugs from FDA data
    */
   async bulkImportDrugs(drugs: AddDrugDto[]): Promise<BulkImportResult> {
-    this.logger.log(`Bulk importing ${drugs.length} drugs`);
+    this.logInfo(`Bulk importing ${drugs.length} drugs`);
 
     const result: BulkImportResult = {
       imported: 0,
@@ -157,7 +156,7 @@ export class DrugCatalogService {
       }
     }
 
-    this.logger.log(
+    this.logInfo(
       `Bulk import complete: ${result.imported} imported, ${result.failed} failed`,
     );
     return result;
@@ -179,7 +178,7 @@ export class DrugCatalogService {
     const drug = await this.getDrugById(id);
     drug.isActive = false;
     await drug.save();
-    this.logger.log(`Deactivated drug: ${drug.genericName}`);
+    this.logInfo(`Deactivated drug: ${drug.genericName}`);
   }
 
   /**
@@ -192,6 +191,6 @@ export class DrugCatalogService {
     }
     drug.isActive = true;
     await drug.save();
-    this.logger.log(`Reactivated drug: ${drug.genericName}`);
+    this.logInfo(`Reactivated drug: ${drug.genericName}`);
   }
 }

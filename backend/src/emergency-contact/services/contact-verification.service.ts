@@ -21,10 +21,9 @@ import { EmergencyContact } from '../../database/models/emergency-contact.model'
 import { VerificationStatus } from '../../contact/enums';
 import { NotificationDeliveryService } from './notification-delivery.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ContactVerificationService {
-  private readonly logger = new Logger(ContactVerificationService.name);
-
+export class ContactVerificationService extends BaseService {
   constructor(
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
@@ -106,7 +105,7 @@ export class ContactVerificationService {
         verificationStatus: VerificationStatus.PENDING,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Verification ${verificationMethod} sent to contact ${contact.firstName} ${contact.lastName}`,
       );
 
@@ -116,7 +115,7 @@ export class ContactVerificationService {
         ...result,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error verifying contact: ${error.message}`,
         error.stack,
       );
@@ -160,13 +159,13 @@ export class ContactVerificationService {
         verificationStatus: VerificationStatus.VERIFIED,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Contact verified: ${contact.firstName} ${contact.lastName}`,
       );
 
       return { success: true };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error confirming verification: ${error.message}`,
         error.stack,
       );
@@ -215,13 +214,13 @@ export class ContactVerificationService {
         verificationStatus: VerificationStatus.UNVERIFIED,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Verification reset for contact: ${contact.firstName} ${contact.lastName}`,
       );
 
       return { success: true };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error resetting verification: ${error.message}`,
         error.stack,
       );

@@ -5,6 +5,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { OfflineSyncService } from '../services/offline-sync.service';
 import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Sync Controller
  * Handles offline data synchronization
@@ -13,7 +14,7 @@ import { QueueSyncActionDto, ResolveConflictDto, SyncOptionsDto } from '../dto';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('mobile/sync')
-export class SyncController {
+export class SyncController extends BaseController {
   constructor(private readonly offlineSyncService: OfflineSyncService) {}
 
   @Post('queue')

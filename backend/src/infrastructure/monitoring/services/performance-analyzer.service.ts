@@ -10,10 +10,9 @@ import { RequestMetricsService } from './request-metrics.service';
 import { CacheMetricsService } from './cache-metrics.service';
 import { SystemMetricsService } from './system-metrics.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class PerformanceAnalyzerService {
-  private readonly logger = new Logger(PerformanceAnalyzerService.name);
-
+export class PerformanceAnalyzerService extends BaseService {
   private readonly MAX_HISTORY_POINTS = 1440; // 24 hours at 1 min intervals
   private performanceHistory: PerformanceSummary[] = [];
   private startTime = Date.now();
@@ -198,6 +197,6 @@ export class PerformanceAnalyzerService {
   reset(): void {
     this.performanceHistory = [];
     this.startTime = Date.now();
-    this.logger.log('Performance history reset');
+    this.logInfo('Performance history reset');
   }
 }

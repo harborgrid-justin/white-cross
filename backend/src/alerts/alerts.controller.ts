@@ -24,11 +24,12 @@ import { CurrentUser } from '@/auth/decorators';
 import { AlertsService } from './alerts.service';
 import { AlertFilterDto, AlertsUpdatePreferencesDto, CreateAlertDto } from '@/alerts/dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('alerts')
 @Controller('alerts')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-export class AlertsController {
+export class AlertsController extends BaseController {
   constructor(private readonly alertsService: AlertsService) {}
 
   @Get()

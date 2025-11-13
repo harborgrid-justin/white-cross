@@ -5,9 +5,9 @@ import { ConsentValidationHelper } from './helpers/consent-validation.helper';
 import { ConsentTemplateHelper } from './helpers/consent-template.helper';
 import { SignatureHelper } from './helpers/signature.helper';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ConsentFormManagementService {
-  private readonly logger = new Logger(ConsentFormManagementService.name);
+export class ConsentFormManagementService extends BaseService {
   private consentForms: ConsentForm[] = [];
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -46,10 +46,10 @@ export class ConsentFormManagementService {
         formType,
         timestamp: new Date(),
       });
-      this.logger.log('Consent form created', { formId: form.id, formType, studentId });
+      this.logInfo('Consent form created', { formId: form.id, formType, studentId });
       return form;
     } catch (error) {
-      this.logger.error('Error creating consent form', {
+      this.logError('Error creating consent form', {
         error: error instanceof Error ? error.message : String(error),
         studentId,
         formType,
@@ -98,11 +98,11 @@ export class ConsentFormManagementService {
         ipAddress,
         timestamp: signatureData.signedAt,
       });
-      this.logger.log('Consent form signed', { formId, signedBy, ipAddress, timestamp: signatureData.signedAt });
+      this.logInfo('Consent form signed', { formId, signedBy, ipAddress, timestamp: signatureData.signedAt });
 
       return true;
     } catch (error) {
-      this.logger.error('Error signing consent form', {
+      this.logError('Error signing consent form', {
         error: error instanceof Error ? error.message : String(error),
         formId,
       });
@@ -123,15 +123,15 @@ export class ConsentFormManagementService {
       }
 
       if (form.status !== 'signed') {
-        this.logger.warn('Attempted to verify signature on unsigned form', { formId });
+        this.logWarning('Attempted to verify signature on unsigned form', { formId });
         return false;
       }
 
       const isValid = true;
-      this.logger.log('Signature verification completed', { formId, isValid });
+      this.logInfo('Signature verification completed', { formId, isValid });
       return isValid;
     } catch (error) {
-      this.logger.error('Error verifying signature', {
+      this.logError('Error verifying signature', {
         error: error instanceof Error ? error.message : String(error),
         formId,
       });
@@ -161,10 +161,10 @@ export class ConsentFormManagementService {
 
       this.eventEmitter.emit('consent.form.revoked', { formId, revokedBy, reason, timestamp: new Date() });
 
-      this.logger.log('Consent form revoked', { formId, revokedBy, reason });
+      this.logInfo('Consent form revoked', { formId, revokedBy, reason });
       return true;
     } catch (error) {
-      this.logger.error('Error revoking consent', {
+      this.logError('Error revoking consent', {
         error: error instanceof Error ? error.message : String(error),
         formId,
       });
@@ -183,7 +183,7 @@ export class ConsentFormManagementService {
         (form) => form.status === 'signed' && form.expiresAt && form.expiresAt <= expiryDate,
       );
 
-      this.logger.log('Checked for expiring consent forms', {
+      this.logInfo('Checked for expiring consent forms', {
         days,
         expiringCount: expiringForms.length,
         expiryDate,
@@ -191,7 +191,7 @@ export class ConsentFormManagementService {
 
       return expiringForms;
     } catch (error) {
-      this.logger.error('Error checking expiring forms', {
+      this.logError('Error checking expiring forms', {
         error: error instanceof Error ? error.message : String(error),
         days,
       });
@@ -232,11 +232,11 @@ export class ConsentFormManagementService {
         additionalYears,
         timestamp: new Date(),
       });
-      this.logger.log('Consent form renewed', { originalFormId: formId, newFormId: renewedForm.id, extendedBy, newExpiryDate, additionalYears });
+      this.logInfo('Consent form renewed', { originalFormId: formId, newFormId: renewedForm.id, extendedBy, newExpiryDate, additionalYears });
 
       return renewedForm;
     } catch (error) {
-      this.logger.error('Error renewing consent form', {
+      this.logError('Error renewing consent form', {
         error: error instanceof Error ? error.message : String(error),
         formId,
       });
@@ -254,10 +254,10 @@ export class ConsentFormManagementService {
       if (status) {
         forms = forms.filter((form) => form.status === status);
       }
-      this.logger.log('Retrieved consent forms by student', { studentId, status, count: forms.length });
+      this.logInfo('Retrieved consent forms by student', { studentId, status, count: forms.length });
       return forms;
     } catch (error) {
-      this.logger.error('Error retrieving consent forms by student', {
+      this.logError('Error retrieving consent forms by student', {
         error: error instanceof Error ? error.message : String(error),
         studentId,
       });
@@ -283,10 +283,10 @@ export class ConsentFormManagementService {
         lastModifiedAt: form.lastModifiedAt,
         lastModifiedBy: form.lastModifiedBy,
       }];
-      this.logger.log('Retrieved consent form history', { formId, historyEntries: history.length });
+      this.logInfo('Retrieved consent form history', { formId, historyEntries: history.length });
       return history;
     } catch (error) {
-      this.logger.error('Error retrieving form history', {
+      this.logError('Error retrieving form history', {
         error: error instanceof Error ? error.message : String(error),
         formId,
       });
@@ -318,13 +318,13 @@ export class ConsentFormManagementService {
         });
       }
 
-      this.logger.log('Sent reminders for unsigned consent forms', {
+      this.logInfo('Sent reminders for unsigned consent forms', {
         unsignedFormsCount: unsignedForms.length,
         remindersSent,
       });
       return remindersSent;
     } catch (error) {
-      this.logger.error('Error sending reminders', error);
+      this.logError('Error sending reminders', error);
       return 0;
     }
   }
@@ -343,10 +343,10 @@ export class ConsentFormManagementService {
         variables.date,
         variables.studentId,
       );
-      this.logger.log('Consent form template generated', { formType, studentId });
+      this.logInfo('Consent form template generated', { formType, studentId });
       return { html, variables };
     } catch (error) {
-      this.logger.error('Error generating form template', {
+      this.logError('Error generating form template', {
         error: error instanceof Error ? error.message : String(error),
         formType,
       });

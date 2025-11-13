@@ -5,6 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { BaseService } from '../../common/base';
 import {
   EmergencyType,
   EmergencyPriority,
@@ -12,9 +13,7 @@ import {
 } from '../emergency-broadcast.enums';
 
 @Injectable()
-export class BroadcastPriorityService {
-  private readonly logger = new Logger(BroadcastPriorityService.name);
-
+export class BroadcastPriorityService extends BaseService {
   /**
    * Determine priority from emergency type
    */

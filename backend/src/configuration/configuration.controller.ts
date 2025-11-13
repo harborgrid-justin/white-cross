@@ -10,6 +10,7 @@ import {
 } from './dto';
 import { ConfigCategory } from '../administration/enums/administration.enums';
 
+import { BaseController } from '../../common/base';
 /**
  * Configuration Controller
  *
@@ -22,7 +23,7 @@ import { ConfigCategory } from '../administration/enums/administration.enums';
 @Controller('configurations')
 // @UseGuards(JwtAuthGuard) // Uncomment when auth is configured
 @ApiBearerAuth()
-export class ConfigurationController {
+export class ConfigurationController extends BaseController {
   constructor(private readonly configurationService: ConfigurationService) {}
 
   /**

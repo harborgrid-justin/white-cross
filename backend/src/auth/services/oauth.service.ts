@@ -8,9 +8,9 @@ import { OAuthProfile } from '../dto/oauth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { JwtPayload } from '../strategies/jwt.strategy';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class OAuthService {
-  private readonly logger = new Logger(OAuthService.name);
+export class OAuthService extends BaseService {
   private readonly accessTokenExpiry = '15m';
   private readonly refreshTokenExpiry = '7d';
 
@@ -34,13 +34,13 @@ export class OAuthService {
     if (!user) {
       // Create new user from OAuth profile
       user = await this.createUserFromOAuthProfile(profile);
-      this.logger.log(
+      this.logInfo(
         `New user created via ${profile.provider} OAuth: ${profile.email}`,
       );
     } else {
       // Update existing user's last login
       await user.resetFailedLoginAttempts();
-      this.logger.log(
+      this.logInfo(
         `Existing user logged in via ${profile.provider} OAuth: ${profile.email}`,
       );
     }
@@ -94,7 +94,7 @@ export class OAuthService {
         provider: 'google',
       };
     } catch (error) {
-      this.logger.error(`Google token verification failed: ${error.message}`);
+      this.logError(`Google token verification failed: ${error.message}`);
       throw new UnauthorizedException('Invalid Google authentication');
     }
   }
@@ -125,7 +125,7 @@ export class OAuthService {
         provider: 'microsoft',
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Microsoft token verification failed: ${error.message}`,
       );
       throw new UnauthorizedException('Invalid Microsoft authentication');

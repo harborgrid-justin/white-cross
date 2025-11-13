@@ -11,6 +11,13 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { CacheStrategyOrchestratorService } from './cache/cache-strategy-orchestrator.service';
 import { CacheOptimizationService } from './cache/cache-optimization.service';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   CacheMetrics,
   AccessPattern,
@@ -26,13 +33,18 @@ import {
  */
 @Injectable()
 export class CacheStrategyService implements OnModuleDestroy {
-  private readonly logger = new Logger(CacheStrategyService.name);
-
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly orchestrator: CacheStrategyOrchestratorService,
     private readonly optimization: CacheOptimizationService,
   ) {
-    this.logger.log('Cache Strategy Service (Facade) initialized - delegating to modular services');
+    super({
+      serviceName: 'CacheStrategyService',
+      logger,
+      enableAuditLogging: true,
+    });
+
+    this.logInfo('Cache Strategy Service (Facade) initialized - delegating to modular services');
   }
 
   /**
@@ -105,6 +117,6 @@ export class CacheStrategyService implements OnModuleDestroy {
    * Cleanup resources
    */
   onModuleDestroy(): void {
-    this.logger.log('Cache Strategy Service (Facade) destroyed');
+    this.logInfo('Cache Strategy Service (Facade) destroyed');
   }
 }

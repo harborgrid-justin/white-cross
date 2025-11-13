@@ -10,10 +10,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PIIDetectionResult, PIIType } from '../interfaces/security.interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class PIIDetectionService {
-  private readonly logger = new Logger(PIIDetectionService.name);
-
+export class PIIDetectionService extends BaseService {
   // PII detection patterns
   private readonly patterns: Record<PIIType, RegExp> = {
     [PIIType.SSN]: /\b\d{3}-?\d{2}-?\d{4}\b/g,

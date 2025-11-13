@@ -22,6 +22,7 @@ import { RateLimit, RateLimitLenient, RateLimitModerate } from './decorators/rat
 import { CacheMedium, CacheShort } from './decorators/cache-config.decorator';
 import { PaginationDto } from './dto/pagination.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Discovery')
 @ApiBearerAuth()
 @Controller('discovery')
@@ -42,7 +43,7 @@ import { PaginationDto } from './dto/pagination.dto';
     },
   }),
 )
-export class DiscoveryController {
+export class DiscoveryController extends BaseController {
   constructor(private readonly discoveryService: DiscoveryExampleService) {}
 
   @Get('providers')

@@ -10,6 +10,7 @@ import {
 import { IncidentReport } from '../../database/models/incident-report.model';
 import { DateRangeService } from './date-range.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Incident Analytics Service
  * Provides comprehensive incident analysis and reporting
@@ -21,9 +22,7 @@ import { DateRangeService } from './date-range.service';
  * - Identify common patterns and high-risk areas
  */
 @Injectable()
-export class IncidentAnalyticsService {
-  private readonly logger = new Logger(IncidentAnalyticsService.name);
-
+export class IncidentAnalyticsService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
@@ -137,7 +136,7 @@ export class IncidentAnalyticsService {
         trends,
       };
     } catch (error) {
-      this.logger.error('Error getting incident analytics', error.stack);
+      this.logError('Error getting incident analytics', error.stack);
       throw error;
     }
   }

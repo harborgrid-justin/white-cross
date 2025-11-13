@@ -7,6 +7,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AiSearchService } from './ai-search.service';
+import { BaseController } from '../../common/base';
 import {
   AdvancedSearchCriteriaDto,
   AnalyticsPeriod,
@@ -20,7 +21,7 @@ import {
 @ApiTags('AI Search')
 @Controller('ai-search')
 @ApiBearerAuth()
-export class AiSearchController {
+export class AiSearchController extends BaseController {
   constructor(private readonly aiSearchService: AiSearchService) {}
 
   @Post('query')

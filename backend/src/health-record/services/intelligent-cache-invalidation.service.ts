@@ -18,6 +18,13 @@ import { AuditLog, AuditSeverity, ComplianceType   } from "../../database/models
 import { AuditAction } from '../../database/types/database.enums';
 import { ComplianceLevel } from '../interfaces/health-record-types';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 export interface CacheDependency {
   id: string;
   sourceKey: string;
@@ -86,10 +93,6 @@ export interface InvalidationMetrics {
  */
 @Injectable()
 export class IntelligentCacheInvalidationService implements OnModuleDestroy {
-  private readonly logger = new Logger(
-    IntelligentCacheInvalidationService.name,
-  );
-
   // Dependency tracking
   private readonly dependencyGraph = new Map<string, CacheDependency>();
   private readonly reverseIndex = new Map<string, Set<string>>(); // dependent -> sources
@@ -138,14 +141,14 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
    * Initialize the invalidation service
    */
   private initializeService(): void {
-    this.logger.log(
+    this.logInfo(
       'Initializing Intelligent Cache Invalidation Service with database persistence',
     );
 
     // Setup event listeners
     this.setupEventListeners();
 
-    this.logger.log(
+    this.logInfo(
       'Intelligent Cache Invalidation Service initialized successfully',
     );
   }
@@ -198,7 +201,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       },
     });
 
-    this.logger.debug(
+    this.logDebug(
       `Registered cache dependency: ${sourceKey} -> [${dependentKeys.join(', ')}]`,
     );
     return dependencyId;
@@ -258,11 +261,11 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       const invalidationTime = Date.now() - startTime;
       this.updateAverageInvalidationTime(invalidationTime);
 
-      this.logger.debug(
+      this.logDebug(
         `Invalidated cache key: ${cacheKey}, reason: ${reason}, time: ${invalidationTime}ms`,
       );
     } catch (error) {
-      this.logger.error(`Failed to invalidate cache key ${cacheKey}:`, error);
+      this.logError(`Failed to invalidate cache key ${cacheKey}:`, error);
     }
   }
 
@@ -343,11 +346,11 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
         invalidationTime / keysToInvalidate.size,
       );
 
-      this.logger.debug(
+      this.logDebug(
         `Invalidated ${keysToInvalidate.size} cache keys by tags [${tags.join(', ')}], time: ${invalidationTime}ms`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to invalidate cache by tags [${tags.join(', ')}]:`,
         error,
       );
@@ -384,7 +387,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       // Check for dependency-based invalidation
       await this.handleDependencyInvalidation(event);
     } catch (error) {
-      this.logger.error(`Failed to handle data change event:`, error);
+      this.logError(`Failed to handle data change event:`, error);
     }
   }
 
@@ -422,7 +425,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
         metadata: log.metadata || {},
       }));
     } catch (error) {
-      this.logger.error(
+      this.logError(
         'Failed to retrieve recent invalidation events:',
         error,
       );
@@ -456,7 +459,7 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
 
       await this.auditLogModel.create(auditEntry);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to log invalidation event ${event.eventId}:`,
         error,
       );
@@ -702,6 +705,6 @@ export class IntelligentCacheInvalidationService implements OnModuleDestroy {
       clearTimeout(this.batchTimeout);
     }
 
-    this.logger.log('Intelligent Cache Invalidation Service destroyed');
+    this.logInfo('Intelligent Cache Invalidation Service destroyed');
   }
 }

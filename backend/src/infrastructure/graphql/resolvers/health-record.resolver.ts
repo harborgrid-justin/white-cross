@@ -74,35 +74,10 @@ export class HealthRecordResolver {
   constructor(private readonly healthRecordService: HealthRecordService) {}
 
   /**
-   * Map HealthRecord model to DTO
+   * Map HealthRecord model to DTO using shared utility
    */
   private mapHealthRecordToDto(record: HealthRecordModel): HealthRecordDto {
-    return {
-      id: record.id,
-      studentId: record.studentId,
-      recordType: record.recordType,
-      title: record.title,
-      description: record.description,
-      recordDate: record.recordDate,
-      provider: record.provider || undefined,
-      providerNpi: record.providerNpi || undefined,
-      facility: record.facility || undefined,
-      facilityNpi: record.facilityNpi || undefined,
-      diagnosis: record.diagnosis || undefined,
-      diagnosisCode: record.diagnosisCode || undefined,
-      treatment: record.treatment || undefined,
-      followUpRequired: record.followUpRequired,
-      followUpDate: record.followUpDate || undefined,
-      followUpCompleted: record.followUpCompleted,
-      attachments: record.attachments || [],
-      metadata: record.metadata || undefined,
-      isConfidential: record.isConfidential,
-      notes: record.notes || undefined,
-      createdBy: record.createdBy || undefined,
-      updatedBy: record.updatedBy || undefined,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
-    };
+    return ResolverUtilities.mapHealthRecordToDto(record);
   }
 
   /**

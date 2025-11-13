@@ -32,6 +32,7 @@ import { PermissionsGuard } from './guards/permissions.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { Permissions } from './decorators/permissions.decorator';
 
+import { BaseController } from '../../common/base';
 /**
  * Access Control Controller
  *
@@ -46,7 +47,7 @@ import { Permissions } from './decorators/permissions.decorator';
 @Controller('access-control')
 @ApiBearerAuth()
 @UseGuards(PermissionsGuard, RolesGuard)
-export class AccessControlController {
+export class AccessControlController extends BaseController {
   constructor(
     private readonly accessControlService: AccessControlService,
     private readonly cacheService: PermissionCacheService,

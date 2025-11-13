@@ -7,10 +7,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { QueryMetrics, QueryExecution } from '../types/query-monitor.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class QueryAnalyzerService {
-  private readonly logger = new Logger(QueryAnalyzerService.name);
-
+export class QueryAnalyzerService extends BaseService {
   // Configuration
   private readonly MAX_HISTORY_SIZE = 1000;
 
@@ -47,7 +46,7 @@ export class QueryAnalyzerService {
     // Record execution for analysis
     this.recordExecution(signature, duration);
 
-    this.logger.debug(`Query recorded: ${duration}ms`, {
+    this.logDebug(`Query recorded: ${duration}ms`, {
       signature: signature.substring(0, 50),
       model,
     });
@@ -223,6 +222,6 @@ export class QueryAnalyzerService {
       slow: 0,
       verySlow: 0,
     };
-    this.logger.log('Query analyzer metrics reset');
+    this.logInfo('Query analyzer metrics reset');
   }
 }

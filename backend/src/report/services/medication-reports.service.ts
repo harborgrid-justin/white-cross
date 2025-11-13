@@ -7,14 +7,13 @@ import { StudentMedication } from '../../database/models/student-medication.mode
 import { MedicationUsageReport } from '../interfaces/report-types.interface';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Medication Reports Service
  * Handles medication usage analysis, compliance tracking, and adverse reaction monitoring
  */
 @Injectable()
-export class MedicationReportsService {
-  private readonly logger = new Logger(MedicationReportsService.name);
-
+export class MedicationReportsService extends BaseService {
   constructor(
     @InjectModel(MedicationLog)
     private medicationLogModel: typeof MedicationLog,
@@ -145,7 +144,7 @@ export class MedicationReportsService {
         order: [['administeredAt', 'DESC']],
       });
 
-      this.logger.log(
+      this.logInfo(
         `Medication usage report generated: ${administrationLogs.length} logs, ${adverseReactions.length} adverse reactions, compliance: ${totalLogs}/${totalScheduled}`,
       );
 
@@ -157,7 +156,7 @@ export class MedicationReportsService {
         adverseReactions,
       };
     } catch (error) {
-      this.logger.error('Error getting medication usage report:', error);
+      this.logError('Error getting medication usage report:', error);
       throw error;
     }
   }

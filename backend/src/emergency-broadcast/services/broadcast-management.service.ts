@@ -24,10 +24,9 @@ import { BroadcastPriorityService } from './broadcast-priority.service';
 import { BroadcastRecipientService } from './broadcast-recipient.service';
 import { BroadcastDeliveryService } from './broadcast-delivery.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class BroadcastManagementService {
-  private readonly logger = new Logger(BroadcastManagementService.name);
-
+export class BroadcastManagementService extends BaseService {
   constructor(
     @Inject(EmergencyBroadcastRepository)
     private readonly broadcastRepository: EmergencyBroadcastRepository,
@@ -81,7 +80,7 @@ export class BroadcastManagementService {
         context,
       );
 
-      this.logger.log('Emergency broadcast created', {
+      this.logInfo('Emergency broadcast created', {
         id: savedBroadcast.id,
         type: createDto.type,
         priority,
@@ -90,7 +89,7 @@ export class BroadcastManagementService {
 
       return this.mapToResponseDto(savedBroadcast);
     } catch (error) {
-      this.logger.error('Failed to create emergency broadcast', error);
+      this.logError('Failed to create emergency broadcast', error);
       throw error;
     }
   }
@@ -127,11 +126,11 @@ export class BroadcastManagementService {
         context,
       );
 
-      this.logger.log('Emergency broadcast updated', { id });
+      this.logInfo('Emergency broadcast updated', { id });
 
       return this.mapToResponseDto(updatedBroadcast);
     } catch (error) {
-      this.logger.error('Failed to update emergency broadcast', error);
+      this.logError('Failed to update emergency broadcast', error);
       throw error;
     }
   }
@@ -147,7 +146,7 @@ export class BroadcastManagementService {
         throw new NotFoundException(`Broadcast with ID ${broadcastId} not found`);
       }
 
-      this.logger.log('Sending emergency broadcast', { broadcastId });
+      this.logInfo('Sending emergency broadcast', { broadcastId });
 
       // Create execution context
       const context: ExecutionContext = {
@@ -195,7 +194,7 @@ export class BroadcastManagementService {
         context,
       );
 
-      this.logger.log('Emergency broadcast sent', {
+      this.logInfo('Emergency broadcast sent', {
         broadcastId,
         totalRecipients: recipients.length,
         sent: stats.delivered,
@@ -209,7 +208,7 @@ export class BroadcastManagementService {
         failed: stats.failed,
       };
     } catch (error) {
-      this.logger.error('Failed to send emergency broadcast', error);
+      this.logError('Failed to send emergency broadcast', error);
       throw error;
     }
   }
@@ -219,7 +218,7 @@ export class BroadcastManagementService {
    */
   async getBroadcastStatus(broadcastId: string): Promise<BroadcastStatusResponseDto> {
     try {
-      this.logger.log('Retrieving broadcast status', { broadcastId });
+      this.logInfo('Retrieving broadcast status', { broadcastId });
 
       // Query database for broadcast
       const broadcast = await this.broadcastRepository.findById(broadcastId);
@@ -248,7 +247,7 @@ export class BroadcastManagementService {
         recentDeliveries,
       };
     } catch (error) {
-      this.logger.error('Failed to get broadcast status', error);
+      this.logError('Failed to get broadcast status', error);
       throw error;
     }
   }
@@ -283,9 +282,9 @@ export class BroadcastManagementService {
         context,
       );
 
-      this.logger.log('Emergency broadcast cancelled', { broadcastId, reason });
+      this.logInfo('Emergency broadcast cancelled', { broadcastId, reason });
     } catch (error) {
-      this.logger.error('Failed to cancel broadcast', error);
+      this.logError('Failed to cancel broadcast', error);
       throw error;
     }
   }
@@ -326,9 +325,9 @@ export class BroadcastManagementService {
         context,
       );
 
-      this.logger.log('Broadcast acknowledged', { broadcastId, recipientId, acknowledgedAt });
+      this.logInfo('Broadcast acknowledged', { broadcastId, recipientId, acknowledgedAt });
     } catch (error) {
-      this.logger.error('Failed to record acknowledgment', error);
+      this.logError('Failed to record acknowledgment', error);
       throw error;
     }
   }
@@ -345,7 +344,7 @@ export class BroadcastManagementService {
 
       return this.mapToResponseDto(broadcast);
     } catch (error) {
-      this.logger.error('Failed to get broadcast by ID', error);
+      this.logError('Failed to get broadcast by ID', error);
       throw error;
     }
   }
@@ -394,7 +393,7 @@ export class BroadcastManagementService {
         limit,
       };
     } catch (error) {
-      this.logger.error('Failed to list broadcasts', error);
+      this.logError('Failed to list broadcasts', error);
       throw error;
     }
   }

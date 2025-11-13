@@ -13,9 +13,9 @@ import {
 } from './cache-interfaces';
 import { CACHE_CONSTANTS, CACHE_EVENTS } from './cache-constants';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class CacheMetricsCollectorService {
-  private readonly logger = new Logger(CacheMetricsCollectorService.name);
+export class CacheMetricsCollectorService extends BaseService {
   private readonly metrics: CacheMetrics = this.initializeMetrics();
 
   constructor(private readonly eventEmitter: EventEmitter2) {
@@ -46,7 +46,7 @@ export class CacheMetricsCollectorService {
 
       this.metrics.lastUpdated = new Date();
     } catch (error) {
-      this.logger.error(`Failed to record operation metrics:`, error);
+      this.logError(`Failed to record operation metrics:`, error);
     }
   }
 
@@ -60,7 +60,7 @@ export class CacheMetricsCollectorService {
       // Update global cache size
       this.updateGlobalCacheSize();
     } catch (error) {
-      this.logger.error(`Failed to record cache size metrics:`, error);
+      this.logError(`Failed to record cache size metrics:`, error);
     }
   }
 
@@ -73,9 +73,9 @@ export class CacheMetricsCollectorService {
 
       this.metrics.totalEvictions += evictedItems;
 
-      this.logger.debug(`Cache eviction in ${tier}: ${evictedItems} items (${reason})`);
+      this.logDebug(`Cache eviction in ${tier}: ${evictedItems} items (${reason})`);
     } catch (error) {
-      this.logger.error(`Failed to record eviction metrics:`, error);
+      this.logError(`Failed to record eviction metrics:`, error);
     }
   }
 
@@ -129,7 +129,7 @@ export class CacheMetricsCollectorService {
 
   reset(): void {
     Object.assign(this.metrics, this.initializeMetrics());
-    this.logger.log('Cache metrics reset');
+    this.logInfo('Cache metrics reset');
   }
 
   private initializeMetrics(): CacheMetrics {

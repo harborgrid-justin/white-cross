@@ -8,10 +8,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ResourceHealthInfo } from '../types/health-check.types';
 import * as os from 'os';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ResourceMonitorService {
-  private readonly logger = new Logger(ResourceMonitorService.name);
-
+export class ResourceMonitorService extends BaseService {
   /**
    * Checks system resource utilization
    */

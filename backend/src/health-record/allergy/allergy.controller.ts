@@ -21,6 +21,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UserRole   } from "../../database/models";
 
+import { BaseController } from '../../common/base';
 /**
  * Allergy Management Controller
  *
@@ -32,7 +33,7 @@ import { UserRole   } from "../../database/models";
 @Controller('health-records/allergies')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class HealthRecordAllergyController {
+export class HealthRecordAllergyController extends BaseController {
   constructor(private readonly allergyService: AllergyService) {}
 
   /**

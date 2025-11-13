@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { col, fn, Op } from 'sequelize';
 import { AuditLog } from '@/database';
+import { BaseService } from '../../common/base';
 import {
   ActionDistributionQueryResult,
   AuditDashboard,
@@ -18,9 +19,7 @@ import {
  * administrative dashboards and compliance reporting.
  */
 @Injectable()
-export class AuditStatisticsService {
-  private readonly logger = new Logger(AuditStatisticsService.name);
-
+export class AuditStatisticsService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -104,7 +103,7 @@ export class AuditStatisticsService {
         })),
       };
     } catch (error) {
-      this.logger.error('Error getting audit statistics:', error);
+      this.logError('Error getting audit statistics:', error);
       throw new Error('Failed to get audit statistics');
     }
   }
@@ -132,7 +131,7 @@ export class AuditStatisticsService {
         },
       };
     } catch (error) {
-      this.logger.error('Error getting audit dashboard:', error);
+      this.logError('Error getting audit dashboard:', error);
       throw new Error('Failed to get audit dashboard');
     }
   }

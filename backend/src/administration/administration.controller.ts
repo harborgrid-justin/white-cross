@@ -17,6 +17,7 @@ import { CreateDistrictDto, DistrictQueryDto, UpdateDistrictDto } from './dto/di
 import { CreateLicenseDto, LicenseQueryDto, UpdateLicenseDto } from './dto/license.dto';
 import { CreateSchoolDto, SchoolQueryDto, UpdateSchoolDto } from './dto/school.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * AdministrationController
  *
@@ -25,7 +26,7 @@ import { CreateSchoolDto, SchoolQueryDto, UpdateSchoolDto } from './dto/school.d
 @ApiTags('Administration')
 @ApiBearerAuth()
 @Controller('administration')
-export class AdministrationController {
+export class AdministrationController extends BaseController {
   constructor(
     private readonly districtService: DistrictService,
     private readonly schoolService: SchoolService,

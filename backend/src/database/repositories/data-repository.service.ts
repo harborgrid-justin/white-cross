@@ -76,7 +76,7 @@
  * ### Repository Usage in Services
  * ```typescript
  * @Injectable()
- * export class PatientService {
+ * export class PatientService extends BaseService {
  *   constructor(
  *     @Inject('PatientRepository')
  *     private readonly patientRepo: PatientRepository,
@@ -120,6 +120,7 @@
  */
 
 import { Logger, Injectable, NotFoundException } from '@nestjs/common';
+import { BaseService } from '../../common/base';
 import {
   Model,
   ModelCtor,
@@ -420,7 +421,7 @@ export class UnitOfWork implements IUnitOfWork {
     }
 
     this.transaction = await this.sequelize.transaction();
-    this.logger.log('Transaction started');
+    this.logInfo('Transaction started');
     return this.transaction;
   }
 
@@ -435,7 +436,7 @@ export class UnitOfWork implements IUnitOfWork {
     }
 
     await this.transaction.commit();
-    this.logger.log('Transaction committed');
+    this.logInfo('Transaction committed');
     this.transaction = undefined;
   }
 
@@ -450,7 +451,7 @@ export class UnitOfWork implements IUnitOfWork {
     }
 
     await this.transaction.rollback();
-    this.logger.log('Transaction rolled back');
+    this.logInfo('Transaction rolled back');
     this.transaction = undefined;
   }
 
@@ -602,7 +603,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await this.model.findByPk(id, options);
     } catch (error) {
-      this.logger.error(`Failed to find ${this.model.name} by ID ${id}`, error);
+      this.logError(`Failed to find ${this.model.name} by ID ${id}`, error);
       throw error;
     }
   }
@@ -627,7 +628,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await this.model.findAll(options);
     } catch (error) {
-      this.logger.error(`Failed to find all ${this.model.name} records`, error);
+      this.logError(`Failed to find all ${this.model.name} records`, error);
       throw error;
     }
   }
@@ -639,7 +640,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await this.model.findOne(options);
     } catch (error) {
-      this.logger.error(`Failed to find one ${this.model.name} record`, error);
+      this.logError(`Failed to find one ${this.model.name} record`, error);
       throw error;
     }
   }
@@ -666,7 +667,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await this.model.findAndCountAll(options);
     } catch (error) {
-      this.logger.error(`Failed to find and count ${this.model.name} records`, error);
+      this.logError(`Failed to find and count ${this.model.name} records`, error);
       throw error;
     }
   }
@@ -678,7 +679,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await createWithAudit(this.model, data, audit, { transaction });
     } catch (error) {
-      this.logger.error(`Failed to create ${this.model.name} record`, error);
+      this.logError(`Failed to create ${this.model.name} record`, error);
       throw error;
     }
   }
@@ -695,7 +696,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await updateWithAudit(this.model, id, data, audit, { transaction });
     } catch (error) {
-      this.logger.error(`Failed to update ${this.model.name} record ${id}`, error);
+      this.logError(`Failed to update ${this.model.name} record ${id}`, error);
       throw error;
     }
   }
@@ -711,7 +712,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
       });
       return true;
     } catch (error) {
-      this.logger.error(`Failed to delete ${this.model.name} record ${id}`, error);
+      this.logError(`Failed to delete ${this.model.name} record ${id}`, error);
       throw error;
     }
   }
@@ -723,7 +724,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await this.model.count({ where, transaction } as any);
     } catch (error) {
-      this.logger.error(`Failed to count ${this.model.name} records`, error);
+      this.logError(`Failed to count ${this.model.name} records`, error);
       throw error;
     }
   }
@@ -736,7 +737,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
       const count = await this.count(where, transaction);
       return count > 0;
     } catch (error) {
-      this.logger.error(`Failed to check existence for ${this.model.name}`, error);
+      this.logError(`Failed to check existence for ${this.model.name}`, error);
       throw error;
     }
   }
@@ -754,7 +755,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
         where: spec.toQuery(),
       });
     } catch (error) {
-      this.logger.error(`Failed to find ${this.model.name} by specification`, error);
+      this.logError(`Failed to find ${this.model.name} by specification`, error);
       throw error;
     }
   }
@@ -769,7 +770,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
     try {
       return await buildPaginatedQuery(this.model, options, pagination);
     } catch (error) {
-      this.logger.error(`Failed to find paginated ${this.model.name} records`, error);
+      this.logError(`Failed to find paginated ${this.model.name} records`, error);
       throw error;
     }
   }
@@ -782,7 +783,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
       const options = buildOptimizedQuery(config);
       return await this.model.findAll(options);
     } catch (error) {
-      this.logger.error(`Failed to find optimized ${this.model.name} records`, error);
+      this.logError(`Failed to find optimized ${this.model.name} records`, error);
       throw error;
     }
   }
@@ -800,7 +801,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
         where: { id: { [Op.in]: ids } } as any,
       });
     } catch (error) {
-      this.logger.error(`Failed to batch find ${this.model.name} records`, error);
+      this.logError(`Failed to batch find ${this.model.name} records`, error);
       throw error;
     }
   }
@@ -832,7 +833,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
         limit: 1,
       });
     } catch (error) {
-      this.logger.error(`Failed to find first ${this.model.name} record`, error);
+      this.logError(`Failed to find first ${this.model.name} record`, error);
       throw error;
     }
   }
@@ -851,7 +852,7 @@ export abstract class BaseRepository<T extends Model> implements IRepository<T> 
         limit: 1,
       });
     } catch (error) {
-      this.logger.error(`Failed to find last ${this.model.name} record`, error);
+      this.logError(`Failed to find last ${this.model.name} record`, error);
       throw error;
     }
   }
@@ -916,7 +917,7 @@ export abstract class CachedRepository<T extends Model> extends BaseRepository<T
     const cached = this.getFromCache(cacheKey);
 
     if (cached) {
-      this.logger.debug(`Cache hit for ${this.model.name} ${id}`);
+      this.logDebug(`Cache hit for ${this.model.name} ${id}`);
       return cached;
     }
 
@@ -993,7 +994,7 @@ export abstract class CachedRepository<T extends Model> extends BaseRepository<T
 
   clearCache(): void {
     this.cache.clear();
-    this.logger.log(`Cache cleared for ${this.model.name}`);
+    this.logInfo(`Cache cleared for ${this.model.name}`);
   }
 }
 
@@ -1033,7 +1034,7 @@ export abstract class TransactionalRepository<T extends Model> extends BaseRepos
         await this.unitOfWork.rollback();
       }
 
-      this.logger.error('Transaction failed', error);
+      this.logError('Transaction failed', error);
       throw error;
     }
   }
@@ -1098,7 +1099,7 @@ export abstract class SoftDeleteRepository<T extends Model> extends BaseReposito
       { transaction }
     );
 
-    this.logger.log(`Restored ${this.model.name} ${id}`);
+    this.logInfo(`Restored ${this.model.name} ${id}`);
 
     return record;
   }
@@ -1232,7 +1233,7 @@ export class RepositoryFactory {
     }
 
     this.repositories.set(key, repository);
-    this.logger.log(`Created ${type} repository for ${model.name}`);
+    this.logInfo(`Created ${type} repository for ${model.name}`);
 
     return repository;
   }
@@ -1243,7 +1244,7 @@ export class RepositoryFactory {
 
   clearRepositories(): void {
     this.repositories.clear();
-    this.logger.log('All repositories cleared');
+    this.logInfo('All repositories cleared');
   }
 }
 

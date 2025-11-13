@@ -11,7 +11,6 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -19,7 +18,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
-import { BaseQueueJob } from '../interfaces';
+import { BaseQueueJobDto } from './base/base-queue-job.dto';
 
 /**
  * Encryption status for messages
@@ -65,7 +64,7 @@ export enum CleanupType {
  * DTO for sending a message job
  * Handles asynchronous message delivery
  */
-export class SendMessageJobDto implements BaseQueueJob {
+export class SendMessageJobDto extends BaseQueueJobDto {
   /**
    * Unique message identifier
    */
@@ -123,40 +122,13 @@ export class SendMessageJobDto implements BaseQueueJob {
   @IsString({ each: true })
   @IsOptional()
   attachments?: string[];
-
-  /**
-   * Job creation timestamp
-   */
-  @IsDateString()
-  createdAt: Date;
-
-  /**
-   * User who initiated the job
-   */
-  @IsString()
-  @IsOptional()
-  initiatedBy?: string;
-
-  /**
-   * Job identifier
-   */
-  @IsString()
-  @IsOptional()
-  jobId?: string;
-
-  /**
-   * Additional metadata
-   */
-  @IsObject()
-  @IsOptional()
-  metadata?: Record<string, any>;
 }
 
 /**
  * DTO for notification job
  * Handles push notifications and email alerts
  */
-export class NotificationJobDto implements BaseQueueJob {
+export class NotificationJobDto extends BaseQueueJobDto {
   /**
    * Notification ID
    */
@@ -200,40 +172,13 @@ export class NotificationJobDto implements BaseQueueJob {
   @IsUUID()
   @IsOptional()
   messageId?: string;
-
-  /**
-   * Job creation timestamp
-   */
-  @IsDateString()
-  createdAt: Date;
-
-  /**
-   * User who initiated the job
-   */
-  @IsString()
-  @IsOptional()
-  initiatedBy?: string;
-
-  /**
-   * Job identifier
-   */
-  @IsString()
-  @IsOptional()
-  jobId?: string;
-
-  /**
-   * Additional metadata
-   */
-  @IsObject()
-  @IsOptional()
-  metadata?: Record<string, any>;
 }
 
 /**
  * DTO for batch message job
  * Handles sending messages to multiple recipients
  */
-export class BatchMessageJobDto implements BaseQueueJob {
+export class BatchMessageJobDto extends BaseQueueJobDto {
   /**
    * Batch ID
    */
@@ -289,40 +234,13 @@ export class BatchMessageJobDto implements BaseQueueJob {
   @Max(5000)
   @IsOptional()
   chunkDelay?: number;
-
-  /**
-   * Job creation timestamp
-   */
-  @IsDateString()
-  createdAt: Date;
-
-  /**
-   * User who initiated the job
-   */
-  @IsString()
-  @IsOptional()
-  initiatedBy?: string;
-
-  /**
-   * Job identifier
-   */
-  @IsString()
-  @IsOptional()
-  jobId?: string;
-
-  /**
-   * Additional metadata
-   */
-  @IsObject()
-  @IsOptional()
-  metadata?: Record<string, any>;
 }
 
 /**
  * DTO for message cleanup job
  * Handles old message cleanup and retention policies
  */
-export class MessageCleanupJobDto implements BaseQueueJob {
+export class MessageCleanupJobDto extends BaseQueueJobDto {
   /**
    * Type of cleanup to perform
    */
@@ -347,40 +265,13 @@ export class MessageCleanupJobDto implements BaseQueueJob {
   @Max(1000)
   @IsOptional()
   batchSize?: number;
-
-  /**
-   * Job creation timestamp
-   */
-  @IsDateString()
-  createdAt: Date;
-
-  /**
-   * User who initiated the job
-   */
-  @IsString()
-  @IsOptional()
-  initiatedBy?: string;
-
-  /**
-   * Job identifier
-   */
-  @IsString()
-  @IsOptional()
-  jobId?: string;
-
-  /**
-   * Additional metadata
-   */
-  @IsObject()
-  @IsOptional()
-  metadata?: Record<string, any>;
 }
 
 /**
  * DTO for delivery confirmation job
  * Tracks message delivery status
  */
-export class DeliveryConfirmationJobDto implements BaseQueueJob {
+export class DeliveryConfirmationJobDto extends BaseQueueJobDto {
   /**
    * Message ID to confirm delivery for
    */
@@ -423,40 +314,13 @@ export class DeliveryConfirmationJobDto implements BaseQueueJob {
   @IsOptional()
   @MaxLength(500)
   failureReason?: string;
-
-  /**
-   * Job creation timestamp
-   */
-  @IsDateString()
-  createdAt: Date;
-
-  /**
-   * User who initiated the job
-   */
-  @IsString()
-  @IsOptional()
-  initiatedBy?: string;
-
-  /**
-   * Job identifier
-   */
-  @IsString()
-  @IsOptional()
-  jobId?: string;
-
-  /**
-   * Additional metadata
-   */
-  @IsObject()
-  @IsOptional()
-  metadata?: Record<string, any>;
 }
 
 /**
  * DTO for encryption job
  * Handles message encryption/decryption
  */
-export class EncryptionJobDto implements BaseQueueJob {
+export class EncryptionJobDto extends BaseQueueJobDto {
   /**
    * Message ID to encrypt/decrypt
    */
@@ -491,40 +355,13 @@ export class EncryptionJobDto implements BaseQueueJob {
   @IsString()
   @IsOptional()
   algorithm?: string;
-
-  /**
-   * Job creation timestamp
-   */
-  @IsDateString()
-  createdAt: Date;
-
-  /**
-   * User who initiated the job
-   */
-  @IsString()
-  @IsOptional()
-  initiatedBy?: string;
-
-  /**
-   * Job identifier
-   */
-  @IsString()
-  @IsOptional()
-  jobId?: string;
-
-  /**
-   * Additional metadata
-   */
-  @IsObject()
-  @IsOptional()
-  metadata?: Record<string, any>;
 }
 
 /**
  * DTO for indexing job
  * Handles message search indexing
  */
-export class IndexingJobDto implements BaseQueueJob {
+export class IndexingJobDto extends BaseQueueJobDto {
   /**
    * Message ID to index
    */
@@ -566,31 +403,4 @@ export class IndexingJobDto implements BaseQueueJob {
   @IsDateString()
   @IsOptional()
   messageTimestamp?: Date;
-
-  /**
-   * Job creation timestamp
-   */
-  @IsDateString()
-  createdAt: Date;
-
-  /**
-   * User who initiated the job
-   */
-  @IsString()
-  @IsOptional()
-  initiatedBy?: string;
-
-  /**
-   * Job identifier
-   */
-  @IsString()
-  @IsOptional()
-  jobId?: string;
-
-  /**
-   * Additional metadata
-   */
-  @IsObject()
-  @IsOptional()
-  metadata?: Record<string, any>;
 }

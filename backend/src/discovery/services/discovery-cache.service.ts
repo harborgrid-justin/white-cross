@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheEntry, CacheStats } from '../interfaces/cache-config.interface';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class DiscoveryCacheService {
-  private readonly logger = new Logger(DiscoveryCacheService.name);
+export class DiscoveryCacheService extends BaseService {
   private cache = new Map<string, CacheEntry>();
   private stats: CacheStats = {
     hits: 0,
@@ -70,7 +70,7 @@ export class DiscoveryCacheService {
     this.cache.set(key, entry);
     this.updateStats();
 
-    this.logger.debug(`Cache set: ${key} (TTL: ${ttl}s)`);
+    this.logDebug(`Cache set: ${key} (TTL: ${ttl}s)`);
   }
 
   /**
@@ -80,7 +80,7 @@ export class DiscoveryCacheService {
     const deleted = this.cache.delete(key);
     if (deleted) {
       this.updateStats();
-      this.logger.debug(`Cache deleted: ${key}`);
+      this.logDebug(`Cache deleted: ${key}`);
     }
     return deleted;
   }
@@ -92,7 +92,7 @@ export class DiscoveryCacheService {
     const count = this.cache.size;
     this.cache.clear();
     this.resetStats();
-    this.logger.log(`Cache cleared: ${count} entries removed`);
+    this.logInfo(`Cache cleared: ${count} entries removed`);
     return count;
   }
 
@@ -167,7 +167,7 @@ export class DiscoveryCacheService {
 
     if (invalidated > 0) {
       this.updateStats();
-      this.logger.log(`Cache invalidated by pattern: ${invalidated} entries`);
+      this.logInfo(`Cache invalidated by pattern: ${invalidated} entries`);
     }
 
     return invalidated;
@@ -200,7 +200,7 @@ export class DiscoveryCacheService {
     entry.ttl = newTTL;
     entry.timestamp = Date.now(); // Reset timestamp to extend life
 
-    this.logger.debug(`Cache TTL updated: ${key} (new TTL: ${newTTL}s)`);
+    this.logDebug(`Cache TTL updated: ${key} (new TTL: ${newTTL}s)`);
     return true;
   }
 
@@ -243,7 +243,7 @@ export class DiscoveryCacheService {
 
     if (cleanedCount > 0) {
       this.updateStats();
-      this.logger.log(`Cache cleanup: ${cleanedCount} expired entries removed`);
+      this.logInfo(`Cache cleanup: ${cleanedCount} expired entries removed`);
     }
   }
 

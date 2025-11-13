@@ -6,14 +6,13 @@ import { ChronicCondition, Student } from '@/database';
 import { AttendanceCorrelationReport } from '../interfaces/report-types.interface';
 import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Attendance Reports Service
  * Handles attendance correlation analysis with health visits, incidents, and appointments
  */
 @Injectable()
-export class AttendanceReportsService {
-  private readonly logger = new Logger(AttendanceReportsService.name);
-
+export class AttendanceReportsService extends BaseService {
   constructor(
     @InjectModel(ChronicCondition)
     private chronicConditionModel: typeof ChronicCondition,
@@ -135,7 +134,7 @@ export class AttendanceReportsService {
         }),
       );
 
-      this.logger.log(
+      this.logInfo(
         `Attendance correlation report generated: ${healthVisitsWithStudents.length} health visit patterns, ${incidentVisitsWithStudents.length} incident patterns, ${chronicStudents.length} chronic students, ${appointmentFrequencyWithStudents.length} appointment patterns`,
       );
 
@@ -146,7 +145,7 @@ export class AttendanceReportsService {
         appointmentFrequency: appointmentFrequencyWithStudents,
       };
     } catch (error) {
-      this.logger.error('Error getting attendance correlation:', error);
+      this.logError('Error getting attendance correlation:', error);
       throw error;
     }
   }

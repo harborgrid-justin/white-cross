@@ -12,6 +12,7 @@ import { AppointmentEntity, PaginatedResponse } from '../entities/appointment.en
 import { Appointment } from '../../database/models/appointment.model';
 import { User } from '../../database/models/user.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Appointment Read Service
  *
@@ -20,9 +21,7 @@ import { User } from '../../database/models/user.model';
  * - Get single appointment by ID
  */
 @Injectable()
-export class AppointmentReadService {
-  private readonly logger = new Logger(AppointmentReadService.name);
-
+export class AppointmentReadService extends BaseService {
   constructor(
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
@@ -36,7 +35,7 @@ export class AppointmentReadService {
   async getAppointments(
     filters: AppointmentFiltersDto,
   ): Promise<PaginatedResponse<AppointmentEntity>> {
-    this.logger.log(`Getting appointments with filters: ${JSON.stringify(filters)}`);
+    this.logInfo(`Getting appointments with filters: ${JSON.stringify(filters)}`);
 
     try {
       const {
@@ -113,7 +112,7 @@ export class AppointmentReadService {
         },
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error getting appointments: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );
@@ -125,7 +124,7 @@ export class AppointmentReadService {
    * Get appointment by ID
    */
   async getAppointmentById(id: string): Promise<AppointmentEntity> {
-    this.logger.log(`Getting appointment by ID: ${id}`);
+    this.logInfo(`Getting appointment by ID: ${id}`);
 
     try {
       const appointment = await this.appointmentModel.findByPk(id, {
@@ -152,7 +151,7 @@ export class AppointmentReadService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error(
+      this.logError(
         `Error getting appointment by ID: ${error instanceof Error ? error.message : 'Unknown error'}`,
         error instanceof Error ? error.stack : undefined,
       );

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 
+import { BaseService } from '../../common/base';
 export interface EvictionStrategy {
   name: string;
   priority: number;
@@ -14,8 +15,7 @@ export interface EvictionStrategy {
  * based on provider metadata and system conditions
  */
 @Injectable()
-export class CacheEvictionService {
-  private readonly logger = new Logger(CacheEvictionService.name);
+export class CacheEvictionService extends BaseService {
   private strategies: EvictionStrategy[] = [];
 
   constructor(
@@ -31,7 +31,7 @@ export class CacheEvictionService {
   async performSmartEviction(currentMemoryMB: number): Promise<number> {
     const memoryPressure = this.calculateMemoryPressure(currentMemoryMB);
 
-    this.logger.log(
+    this.logInfo(
       `Performing smart eviction (pressure: ${memoryPressure.toFixed(2)})`,
     );
 
@@ -46,13 +46,13 @@ export class CacheEvictionService {
       try {
         const freed = await strategy.execute(memoryPressure);
         totalFreed += freed;
-        this.logger.debug(`Strategy ${strategy.name} freed ${freed} bytes`);
+        this.logDebug(`Strategy ${strategy.name} freed ${freed} bytes`);
       } catch (error) {
-        this.logger.error(`Eviction strategy ${strategy.name} failed:`, error);
+        this.logError(`Eviction strategy ${strategy.name} failed:`, error);
       }
     }
 
-    this.logger.log(`Smart eviction complete: ${totalFreed} bytes freed`);
+    this.logInfo(`Smart eviction complete: ${totalFreed} bytes freed`);
     return totalFreed;
   }
 
@@ -101,7 +101,7 @@ export class CacheEvictionService {
       if (cacheMetadata?.priority === 'low') {
         // Evict cache entries for low-priority providers
         // This would integrate with the actual cache service
-        this.logger.debug(
+        this.logDebug(
           `Evicting cache for low-priority provider: ${wrapper.name}`,
         );
         freedBytes += 1024; // Placeholder

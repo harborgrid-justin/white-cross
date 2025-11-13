@@ -3,8 +3,9 @@ import { PolicyRepository } from '../repositories/policy.repository';
 import { CreatePolicyDto, QueryPolicyDto, UpdatePolicyDto } from '../dto/policy.dto';
 import { PolicyStatus } from '../../database/models/policy-document.model';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class PolicyService {
+export class PolicyService extends BaseService {
   constructor(private readonly policyRepository: PolicyRepository) {}
 
   async listPolicies(query: QueryPolicyDto) {

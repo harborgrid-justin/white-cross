@@ -30,6 +30,13 @@ import type {
   InvalidationPattern,
 } from './cache.interfaces';
 import { CacheEvent } from './cache.interfaces';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   Cleanup,
   GCSchedule,
@@ -87,7 +94,6 @@ import {
 })
 @Injectable()
 export class CacheService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(CacheService.name);
   private stats: {
     hits: number;
     misses: number;
@@ -102,6 +108,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   private startTime: number;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly cacheConfig: CacheConfigService,
     private readonly connectionService: CacheConnectionService,
     private readonly storageService: CacheStorageService,
@@ -110,6 +117,12 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     private readonly operationsService: CacheOperationsService,
     private readonly eventEmitter: EventEmitter2,
   ) {
+    super({
+      serviceName: 'CacheService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.stats = {
       hits: 0,
       misses: 0,
@@ -120,7 +133,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       errors: 0,
       getTotalLatency: 0,
       setTotalLatency: 0,
-    };
+  };
     this.startTime = Date.now();
   }
 
@@ -132,11 +145,11 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       this.cacheConfig.validate();
       await this.connectionService.connect();
       this.storageService.startCleanup();
-      this.logger.log(
+      this.logInfo(
         `Cache service initialized: ${JSON.stringify(this.cacheConfig.getSummary())}`,
       );
     } catch (error) {
-      this.logger.error('Failed to initialize cache service', error);
+      this.logError('Failed to initialize cache service', error);
     }
   }
 
@@ -147,7 +160,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     this.storageService.stopCleanup();
     await this.connectionService.disconnect();
     this.invalidationService.clearTagIndex();
-    this.logger.log('Cache service destroyed');
+    this.logInfo('Cache service destroyed');
   }
 
   /**
@@ -196,7 +209,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       this.emitEvent(CacheEvent.MISS, fullKey);
       return null;
     } catch (error) {
-      this.logger.error(`Cache get error for key ${fullKey}:`, error);
+      this.logError(`Cache get error for key ${fullKey}:`, error);
       this.stats.errors++;
       this.emitEvent(CacheEvent.ERROR, fullKey, { error });
       return null;
@@ -224,14 +237,14 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       } catch (redisError) {
         // Graceful degradation: log warning but continue with L1 cache
         if (!this.connectionService.isConnected()) {
-          this.logger.warn(`Redis unavailable, using L1 cache only for key: ${fullKey}`, {
+          this.logWarning(`Redis unavailable, using L1 cache only for key: ${fullKey}`, {
             key: fullKey,
             cacheMode: 'L1-only',
             redisStatus: 'disconnected',
           });
         } else {
           // Redis exists but operation failed - log error
-          this.logger.error(`Redis operation failed for key ${fullKey}:`, {
+          this.logError(`Redis operation failed for key ${fullKey}:`, {
             error: redisError.message,
             key: fullKey,
           });
@@ -254,7 +267,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       this.stats.setTotalLatency += Date.now() - startTime;
       this.emitEvent(CacheEvent.SET, fullKey, { tags: options.tags });
     } catch (error) {
-      this.logger.error(`Cache set error for key ${fullKey}:`, {
+      this.logError(`Cache set error for key ${fullKey}:`, {
         error: error.message,
         key: fullKey,
         redisConnected: this.connectionService.isConnected(),
@@ -286,14 +299,14 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
         try {
           await this.storageService.deleteFromL2(fullKey);
         } catch (redisError) {
-          this.logger.warn(`Redis delete failed for key ${fullKey}, L1 cache cleared`, {
+          this.logWarning(`Redis delete failed for key ${fullKey}, L1 cache cleared`, {
             error: redisError.message,
             key: fullKey,
             l1Deleted: true,
           });
         }
       } else {
-        this.logger.debug(`Redis unavailable, deleted from L1 cache only: ${fullKey}`);
+        this.logDebug(`Redis unavailable, deleted from L1 cache only: ${fullKey}`);
       }
 
       // Remove from tag index
@@ -303,7 +316,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       this.emitEvent(CacheEvent.DELETE, fullKey);
       return true;
     } catch (error) {
-      this.logger.error(`Cache delete error for key ${fullKey}:`, {
+      this.logError(`Cache delete error for key ${fullKey}:`, {
         error: error.message,
         key: fullKey,
         redisConnected: this.connectionService.isConnected(),
@@ -484,7 +497,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   async clear(): Promise<void> {
     await this.storageService.clearAll();
     this.invalidationService.clearTagIndex();
-    this.logger.warn('Cache cleared');
+    this.logWarning('Cache cleared');
   }
 
   /**

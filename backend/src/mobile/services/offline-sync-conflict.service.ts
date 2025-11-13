@@ -12,6 +12,7 @@ import {
 } from './offline-sync-types.interface';
 import { OfflineSyncEntityRegistryService } from './offline-sync-entity-registry.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Conflict Resolution Service
  * Handles conflict detection and resolution for offline sync
@@ -36,15 +37,13 @@ import { OfflineSyncEntityRegistryService } from './offline-sync-entity-registry
  * ```
  */
 @Injectable()
-export class OfflineSyncConflictService {
-  private readonly logger = new Logger(OfflineSyncConflictService.name);
-
+export class OfflineSyncConflictService extends BaseService {
   constructor(
     @InjectModel(SyncConflict)
     private readonly conflictModel: typeof SyncConflict,
     private readonly entityRegistry: OfflineSyncEntityRegistryService,
   ) {
-    this.logger.log('OfflineSyncConflictService initialized');
+    this.logInfo('OfflineSyncConflictService initialized');
   }
 
   /**
@@ -139,7 +138,7 @@ export class OfflineSyncConflictService {
       // No conflict detected
       return null;
     } catch (error) {
-      this.logger.error(`Error detecting conflict for item ${item.id}`, error);
+      this.logError(`Error detecting conflict for item ${item.id}`, error);
       // Don't throw - return null to allow sync to proceed
       return null;
     }
@@ -213,7 +212,7 @@ export class OfflineSyncConflictService {
       status: SyncStatus.PENDING,
     };
 
-    this.logger.warn(
+    this.logWarning(
       `Conflict detected for ${item.entityType}:${item.entityId} - ` +
         `Client: ${item.timestamp.toISOString()}, Server: ${serverVersion.updatedAt.toISOString()}`,
     );
@@ -279,7 +278,7 @@ export class OfflineSyncConflictService {
 
     const resolved = await conflict.save();
 
-    this.logger.log(`Conflict resolved: ${conflictId} using ${dto.resolution}`);
+    this.logInfo(`Conflict resolved: ${conflictId} using ${dto.resolution}`);
 
     return resolved;
   }

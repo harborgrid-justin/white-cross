@@ -5,12 +5,11 @@ import { CreateMessageTemplateDto } from '../dto/create-message-template.dto';
 import { EmergencyAlertDto } from '../dto/emergency-alert.dto';
 import { MessageDeliveryStatusResult } from '../interfaces/index';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class CommunicationService {
-  private readonly logger = new Logger(CommunicationService.name);
-
+export class CommunicationService extends BaseService {
   async createMessageTemplate(dto: CreateMessageTemplateDto): Promise<any> {
-    this.logger.log('Creating message template');
+    this.logInfo('Creating message template');
     return { id: 'template-id', ...dto, createdAt: new Date() };
   }
 
@@ -18,7 +17,7 @@ export class CommunicationService {
     message: any;
     deliveryStatuses: MessageDeliveryStatusResult[];
   }> {
-    this.logger.log('Sending message');
+    this.logInfo('Sending message');
     return { message: {}, deliveryStatuses: [] };
   }
 
@@ -26,7 +25,7 @@ export class CommunicationService {
     message: any;
     deliveryStatuses: MessageDeliveryStatusResult[];
   }> {
-    this.logger.log('Sending broadcast message');
+    this.logInfo('Sending broadcast message');
     return { message: {}, deliveryStatuses: [] };
   }
 
@@ -34,7 +33,7 @@ export class CommunicationService {
     message: any;
     deliveryStatuses: MessageDeliveryStatusResult[];
   }> {
-    this.logger.log('Sending emergency alert');
+    this.logInfo('Sending emergency alert');
     return { message: {}, deliveryStatuses: [] };
   }
 }

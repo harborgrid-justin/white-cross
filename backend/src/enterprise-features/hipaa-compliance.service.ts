@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { HIPAAComplianceCheck } from './enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class HipaaComplianceService {
-  private readonly logger = new Logger(HipaaComplianceService.name);
+export class HipaaComplianceService extends BaseService {
   private complianceChecks: HIPAAComplianceCheck[] = [];
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -44,12 +44,12 @@ export class HipaaComplianceService {
         timestamp: new Date(),
       });
 
-      this.logger.log('HIPAA compliance audit completed', {
+      this.logInfo('HIPAA compliance audit completed', {
         checkCount: checks.length,
       });
       return checks;
     } catch (error) {
-      this.logger.error('Error performing HIPAA audit', error);
+      this.logError('Error performing HIPAA audit', error);
       throw error;
     }
   }
@@ -80,14 +80,14 @@ export class HipaaComplianceService {
         timestamp: new Date(),
       });
 
-      this.logger.log('HIPAA compliance report generated', {
+      this.logInfo('HIPAA compliance report generated', {
         startDate,
         endDate,
         checkCount: relevantChecks.length,
       });
       return report;
     } catch (error) {
-      this.logger.error('Error generating compliance report', {
+      this.logError('Error generating compliance report', {
         error,
         startDate,
         endDate,
@@ -104,14 +104,14 @@ export class HipaaComplianceService {
       const check = this.complianceChecks.find((c) => c.id === checkId);
 
       if (check) {
-        this.logger.log('Compliance check retrieved', { checkId });
+        this.logInfo('Compliance check retrieved', { checkId });
       } else {
-        this.logger.warn('Compliance check not found', { checkId });
+        this.logWarning('Compliance check not found', { checkId });
       }
 
       return check || null;
     } catch (error) {
-      this.logger.error('Error retrieving compliance check', {
+      this.logError('Error retrieving compliance check', {
         error,
         checkId,
       });
@@ -124,12 +124,12 @@ export class HipaaComplianceService {
    */
   async getAllComplianceChecks(): Promise<HIPAAComplianceCheck[]> {
     try {
-      this.logger.log('All compliance checks retrieved', {
+      this.logInfo('All compliance checks retrieved', {
         count: this.complianceChecks.length,
       });
       return [...this.complianceChecks];
     } catch (error) {
-      this.logger.error('Error retrieving compliance checks', error);
+      this.logError('Error retrieving compliance checks', error);
       return [];
     }
   }
@@ -148,10 +148,10 @@ export class HipaaComplianceService {
         lastAuditDate: this.getLastAuditDate(),
       };
 
-      this.logger.log('Compliance statistics retrieved', stats);
+      this.logInfo('Compliance statistics retrieved', stats);
       return stats;
     } catch (error) {
-      this.logger.error('Error getting compliance statistics', error);
+      this.logError('Error getting compliance statistics', error);
       throw error;
     }
   }

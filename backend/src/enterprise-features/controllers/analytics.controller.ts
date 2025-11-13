@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { AnalyticsDashboardService } from '../analytics-dashboard.service';
 import { DashboardMetricResponseDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Analytics Dashboard')
 @Controller('enterprise-features/analytics')
 @ApiBearerAuth()
-export class AnalyticsController {
+export class AnalyticsController extends BaseController {
   constructor(private readonly analyticsService: AnalyticsDashboardService) {}
 
   @Get('metrics')

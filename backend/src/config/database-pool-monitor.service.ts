@@ -9,6 +9,13 @@ import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 export interface PoolMetrics {
   activeConnections: number;
   idleConnections: number;
@@ -33,7 +40,6 @@ export interface PoolAlert {
 
 @Injectable()
 export class DatabasePoolMonitorService implements OnModuleInit {
-  private readonly logger = new Logger(DatabasePoolMonitorService.name);
   private metrics: PoolMetrics[] = [];
   private alerts: PoolAlert[] = [];
   private readonly MAX_METRICS_HISTORY = 100;
@@ -47,7 +53,7 @@ export class DatabasePoolMonitorService implements OnModuleInit {
   constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
 
   async onModuleInit() {
-    this.logger.log('Database Pool Monitor initialized');
+    this.logInfo('Database Pool Monitor initialized');
     await this.checkPoolHealth();
   }
 
@@ -60,7 +66,7 @@ export class DatabasePoolMonitorService implements OnModuleInit {
       const pool = this.getConnectionPool();
 
       if (!pool) {
-        this.logger.warn('Connection pool not available');
+        this.logWarning('Connection pool not available');
         return null;
       }
 
@@ -91,7 +97,7 @@ export class DatabasePoolMonitorService implements OnModuleInit {
 
       // Log metrics if utilization is high or there are waiting requests
       if (metrics.utilizationPercent > 70 || metrics.waitingRequests > 0) {
-        this.logger.warn('Pool Metrics:', {
+        this.logWarning('Pool Metrics:', {
           active: metrics.activeConnections,
           idle: metrics.idleConnections,
           waiting: metrics.waitingRequests,
@@ -101,7 +107,7 @@ export class DatabasePoolMonitorService implements OnModuleInit {
 
       return metrics;
     } catch (error) {
-      this.logger.error('Error collecting pool metrics:', error);
+      this.logError('Error collecting pool metrics:', error);
       return null;
     }
   }
@@ -124,17 +130,17 @@ export class DatabasePoolMonitorService implements OnModuleInit {
         metrics.waitingRequests < this.MAX_WAITING_REQUESTS;
 
       if (!isHealthy) {
-        this.logger.error('Pool health check failed:', {
+        this.logError('Pool health check failed:', {
           utilization: `${metrics.utilizationPercent.toFixed(1)}%`,
           waiting: metrics.waitingRequests,
         });
       } else {
-        this.logger.debug('Pool health check passed');
+        this.logDebug('Pool health check passed');
       }
 
       return isHealthy;
     } catch (error) {
-      this.logger.error('Database connection health check failed:', error);
+      this.logError('Database connection health check failed:', error);
 
       // Record connection error alert
       this.recordAlert({
@@ -211,7 +217,7 @@ export class DatabasePoolMonitorService implements OnModuleInit {
   clearHistory(): void {
     this.metrics = [];
     this.alerts = [];
-    this.logger.log('Pool monitor history cleared');
+    this.logInfo('Pool monitor history cleared');
   }
 
   // Private methods
@@ -220,7 +226,7 @@ export class DatabasePoolMonitorService implements OnModuleInit {
     try {
       return (this.sequelize as any).connectionManager?.pool;
     } catch (error) {
-      this.logger.error('Error accessing connection pool:', error);
+      this.logError('Error accessing connection pool:', error);
       return null;
     }
   }

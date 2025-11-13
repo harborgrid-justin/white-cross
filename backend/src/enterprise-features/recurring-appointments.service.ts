@@ -9,16 +9,24 @@ import { RecurringTemplateService } from './services/recurring/recurring-templat
 import { RecurringGenerationService } from './services/recurring/recurring-generation.service';
 import { RecurringStatisticsService } from './services/recurring/recurring-statistics.service';
 
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
-export class RecurringAppointmentsService {
-  private readonly logger = new Logger(RecurringAppointmentsService.name);
-
+export class RecurringAppointmentsService extends BaseService {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private eventEmitter: EventEmitter2,
     private templateService: RecurringTemplateService,
     private generationService: RecurringGenerationService,
     private statisticsService: RecurringStatisticsService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'RecurringAppointmentsService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Create a new recurring appointment template

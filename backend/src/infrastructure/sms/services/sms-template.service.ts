@@ -7,6 +7,7 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateSmsTemplateDto, SmsTemplateType } from '../dto/sms-template.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * SMS Template interface
  */
@@ -25,8 +26,7 @@ interface SmsTemplate {
  * Provides template management and variable substitution for SMS messages
  */
 @Injectable()
-export class SmsTemplateService {
-  private readonly logger = new Logger(SmsTemplateService.name);
+export class SmsTemplateService extends BaseService {
   private readonly templates: Map<string, SmsTemplate> = new Map();
 
   constructor() {
@@ -77,7 +77,7 @@ export class SmsTemplateService {
     };
 
     this.templates.set(dto.templateId, template);
-    this.logger.log(`Created SMS template: ${dto.templateId}`);
+    this.logInfo(`Created SMS template: ${dto.templateId}`);
 
     return template;
   }
@@ -146,12 +146,12 @@ export class SmsTemplateService {
     // Check for unreplaced variables
     const unreplaced = this.extractVariables(rendered);
     if (unreplaced.length > 0) {
-      this.logger.warn(
+      this.logWarning(
         `Template ${templateId} has unreplaced variables: ${unreplaced.join(', ')}`,
       );
     }
 
-    this.logger.debug(`Rendered template ${templateId}: ${rendered}`);
+    this.logDebug(`Rendered template ${templateId}: ${rendered}`);
     return rendered;
   }
 
@@ -181,7 +181,7 @@ export class SmsTemplateService {
     const deleted = this.templates.delete(templateId);
 
     if (deleted) {
-      this.logger.log(`Deleted SMS template: ${templateId}`);
+      this.logInfo(`Deleted SMS template: ${templateId}`);
     }
 
     return deleted;
@@ -352,13 +352,13 @@ export class SmsTemplateService {
       try {
         this.createTemplate(dto);
       } catch (error) {
-        this.logger.error(
+        this.logError(
           `Failed to create default template ${dto.templateId}: ${error.message}`,
         );
       }
     });
 
-    this.logger.log(
+    this.logInfo(
       `Initialized ${defaultTemplates.length} default SMS templates`,
     );
   }

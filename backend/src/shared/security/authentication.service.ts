@@ -321,7 +321,7 @@ export interface AuthenticationResult {
  * @see {@link https://tools.ietf.org/html/rfc7519|RFC 7519 - JSON Web Token}
  * @see {@link https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html|OWASP JWT Cheat Sheet}
  */
-export class AuthenticationService {
+export class AuthenticationService extends BaseService {
   private config: AuthenticationConfig;
 
   /**
@@ -802,6 +802,7 @@ export function createAuthenticationService(
  * @example
  * // Default import
  * import authService from './authentication.service';
+import { BaseService } from '../../common/base';
  * const service = authService.createAuthenticationService(config);
  */
 export default {

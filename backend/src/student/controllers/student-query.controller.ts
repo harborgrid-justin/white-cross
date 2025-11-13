@@ -17,6 +17,7 @@ import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@/auth';
 import { StudentService } from '../student.service';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Query Controller
  *
@@ -30,7 +31,7 @@ import { StudentService } from '../student.service';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentQueryController {
+export class StudentQueryController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

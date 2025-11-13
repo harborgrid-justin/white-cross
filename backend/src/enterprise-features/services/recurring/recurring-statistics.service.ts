@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RecurringTemplate } from '../../enterprise-features-interfaces';
 
+import { BaseService } from '../../common/base';
 /**
  * Statistics Service
  * Handles statistics calculations for recurring appointments
  */
 @Injectable()
-export class RecurringStatisticsService {
-  private readonly logger = new Logger(RecurringStatisticsService.name);
-
+export class RecurringStatisticsService extends BaseService {
   /**
    * Get template statistics
    */
@@ -47,11 +46,11 @@ export class RecurringStatisticsService {
         stats.averageAppointmentsPerTemplate = Math.round(30 / stats.activeTemplates); // Rough estimate
       }
 
-      this.logger.log('Template statistics calculated', stats);
+      this.logInfo('Template statistics calculated', stats);
 
       return stats;
     } catch (error) {
-      this.logger.error('Error getting template statistics', {
+      this.logError('Error getting template statistics', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

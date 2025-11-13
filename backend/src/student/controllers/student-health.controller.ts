@@ -21,6 +21,7 @@ import { StudentService } from '../student.service';
 import { MentalHealthRecordsDto } from '../dto/mental-health-records.dto';
 import { StudentHealthRecordsDto } from '../dto/student-health-records.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Health Controller
  *
@@ -34,7 +35,7 @@ import { StudentHealthRecordsDto } from '../dto/student-health-records.dto';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentHealthController {
+export class StudentHealthController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

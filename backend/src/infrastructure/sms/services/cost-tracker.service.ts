@@ -7,6 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CostAnalyticsQueryDto, SmsCostAnalyticsDto, SmsCostEntryDto } from '../dto/cost-tracking.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Cost entry with internal tracking
  */
@@ -21,9 +22,7 @@ interface CostEntry extends SmsCostEntryDto {
  * In production, this should persist to a database (PostgreSQL, MongoDB, etc.)
  */
 @Injectable()
-export class CostTrackerService {
-  private readonly logger = new Logger(CostTrackerService.name);
-
+export class CostTrackerService extends BaseService {
   // In-memory storage for cost entries
   // In production, replace with database persistence
   private readonly costEntries: CostEntry[] = [];
@@ -32,7 +31,7 @@ export class CostTrackerService {
   private totalMessages = 0;
 
   constructor() {
-    this.logger.log('Cost tracker service initialized');
+    this.logInfo('Cost tracker service initialized');
   }
 
   /**
@@ -67,7 +66,7 @@ export class CostTrackerService {
     this.totalCost += entry.totalCost;
     this.totalMessages += 1;
 
-    this.logger.debug(
+    this.logDebug(
       `Recorded SMS cost: ${entry.to} (${entry.countryCode}) - $${entry.totalCost.toFixed(4)}`,
     );
 
@@ -277,7 +276,7 @@ export class CostTrackerService {
     this.totalCost = 0;
     this.totalMessages = 0;
 
-    this.logger.warn(`Cleared ${count} cost entries`);
+    this.logWarning(`Cleared ${count} cost entries`);
   }
 
   // ==================== Private Helper Methods ====================

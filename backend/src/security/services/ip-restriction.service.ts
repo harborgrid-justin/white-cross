@@ -7,14 +7,13 @@ import { IPRestrictionRule } from '../interfaces/ip-restriction-rule.interface';
 import { SecurityCreateIpRestrictionDto } from '../dto/ip-restriction.dto';
 import { UpdateIpRestrictionDto } from '../dto/ip-restriction.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * IP Restriction Service
  * Manages IP whitelisting, blacklisting, and geolocation-based access control
  */
 @Injectable()
-export class IpRestrictionService {
-  private readonly logger = new Logger(IpRestrictionService.name);
-
+export class IpRestrictionService extends BaseService {
   constructor(
     @InjectModel(IpRestrictionEntity)
     private readonly ipRestrictionModel: typeof IpRestrictionEntity,
@@ -28,7 +27,7 @@ export class IpRestrictionService {
       // 1. Check if IP is blacklisted
       const isBlacklisted = await this.isIPBlacklisted(ipAddress);
       if (isBlacklisted.blocked) {
-        this.logger.warn('IP address blocked (blacklisted)', {
+        this.logWarning('IP address blocked (blacklisted)', {
           ipAddress,
           reason: isBlacklisted.reason,
         });
@@ -44,7 +43,7 @@ export class IpRestrictionService {
       if (whitelistEnforced) {
         const isWhitelisted = await this.isIPWhitelisted(ipAddress);
         if (!isWhitelisted.allowed) {
-          this.logger.warn('IP address blocked (not whitelisted)', {
+          this.logWarning('IP address blocked (not whitelisted)', {
             ipAddress,
           });
           return {
@@ -57,7 +56,7 @@ export class IpRestrictionService {
       // 3. Check geo-restrictions
       const geoCheck = await this.checkGeoRestrictions(ipAddress);
       if (!geoCheck.allowed) {
-        this.logger.warn('IP address blocked (geo-restriction)', {
+        this.logWarning('IP address blocked (geo-restriction)', {
           ipAddress,
           location: geoCheck.location,
         });
@@ -68,7 +67,7 @@ export class IpRestrictionService {
       if (userId) {
         const userCheck = await this.checkUserIPRestrictions(userId, ipAddress);
         if (!userCheck.allowed) {
-          this.logger.warn('IP address blocked (user restriction)', {
+          this.logWarning('IP address blocked (user restriction)', {
             ipAddress,
             userId,
           });
@@ -76,13 +75,13 @@ export class IpRestrictionService {
         }
       }
 
-      this.logger.log('IP address access granted', { ipAddress, userId });
+      this.logInfo('IP address access granted', { ipAddress, userId });
       return {
         allowed: true,
         location: geoCheck.location,
       };
     } catch (error) {
-      this.logger.error('Error checking IP access', { error, ipAddress });
+      this.logError('Error checking IP access', { error, ipAddress });
       // Fail open in case of error (allow access but log)
       return {
         allowed: true,
@@ -119,7 +118,7 @@ export class IpRestrictionService {
 
       return { blocked: false };
     } catch (error) {
-      this.logger.error('Error checking IP blacklist', { error, ipAddress });
+      this.logError('Error checking IP blacklist', { error, ipAddress });
       return { blocked: false };
     }
   }
@@ -146,7 +145,7 @@ export class IpRestrictionService {
 
       return { allowed: false };
     } catch (error) {
-      this.logger.error('Error checking IP whitelist', { error, ipAddress });
+      this.logError('Error checking IP whitelist', { error, ipAddress });
       return { allowed: true }; // Fail open
     }
   }
@@ -160,7 +159,7 @@ export class IpRestrictionService {
       // For now, return false by default
       return false;
     } catch (error) {
-      this.logger.error('Error checking whitelist enforcement', { error });
+      this.logError('Error checking whitelist enforcement', { error });
       return false;
     }
   }
@@ -198,7 +197,7 @@ export class IpRestrictionService {
         location,
       };
     } catch (error) {
-      this.logger.error('Error checking geo restrictions', {
+      this.logError('Error checking geo restrictions', {
         error,
         ipAddress,
       });
@@ -225,7 +224,7 @@ export class IpRestrictionService {
       // Mock implementation - integrate with actual GeoIP service
       return { country: 'US', city: 'Unknown', region: 'Unknown' };
     } catch (error) {
-      this.logger.error('Error getting IP geolocation', { error, ipAddress });
+      this.logError('Error getting IP geolocation', { error, ipAddress });
       return null;
     }
   }
@@ -239,7 +238,7 @@ export class IpRestrictionService {
       // Some users (admins) might be restricted to specific IPs
       return { allowed: true };
     } catch (error) {
-      this.logger.error('Error checking user IP restrictions', {
+      this.logError('Error checking user IP restrictions', {
         error,
         userId,
         ipAddress,
@@ -277,7 +276,7 @@ export class IpRestrictionService {
       }
       return false;
     } catch (error) {
-      this.logger.error('Error matching IP pattern', {
+      this.logError('Error matching IP pattern', {
         error,
         ipAddress,
         pattern,
@@ -301,7 +300,7 @@ export class IpRestrictionService {
 
       return (ipNum & mask) === (subnetNum & mask);
     } catch (error) {
-      this.logger.error('Error matching CIDR', { error, ipAddress, cidr });
+      this.logError('Error matching CIDR', { error, ipAddress, cidr });
       return false;
     }
   }
@@ -317,7 +316,7 @@ export class IpRestrictionService {
 
       return ipNum >= startNum && ipNum <= endNum;
     } catch (error) {
-      this.logger.error('Error matching IP range', { error, ipAddress });
+      this.logError('Error matching IP range', { error, ipAddress });
       return false;
     }
   }
@@ -353,13 +352,13 @@ export class IpRestrictionService {
         type: IpRestrictionType.BLACKLIST,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       });
-      this.logger.log('IP added to blacklist', {
+      this.logInfo('IP added to blacklist', {
         ipAddress: dto.ipAddress,
         reason: dto.reason,
       });
       return restriction;
     } catch (error) {
-      this.logger.error('Error adding IP to blacklist', { error, dto });
+      this.logError('Error adding IP to blacklist', { error, dto });
       throw error;
     }
   }
@@ -374,13 +373,13 @@ export class IpRestrictionService {
         type: IpRestrictionType.WHITELIST,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
       });
-      this.logger.log('IP added to whitelist', {
+      this.logInfo('IP added to whitelist', {
         ipAddress: dto.ipAddress,
         reason: dto.reason,
       });
       return restriction;
     } catch (error) {
-      this.logger.error('Error adding IP to whitelist', { error, dto });
+      this.logError('Error adding IP to whitelist', { error, dto });
       throw error;
     }
   }
@@ -391,10 +390,10 @@ export class IpRestrictionService {
   async removeRestriction(ruleId: string): Promise<boolean> {
     try {
       await this.ipRestrictionModel.update({ isActive: false }, { where: { id: ruleId } });
-      this.logger.log('IP restriction removed', { ruleId });
+      this.logInfo('IP restriction removed', { ruleId });
       return true;
     } catch (error) {
-      this.logger.error('Error removing IP restriction', { error, ruleId });
+      this.logError('Error removing IP restriction', { error, ruleId });
       return false;
     }
   }
@@ -411,7 +410,7 @@ export class IpRestrictionService {
 
       return await this.ipRestrictionModel.findAll({ where });
     } catch (error) {
-      this.logger.error('Error fetching IP restrictions', { error });
+      this.logError('Error fetching IP restrictions', { error });
       return [];
     }
   }
@@ -467,9 +466,9 @@ export class IpRestrictionService {
       };
 
       // In production, store in audit log
-      this.logger.log('IP access attempt logged', logEntry);
+      this.logInfo('IP access attempt logged', logEntry);
     } catch (error) {
-      this.logger.error('Error logging IP access attempt', { error });
+      this.logError('Error logging IP access attempt', { error });
     }
   }
 }

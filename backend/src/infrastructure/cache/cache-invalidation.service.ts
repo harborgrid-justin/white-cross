@@ -18,12 +18,12 @@ import { CacheStorageService } from './cache-storage.service';
 import type { InvalidationPattern } from './cache.interfaces';
 import { CacheEvent } from './cache.interfaces';
 
+import { BaseService } from '../../common/base';
 /**
  * Service responsible for cache invalidation operations
  */
 @Injectable()
-export class CacheInvalidationService {
-  private readonly logger = new Logger(CacheInvalidationService.name);
+export class CacheInvalidationService extends BaseService {
   private tagIndex: Map<string, Set<string>> = new Map();
 
   constructor(
@@ -105,7 +105,7 @@ export class CacheInvalidationService {
           break;
 
         default:
-          this.logger.warn(`Unknown invalidation pattern type: ${pattern.type}`);
+          this.logWarning(`Unknown invalidation pattern type: ${pattern.type}`);
       }
 
       this.emitEvent(CacheEvent.INVALIDATE, pattern.value, {
@@ -115,7 +115,7 @@ export class CacheInvalidationService {
 
       return count;
     } catch (error) {
-      this.logger.error('Cache invalidation error:', error);
+      this.logError('Cache invalidation error:', error);
       return 0;
     }
   }

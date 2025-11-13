@@ -7,8 +7,6 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
-  Logger,
   NotFoundException,
   Optional,
 } from '@nestjs/common';
@@ -31,7 +29,6 @@ import { UploadPhotoDto } from '../dto/upload-photo.dto';
  */
 @Injectable()
 export class StudentPhotoService extends BaseService {
-  protected readonly logger = new Logger(StudentPhotoService.name);
 
   constructor(
     @InjectModel(Student)

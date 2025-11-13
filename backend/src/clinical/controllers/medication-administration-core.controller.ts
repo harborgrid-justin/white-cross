@@ -11,6 +11,7 @@ import { InitiateAdministrationDto, RecordAdministrationDto } from '../dto/admin
 import { RecordHeldMedicationDto, RecordMissedDoseDto, RecordRefusalDto } from '../dto/administration/record-refusal.dto';
 import { RequestWitnessSignatureDto, SubmitWitnessSignatureDto } from '../dto/administration/witness-signature.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Medication Administration Core Controller
  *
@@ -19,7 +20,7 @@ import { RequestWitnessSignatureDto, SubmitWitnessSignatureDto } from '../dto/ad
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
 @Controller('medications/administrations')
-export class MedicationAdministrationCoreController {
+export class MedicationAdministrationCoreController extends BaseController {
   /**
    * Initiate administration session
    */

@@ -4,6 +4,7 @@ import autoTable from 'jspdf-autotable';
 import { ReportFormat } from '../enums/report-format.enum';
 import { ComplianceReport } from '../interfaces/compliance-report.interfaces';
 
+import { BaseService } from '../../common/base';
 /**
  * Compliance Report Exporter Service
  *
@@ -18,9 +19,7 @@ import { ComplianceReport } from '../interfaces/compliance-report.interfaces';
  * - Generate file URLs for storage
  */
 @Injectable()
-export class ComplianceReportExporterService {
-  private readonly logger = new Logger(ComplianceReportExporterService.name);
-
+export class ComplianceReportExporterService extends BaseService {
   /**
    * Export report to specified format
    */
@@ -58,10 +57,10 @@ export class ComplianceReportExporterService {
           fileSize = 1024 * 256;
       }
 
-      this.logger.log(`Report exported: ${report.id} to ${format} format`);
+      this.logInfo(`Report exported: ${report.id} to ${format} format`);
       return { fileUrl, fileSize };
     } catch (error) {
-      this.logger.error(`Error exporting report ${report.id}`, error.stack);
+      this.logError(`Error exporting report ${report.id}`, error.stack);
       throw error;
     }
   }
@@ -198,10 +197,10 @@ export class ComplianceReportExporterService {
       // In production, save to cloud storage (S3, Azure Blob, etc.)
       const fileUrl = `/reports/${report.id}.pdf`;
 
-      this.logger.debug(`PDF generated for report ${report.id}`);
+      this.logDebug(`PDF generated for report ${report.id}`);
       return fileUrl;
     } catch (error) {
-      this.logger.error('Error generating PDF', error.stack);
+      this.logError('Error generating PDF', error.stack);
       throw error;
     }
   }
@@ -275,10 +274,10 @@ export class ComplianceReportExporterService {
       // In production, save to cloud storage
       const fileUrl = `/reports/${report.id}.csv`;
 
-      this.logger.debug(`CSV generated for report ${report.id}`);
+      this.logDebug(`CSV generated for report ${report.id}`);
       return fileUrl;
     } catch (error) {
-      this.logger.error('Error generating CSV', error.stack);
+      this.logError('Error generating CSV', error.stack);
       throw error;
     }
   }
@@ -318,10 +317,10 @@ export class ComplianceReportExporterService {
       // In production, save to cloud storage
       const fileUrl = `/reports/${report.id}.json`;
 
-      this.logger.debug(`JSON generated for report ${report.id}`);
+      this.logDebug(`JSON generated for report ${report.id}`);
       return fileUrl;
     } catch (error) {
-      this.logger.error('Error generating JSON', error.stack);
+      this.logError('Error generating JSON', error.stack);
       throw error;
     }
   }

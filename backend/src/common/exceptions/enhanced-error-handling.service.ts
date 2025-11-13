@@ -23,6 +23,7 @@ import { Request, Response } from 'express';
 import * as winston from 'winston';
 import { Counter, Histogram, register } from 'prom-client';
 
+import { BaseService } from '../../common/base';
 // ============================================================================
 // STRUCTURED ERROR TYPES
 // ============================================================================
@@ -438,14 +439,12 @@ export abstract class BaseRecoveryStrategy implements ErrorRecoveryStrategy {
  */
 @Injectable()
 export class DatabaseRecoveryStrategy extends BaseRecoveryStrategy {
-  private readonly logger = new Logger('DatabaseRecoveryStrategy');
-
   canRecover(error: BaseError): boolean {
     return error instanceof DatabaseError && error.retryable;
   }
 
   async recover(error: BaseError): Promise<void> {
-    this.logger.warn(`Attempting database recovery for error: ${error.errorId}`);
+    this.logWarning(`Attempting database recovery for error: ${error.errorId}`);
     
     // Implement database connection pool reset, reconnection logic
     await this.resetConnectionPool();
@@ -454,12 +453,12 @@ export class DatabaseRecoveryStrategy extends BaseRecoveryStrategy {
 
   private async resetConnectionPool(): Promise<void> {
     // Implementation would reset the database connection pool
-    this.logger.log('Resetting database connection pool');
+    this.logInfo('Resetting database connection pool');
   }
 
   private async waitForHealthyConnection(): Promise<void> {
     // Implementation would wait for healthy database connection
-    this.logger.log('Waiting for healthy database connection');
+    this.logInfo('Waiting for healthy database connection');
   }
 }
 
@@ -478,7 +477,7 @@ export class IntegrationRecoveryStrategy extends BaseRecoveryStrategy {
   }
 
   async recover(error: BaseError): Promise<void> {
-    this.logger.warn(`Attempting integration recovery for error: ${error.errorId}`);
+    this.logWarning(`Attempting integration recovery for error: ${error.errorId}`);
     
     if (error instanceof IntegrationError) {
       await this.refreshServiceConnection(error.service);
@@ -486,7 +485,7 @@ export class IntegrationRecoveryStrategy extends BaseRecoveryStrategy {
   }
 
   private async refreshServiceConnection(service: string): Promise<void> {
-    this.logger.log(`Refreshing connection to service: ${service}`);
+    this.logInfo(`Refreshing connection to service: ${service}`);
     // Implementation would refresh service connections, auth tokens, etc.
   }
 }
@@ -518,7 +517,7 @@ export class CircuitBreakerRecoveryStrategy extends BaseRecoveryStrategy {
     // Open circuit after 5 failures within 1 minute
     if (circuit.failures >= 5 && this.isWithinTimeWindow(circuit.lastFailure, 60000)) {
       circuit.state = 'OPEN';
-      this.logger.warn(`Circuit breaker opened for ${circuitKey}`);
+      this.logWarning(`Circuit breaker opened for ${circuitKey}`);
     }
   }
 
@@ -559,7 +558,7 @@ export class CircuitBreakerRecoveryStrategy extends BaseRecoveryStrategy {
  * Error aggregation service for collecting and analyzing error patterns
  */
 @Injectable()
-export class ErrorAggregationService {
+export class ErrorAggregationService extends BaseService {
   private readonly logger = new Logger('ErrorAggregationService');
   private readonly errorCounts = new Map<string, ErrorAggregation>();
   private readonly maxSamples = 10;
@@ -644,7 +643,7 @@ export class ErrorAggregationService {
     );
 
     if (recentSamples.length > 50) {
-      this.logger.error(
+      this.logError(
         `Error spike detected for ${key}: ${recentSamples.length} errors in 5 minutes`
       );
       // Could trigger alerts here
@@ -778,7 +777,7 @@ export class ProductionErrorHandler {
       this.metricsCollector.recordHandlingDuration(structuredError, duration, recoveryAttempted);
       
     } catch (handlingError) {
-      this.logger.error(
+      this.logError(
         `Error occurred while handling error ${structuredError.errorId}`,
         handlingError
       );
@@ -814,7 +813,7 @@ export class ProductionErrorHandler {
         const strategy = this.findRecoveryStrategy(lastError);
         const delay = strategy?.getRetryDelay(attempt) || 1000 * Math.pow(2, attempt);
         
-        this.logger.warn(
+        this.logWarning(
           `Operation failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms`,
           { errorId: lastError.errorId }
         );
@@ -900,16 +899,16 @@ export class ProductionErrorHandler {
     }
 
     try {
-      this.logger.log(`Attempting recovery for error: ${error.errorId}`);
+      this.logInfo(`Attempting recovery for error: ${error.errorId}`);
       await strategy.recover(error);
       
       this.metricsCollector.recordRecoveryAttempt(error, (strategy.constructor as any).name, true);
-      this.logger.log(`Recovery successful for error: ${error.errorId}`);
+      this.logInfo(`Recovery successful for error: ${error.errorId}`);
       
       return true;
     } catch (recoveryError) {
       this.metricsCollector.recordRecoveryAttempt(error, (strategy.constructor as any).name, false);
-      this.logger.error(
+      this.logError(
         `Recovery failed for error: ${error.errorId}`,
         recoveryError
       );

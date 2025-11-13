@@ -20,9 +20,12 @@ import { ResourceMonitorService } from './services/resource-monitor.service';
 import { ExternalServiceMonitorService } from './services/external-service-monitor.service';
 import { HealthAnalyzerService } from './services/health-analyzer.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class EnhancedHealthCheckService extends HealthCheckService {
-  private readonly logger = new Logger(EnhancedHealthCheckService.name);
   private healthHistory: EnhancedHealthCheckResponse[] = [];
   private maxHistorySize = 100;
   private startTime = Date.now();
@@ -135,7 +138,7 @@ export class EnhancedHealthCheckService extends HealthCheckService {
       return enhancedResponse;
     } catch (error) {
       this.failedChecks++;
-      this.logger.error('Enhanced health check failed', error);
+      this.logError('Enhanced health check failed', error);
       throw error;
     }
   }
@@ -167,7 +170,7 @@ export class EnhancedHealthCheckService extends HealthCheckService {
         recentFailedLogins,
       };
     } catch (error) {
-      this.logger.error('Security health check failed', error);
+      this.logError('Security health check failed', error);
       return {
         threatLevel: 'HIGH', // Assume high threat if check fails
         activeSessions: 0,
@@ -234,7 +237,7 @@ export class EnhancedHealthCheckService extends HealthCheckService {
     if (result.status === 'fulfilled') {
       return result.value;
     } else {
-      this.logger.error(`Enhanced health check failed for ${category}`, result.reason);
+      this.logError(`Enhanced health check failed for ${category}`, result.reason);
       return null;
     }
   }

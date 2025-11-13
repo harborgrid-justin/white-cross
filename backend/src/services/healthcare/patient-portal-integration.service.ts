@@ -7,6 +7,7 @@ import { Medication   } from "../../database/models";
 import { Appointment   } from "../../database/models";
 import { Message   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Patient Portal Integration Service
  *
@@ -29,9 +30,7 @@ import { Message   } from "../../database/models";
  * @hipaa-requirement Patient access to health information
  */
 @Injectable()
-export class PatientPortalIntegrationService {
-  private readonly logger = new Logger(PatientPortalIntegrationService.name);
-
+export class PatientPortalIntegrationService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -648,12 +647,12 @@ export class PatientPortalIntegrationService {
 
   private async logPatientLogin(patientId: string, source: string): Promise<void> {
     // Log successful login for audit
-    this.logger.log(`Patient ${patientId} logged in via ${source}`);
+    this.logInfo(`Patient ${patientId} logged in via ${source}`);
   }
 
   private async logFailedLoginAttempt(patientId: string): Promise<void> {
     // Log failed login attempt
-    this.logger.warn(`Failed login attempt for patient ${patientId}`);
+    this.logWarning(`Failed login attempt for patient ${patientId}`);
   }
 
   private async getPatientProfile(patientId: string): Promise<PatientProfile> {
@@ -831,7 +830,7 @@ export class PatientPortalIntegrationService {
 
   private async notifyProviderOfRefillRequest(request: any): Promise<void> {
     // Send notification to healthcare provider
-    this.logger.log(`Refill request ${request.id} sent to provider`);
+    this.logInfo(`Refill request ${request.id} sent to provider`);
   }
 
   private getEstimatedProcessingTime(urgency: string): string {
@@ -870,7 +869,7 @@ export class PatientPortalIntegrationService {
 
   private async notifySchedulingTeam(appointment: Appointment): Promise<void> {
     // Notify scheduling team of new appointment request
-    this.logger.log(`Appointment request ${appointment.id} sent to scheduling team`);
+    this.logInfo(`Appointment request ${appointment.id} sent to scheduling team`);
   }
 
   private async validateMessageContent(content: string): Promise<ValidationResult> {
@@ -895,7 +894,7 @@ export class PatientPortalIntegrationService {
 
   private async notifyMessageRecipient(message: Message): Promise<void> {
     // Send notification to message recipient
-    this.logger.log(`Message ${message.id} notification sent to recipient`);
+    this.logInfo(`Message ${message.id} notification sent to recipient`);
   }
 
   private async checkDataExportConsent(patientId: string): Promise<boolean> {
@@ -915,7 +914,7 @@ export class PatientPortalIntegrationService {
 
   private async logDataExport(patientId: string, request: DataExportRequest): Promise<void> {
     // Log data export for audit
-    this.logger.log(`Data export requested for patient ${patientId}`);
+    this.logInfo(`Data export requested for patient ${patientId}`);
   }
 
   private async validatePortalPreferences(preferences: PortalPreferences): Promise<ValidationResult> {
@@ -986,12 +985,12 @@ export class PatientPortalIntegrationService {
 
   private async trackResourceAccess(patientId: string, resources: EducationResource[]): Promise<void> {
     // Track resource access for analytics
-    this.logger.log(`Patient ${patientId} accessed ${resources.length} education resources`);
+    this.logInfo(`Patient ${patientId} accessed ${resources.length} education resources`);
   }
 
   private async logEmergencyContactAccess(patientId: string, action: string): Promise<void> {
     // Log emergency contact access for audit
-    this.logger.log(`Emergency contact ${action} by patient ${patientId}`);
+    this.logInfo(`Emergency contact ${action} by patient ${patientId}`);
   }
 
   private async validateEmergencyContacts(contacts: EmergencyContactUpdate[]): Promise<ValidationResult> {

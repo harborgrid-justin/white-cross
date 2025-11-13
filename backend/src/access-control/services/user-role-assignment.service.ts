@@ -9,6 +9,7 @@ import {
   SecurityIncidentType,
 } from '../dto/create-security-incident.dto';
 import { UserPermissionsResult } from '../interfaces/user-permissions-result.interface';
+import { BaseService } from '../../common/base';
 import {
   PermissionModel,
   RolePermissionModel,
@@ -35,9 +36,7 @@ enum SecurityIncidentStatus {
  * - Audit logging for all role assignment operations
  */
 @Injectable()
-export class UserRoleAssignmentService {
-  private readonly logger = new Logger(UserRoleAssignmentService.name);
-
+export class UserRoleAssignmentService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditService: AuditService,
@@ -226,13 +225,13 @@ export class UserRoleAssignmentService {
         });
       }
 
-      this.logger.log(
+      this.logInfo(
         `Assigned role ${roleId} (${role.name}) to user ${userId} (${targetUser.email}) by user ${auditUserId || 'SYSTEM'}`,
       );
       return userRole;
     } catch (error) {
       await transaction.rollback();
-      this.logger.error('Error assigning role to user:', error);
+      this.logError('Error assigning role to user:', error);
       throw error;
     }
   }
@@ -260,10 +259,10 @@ export class UserRoleAssignmentService {
       // Invalidate user permissions cache
       this.cacheService.invalidateUserPermissions(userId);
 
-      this.logger.log(`Removed role ${roleId} from user ${userId}`);
+      this.logInfo(`Removed role ${roleId} from user ${userId}`);
       return { success: true };
     } catch (error) {
-      this.logger.error('Error removing role from user:', error);
+      this.logError('Error removing role from user:', error);
       throw error;
     }
   }
@@ -280,7 +279,7 @@ export class UserRoleAssignmentService {
       if (!bypassCache) {
         const cached = this.cacheService.getUserPermissions(userId);
         if (cached) {
-          this.logger.debug(`Using cached permissions for user ${userId}`);
+          this.logDebug(`Using cached permissions for user ${userId}`);
           return cached;
         }
       }
@@ -345,12 +344,12 @@ export class UserRoleAssignmentService {
         timestamp: new Date(),
       } as ExecutionContext);
 
-      this.logger.log(
+      this.logInfo(
         `Retrieved ${permissions.length} permissions for user ${userId}`,
       );
       return result;
     } catch (error) {
-      this.logger.error(`Error getting user permissions for ${userId}:`, error);
+      this.logError(`Error getting user permissions for ${userId}:`, error);
       throw error;
     }
   }
@@ -380,12 +379,12 @@ export class UserRoleAssignmentService {
         timestamp: new Date(),
       } as ExecutionContext);
 
-      this.logger.log(
+      this.logInfo(
         `Permission check for user ${userId} on ${resource}.${action}: ${hasPermission}`,
       );
       return hasPermission;
     } catch (error) {
-      this.logger.error('Error checking permission:', error);
+      this.logError('Error checking permission:', error);
       return false;
     }
   }

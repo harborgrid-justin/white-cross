@@ -9,6 +9,7 @@ import { PaginationDto } from './dto/pagination.dto';
 import { ChronicConditionSearchResult } from './interfaces/chronic-condition-search-result.interface';
 import { ChronicConditionStatistics } from './interfaces/chronic-condition-statistics.interface';
 
+import { BaseService } from '../../common/base';
 /**
  * ChronicConditionService
  *
@@ -21,9 +22,7 @@ import { ChronicConditionStatistics } from './interfaces/chronic-condition-stati
  * - Bulk operations for data imports
  */
 @Injectable()
-export class ChronicConditionService {
-  private readonly logger = new Logger(ChronicConditionService.name);
-
+export class ChronicConditionService extends BaseService {
   constructor(
     @InjectModel(ChronicCondition)
     private readonly chronicConditionModel: typeof ChronicCondition,
@@ -60,7 +59,7 @@ export class ChronicConditionService {
       );
 
       // PHI Audit Log
-      this.logger.log({
+      this.logInfo({
         message: 'PHI Access - Chronic Condition Created',
         action: 'CREATE',
         entity: 'ChronicCondition',
@@ -72,12 +71,12 @@ export class ChronicConditionService {
         timestamp: new Date().toISOString(),
       });
 
-      this.logger.log(
+      this.logInfo(
         `Chronic condition created: ${dto.condition} for student ${dto.studentId}`,
       );
       return savedCondition;
     } catch (error) {
-      this.logger.error('Error creating chronic condition:', error);
+      this.logError('Error creating chronic condition:', error);
       throw error;
     }
   }
@@ -95,7 +94,7 @@ export class ChronicConditionService {
     }
 
     // PHI Audit Log
-    this.logger.log({
+    this.logInfo({
       message: 'PHI Access - Chronic Condition Retrieved',
       action: 'READ',
       entity: 'ChronicCondition',
@@ -129,7 +128,7 @@ export class ChronicConditionService {
 
     // PHI Audit Log
     if (conditions.length > 0) {
-      this.logger.log({
+      this.logInfo({
         message: 'PHI Access - Student Chronic Conditions Retrieved',
         action: 'READ',
         entity: 'ChronicCondition',
@@ -175,7 +174,7 @@ export class ChronicConditionService {
     const updatedCondition = await condition.reload();
 
     // PHI Audit Log
-    this.logger.log({
+    this.logInfo({
       message: 'PHI Access - Chronic Condition Updated',
       action: 'UPDATE',
       entity: 'ChronicCondition',
@@ -192,7 +191,7 @@ export class ChronicConditionService {
       timestamp: new Date().toISOString(),
     });
 
-    this.logger.log(
+    this.logInfo(
       `Chronic condition updated: ${updatedCondition.condition} for student ${updatedCondition.studentId}`,
     );
     return updatedCondition;
@@ -210,7 +209,7 @@ export class ChronicConditionService {
     });
 
     // PHI Audit Log
-    this.logger.log({
+    this.logInfo({
       message: 'PHI Access - Chronic Condition Deactivated',
       action: 'UPDATE',
       entity: 'ChronicCondition',
@@ -220,7 +219,7 @@ export class ChronicConditionService {
       timestamp: new Date().toISOString(),
     });
 
-    this.logger.log(
+    this.logInfo(
       `Chronic condition deactivated: ${condition.condition} for student ${condition.studentId}`,
     );
     return { success: true };
@@ -241,7 +240,7 @@ export class ChronicConditionService {
     await condition.destroy();
 
     // PHI Audit Log
-    this.logger.warn({
+    this.logWarning({
       message: 'PHI Access - Chronic Condition Permanently Deleted',
       action: 'DELETE',
       entity: 'ChronicCondition',
@@ -250,7 +249,7 @@ export class ChronicConditionService {
       timestamp: new Date().toISOString(),
     });
 
-    this.logger.warn(
+    this.logWarning(
       `Chronic condition permanently deleted: ${auditData.condition} for student ${auditData.studentId}`,
     );
     return { success: true };
@@ -322,7 +321,7 @@ export class ChronicConditionService {
       });
 
     // PHI Audit Log
-    this.logger.log({
+    this.logInfo({
       message: 'PHI Access - Chronic Conditions Searched',
       action: 'READ',
       entity: 'ChronicCondition',
@@ -358,7 +357,7 @@ export class ChronicConditionService {
       order: [['nextReviewDate', 'ASC']],
     });
 
-    this.logger.log(
+    this.logInfo(
       `Found ${conditions.length} conditions requiring review within ${daysAhead} days`,
     );
     return conditions;
@@ -385,7 +384,7 @@ export class ChronicConditionService {
       order: [['condition', 'ASC']],
     });
 
-    this.logger.log(
+    this.logInfo(
       `Found ${conditions.length} conditions requiring ${type} accommodations`,
     );
     return conditions;
@@ -458,7 +457,7 @@ export class ChronicConditionService {
       activeConditions,
     };
 
-    this.logger.log('Chronic condition statistics retrieved');
+    this.logInfo('Chronic condition statistics retrieved');
     return statistics;
   }
 
@@ -505,7 +504,7 @@ export class ChronicConditionService {
       );
 
       // PHI Audit Log
-      this.logger.log({
+      this.logInfo({
         message: 'PHI Access - Chronic Conditions Bulk Created',
         action: 'CREATE',
         entity: 'ChronicCondition',
@@ -514,12 +513,12 @@ export class ChronicConditionService {
         timestamp: new Date().toISOString(),
       });
 
-      this.logger.log(
+      this.logInfo(
         `Bulk created ${savedConditions.length} chronic condition records`,
       );
       return savedConditions;
     } catch (error) {
-      this.logger.error('Error bulk creating chronic conditions:', error);
+      this.logError('Error bulk creating chronic conditions:', error);
       throw error;
     }
   }
@@ -549,7 +548,7 @@ export class ChronicConditionService {
       // Return in same order as input, null for missing
       return ids.map((id) => conditionMap.get(id) || null);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch chronic conditions: ${error.message}`,
       );
       throw new Error('Failed to batch fetch chronic conditions');
@@ -595,7 +594,7 @@ export class ChronicConditionService {
       // Return in same order as input, empty array for missing
       return studentIds.map((id) => grouped.get(id) || []);
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to batch fetch chronic conditions by student IDs: ${error.message}`,
       );
       throw new Error(

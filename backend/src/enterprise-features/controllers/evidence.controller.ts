@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { PhotoVideoEvidenceService } from '../photo-video-evidence.service';
 import { DeleteEvidenceDto, EvidenceFileResponseDto, UploadEvidenceDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Evidence Management')
 @Controller('enterprise-features/evidence')
 @ApiBearerAuth()
-export class EvidenceController {
+export class EvidenceController extends BaseController {
   constructor(
     private readonly evidenceService: PhotoVideoEvidenceService,
   ) {}

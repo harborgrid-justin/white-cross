@@ -5,10 +5,9 @@ import { CreateNoteDto } from '../dto/note/create-note.dto';
 import { UpdateNoteDto } from '../dto/note/update-note.dto';
 import { NoteFiltersDto } from '../dto/note/note-filters.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ClinicalNoteService {
-  private readonly logger = new Logger(ClinicalNoteService.name);
-
+export class ClinicalNoteService extends BaseService {
   constructor(
     @InjectModel(ClinicalNote)
     private noteModel: typeof ClinicalNote,
@@ -84,6 +83,6 @@ export class ClinicalNoteService {
     if (note.isSigned)
       throw new BadRequestException('Cannot delete a signed note');
     await note.destroy();
-    this.logger.log(`Deleted note ${id}`);
+    this.logInfo(`Deleted note ${id}`);
   }
 }

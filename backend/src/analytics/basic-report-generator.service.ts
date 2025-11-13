@@ -19,6 +19,10 @@ import {
 
 import { BaseReportGeneratorService } from './services/base-report-generator.service';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class BasicReportGeneratorService extends BaseReportGeneratorService {
   constructor(

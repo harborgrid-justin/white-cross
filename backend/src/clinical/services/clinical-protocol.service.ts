@@ -8,10 +8,9 @@ import { UpdateProtocolDto } from '../dto/protocol/update-protocol.dto';
 import { ActivateProtocolDto } from '../dto/protocol/activate-protocol.dto';
 import { ProtocolFiltersDto } from '../dto/protocol/protocol-filters.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ClinicalProtocolService {
-  private readonly logger = new Logger(ClinicalProtocolService.name);
-
+export class ClinicalProtocolService extends BaseService {
   constructor(
     @InjectModel(ClinicalProtocol)
     private protocolModel: typeof ClinicalProtocol,
@@ -95,6 +94,6 @@ export class ClinicalProtocolService {
   async remove(id: string): Promise<void> {
     const result = await this.protocolModel.destroy({ where: { id } });
     if (result === 0) throw new NotFoundException(`Protocol ${id} not found`);
-    this.logger.log(`Deleted protocol ${id}`);
+    this.logInfo(`Deleted protocol ${id}`);
   }
 }

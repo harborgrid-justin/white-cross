@@ -9,6 +9,7 @@ import { GetHealthTrendsQueryDto } from '../dto/analytics-query.dto';
 import { GetStudentHealthMetricsQueryDto } from '../dto/health-metrics.dto';
 import { GetSchoolMetricsQueryDto } from '../dto/health-metrics.dto';
 
+import { BaseService } from '../../common/base';
 type MedicationStatus = 'PENDING' | 'ADMINISTERED' | 'MISSED' | 'REFUSED';
 type AppointmentStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 type DatePeriod = { startDate: Date; endDate: Date };
@@ -26,9 +27,7 @@ type HealthVisitsByType = Record<string, number>;
  * - Provide school-wide health summaries
  */
 @Injectable()
-export class AnalyticsHealthService {
-  private readonly logger = new Logger(AnalyticsHealthService.name);
-
+export class AnalyticsHealthService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
     @InjectModel(HealthRecord)
@@ -90,7 +89,7 @@ export class AnalyticsHealthService {
         comparisonData,
       };
     } catch (error) {
-      this.logger.error('Error getting health metrics', error);
+      this.logError('Error getting health metrics', error);
       throw error;
     }
   }
@@ -142,7 +141,7 @@ export class AnalyticsHealthService {
         forecastingEnabled: query.includeForecasting || false,
       };
     } catch (error) {
-      this.logger.error('Error getting health trends', error);
+      this.logError('Error getting health trends', error);
       throw error;
     }
   }
@@ -235,7 +234,7 @@ export class AnalyticsHealthService {
         },
       };
 
-      this.logger.log(
+      this.logInfo(
         `Student health metrics retrieved: ${studentId} (${healthRecords.length} health records, ${medicationLogs.length} medication logs, ${appointments.length} appointments)`,
       );
 
@@ -246,7 +245,7 @@ export class AnalyticsHealthService {
         includesHistoricalData: query.includeHistory !== false,
       };
     } catch (error) {
-      this.logger.error('Error getting student health metrics', error);
+      this.logError('Error getting student health metrics', error);
       throw error;
     }
   }
@@ -287,7 +286,7 @@ export class AnalyticsHealthService {
         includesComparisons: query.includeComparisons !== false,
       };
     } catch (error) {
-      this.logger.error('Error getting school metrics', error);
+      this.logError('Error getting school metrics', error);
       throw error;
     }
   }

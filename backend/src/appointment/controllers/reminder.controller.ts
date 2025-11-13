@@ -9,6 +9,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@ne
 import { ReminderService } from '../services/reminder.service';
 import { ReminderProcessingResultDto } from '../dto/reminder.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Reminder Controller
  *
@@ -20,7 +21,7 @@ import { ReminderProcessingResultDto } from '../dto/reminder.dto';
 @ApiTags('appointments-reminders')
 @ApiBearerAuth()
 @Controller('appointments')
-export class ReminderController {
+export class ReminderController extends BaseController {
   private readonly logger = new Logger(ReminderController.name);
 
   constructor(private readonly reminderService: ReminderService) {}

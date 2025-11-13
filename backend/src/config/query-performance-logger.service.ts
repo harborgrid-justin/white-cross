@@ -8,6 +8,13 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 export interface QueryMetrics {
   sql: string;
   duration: number;
@@ -37,8 +44,6 @@ export interface QueryStatistics {
 
 @Injectable()
 export class QueryPerformanceLoggerService implements OnModuleInit {
-  private readonly logger = new Logger(QueryPerformanceLoggerService.name);
-
   private metrics: QueryMetrics[] = [];
   private slowQueries: SlowQueryAlert[] = [];
   private queryStats = new Map<
@@ -55,7 +60,7 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
 
   async onModuleInit() {
     this.setupQueryLogging();
-    this.logger.log('Query Performance Logger initialized');
+    this.logInfo('Query Performance Logger initialized');
   }
 
   /**
@@ -93,13 +98,13 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
 
         // Log very slow queries immediately
         if (duration > this.VERY_SLOW_QUERY_THRESHOLD) {
-          this.logger.error(`VERY SLOW QUERY (${duration}ms):`, {
+          this.logError(`VERY SLOW QUERY (${duration}ms):`, {
             sql: this.sanitizeSQL(options.sql).substring(0, 200),
             model: options.model?.name,
             duration,
           });
         } else {
-          this.logger.warn(`SLOW QUERY (${duration}ms):`, {
+          this.logWarning(`SLOW QUERY (${duration}ms):`, {
             sql: this.sanitizeSQL(options.sql).substring(0, 200),
             model: options.model?.name,
             duration,
@@ -112,7 +117,7 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
         process.env.DB_LOGGING === 'true' ||
         process.env.LOG_LEVEL === 'debug'
       ) {
-        this.logger.debug(
+        this.logDebug(
           `Query [${duration}ms]: ${this.sanitizeSQL(options.sql).substring(0, 100)}`,
         );
       }
@@ -286,7 +291,7 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
     this.metrics = [];
     this.slowQueries = [];
     this.queryStats.clear();
-    this.logger.log('Query performance history cleared');
+    this.logInfo('Query performance history cleared');
   }
 
   /**
@@ -294,7 +299,7 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
    */
   resetStatistics(): void {
     this.queryStats.clear();
-    this.logger.log('Query statistics reset');
+    this.logInfo('Query statistics reset');
   }
 
   // Private helper methods
@@ -351,7 +356,7 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
       return;
     }
 
-    this.logger.log('Query Performance Summary:', {
+    this.logInfo('Query Performance Summary:', {
       totalQueries: stats.totalQueries,
       slowQueries: stats.slowQueries,
       avgDuration: `${stats.avgDuration.toFixed(2)}ms`,
@@ -361,7 +366,7 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
     // Warn if slow query rate is high
     const slowQueryRate = (stats.slowQueries / stats.totalQueries) * 100;
     if (slowQueryRate > 10) {
-      this.logger.warn(
+      this.logWarning(
         `High slow query rate: ${slowQueryRate.toFixed(2)}% (${stats.slowQueries}/${stats.totalQueries})`,
       );
     }

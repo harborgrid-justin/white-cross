@@ -5,14 +5,13 @@ import { Sequelize } from 'sequelize-typescript';
 import { Student } from '../database/models/student.model';
 import { BulkTransitionResultDto, TransitionResultDto } from './dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Automated Grade Transition Workflow Service
  * Handles automatic grade transitions at year-end
  */
 @Injectable()
-export class GradeTransitionService {
-  private readonly logger = new Logger(GradeTransitionService.name);
-
+export class GradeTransitionService extends BaseService {
   /**
    * Grade progression mapping
    * Maps current grade to next grade level
@@ -120,7 +119,7 @@ export class GradeTransitionService {
         await transaction.commit();
       }
 
-      this.logger.log('Grade transition completed', {
+      this.logInfo('Grade transition completed', {
         total: students.length,
         successful,
         failed,
@@ -135,7 +134,7 @@ export class GradeTransitionService {
       };
     } catch (error) {
       await transaction.rollback();
-      this.logger.error('Error performing grade transition', error);
+      this.logError('Error performing grade transition', error);
       throw error;
     }
   }
@@ -168,7 +167,7 @@ export class GradeTransitionService {
         updatedBy: transitionedBy,
       });
 
-      this.logger.log('Student grade transitioned', {
+      this.logInfo('Student grade transitioned', {
         studentId,
         oldGrade,
         newGrade,
@@ -177,7 +176,7 @@ export class GradeTransitionService {
 
       return true;
     } catch (error) {
-      this.logger.error('Error transitioning student', {
+      this.logError('Error transitioning student', {
         error,
         studentId,
       });
@@ -199,13 +198,13 @@ export class GradeTransitionService {
         },
       });
 
-      this.logger.log('Graduating students retrieved', {
+      this.logInfo('Graduating students retrieved', {
         count: students.length,
       });
 
       return students;
     } catch (error) {
-      this.logger.error('Error getting graduating students', { error });
+      this.logError('Error getting graduating students', { error });
       throw error;
     }
   }

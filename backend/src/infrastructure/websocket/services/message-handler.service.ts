@@ -12,10 +12,9 @@ import { MessageEventDto, MessageDeliveryDto, ReadReceiptDto, TypingIndicatorDto
 import { RateLimiterService } from './rate-limiter.service';
 import { WebSocketUtilities } from '../shared/websocket-utilities';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class MessageHandlerService {
-  private readonly logger = new Logger(MessageHandlerService.name);
-
+export class MessageHandlerService extends BaseService {
   constructor(private readonly rateLimiter: RateLimiterService) {}
 
   /**
@@ -120,7 +119,7 @@ export class MessageHandlerService {
         throw new WsException('Invalid organization');
       }
 
-      this.logger.log(
+      this.logInfo(
         `Message edited: ${messageDto.messageId} in conversation ${messageDto.conversationId} by user ${user.userId}`,
       );
 
@@ -128,7 +127,7 @@ export class MessageHandlerService {
       const room = `conversation:${messageDto.conversationId}`;
       server.to(room).emit('message:edit', messageDto.toPayload());
     } catch (error) {
-      this.logger.error(`Message edit error for user ${user.userId}:`, error);
+      this.logError(`Message edit error for user ${user.userId}:`, error);
       client.emit('error', {
         type: 'MESSAGE_EDIT_FAILED',
         message: (error as Error).message || 'Failed to edit message',
@@ -184,7 +183,7 @@ export class MessageHandlerService {
         throw new WsException('Invalid organization');
       }
 
-      this.logger.log(
+      this.logInfo(
         `Message deleted: ${messageDto.messageId} in conversation ${messageDto.conversationId} by user ${user.userId}`,
       );
 
@@ -196,7 +195,7 @@ export class MessageHandlerService {
         timestamp: messageDto.timestamp,
       });
     } catch (error) {
-      this.logger.error(`Message delete error for user ${user.userId}:`, error);
+      this.logError(`Message delete error for user ${user.userId}:`, error);
       client.emit('error', {
         type: 'MESSAGE_DELETE_FAILED',
         message: (error as Error).message || 'Failed to delete message',
@@ -236,13 +235,13 @@ export class MessageHandlerService {
         throw new WsException('Invalid organization');
       }
 
-      this.logger.debug(`Message ${deliveryDto.messageId} delivered to user ${user.userId}`);
+      this.logDebug(`Message ${deliveryDto.messageId} delivered to user ${user.userId}`);
 
       // Notify the sender
       const senderRoom = `user:${deliveryDto.senderId}`;
       server.to(senderRoom).emit('message:delivered', deliveryDto.toPayload());
     } catch (error) {
-      this.logger.error(`Delivery confirmation error for user ${user.userId}:`, error);
+      this.logError(`Delivery confirmation error for user ${user.userId}:`, error);
     }
   }
 
@@ -281,13 +280,13 @@ export class MessageHandlerService {
         throw new WsException('Invalid organization');
       }
 
-      this.logger.debug(`Message ${readReceiptDto.messageId} read by user ${user.userId}`);
+      this.logDebug(`Message ${readReceiptDto.messageId} read by user ${user.userId}`);
 
       // Broadcast to conversation room
       const room = `conversation:${readReceiptDto.conversationId}`;
       server.to(room).emit('message:read', readReceiptDto.toPayload());
     } catch (error) {
-      this.logger.error(`Read receipt error for user ${user.userId}:`, error);
+      this.logError(`Read receipt error for user ${user.userId}:`, error);
     }
   }
 
@@ -335,7 +334,7 @@ export class MessageHandlerService {
       const room = `conversation:${typingDto.conversationId}`;
       client.to(room).emit('message:typing', typingDto.toPayload());
     } catch (error) {
-      this.logger.error(`Typing indicator error for user ${user.userId}:`, error);
+      this.logError(`Typing indicator error for user ${user.userId}:`, error);
     }
   }
 }

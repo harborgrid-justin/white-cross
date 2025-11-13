@@ -7,6 +7,7 @@ import { AccessControlCreateIpRestrictionDto, IpRestrictionType } from '../dto/c
 import { IpRestrictionCheckResult } from '../interfaces/ip-restriction-check.interface';
 import { IpRestrictionInstance, SequelizeModelClass } from '../types/sequelize-models.types';
 
+import { BaseService } from '../../common/base';
 /**
  * IP Restriction Management Service
  *
@@ -17,9 +18,7 @@ import { IpRestrictionInstance, SequelizeModelClass } from '../types/sequelize-m
  * - Audit logging for IP restriction operations
  */
 @Injectable()
-export class IpRestrictionManagementService {
-  private readonly logger = new Logger(IpRestrictionManagementService.name);
-
+export class IpRestrictionManagementService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditService: AuditService,
@@ -43,10 +42,10 @@ export class IpRestrictionManagementService {
         order: [['createdAt', 'DESC']],
       });
 
-      this.logger.log(`Retrieved ${restrictions.length} IP restrictions`);
+      this.logInfo(`Retrieved ${restrictions.length} IP restrictions`);
       return restrictions;
     } catch (error) {
-      this.logger.error('Error getting IP restrictions:', error);
+      this.logError('Error getting IP restrictions:', error);
       throw error;
     }
   }
@@ -82,10 +81,10 @@ export class IpRestrictionManagementService {
         createdBy: data.createdBy,
       });
 
-      this.logger.log(`Added IP restriction: ${data.ipAddress} (${data.type})`);
+      this.logInfo(`Added IP restriction: ${data.ipAddress} (${data.type})`);
       return restriction;
     } catch (error) {
-      this.logger.error('Error adding IP restriction:', error);
+      this.logError('Error adding IP restriction:', error);
       throw error;
     }
   }
@@ -106,10 +105,10 @@ export class IpRestrictionManagementService {
         isActive: false,
       });
 
-      this.logger.log(`Removed IP restriction: ${id}`);
+      this.logInfo(`Removed IP restriction: ${id}`);
       return { success: true };
     } catch (error) {
-      this.logger.error(`Error removing IP restriction ${id}:`, error);
+      this.logError(`Error removing IP restriction ${id}:`, error);
       throw error;
     }
   }
@@ -126,7 +125,7 @@ export class IpRestrictionManagementService {
 
       // If IpRestriction model doesn't exist, skip IP restriction check
       if (!IpRestriction) {
-        this.logger.warn(
+        this.logWarning(
           'IpRestriction model not found, skipping IP restriction check',
         );
         return {
@@ -168,7 +167,7 @@ export class IpRestrictionManagementService {
         reason: restriction.reason || undefined,
       };
     } catch (error) {
-      this.logger.error('Error checking IP restriction:', error);
+      this.logError('Error checking IP restriction:', error);
       return { isRestricted: false };
     }
   }

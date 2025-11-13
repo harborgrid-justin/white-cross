@@ -8,6 +8,7 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MonitoringService } from './monitoring.service';
+import { BaseController } from '../../common/base';
 import type {
   Alert,
   DashboardData,
@@ -44,7 +45,7 @@ import type {
 @ApiTags('Monitoring & Metrics')
 @ApiBearerAuth()
 @Controller('monitoring')
-export class MonitoringController {
+export class MonitoringController extends BaseController {
   constructor(private readonly monitoringService: MonitoringService) {}
 
   /**

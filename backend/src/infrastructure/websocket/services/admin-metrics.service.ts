@@ -27,6 +27,13 @@ import * as os from 'os';
 import { promisify } from 'util';
 import { exec } from 'child_process';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 const execAsync = promisify(exec);
 
 /**
@@ -110,7 +117,6 @@ export interface SystemAlert {
 
 @Injectable()
 export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(AdminMetricsService.name);
   private isEnabled = false;
   private metricsInterval: NodeJS.Timeout | null = null;
   private previousCpuInfo: { totalTick: number; totalIdle: number } | null = null;
@@ -140,10 +146,10 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
     this.isEnabled = this.configService.get<boolean>('ADMIN_METRICS_ENABLED', true);
 
     if (this.isEnabled) {
-      this.logger.log('Admin Metrics Service initialized - Starting real-time monitoring');
+      this.logInfo('Admin Metrics Service initialized - Starting real-time monitoring');
       await this.startMetricsCollection();
     } else {
-      this.logger.log('Admin Metrics Service disabled via configuration');
+      this.logInfo('Admin Metrics Service disabled via configuration');
     }
   }
 
@@ -152,7 +158,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
       clearInterval(this.metricsInterval);
       this.metricsInterval = null;
     }
-    this.logger.log('Admin Metrics Service stopped');
+    this.logInfo('Admin Metrics Service stopped');
   }
 
   /**
@@ -166,7 +172,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         await this.processMetrics(metrics);
         await this.broadcastMetrics(metrics);
       } catch (error) {
-        this.logger.error('Failed to collect/broadcast metrics:', error);
+        this.logError('Failed to collect/broadcast metrics:', error);
       }
     }, 5000);
   }
@@ -277,7 +283,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         const parts = stdout.trim().split(/\s+/);
 
         if (parts.length < 5) {
-          this.logger.warn('Unexpected df output format');
+          this.logWarning('Unexpected df output format');
           return { total: 0, used: 0, free: 0, percentage: 0 };
         }
 
@@ -309,7 +315,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         };
       }
     } catch (error) {
-      this.logger.warn('Failed to get disk metrics:', (error as Error).message);
+      this.logWarning('Failed to get disk metrics:', (error as Error).message);
       return { total: 0, used: 0, free: 0, percentage: 0 };
     }
   }
@@ -335,7 +341,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         packetsOut: Math.floor(Math.random() * 10000),
       };
     } catch (error) {
-      this.logger.warn('Failed to get network metrics:', (error as Error).message);
+      this.logWarning('Failed to get network metrics:', (error as Error).message);
       return { bytesIn: 0, bytesOut: 0, packetsIn: 0, packetsOut: 0 };
     }
   }
@@ -359,7 +365,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         uptime: os.uptime(),
       };
     } catch (error) {
-      this.logger.warn('Failed to get database metrics:', (error as Error).message);
+      this.logWarning('Failed to get database metrics:', (error as Error).message);
       return { connections: 0, activeQueries: 0, slowQueries: 0, uptime: 0 };
     }
   }
@@ -383,7 +389,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         errors: Math.floor(Math.random() * 10), // Placeholder
       };
     } catch (error) {
-      this.logger.warn('Failed to get WebSocket metrics:', (error as Error).message);
+      this.logWarning('Failed to get WebSocket metrics:', (error as Error).message);
       return { connectedClients: 0, totalMessages: 0, errors: 0 };
     }
   }
@@ -503,7 +509,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         });
       }
     } catch (error) {
-      this.logger.error('Failed to broadcast metrics:', error);
+      this.logError('Failed to broadcast metrics:', error);
     }
   }
 
@@ -518,7 +524,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         }
       }
     } catch (error) {
-      this.logger.error('Failed to broadcast alerts:', error);
+      this.logError('Failed to broadcast alerts:', error);
     }
   }
 
@@ -591,14 +597,14 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         adminActivity,
       );
 
-      this.logger.log(`Admin activity logged: ${activity.action} by ${activity.userName}`, {
+      this.logInfo(`Admin activity logged: ${activity.action} by ${activity.userName}`, {
         userId: activity.userId,
         action: activity.action,
         resource: activity.resource,
         severity: activity.severity,
       });
     } catch (error) {
-      this.logger.error('Failed to broadcast admin activity:', error);
+      this.logError('Failed to broadcast admin activity:', error);
     }
   }
 
@@ -644,7 +650,7 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
         });
       }
 
-      this.logger.log(`Alert ${alertId} acknowledged by user ${userId}`);
+      this.logInfo(`Alert ${alertId} acknowledged by user ${userId}`);
     }
   }
 

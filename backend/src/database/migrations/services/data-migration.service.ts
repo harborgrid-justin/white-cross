@@ -4,14 +4,14 @@
  * @description Service for handling data migration and transformation operations
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { QueryInterface, Sequelize, Transaction } from 'sequelize';
 import { DataTransformConfig, SeedDataConfig } from '../types/migration-utilities.types';
 
 @Injectable()
-export class DataMigrationService {
-  private readonly logger = new Logger(DataMigrationService.name);
-
+export class DataMigrationService extends BaseService {
   /**
    * Performs batch data transformation with progress tracking
    */
@@ -38,7 +38,7 @@ export class DataMigrationService {
     let totalModified = 0;
     let errors = 0;
 
-    this.logger.log(`Starting batch data transformation for ${sourceTable}...`);
+    this.logInfo(`Starting batch data transformation for ${sourceTable}...`);
 
     while (true) {
       const transaction = await sequelize.transaction();
@@ -95,7 +95,7 @@ export class DataMigrationService {
             if (onError) {
               onError(error as Error, row);
             } else {
-              this.logger.error(`Error transforming row:`, error);
+              this.logError(`Error transforming row:`, error);
             }
           }
         }
@@ -103,18 +103,18 @@ export class DataMigrationService {
         await transaction.commit();
 
         offset += batchSize;
-        this.logger.debug(`Processed ${totalProcessed} records...`);
+        this.logDebug(`Processed ${totalProcessed} records...`);
 
         // Small delay to prevent overwhelming the database
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
         await transaction.rollback();
-        this.logger.error(`Error processing batch at offset ${offset}:`, error);
+        this.logError(`Error processing batch at offset ${offset}:`, error);
         throw error;
       }
     }
 
-    this.logger.log(
+    this.logInfo(
       `Batch transformation complete. Processed: ${totalProcessed}, Modified: ${totalModified}, Errors: ${errors}`,
     );
 
@@ -185,7 +185,7 @@ export class DataMigrationService {
         await transaction.commit();
 
         offset += batchSize;
-        this.logger.log(`Migrated ${offset} records...`);
+        this.logInfo(`Migrated ${offset} records...`);
       } catch (error) {
         await transaction.rollback();
         throw error;
@@ -197,7 +197,7 @@ export class DataMigrationService {
       await sequelize.query(`DELETE FROM "${sourceTable}" ${whereClause}`);
     }
 
-    this.logger.log(`Data migration from ${sourceTable} to ${targetTable} completed`);
+    this.logInfo(`Data migration from ${sourceTable} to ${targetTable} completed`);
   }
 
   /**
@@ -226,7 +226,7 @@ export class DataMigrationService {
       { transaction },
     );
 
-    this.logger.log(`Copied data from ${sourceTable} to ${targetTable}`);
+    this.logInfo(`Copied data from ${sourceTable} to ${targetTable}`);
   }
 
   /**
@@ -264,7 +264,7 @@ export class DataMigrationService {
       );
     }
 
-    this.logger.log(`Seeded ${data.length} rows into ${table}`);
+    this.logInfo(`Seeded ${data.length} rows into ${table}`);
   }
 
   /**
@@ -298,7 +298,7 @@ export class DataMigrationService {
       return seed;
     });
 
-    this.logger.log(`Generated ${seeds.length} seed records from ${tableName}`);
+    this.logInfo(`Generated ${seeds.length} seed records from ${tableName}`);
     return seeds;
   }
 
@@ -328,7 +328,7 @@ export class DataMigrationService {
         await sequelize.query(`TRUNCATE TABLE "${table}" ${cascadeClause}`);
       }
 
-      this.logger.log(`Cleared seed data from ${table}`);
+      this.logInfo(`Cleared seed data from ${table}`);
     }
   }
 
@@ -356,7 +356,7 @@ export class DataMigrationService {
         data,
       });
 
-      this.logger.log(`Created ${count} fixtures for ${model}`);
+      this.logInfo(`Created ${count} fixtures for ${model}`);
     }
   }
 }

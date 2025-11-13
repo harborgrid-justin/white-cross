@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { ProviderMetadata } from '../types/resource.types';
 
+import { BaseService } from '../../common/base';
 export interface LeakSuspect {
   providerName: string;
   memoryGrowthRate: number; // MB per minute
@@ -26,8 +27,7 @@ export interface MemorySnapshot {
  * Detects potential memory leaks using Discovery Service patterns
  */
 @Injectable()
-export class MemoryLeakDetectionService {
-  private readonly logger = new Logger(MemoryLeakDetectionService.name);
+export class MemoryLeakDetectionService extends BaseService {
   private monitoredProviders = new Map<string, ProviderMetadata>();
   private memorySnapshots: MemorySnapshot[] = [];
   private leakSuspects = new Map<string, LeakSuspect>();
@@ -53,7 +53,7 @@ export class MemoryLeakDetectionService {
       memoryHistory: [],
     });
 
-    this.logger.log(`Added provider to leak monitoring: ${providerName}`, {
+    this.logInfo(`Added provider to leak monitoring: ${providerName}`, {
       alertThreshold: metadata.alertThreshold,
       monitoring: metadata.monitoring,
     });
@@ -65,12 +65,12 @@ export class MemoryLeakDetectionService {
   startMonitoring(intervalMs: number = 60000): void {
     // Default 1 minute
     if (this.isMonitoring) {
-      this.logger.warn('Memory leak detection already started');
+      this.logWarning('Memory leak detection already started');
       return;
     }
 
     this.isMonitoring = true;
-    this.logger.log(
+    this.logInfo(
       `Starting memory leak detection with ${intervalMs}ms interval`,
     );
 
@@ -89,7 +89,7 @@ export class MemoryLeakDetectionService {
     }
 
     this.isMonitoring = false;
-    this.logger.log('Memory leak detection stopped');
+    this.logInfo('Memory leak detection stopped');
   }
 
   /**
@@ -118,7 +118,7 @@ export class MemoryLeakDetectionService {
       );
 
       if (criticalLeaks.length > 0) {
-        this.logger.warn(
+        this.logWarning(
           `Detected ${criticalLeaks.length} potential memory leaks:`,
           criticalLeaks.map((leak) => ({
             provider: leak.providerName,
@@ -128,7 +128,7 @@ export class MemoryLeakDetectionService {
         );
       }
     } catch (error) {
-      this.logger.error('Memory leak detection failed:', error);
+      this.logError('Memory leak detection failed:', error);
     }
   }
 
@@ -229,7 +229,7 @@ export class MemoryLeakDetectionService {
    */
   clearLeakSuspects(): void {
     this.leakSuspects.clear();
-    this.logger.log('Cleared all leak suspects');
+    this.logInfo('Cleared all leak suspects');
   }
 
   /**
@@ -465,7 +465,7 @@ export class MemoryLeakDetectionService {
     for (const [providerName, suspect] of this.leakSuspects.entries()) {
       if (now - suspect.lastUpdated > staleThreshold) {
         this.leakSuspects.delete(providerName);
-        this.logger.log(`Removed stale leak suspect: ${providerName}`);
+        this.logInfo(`Removed stale leak suspect: ${providerName}`);
       }
     }
   }

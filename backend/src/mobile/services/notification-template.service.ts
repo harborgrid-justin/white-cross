@@ -1,4 +1,11 @@
 import { Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 import {
   NotificationCategory,
   NotificationPlatform,
@@ -47,7 +54,6 @@ export interface NotificationTemplate {
  */
 @Injectable()
 export class NotificationTemplateService implements OnModuleInit {
-  private readonly logger = new Logger(NotificationTemplateService.name);
   private readonly templates: Map<string, NotificationTemplate> = new Map();
 
   /**
@@ -56,9 +62,9 @@ export class NotificationTemplateService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     try {
       await this.loadTemplates();
-      this.logger.log('NotificationTemplateService initialized successfully');
+      this.logInfo('NotificationTemplateService initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize NotificationTemplateService', error);
+      this.logError('Failed to initialize NotificationTemplateService', error);
     }
   }
 
@@ -120,7 +126,7 @@ export class NotificationTemplateService implements OnModuleInit {
       this.templates.set(template.id, template);
     }
 
-    this.logger.log(`Loaded ${defaultTemplates.length} notification templates`);
+    this.logInfo(`Loaded ${defaultTemplates.length} notification templates`);
   }
 
   /**
@@ -228,7 +234,7 @@ export class NotificationTemplateService implements OnModuleInit {
    */
   addTemplate(template: NotificationTemplate): void {
     this.templates.set(template.id, template);
-    this.logger.log(`Template added/updated: ${template.id}`);
+    this.logInfo(`Template added/updated: ${template.id}`);
   }
 
   /**
@@ -240,7 +246,7 @@ export class NotificationTemplateService implements OnModuleInit {
   removeTemplate(templateId: string): boolean {
     const deleted = this.templates.delete(templateId);
     if (deleted) {
-      this.logger.log(`Template removed: ${templateId}`);
+      this.logInfo(`Template removed: ${templateId}`);
     }
     return deleted;
   }

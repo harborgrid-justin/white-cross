@@ -5,9 +5,11 @@
  * HIPAA Compliance: All allergy data is PHI and requires audit logging
  */
 
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { Allergy, AllergySeverity, AllergyType   } from "../../database/models";
 import { Student   } from "../../database/models";
 import { AllergyFilterDto } from './dto/allergy-filter.dto';
@@ -16,18 +18,24 @@ import { UpdateAllergyDto } from './dto/update-allergy.dto';
 import { AuthenticatedUser } from '../../shared/types';
 
 @Injectable()
-export class AllergyService {
-  private readonly logger = new Logger(AllergyService.name);
+export class AllergyService extends BaseService {
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super({
+      serviceName: 'AllergyService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async addAllergy(allergyData: CreateAllergyDto): Promise<Allergy> {
-    this.logger.log(`Adding allergy for student ${allergyData.studentId}`);
+    this.logInfo(`Adding allergy for student ${allergyData.studentId}`);
 
     // Verify student exists
     const student = await this.studentModel.findByPk(allergyData.studentId);

@@ -25,6 +25,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { WaitlistService } from '../services/waitlist.service';
+import { BaseController } from '../../common/base';
 import {
   CreateWaitlistEntryDto,
   NotifyWaitlistEntryDto,
@@ -47,7 +48,7 @@ import {
 @ApiTags('appointments-waitlist')
 @ApiBearerAuth()
 @Controller('appointments')
-export class WaitlistController {
+export class WaitlistController extends BaseController {
   private readonly logger = new Logger(WaitlistController.name);
 
   constructor(private readonly waitlistService: WaitlistService) {}

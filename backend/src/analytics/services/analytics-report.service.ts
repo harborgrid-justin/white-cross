@@ -5,6 +5,7 @@ import { TimePeriod } from '../enums/time-period.enum';
 import { AnalyticsGenerateCustomReportDto } from '../dto/custom-reports.dto';
 import { GetReportQueryDto } from '../dto/report-generation.dto';
 
+import { BaseService } from '../../common/base';
 interface GeneratedReport {
   id: string;
   reportName?: string;
@@ -58,9 +59,7 @@ interface ReportResponse {
  * - Support various report formats (JSON, PDF, CSV)
  */
 @Injectable()
-export class AnalyticsReportService {
-  private readonly logger = new Logger(AnalyticsReportService.name);
-
+export class AnalyticsReportService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
     private readonly reportGeneratorService: ComplianceReportGeneratorService,
@@ -152,7 +151,7 @@ export class AnalyticsReportService {
         },
       };
     } catch (error) {
-      this.logger.error('Error generating custom report', error);
+      this.logError('Error generating custom report', error);
       throw error;
     }
   }
@@ -185,7 +184,7 @@ export class AnalyticsReportService {
 
       return { report };
     } catch (error) {
-      this.logger.error('Error getting generated report', error);
+      this.logError('Error getting generated report', error);
       throw error;
     }
   }

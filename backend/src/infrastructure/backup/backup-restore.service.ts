@@ -16,6 +16,10 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { EventEmitter } from 'events';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Backup metadata interface
  */
@@ -74,7 +78,6 @@ export interface ValidationResult {
  */
 @Injectable()
 export class BackupRestoreService extends EventEmitter {
-  private readonly logger = new Logger(BackupRestoreService.name);
   private activeBackups = new Map<string, BackupMetadata>();
   private drPlans = new Map<string, DRPlan>();
 
@@ -107,7 +110,7 @@ export class BackupRestoreService extends EventEmitter {
     const timestamp = new Date();
     const backupPath = path.join(location, `full_backup_${timestamp.toISOString().replace(/[:.]/g, '-')}.sql`);
 
-    this.logger.log(`Starting full backup: ${backupId}`);
+    this.logInfo(`Starting full backup: ${backupId}`);
 
     const backup: BackupMetadata = {
       id: backupId,
@@ -153,13 +156,13 @@ export class BackupRestoreService extends EventEmitter {
       backup.status = 'completed';
       backup.tables = tables;
 
-      this.logger.log(`Full backup completed: ${backupId}, size: ${backup.size} bytes`);
+      this.logInfo(`Full backup completed: ${backupId}, size: ${backup.size} bytes`);
       this.emit('backupCompleted', backup);
 
       return backup;
     } catch (error) {
       backup.status = 'failed';
-      this.logger.error(`Full backup failed: ${backupId}`, error);
+      this.logError(`Full backup failed: ${backupId}`, error);
       this.emit('backupFailed', { backup, error });
       throw error;
     } finally {
@@ -194,7 +197,7 @@ export class BackupRestoreService extends EventEmitter {
 
       return backups.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     } catch (error) {
-      this.logger.error('Failed to list backups', error);
+      this.logError('Failed to list backups', error);
       return [];
     }
   }
@@ -264,7 +267,7 @@ export class BackupRestoreService extends EventEmitter {
     const backupId = crypto.randomBytes(16).toString('hex');
     const timestamp = new Date();
 
-    this.logger.log(`Starting incremental backup: ${backupId} based on ${baseBackup.id}`);
+    this.logInfo(`Starting incremental backup: ${backupId} based on ${baseBackup.id}`);
 
     const backup: BackupMetadata = {
       id: backupId,
@@ -284,7 +287,7 @@ export class BackupRestoreService extends EventEmitter {
       const changes = await this.getChangesSince(baseBackup.timestamp);
 
       if (changes.length === 0) {
-        this.logger.log(`No changes since ${baseBackup.timestamp}, skipping incremental backup`);
+        this.logInfo(`No changes since ${baseBackup.timestamp}, skipping incremental backup`);
         backup.status = 'completed';
         return backup;
       }
@@ -309,13 +312,13 @@ export class BackupRestoreService extends EventEmitter {
       backup.checksum = checksum;
       backup.status = 'completed';
 
-      this.logger.log(`Incremental backup completed: ${backupId}, size: ${backup.size} bytes`);
+      this.logInfo(`Incremental backup completed: ${backupId}, size: ${backup.size} bytes`);
       this.emit('backupCompleted', backup);
 
       return backup;
     } catch (error) {
       backup.status = 'failed';
-      this.logger.error(`Incremental backup failed: ${backupId}`, error);
+      this.logError(`Incremental backup failed: ${backupId}`, error);
       this.emit('backupFailed', { backup, error });
       throw error;
     } finally {
@@ -331,7 +334,7 @@ export class BackupRestoreService extends EventEmitter {
    * Enable Point-in-Time Recovery
    */
   async enablePITR(walLocation: string): Promise<void> {
-    this.logger.log('Enabling Point-in-Time Recovery');
+    this.logInfo('Enabling Point-in-Time Recovery');
 
     // Create WAL archive location
     await fs.promises.mkdir(walLocation, { recursive: true });
@@ -339,7 +342,7 @@ export class BackupRestoreService extends EventEmitter {
     // Configure PostgreSQL for WAL archiving (this would be done via config)
     // This is a simplified version - in production you'd modify postgresql.conf
 
-    this.logger.log('Point-in-Time Recovery enabled');
+    this.logInfo('Point-in-Time Recovery enabled');
   }
 
   /**
@@ -350,7 +353,7 @@ export class BackupRestoreService extends EventEmitter {
     targetTime: Date,
     options: RestoreOptions = {},
   ): Promise<ValidationResult> {
-    this.logger.log(`Starting PITR restore to ${targetTime.toISOString()}`);
+    this.logInfo(`Starting PITR restore to ${targetTime.toISOString()}`);
 
     try {
       // First restore the base backup
@@ -359,7 +362,7 @@ export class BackupRestoreService extends EventEmitter {
       // Then apply WAL logs up to target time
       // This is simplified - in production you'd replay WAL files
 
-      this.logger.log('PITR restore completed');
+      this.logInfo('PITR restore completed');
       return {
         valid: true,
         errors: [],
@@ -369,7 +372,7 @@ export class BackupRestoreService extends EventEmitter {
         dataIntegrity: true,
       };
     } catch (error) {
-      this.logger.error('PITR restore failed', error);
+      this.logError('PITR restore failed', error);
       return {
         valid: false,
         errors: [error.message],
@@ -395,7 +398,7 @@ export class BackupRestoreService extends EventEmitter {
     };
 
     this.drPlans.set(drPlan.id, drPlan);
-    this.logger.log(`DR plan created: ${drPlan.id}`);
+    this.logInfo(`DR plan created: ${drPlan.id}`);
     return drPlan;
   }
 
@@ -410,7 +413,7 @@ export class BackupRestoreService extends EventEmitter {
       throw new Error(`DR plan not found: ${planId}`);
     }
 
-    this.logger.log(`Testing DR procedure for plan: ${planId}`);
+    this.logInfo(`Testing DR procedure for plan: ${planId}`);
     const startTime = Date.now();
     const issues: string[] = [];
 
@@ -438,12 +441,12 @@ export class BackupRestoreService extends EventEmitter {
       const duration = Date.now() - startTime;
       const success = issues.length === 0;
 
-      this.logger.log(`DR test completed: ${success ? 'SUCCESS' : 'FAILED'}, duration: ${duration}ms`);
+      this.logInfo(`DR test completed: ${success ? 'SUCCESS' : 'FAILED'}, duration: ${duration}ms`);
 
       return { success, duration, issues };
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.logger.error('DR test failed', error);
+      this.logError('DR test failed', error);
       return { success: false, duration, issues: [error.message] };
     }
   }
@@ -459,7 +462,7 @@ export class BackupRestoreService extends EventEmitter {
     backup: BackupMetadata,
     options: RestoreOptions = {},
   ): Promise<ValidationResult> {
-    this.logger.log(`Starting restore from backup: ${backup.id}`);
+    this.logInfo(`Starting restore from backup: ${backup.id}`);
 
     const result: ValidationResult = {
       valid: false,
@@ -502,13 +505,13 @@ export class BackupRestoreService extends EventEmitter {
       result.valid = true;
       result.dataIntegrity = true;
 
-      this.logger.log(`Restore completed: ${result.tablesRestored} statements executed`);
+      this.logInfo(`Restore completed: ${result.tablesRestored} statements executed`);
       this.emit('restoreCompleted', { backup, result });
 
       return result;
     } catch (error) {
       result.errors.push(error.message);
-      this.logger.error('Restore failed', error);
+      this.logError('Restore failed', error);
       this.emit('restoreFailed', { backup, error });
       return result;
     }

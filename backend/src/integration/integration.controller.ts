@@ -6,10 +6,11 @@ import { RateLimiterService } from './services/rate-limiter.service';
 import { CreateIntegrationDto } from './dto/create-integration.dto';
 import { UpdateIntegrationDto } from './dto/update-integration.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Integrations')
 @ApiBearerAuth()
 @Controller('integrations')
-export class IntegrationController {
+export class IntegrationController extends BaseController {
   constructor(
     private readonly integrationService: IntegrationService,
     private readonly circuitBreakerService: CircuitBreakerService,

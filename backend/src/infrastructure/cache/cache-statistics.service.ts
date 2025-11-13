@@ -14,6 +14,10 @@ import type { CacheEventPayload } from './cache.interfaces';
 import { CacheEvent } from './cache.interfaces';
 
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 /**
  * Cache warm event payload
  */
@@ -91,7 +95,6 @@ export interface CacheMetrics {
  */
 @Injectable()
 export class CacheStatisticsService extends HealthIndicator {
-  private readonly logger = new Logger(CacheStatisticsService.name);
   private eventCounts = {
     hits: 0,
     misses: 0,
@@ -111,10 +114,17 @@ export class CacheStatisticsService extends HealthIndicator {
   };
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly cacheService: CacheService,
     private readonly warmingService: CacheWarmingService,
     private readonly rateLimiterService: RateLimiterService,
   ) {
+    super({
+      serviceName: 'CacheStatisticsService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super();
   }
 
@@ -427,7 +437,7 @@ export class CacheStatisticsService extends HealthIndicator {
       '<500ms': 0,
       '>=500ms': 0,
     };
-    this.logger.log('Cache statistics reset');
+    this.logInfo('Cache statistics reset');
   }
 
   // Event listeners

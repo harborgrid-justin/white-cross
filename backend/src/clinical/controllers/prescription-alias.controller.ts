@@ -2,6 +2,7 @@ import { All, Controller, Req, Res } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 
+import { BaseController } from '../../common/base';
 /**
  * Prescription Alias Controller
  *
@@ -29,7 +30,7 @@ import type { Request, Response } from 'express';
  */
 @ApiExcludeController() // Exclude from Swagger docs as this is just an alias
 @Controller('prescriptions')
-export class PrescriptionAliasController {
+export class PrescriptionAliasController extends BaseController {
   /**
    * Catch-all route handler that forwards all requests to /clinical/prescriptions
    *

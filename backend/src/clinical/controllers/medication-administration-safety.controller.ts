@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckSafetyDto, CalculateDoseDto } from '../dto/administration/administration-filters.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Medication Administration Safety Controller
  *
@@ -10,7 +11,7 @@ import { CheckSafetyDto, CalculateDoseDto } from '../dto/administration/administ
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
 @Controller('medications/administrations')
-export class MedicationAdministrationSafetyController {
+export class MedicationAdministrationSafetyController extends BaseController {
   /**
    * Check allergies
    */

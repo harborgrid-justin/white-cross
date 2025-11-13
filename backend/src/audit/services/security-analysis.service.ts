@@ -4,6 +4,7 @@ import { literal, Op } from 'sequelize';
 import { AuditLog } from '@/database';
 import { SecurityReport, SuspiciousLoginDetection } from '../types/audit.types';
 
+import { BaseService } from '../../common/base';
 /**
  * SecurityAnalysisService - Security monitoring and threat detection
  *
@@ -12,9 +13,7 @@ import { SecurityReport, SuspiciousLoginDetection } from '../types/audit.types';
  * maintaining system security and detecting malicious activities.
  */
 @Injectable()
-export class SecurityAnalysisService {
-  private readonly logger = new Logger(SecurityAnalysisService.name);
-
+export class SecurityAnalysisService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -62,7 +61,7 @@ export class SecurityAnalysisService {
         riskLevel: suspiciousIPs.length > 0 ? 'HIGH' : failedLogins.length > 20 ? 'MEDIUM' : 'LOW',
       };
     } catch (error) {
-      this.logger.error('Error detecting suspicious logins:', error);
+      this.logError('Error detecting suspicious logins:', error);
       throw new Error('Failed to detect suspicious logins');
     }
   }
@@ -104,7 +103,7 @@ export class SecurityAnalysisService {
         },
       };
     } catch (error) {
-      this.logger.error('Error generating security report:', error);
+      this.logError('Error generating security report:', error);
       throw new Error('Failed to generate security report');
     }
   }

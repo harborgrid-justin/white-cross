@@ -10,10 +10,9 @@ import { Op } from 'sequelize';
 import { ConfigCategory, ConfigScope, SystemConfig } from '../../database/models/system-config.model';
 import { CreateConfigurationDto, FilterConfigurationDto } from '../dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ConfigCrudService {
-  private readonly logger = new Logger(ConfigCrudService.name);
-
+export class ConfigCrudService extends BaseService {
   constructor(
     @InjectModel(SystemConfig)
     private readonly configModel: typeof SystemConfig,
@@ -46,7 +45,7 @@ export class ConfigCrudService {
 
       return config;
     } catch (error) {
-      this.logger.error(`Error fetching configuration ${key}:`, error);
+      this.logError(`Error fetching configuration ${key}:`, error);
       throw error;
     }
   }
@@ -110,7 +109,7 @@ export class ConfigCrudService {
       });
       return configs;
     } catch (error) {
-      this.logger.error('Error fetching configurations:', error);
+      this.logError('Error fetching configurations:', error);
       throw error;
     }
   }
@@ -171,12 +170,12 @@ export class ConfigCrudService {
         sortOrder: data.sortOrder !== undefined ? data.sortOrder : 0,
       } as any);
 
-      this.logger.log(
+      this.logInfo(
         `Configuration created: ${data.key} in category ${data.category}`,
       );
       return config;
     } catch (error) {
-      this.logger.error('Error creating configuration:', error);
+      this.logError('Error creating configuration:', error);
       throw error;
     }
   }
@@ -188,9 +187,9 @@ export class ConfigCrudService {
     try {
       const config = await this.getConfigByKey(key, scopeId);
       await config.destroy();
-      this.logger.log(`Configuration deleted: ${key}`);
+      this.logInfo(`Configuration deleted: ${key}`);
     } catch (error) {
-      this.logger.error(`Error deleting configuration ${key}:`, error);
+      this.logError(`Error deleting configuration ${key}:`, error);
       throw error;
     }
   }
@@ -210,7 +209,7 @@ export class ConfigCrudService {
 
       return configs;
     } catch (error) {
-      this.logger.error('Error fetching configs requiring restart:', error);
+      this.logError('Error fetching configs requiring restart:', error);
       throw error;
     }
   }

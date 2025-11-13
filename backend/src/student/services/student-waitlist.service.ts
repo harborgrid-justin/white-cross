@@ -6,8 +6,6 @@
 
 import {
   Injectable,
-  InternalServerErrorException,
-  Logger,
   NotFoundException,
   Optional,
 } from '@nestjs/common';
@@ -31,7 +29,6 @@ import { WaitlistStatusDto } from '../dto/waitlist-status.dto';
  */
 @Injectable()
 export class StudentWaitlistService extends BaseService {
-  protected readonly logger = new Logger(StudentWaitlistService.name);
 
   constructor(
     @InjectModel(Student)

@@ -12,7 +12,17 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-scalars';
 import { PaginationDto } from './pagination.dto';
-import { IsArray, IsBoolean, IsDateString, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { BaseHealthRecordFieldsDto } from './base/base-health-record-fields.dto';
+import {
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /**
  * HealthRecord GraphQL Object Type
@@ -108,7 +118,7 @@ export class HealthRecordListResponseDto {
  * HealthRecord Input for Create Mutation
  */
 @InputType()
-export class HealthRecordInputDto {
+export class HealthRecordInputDto extends BaseHealthRecordFieldsDto {
   @Field(() => ID)
   @IsUUID(4, { message: 'Student ID must be a valid UUID' })
   studentId: string;
@@ -135,58 +145,6 @@ export class HealthRecordInputDto {
   @IsDateString({}, { message: 'Invalid date format for record date' })
   recordDate: Date;
 
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(200, { message: 'Provider name must not exceed 200 characters' })
-  provider?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(20, { message: 'Provider NPI must not exceed 20 characters' })
-  providerNpi?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(200, { message: 'Facility name must not exceed 200 characters' })
-  facility?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(20, { message: 'Facility NPI must not exceed 20 characters' })
-  facilityNpi?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500, { message: 'Diagnosis must not exceed 500 characters' })
-  diagnosis?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(20, { message: 'Diagnosis code must not exceed 20 characters' })
-  diagnosisCode?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2000, { message: 'Treatment must not exceed 2000 characters' })
-  treatment?: string;
-
-  @Field({ defaultValue: false })
-  @IsOptional()
-  @IsBoolean()
-  followUpRequired?: boolean;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsDateString({}, { message: 'Invalid date format for follow-up date' })
-  followUpDate?: Date;
-
   @Field(() => [String], { nullable: true, defaultValue: [] })
   @IsOptional()
   @IsArray()
@@ -212,7 +170,7 @@ export class HealthRecordInputDto {
  * HealthRecord Update Input for Update Mutation
  */
 @InputType()
-export class HealthRecordUpdateInputDto {
+export class HealthRecordUpdateInputDto extends BaseHealthRecordFieldsDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
@@ -238,58 +196,6 @@ export class HealthRecordUpdateInputDto {
   @IsOptional()
   @IsDateString({}, { message: 'Invalid date format for record date' })
   recordDate?: Date;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(200, { message: 'Provider name must not exceed 200 characters' })
-  provider?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(20, { message: 'Provider NPI must not exceed 20 characters' })
-  providerNpi?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(200, { message: 'Facility name must not exceed 200 characters' })
-  facility?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(20, { message: 'Facility NPI must not exceed 20 characters' })
-  facilityNpi?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500, { message: 'Diagnosis must not exceed 500 characters' })
-  diagnosis?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(20, { message: 'Diagnosis code must not exceed 20 characters' })
-  diagnosisCode?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @MaxLength(2000, { message: 'Treatment must not exceed 2000 characters' })
-  treatment?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsBoolean()
-  followUpRequired?: boolean;
-
-  @Field({ nullable: true })
-  @IsOptional()
-  @IsDateString({}, { message: 'Invalid date format for follow-up date' })
-  followUpDate?: Date;
 
   @Field({ nullable: true })
   @IsOptional()

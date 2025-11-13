@@ -44,13 +44,13 @@ import { CostTrackerService } from './services/cost-tracker.service';
 import { SMS_QUEUE_NAME } from './processors/sms-queue.processor';
 import { SmsSenderService } from './services/sms-sender.service';
 
+import { BaseService } from '../../common/base';
 /**
  * SMS Service class
  * Orchestrates all SMS operations with comprehensive error handling and monitoring
  */
 @Injectable()
-export class SmsService {
-  private readonly logger = new Logger(SmsService.name);
+export class SmsService extends BaseService {
   private readonly isProduction: boolean;
   private maxLength: number = 160; // Standard SMS length
 
@@ -66,15 +66,15 @@ export class SmsService {
   ) {
     this.isProduction = this.configService.get<string>('NODE_ENV') === 'production';
 
-    this.logger.log(
+    this.logInfo(
       `SMS Service initialized - Environment: ${this.isProduction ? 'production' : 'development'}`,
     );
 
     // Log provider status
     if (this.twilioProvider.isReady()) {
-      this.logger.log('Twilio provider is configured and ready');
+      this.logInfo('Twilio provider is configured and ready');
     } else {
-      this.logger.warn('Twilio provider is not configured - SMS will be logged only');
+      this.logWarning('Twilio provider is not configured - SMS will be logged only');
     }
   }
 
@@ -128,12 +128,12 @@ export class SmsService {
    */
   async testConnection(to: string): Promise<boolean> {
     try {
-      this.logger.log(`Testing SMS connection to ${to}`);
+      this.logInfo(`Testing SMS connection to ${to}`);
 
       // Validate phone number first
       const validation = await this.phoneValidator.validatePhoneNumber(to);
       if (!validation.isValid) {
-        this.logger.error(`Test failed: Invalid phone number - ${validation.error}`);
+        this.logError(`Test failed: Invalid phone number - ${validation.error}`);
         return false;
       }
 
@@ -142,10 +142,10 @@ export class SmsService {
         message: 'White Cross SMS Service Test: This is a test message.',
       });
 
-      this.logger.log('SMS test successful');
+      this.logInfo('SMS test successful');
       return true;
     } catch (error) {
-      this.logger.error('SMS test failed:', error);
+      this.logError('SMS test failed:', error);
       return false;
     }
   }
@@ -166,6 +166,6 @@ export class SmsService {
     }
 
     this.maxLength = length;
-    this.logger.log(`SMS max length updated to ${length} characters`);
+    this.logInfo(`SMS max length updated to ${length} characters`);
   }
 }

@@ -16,10 +16,9 @@ import { VitalSigns   } from "../../database/models";
 import { ClinicVisit   } from "../../database/models";
 import { School   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class StatisticsService {
-  private readonly logger = new Logger(StatisticsService.name);
-
+export class StatisticsService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -38,7 +37,7 @@ export class StatisticsService {
   ) {}
 
   async getStudentStatistics(studentId: string): Promise<any> {
-    this.logger.log(`Getting statistics for student ${studentId}`);
+    this.logInfo(`Getting statistics for student ${studentId}`);
 
     // Verify student exists
     const student = await this.studentModel.findByPk(studentId);
@@ -110,7 +109,7 @@ export class StatisticsService {
   }
 
   async getSchoolStatistics(schoolId: string): Promise<any> {
-    this.logger.log(`Getting statistics for school ${schoolId}`);
+    this.logInfo(`Getting statistics for school ${schoolId}`);
 
     // Verify school exists
     const school = await this.schoolModel.findByPk(schoolId);
@@ -197,7 +196,7 @@ export class StatisticsService {
   }
 
   async getTrendAnalysis(type: string, timeframe: string): Promise<any> {
-    this.logger.log(`Analyzing trends: ${type} over ${timeframe}`);
+    this.logInfo(`Analyzing trends: ${type} over ${timeframe}`);
 
     const days = this.parseTimeframe(timeframe);
     const cutoffDate = new Date();
@@ -262,7 +261,7 @@ export class StatisticsService {
    * Get overall system statistics
    */
   async getOverallStatistics(): Promise<any> {
-    this.logger.log('Getting overall system statistics');
+    this.logInfo('Getting overall system statistics');
 
     // Use Promise.all for parallel queries
     const [
@@ -313,7 +312,7 @@ export class StatisticsService {
    * Get health alerts summary
    */
   async getHealthAlerts(schoolId?: string): Promise<any> {
-    this.logger.log(
+    this.logInfo(
       `Getting health alerts${schoolId ? ` for school ${schoolId}` : ''}`,
     );
 

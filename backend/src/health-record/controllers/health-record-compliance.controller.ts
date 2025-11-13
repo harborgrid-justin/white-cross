@@ -21,6 +21,7 @@ import { HealthRecordAuditInterceptor } from '../interceptors/health-record-audi
 import { HealthRecordCacheInterceptor } from '../interceptors/health-record-cache.interceptor';
 import { HealthRecordRateLimitGuard } from '../guards/health-record-rate-limit.guard';
 
+import { BaseController } from '../../common/base';
 /**
  * Health Record Compliance Controller
  *
@@ -36,7 +37,7 @@ import { HealthRecordRateLimitGuard } from '../guards/health-record-rate-limit.g
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, HealthRecordRateLimitGuard)
 @UseInterceptors(HealthRecordAuditInterceptor, HealthRecordCacheInterceptor)
-export class HealthRecordComplianceController {
+export class HealthRecordComplianceController extends BaseController {
   constructor(
     private readonly phiAccessLogger: PHIAccessLogger,
     private readonly metricsService: HealthRecordMetricsService,

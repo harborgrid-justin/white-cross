@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { RecurringAppointmentsService } from '../recurring-appointments.service';
 import { CreateRecurringTemplateDto, RecurringTemplateResponseDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Recurring Appointments')
 @Controller('enterprise-features/recurring-appointments')
 @ApiBearerAuth()
-export class RecurringAppointmentsController {
+export class RecurringAppointmentsController extends BaseController {
   constructor(
     private readonly recurringAppointmentsService: RecurringAppointmentsService,
   ) {}

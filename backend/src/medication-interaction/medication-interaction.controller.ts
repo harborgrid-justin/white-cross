@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@ne
 import { MedicationInteractionService } from './medication-interaction.service';
 import { CheckNewMedicationDto, InteractionCheckResultDto } from './dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Medication Interaction Controller
  * Provides endpoints for checking drug-drug interactions
@@ -12,7 +13,7 @@ import { CheckNewMedicationDto, InteractionCheckResultDto } from './dto';
 @ApiTags('medication-interaction')
 @ApiBearerAuth()
 @Controller('medication-interaction')
-export class MedicationInteractionController {
+export class MedicationInteractionController extends BaseController {
   private readonly logger = new Logger(MedicationInteractionController.name);
 
   constructor(

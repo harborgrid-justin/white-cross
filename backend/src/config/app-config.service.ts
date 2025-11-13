@@ -22,17 +22,17 @@ import type { AuthConfig } from './auth.config';
 import type { SecurityConfig } from './security.config';
 import type { RedisConfig } from './redis.config';
 
+import { BaseService } from '../../common/base';
 /**
  * Main application configuration service
  * Provides type-safe access to all configuration namespaces
  */
 @Injectable()
-export class AppConfigService {
-  private readonly logger = new Logger(AppConfigService.name);
+export class AppConfigService extends BaseService {
   private readonly cache = new Map<string, any>();
 
   constructor(private readonly configService: ConfigService) {
-    this.logger.log('AppConfigService initialized');
+    this.logInfo('AppConfigService initialized');
   }
 
   // ============================================================================
@@ -82,7 +82,7 @@ export class AppConfigService {
 
     if (value === undefined || value === null) {
       const error = `CRITICAL: Required configuration key "${key}" is not set`;
-      this.logger.error(error);
+      this.logError(error);
       throw new Error(error);
     }
 
@@ -617,7 +617,7 @@ export class AppConfigService {
    */
   clearCache(): void {
     this.cache.clear();
-    this.logger.log('Configuration cache cleared');
+    this.logInfo('Configuration cache cleared');
   }
 
   /**
@@ -628,7 +628,7 @@ export class AppConfigService {
    */
   getAll(): Record<string, any> {
     if (this.isProduction) {
-      this.logger.warn(
+      this.logWarning(
         'Attempted to get all configuration in production - blocked',
       );
       return {};
@@ -734,10 +734,10 @@ export class AppConfigService {
         'Please check your .env file and ensure all required variables are set.\n' +
         '='.repeat(80);
 
-      this.logger.error(errorMessage);
+      this.logError(errorMessage);
       throw new Error(errorMessage);
     }
 
-    this.logger.log('Critical configuration validation passed');
+    this.logInfo('Critical configuration validation passed');
   }
 }

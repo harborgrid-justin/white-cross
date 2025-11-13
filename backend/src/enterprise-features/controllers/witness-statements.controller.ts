@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { WitnessStatementService } from '../witness-statement.service';
 import { CaptureStatementDto, TranscribeVoiceStatementDto, VerifyStatementDto, WitnessStatementResponseDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Witness Statements')
 @Controller('enterprise-features/witness-statements')
 @ApiBearerAuth()
-export class WitnessStatementsController {
+export class WitnessStatementsController extends BaseController {
   constructor(
     private readonly witnessStatementService: WitnessStatementService,
   ) {}

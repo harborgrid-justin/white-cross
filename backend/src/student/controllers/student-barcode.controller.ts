@@ -11,6 +11,7 @@ import { StudentService } from '../student.service';
 import { GenerateBarcodeDto } from '../dto/generate-barcode.dto';
 import { VerifyBarcodeDto } from '../dto/verify-barcode.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Barcode Controller
  *
@@ -23,7 +24,7 @@ import { VerifyBarcodeDto } from '../dto/verify-barcode.dto';
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-export class StudentBarcodeController {
+export class StudentBarcodeController extends BaseController {
   constructor(private readonly studentService: StudentService) {}
 
   /**

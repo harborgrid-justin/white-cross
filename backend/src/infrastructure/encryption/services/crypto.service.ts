@@ -4,21 +4,31 @@
  * @description Core cryptographic operations for AES-256-GCM encryption/decryption
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import * as crypto from 'crypto';
 import { EncryptionAlgorithm, EncryptionMetadata, EncryptionOptions, EncryptionResult, DecryptionResult, EncryptionStatus } from '../types/encryption.types';
 import { KeyManagementService } from '../key-management.service';
 
 @Injectable()
-export class CryptoService {
-  private readonly logger = new Logger(CryptoService.name);
+export class CryptoService extends BaseService {
   private readonly ALGORITHM = 'aes-256-gcm';
   private readonly KEY_LENGTH = 32; // 256 bits
   private readonly IV_LENGTH = 16; // 128 bits
   private readonly AUTH_TAG_LENGTH = 16; // 128 bits
   private readonly VERSION = '1.0.0';
 
-  constructor(private readonly keyManagementService: KeyManagementService) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly keyManagementService: KeyManagementService
+  ) {
+    super({
+      serviceName: 'CryptoService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Encrypt data using AES-256-GCM
@@ -65,7 +75,7 @@ export class CryptoService {
       };
 
       const duration = Date.now() - startTime;
-      this.logger.debug(`Encryption completed in ${duration}ms`, {
+      this.logDebug(`Encryption completed in ${duration}ms`, {
         keyId: metadata.keyId,
         dataLength: data.length,
       });
@@ -76,7 +86,7 @@ export class CryptoService {
         metadata,
       };
     } catch (error) {
-      this.logger.error('Encryption failed', {
+      this.logError('Encryption failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         keyId: options.keyId,
       });
@@ -107,7 +117,7 @@ export class CryptoService {
 
       // Verify version compatibility
       if (metadata.version !== this.VERSION) {
-        this.logger.warn('Version mismatch detected', {
+        this.logWarning('Version mismatch detected', {
           expected: this.VERSION,
           received: metadata.version,
         });
@@ -133,7 +143,7 @@ export class CryptoService {
       decrypted += decipher.final('utf8');
 
       const duration = Date.now() - startTime;
-      this.logger.debug(`Decryption completed in ${duration}ms`, {
+      this.logDebug(`Decryption completed in ${duration}ms`, {
         keyId: metadata.keyId,
       });
 
@@ -143,7 +153,7 @@ export class CryptoService {
         metadata,
       };
     } catch (error) {
-      this.logger.error('Decryption failed', {
+      this.logError('Decryption failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         keyId: metadata?.keyId,
       });

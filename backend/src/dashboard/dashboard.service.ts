@@ -8,9 +8,10 @@
  * These models should be registered in the DatabaseModule through Sequelize's model registry.
  */
 
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { col, fn, Op, Sequelize } from 'sequelize';
+import { BaseService } from '../common/base/base.service';
 import {
   ChartDataPointDto,
   DashboardChartDataDto,
@@ -56,9 +57,7 @@ enum AllergySeverity {
  * - HIPAA-compliant data aggregation
  */
 @Injectable()
-export class DashboardService {
-  private readonly logger = new Logger(DashboardService.name);
-
+export class DashboardService extends BaseService {
   // Cache TTL in milliseconds (5 minutes)
   private static readonly CACHE_TTL = 5 * 60 * 1000;
   private statsCache: { data: DashboardStatsDto | null; timestamp: number } = {
@@ -66,7 +65,9 @@ export class DashboardService {
     timestamp: 0,
   };
 
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(@InjectConnection() private readonly sequelize: Sequelize) {
+    super('DashboardService');
+  }
 
   /**
    * Get Sequelize models dynamically
@@ -88,15 +89,12 @@ export class DashboardService {
    * - Recent activity counts
    * - Month-over-month trend comparisons
    */
-  async getDashboardStats(userId?: string): Promise<DashboardStatsDto> {
+  async getDashboardStats(): Promise<DashboardStatsDto> {
     try {
       // Check cache first for performance optimization
       const now = Date.now();
-      if (
-        this.statsCache.data &&
-        now - this.statsCache.timestamp < DashboardService.CACHE_TTL
-      ) {
-        this.logger.debug('Returning cached dashboard stats');
+      if (this.statsCache.data && now - this.statsCache.timestamp < DashboardService.CACHE_TTL) {
+        this.logDebug('Returning cached dashboard stats');
         return this.statsCache.data;
       }
 
@@ -135,10 +133,7 @@ export class DashboardService {
               [Op.lt]: tomorrow,
             },
             status: {
-              [Op.in]: [
-                AppointmentStatus.SCHEDULED,
-                AppointmentStatus.IN_PROGRESS,
-              ],
+              [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS],
             },
           },
         }),
@@ -162,10 +157,7 @@ export class DashboardService {
             attributes: ['id'],
             where: {
               severity: {
-                [Op.in]: [
-                  AllergySeverity.SEVERE,
-                  AllergySeverity.LIFE_THREATENING,
-                ],
+                [Op.in]: [AllergySeverity.SEVERE, AllergySeverity.LIFE_THREATENING],
               },
               active: true,
             },
@@ -236,10 +228,9 @@ export class DashboardService {
         if (result.status === 'fulfilled') {
           return result.value as number;
         } else {
-          this.logger.error(`Dashboard metric '${metricNames[index]}' failed`, {
-            metric: metricNames[index],
-            error: result.reason?.message || result.reason,
-          });
+          this.logError(
+            `Dashboard metric '${metricNames[index]}' failed: ${result.reason?.message || result.reason}`,
+          );
           return 0;
         }
       });
@@ -247,40 +238,23 @@ export class DashboardService {
       // Calculate percentage changes for trend analysis
       const studentChange =
         studentsLastMonth > 0
-          ? (
-              ((totalStudents - studentsLastMonth) / studentsLastMonth) *
-              100
-            ).toFixed(1)
+          ? (((totalStudents - studentsLastMonth) / studentsLastMonth) * 100).toFixed(1)
           : '0';
 
       const medicationChange =
         medicationsLastMonth > 0
-          ? (
-              ((activeMedications - medicationsLastMonth) /
-                medicationsLastMonth) *
-              100
-            ).toFixed(1)
+          ? (((activeMedications - medicationsLastMonth) / medicationsLastMonth) * 100).toFixed(1)
           : '0';
 
       const appointmentChange =
         appointmentsLastMonth > 0
-          ? (
-              ((todaysAppointments - appointmentsLastMonth) /
-                appointmentsLastMonth) *
-              100
-            ).toFixed(1)
+          ? (((todaysAppointments - appointmentsLastMonth) / appointmentsLastMonth) * 100).toFixed(1)
           : '0';
 
       // Helper function to determine trend type
-      const getTrendType = (
-        change: string,
-      ): 'positive' | 'negative' | 'neutral' => {
+      const getTrendType = (change: string): 'positive' | 'negative' | 'neutral' => {
         const numChange = Number(change);
-        return numChange > 0
-          ? 'positive'
-          : numChange < 0
-            ? 'negative'
-            : 'neutral';
+        return numChange > 0 ? 'positive' : numChange < 0 ? 'negative' : 'neutral';
       };
 
       const recentActivityCount = await this.getRecentActivitiesCount();
@@ -316,13 +290,14 @@ export class DashboardService {
         timestamp: now,
       };
 
-      this.logger.log('Dashboard stats retrieved successfully');
+      this.logInfo('Dashboard stats retrieved successfully');
       return stats;
     } catch (error) {
-      this.logger.error('Error fetching dashboard stats:', error);
-      throw new InternalServerErrorException(
-        'Failed to fetch dashboard statistics',
+      this.logError(
+        'Error fetching dashboard stats',
+        error instanceof Error ? error.stack : undefined,
       );
+      throw new InternalServerErrorException('Failed to fetch dashboard statistics');
     }
   }
 
@@ -350,82 +325,77 @@ export class DashboardService {
       const now = new Date();
 
       // PERFORMANCE: Execute all queries in parallel
-      const [recentMeds, recentIncidents, upcomingAppointments] =
-        await Promise.all([
-          // Get recent medication administration logs
-          MedicationLog.findAll({
-            limit: 3,
-            order: [['timeGiven', 'DESC']],
-            include: [
-              {
-                model: StudentMedication,
-                as: 'studentMedication',
-                required: true,
-                include: [
-                  {
-                    model: Student,
-                    as: 'student',
-                    attributes: ['id', 'firstName', 'lastName'],
-                    required: true,
-                  },
-                  {
-                    model: Medication,
-                    as: 'medication',
-                    attributes: ['id', 'name'],
-                    required: true,
-                  },
-                ],
-              },
-              {
-                model: User,
-                as: 'nurse',
-                attributes: ['id', 'firstName', 'lastName'],
-                required: false,
-              },
-            ],
-          }),
-
-          // Get recent incident reports
-          IncidentReport.findAll({
-            limit: 2,
-            order: [['createdAt', 'DESC']],
-            include: [
-              {
-                model: Student,
-                as: 'student',
-                attributes: ['id', 'firstName', 'lastName'],
-                required: true,
-              },
-            ],
-          }),
-
-          // Get upcoming appointments
-          Appointment.findAll({
-            limit: 2,
-            where: {
-              scheduledAt: { [Op.gte]: now },
-              status: AppointmentStatus.SCHEDULED,
+      const [recentMeds, recentIncidents, upcomingAppointments] = await Promise.all([
+        // Get recent medication administration logs
+        MedicationLog.findAll({
+          limit: 3,
+          order: [['timeGiven', 'DESC']],
+          include: [
+            {
+              model: StudentMedication,
+              as: 'studentMedication',
+              required: true,
+              include: [
+                {
+                  model: Student,
+                  as: 'student',
+                  attributes: ['id', 'firstName', 'lastName'],
+                  required: true,
+                },
+                {
+                  model: Medication,
+                  as: 'medication',
+                  attributes: ['id', 'name'],
+                  required: true,
+                },
+              ],
             },
-            order: [['scheduledAt', 'ASC']],
-            include: [
-              {
-                model: Student,
-                as: 'student',
-                attributes: ['id', 'firstName', 'lastName'],
-                required: true,
-              },
-            ],
-          }),
-        ]);
+            {
+              model: User,
+              as: 'nurse',
+              attributes: ['id', 'firstName', 'lastName'],
+              required: false,
+            },
+          ],
+        }),
+
+        // Get recent incident reports
+        IncidentReport.findAll({
+          limit: 2,
+          order: [['createdAt', 'DESC']],
+          include: [
+            {
+              model: Student,
+              as: 'student',
+              attributes: ['id', 'firstName', 'lastName'],
+              required: true,
+            },
+          ],
+        }),
+
+        // Get upcoming appointments
+        Appointment.findAll({
+          limit: 2,
+          where: {
+            scheduledAt: { [Op.gte]: now },
+            status: AppointmentStatus.SCHEDULED,
+          },
+          order: [['scheduledAt', 'ASC']],
+          include: [
+            {
+              model: Student,
+              as: 'student',
+              attributes: ['id', 'firstName', 'lastName'],
+              required: true,
+            },
+          ],
+        }),
+      ]);
 
       // Process all results in parallel
       recentMeds.forEach((med: any) => {
         const studentMedication = med.studentMedication;
-        if (
-          studentMedication &&
-          studentMedication.student &&
-          studentMedication.medication
-        ) {
+        if (studentMedication && studentMedication.student && studentMedication.medication) {
           activities.push({
             id: med.id,
             type: 'medication',
@@ -469,10 +439,11 @@ export class DashboardService {
       // Sort by most recent/upcoming and limit
       return activities.slice(0, limit);
     } catch (error) {
-      this.logger.error('Error fetching recent activities:', error);
-      throw new InternalServerErrorException(
-        'Failed to fetch recent activities',
+      this.logError(
+        'Error fetching recent activities',
+        error instanceof Error ? error.stack : undefined,
       );
+      throw new InternalServerErrorException('Failed to fetch recent activities');
     }
   }
 
@@ -482,9 +453,7 @@ export class DashboardService {
    * Retrieves scheduled appointments sorted by time, with priority levels
    * determined by appointment type.
    */
-  async getUpcomingAppointments(
-    limit: number = 5,
-  ): Promise<UpcomingAppointmentDto[]> {
+  async getUpcomingAppointments(limit: number = 5): Promise<UpcomingAppointmentDto[]> {
     try {
       const now = new Date();
       const Appointment = this.getModel('Appointment');
@@ -495,10 +464,7 @@ export class DashboardService {
         where: {
           scheduledAt: { [Op.gte]: now },
           status: {
-            [Op.in]: [
-              AppointmentStatus.SCHEDULED,
-              AppointmentStatus.IN_PROGRESS,
-            ],
+            [Op.in]: [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS],
           },
         },
         order: [['scheduledAt', 'ASC']],
@@ -541,9 +507,7 @@ export class DashboardService {
 
         return {
           id: apt.id,
-          student: student
-            ? `${student.firstName} ${student.lastName}`
-            : 'Unknown',
+          student: student ? `${student.firstName} ${student.lastName}` : 'Unknown',
           studentId: student ? student.id : '',
           time: timeStr,
           type: typeFormatted,
@@ -551,10 +515,11 @@ export class DashboardService {
         };
       });
     } catch (error) {
-      this.logger.error('Error fetching upcoming appointments:', error);
-      throw new InternalServerErrorException(
-        'Failed to fetch upcoming appointments',
+      this.logError(
+        'Error fetching upcoming appointments',
+        error instanceof Error ? error.stack : undefined,
       );
+      throw new InternalServerErrorException('Failed to fetch upcoming appointments');
     }
   }
 
@@ -663,7 +628,7 @@ export class DashboardService {
         appointmentTrends: this.formatChartData(appointmentData, dateFormat),
       };
     } catch (error) {
-      this.logger.error('Error fetching chart data:', error);
+      this.logError('Error fetching chart data', error instanceof Error ? error.stack : undefined);
       throw new InternalServerErrorException('Failed to fetch chart data');
     }
   }
@@ -680,12 +645,12 @@ export class DashboardService {
     try {
       // This method can be extended to filter by school/district
       // For now, returns general stats
-      this.logger.log(
+      this.logInfo(
         `Getting dashboard stats for scope - School: ${schoolId}, District: ${districtId}`,
       );
       return this.getDashboardStats();
     } catch (error) {
-      this.logger.error('Error fetching scoped dashboard stats:', error);
+      this.logError('Error fetching scoped dashboard stats', error instanceof Error ? error.stack : undefined);
       throw new InternalServerErrorException(
         'Failed to fetch scoped dashboard statistics',
       );
@@ -702,7 +667,7 @@ export class DashboardService {
       data: null,
       timestamp: 0,
     };
-    this.logger.debug('Dashboard cache cleared');
+    this.logDebug('Dashboard cache cleared');
   }
 
   // ==================== Private Helper Methods ====================
@@ -752,7 +717,7 @@ export class DashboardService {
 
       return medCount + incidentCount + aptCount;
     } catch (error) {
-      this.logger.error('Error fetching recent activities count:', error);
+      this.logError('Error fetching recent activities count', error instanceof Error ? error.stack : undefined);
       return 0;
     }
   }

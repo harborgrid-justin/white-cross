@@ -37,6 +37,7 @@ import { StudentFilterDto } from '../dto/student-filter.dto';
 import { UpdateStudentDto } from '../dto/update-student.dto';
 import { Student } from '@/database';
 
+import { BaseController } from '../../common/base';
 /**
  * Student Core Controller
  *
@@ -51,7 +52,7 @@ import { Student } from '@/database';
 @Controller('students')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)
-export class StudentCoreController {
+export class StudentCoreController extends BaseController {
   constructor(private readonly crudService: StudentCrudService) {}
 
   @Post()

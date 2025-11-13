@@ -5,6 +5,7 @@ import { DrugSearchDto } from '../dto/drug/drug-search.dto';
 import { AddDrugDto } from '../dto/drug/add-drug.dto';
 import { UpdateDrugDto } from '../dto/drug/update-drug.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Drug Catalog Controller
  * Handles drug catalog management operations
@@ -12,7 +13,7 @@ import { UpdateDrugDto } from '../dto/drug/update-drug.dto';
 @ApiTags('Clinical - Drug Catalog')
 @ApiBearerAuth()
 @Controller('clinical/drugs')
-export class DrugCatalogController {
+export class DrugCatalogController extends BaseController {
   constructor(
     private readonly drugInteractionService: DrugInteractionService,
   ) {}

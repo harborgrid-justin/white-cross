@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@ne
 import { RecordHeldMedicationDto, RecordMissedDoseDto, RecordRefusalDto } from '../dto/administration/record-refusal.dto';
 import { RequestWitnessSignatureDto, SubmitWitnessSignatureDto } from '../dto/administration/witness-signature.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Medication Administration Special Controller
  *
@@ -11,7 +12,7 @@ import { RequestWitnessSignatureDto, SubmitWitnessSignatureDto } from '../dto/ad
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
 @Controller('medications/administrations')
-export class MedicationAdministrationSpecialController {
+export class MedicationAdministrationSpecialController extends BaseController {
   /**
    * Record medication refusal
    */

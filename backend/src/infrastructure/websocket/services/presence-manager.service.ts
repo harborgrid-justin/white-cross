@@ -9,15 +9,14 @@ import { Server } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket } from '../interfaces';
 
+import { BaseService } from '../../common/base';
 export interface PresenceStatus {
   status: 'online' | 'offline' | 'away';
   lastSeen: string;
 }
 
 @Injectable()
-export class PresenceManagerService {
-  private readonly logger = new Logger(PresenceManagerService.name);
-
+export class PresenceManagerService extends BaseService {
   /**
    * In-memory presence tracking
    * Maps userId to presence status
@@ -52,9 +51,9 @@ export class PresenceManagerService {
       this.updatePresence(user.userId, status);
       this.broadcastPresenceUpdate(server, user.userId, user.organizationId, status);
 
-      this.logger.debug(`User ${user.userId} presence updated to ${status}`);
+      this.logDebug(`User ${user.userId} presence updated to ${status}`);
     } catch (error) {
-      this.logger.error(`Presence update error for user ${user.userId}:`, error);
+      this.logError(`Presence update error for user ${user.userId}:`, error);
     }
   }
 
@@ -158,7 +157,7 @@ export class PresenceManagerService {
     }
 
     if (cleanedCount > 0) {
-      this.logger.debug(`Cleaned up ${cleanedCount} stale presence entries`);
+      this.logDebug(`Cleaned up ${cleanedCount} stale presence entries`);
     }
 
     return cleanedCount;

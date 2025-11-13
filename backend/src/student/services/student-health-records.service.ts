@@ -6,8 +6,6 @@
 
 import {
   Injectable,
-  InternalServerErrorException,
-  Logger,
   NotFoundException,
   Optional,
 } from '@nestjs/common';
@@ -27,7 +25,6 @@ import { BaseService } from '@/shared/base/base.service';
  */
 @Injectable()
 export class StudentHealthRecordsService extends BaseService {
-  protected readonly logger = new Logger(StudentHealthRecordsService.name);
 
   constructor(
     @InjectModel(Student)

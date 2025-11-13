@@ -6,9 +6,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InsuranceClaim, InsuranceClaimStatus } from './enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS, INSURANCE_CONSTANTS } from './enterprise-features-constants';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class InsuranceClaimService {
-  private readonly logger = new Logger(InsuranceClaimService.name);
+export class InsuranceClaimService extends BaseService {
   private claims: InsuranceClaim[] = []; // In production, this would be a database
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -34,7 +34,7 @@ export class InsuranceClaimService {
 
       this.claims.push(claim);
 
-      this.logger.log('Insurance claim generated', {
+      this.logInfo('Insurance claim generated', {
         claimId: claim.id,
         claimNumber: claim.claimNumber,
         incidentId,
@@ -49,7 +49,7 @@ export class InsuranceClaimService {
 
       return Promise.resolve(claim);
     } catch (error) {
-      this.logger.error('Error generating insurance claim', {
+      this.logError('Error generating insurance claim', {
         error: error instanceof Error ? error.message : String(error),
         incidentId,
         studentId,
@@ -77,7 +77,7 @@ export class InsuranceClaimService {
       // Generate export path (in production, this would generate actual files)
       const exportPath = `/exports/claim-${claim.claimNumber}.${format}`;
 
-      this.logger.log('Insurance claim exported', {
+      this.logInfo('Insurance claim exported', {
         claimId,
         claimNumber: claim.claimNumber,
         format,
@@ -94,7 +94,7 @@ export class InsuranceClaimService {
 
       return Promise.resolve(exportPath);
     } catch (error) {
-      this.logger.error('Error exporting insurance claim', {
+      this.logError('Error exporting insurance claim', {
         error: error instanceof Error ? error.message : String(error),
         claimId,
         format,
@@ -111,7 +111,7 @@ export class InsuranceClaimService {
       const claimIndex = this.claims.findIndex((c) => c.id === claimId);
 
       if (claimIndex === -1) {
-        this.logger.warn('Insurance claim not found for submission', { claimId });
+        this.logWarning('Insurance claim not found for submission', { claimId });
         return Promise.resolve(false);
       }
 
@@ -134,7 +134,7 @@ export class InsuranceClaimService {
       claim.status = InsuranceClaimStatus.SUBMITTED;
       claim.submittedAt = new Date();
 
-      this.logger.log('Insurance claim submitted electronically', {
+      this.logInfo('Insurance claim submitted electronically', {
         claimId,
         claimNumber: claim.claimNumber,
         claimAmount: claim.claimAmount,
@@ -149,7 +149,7 @@ export class InsuranceClaimService {
 
       return Promise.resolve(true);
     } catch (error) {
-      this.logger.error('Error submitting insurance claim electronically', {
+      this.logError('Error submitting insurance claim electronically', {
         error: error instanceof Error ? error.message : String(error),
         claimId,
       });
@@ -170,7 +170,7 @@ export class InsuranceClaimService {
       const claimIndex = this.claims.findIndex((c) => c.id === claimId);
 
       if (claimIndex === -1) {
-        this.logger.warn('Insurance claim not found for status update', { claimId });
+        this.logWarning('Insurance claim not found for status update', { claimId });
         return Promise.resolve(null);
       }
 
@@ -190,7 +190,7 @@ export class InsuranceClaimService {
         claim.notes = notes;
       }
 
-      this.logger.log('Insurance claim status updated', {
+      this.logInfo('Insurance claim status updated', {
         claimId,
         claimNumber: claim.claimNumber,
         previousStatus,
@@ -209,7 +209,7 @@ export class InsuranceClaimService {
 
       return Promise.resolve(claim);
     } catch (error) {
-      this.logger.error('Error updating insurance claim status', {
+      this.logError('Error updating insurance claim status', {
         error: error instanceof Error ? error.message : String(error),
         claimId,
         status,
@@ -226,14 +226,14 @@ export class InsuranceClaimService {
     try {
       const claims = this.claims.filter((c) => c.incidentId === incidentId);
 
-      this.logger.log('Retrieved insurance claims for incident', {
+      this.logInfo('Retrieved insurance claims for incident', {
         incidentId,
         count: claims.length,
       });
 
       return claims;
     } catch (error) {
-      this.logger.error('Error getting claims by incident', {
+      this.logError('Error getting claims by incident', {
         error: error instanceof Error ? error.message : String(error),
         incidentId,
       });
@@ -248,14 +248,14 @@ export class InsuranceClaimService {
     try {
       const claims = this.claims.filter((c) => c.studentId === studentId);
 
-      this.logger.log('Retrieved insurance claims for student', {
+      this.logInfo('Retrieved insurance claims for student', {
         studentId,
         count: claims.length,
       });
 
       return claims;
     } catch (error) {
-      this.logger.error('Error getting claims by student', {
+      this.logError('Error getting claims by student', {
         error: error instanceof Error ? error.message : String(error),
         studentId,
       });
@@ -271,17 +271,17 @@ export class InsuranceClaimService {
       const claim = this.claims.find((c) => c.id === claimId);
 
       if (claim) {
-        this.logger.log('Insurance claim retrieved', {
+        this.logInfo('Insurance claim retrieved', {
           claimId,
           claimNumber: claim.claimNumber,
         });
       } else {
-        this.logger.log('Insurance claim not found', { claimId });
+        this.logInfo('Insurance claim not found', { claimId });
       }
 
       return claim || null;
     } catch (error) {
-      this.logger.error('Error getting insurance claim', {
+      this.logError('Error getting insurance claim', {
         error: error instanceof Error ? error.message : String(error),
         claimId,
       });
@@ -322,10 +322,10 @@ export class InsuranceClaimService {
       stats.averageClaimAmount =
         stats.totalClaims > 0 ? stats.totalClaimAmount / stats.totalClaims : 0;
 
-      this.logger.log('Retrieved insurance claim statistics', stats);
+      this.logInfo('Retrieved insurance claim statistics', stats);
       return stats;
     } catch (error) {
-      this.logger.error('Error getting claim statistics', {
+      this.logError('Error getting claim statistics', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

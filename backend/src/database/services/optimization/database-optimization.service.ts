@@ -15,13 +15,12 @@ import * as VacuumMaintenance from './vacuum-maintenance.service';
 import * as BloatDetection from './bloat-detection.service';
 import * as CacheOptimization from './cache-optimization.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Injectable service class wrapping all optimization utilities
  */
 @Injectable()
-export class DatabaseOptimizationService {
-  private readonly logger = new Logger(DatabaseOptimizationService.name);
-
+export class DatabaseOptimizationService extends BaseService {
   // Index Management Methods (Functions 1-10)
   listAllIndexes = IndexManagement.listAllIndexes;
   analyzeIndexUsage = IndexManagement.analyzeIndexUsage;

@@ -14,6 +14,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '../../common/base';
 export interface NotificationChannel {
   success: boolean;
   messageId?: string;
@@ -37,9 +38,7 @@ export interface VoiceCallResult {
 }
 
 @Injectable()
-export class NotificationDeliveryService {
-  private readonly logger = new Logger(NotificationDeliveryService.name);
-
+export class NotificationDeliveryService extends BaseService {
   /**
    * Send SMS message
    * Integrates with SMS gateway (e.g., Twilio)
@@ -52,7 +51,7 @@ export class NotificationDeliveryService {
     try {
       // Mock implementation - replace with actual SMS service integration
       // Example: Twilio, AWS SNS, etc.
-      this.logger.log(`SMS would be sent to ${phoneNumber}: ${message}`);
+      this.logInfo(`SMS would be sent to ${phoneNumber}: ${message}`);
 
       // In production, this would be:
       // const result = await this.twilioClient.messages.create({
@@ -66,7 +65,7 @@ export class NotificationDeliveryService {
         success: true,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to send SMS to ${phoneNumber}: ${error.message}`,
         error.stack,
       );
@@ -93,10 +92,10 @@ export class NotificationDeliveryService {
     try {
       // Mock implementation - replace with actual email service integration
       // Example: SendGrid, AWS SES, Mailgun, etc.
-      this.logger.log(`Email would be sent to ${email}: ${subject}`);
+      this.logInfo(`Email would be sent to ${email}: ${subject}`);
 
       if (attachments && attachments.length > 0) {
-        this.logger.log(`Email includes ${attachments.length} attachments`);
+        this.logInfo(`Email includes ${attachments.length} attachments`);
       }
 
       // In production, this would be:
@@ -113,7 +112,7 @@ export class NotificationDeliveryService {
         success: true,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to send email to ${email}: ${error.message}`,
         error.stack,
       );
@@ -136,7 +135,7 @@ export class NotificationDeliveryService {
     try {
       // Mock implementation - replace with actual voice service integration
       // Example: Twilio Voice, AWS Connect, etc.
-      this.logger.log(
+      this.logInfo(
         `Voice call would be made to ${phoneNumber}: ${message}`,
       );
 
@@ -152,7 +151,7 @@ export class NotificationDeliveryService {
         success: true,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to make voice call to ${phoneNumber}: ${error.message}`,
         error.stack,
       );
@@ -233,7 +232,7 @@ export class NotificationDeliveryService {
           };
       }
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to send notification through ${channel}: ${error.message}`,
       );
       return {

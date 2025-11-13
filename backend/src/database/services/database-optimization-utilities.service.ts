@@ -32,6 +32,7 @@
 import { Sequelize, QueryInterface, Transaction, QueryTypes } from 'sequelize';
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '../../common/base';
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
@@ -2760,9 +2761,7 @@ export async function recommendCacheConfiguration(
  * Injectable service class wrapping all optimization utilities
  */
 @Injectable()
-export class DatabaseOptimizationService {
-  private readonly logger = new Logger(DatabaseOptimizationService.name);
-
+export class DatabaseOptimizationService extends BaseService {
   // Export all functions as methods
   listAllIndexes = listAllIndexes;
   analyzeIndexUsage = analyzeIndexUsage;

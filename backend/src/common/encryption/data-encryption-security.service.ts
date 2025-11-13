@@ -8,6 +8,7 @@ import { Sequelize, QueryTypes } from 'sequelize';
 import { Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
 
+import { BaseService } from '../../common/base';
 export interface EncryptionKey { id: string; algorithm: string; createdAt: Date; rotatedAt?: Date; status: 'active' | 'rotated' | 'revoked'; }
 export interface EncryptedColumn { tableName: string; columnName: string; algorithm: string; keyId: string; }
 export interface AuditLog { timestamp: Date; userId: string; action: string; resource: string; success: boolean; }
@@ -63,8 +64,7 @@ export async function configureAuditPolicy(sequelize: Sequelize, policy: any): P
 export async function exportAuditLogs(sequelize: Sequelize, format: string): Promise<string> { return ''; }
 
 @Injectable()
-export class DataEncryptionSecurityService {
-  private readonly logger = new Logger(DataEncryptionSecurityService.name);
+export class DataEncryptionSecurityService extends BaseService {
   encryptColumn = encryptColumn;
   enableTDE = enableTDE;
   generateEncryptionKey = generateEncryptionKey;

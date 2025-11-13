@@ -4,14 +4,14 @@
  * @description Service for validating email addresses
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import * as validator from 'email-validator';
 import { EmailValidationResult } from '../types/email.types';
 
 @Injectable()
-export class EmailValidatorService {
-  private readonly logger = new Logger(EmailValidatorService.name);
-
+export class EmailValidatorService extends BaseService {
   /**
    * Validate email address
    */

@@ -7,10 +7,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheMetrics, CacheOperation } from '../types/metrics.types';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class CacheMetricsService {
-  private readonly logger = new Logger(CacheMetricsService.name);
-
+export class CacheMetricsService extends BaseService {
   private cacheMetrics: CacheMetrics = {
     hits: 0,
     misses: 0,
@@ -116,7 +115,7 @@ export class CacheMetricsService {
       cacheSize: 0,
       evictions: 0,
     };
-    this.logger.log('Cache metrics reset');
+    this.logInfo('Cache metrics reset');
   }
 
   /**

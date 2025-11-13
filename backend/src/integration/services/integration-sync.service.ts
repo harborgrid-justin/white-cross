@@ -4,6 +4,7 @@ import { IntegrationConfig, IntegrationStatus } from '../../database/models/inte
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 
+import { BaseService } from '../../common/base';
 export interface IntegrationSyncResult {
   success: boolean;
   recordsProcessed: number;
@@ -18,9 +19,7 @@ export interface IntegrationSyncResult {
  * Manages data synchronization between White Cross and external systems
  */
 @Injectable()
-export class IntegrationSyncService {
-  private readonly logger = new Logger(IntegrationSyncService.name);
-
+export class IntegrationSyncService extends BaseService {
   constructor(
     @InjectModel(IntegrationConfig)
     private readonly configModel: typeof IntegrationConfig,
@@ -82,7 +81,7 @@ export class IntegrationSyncService {
         })),
       });
 
-      this.logger.log(
+      this.logInfo(
         `Sync ${syncResult.success ? 'completed' : 'failed'} for ${integration.name}`,
       );
 
@@ -102,7 +101,7 @@ export class IntegrationSyncService {
         { where: { id } },
       );
 
-      this.logger.error('Error syncing integration', error);
+      this.logError('Error syncing integration', error);
 
       return {
         success: false,

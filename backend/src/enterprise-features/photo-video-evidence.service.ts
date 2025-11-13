@@ -6,9 +6,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EvidenceFile, EvidenceSecurityLevel } from './enterprise-features-interfaces';
 import { ENTERPRISE_CONSTANTS, EVIDENCE_CONSTANTS } from './enterprise-features-constants';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class PhotoVideoEvidenceService {
-  private readonly logger = new Logger(PhotoVideoEvidenceService.name);
+export class PhotoVideoEvidenceService extends BaseService {
   private evidenceFiles: EvidenceFile[] = []; // In production, this would be a database
 
   constructor(private eventEmitter: EventEmitter2) {}
@@ -50,7 +50,7 @@ export class PhotoVideoEvidenceService {
 
       this.evidenceFiles.push(evidence);
 
-      this.logger.log('Evidence file uploaded', {
+      this.logInfo('Evidence file uploaded', {
         evidenceId: evidence.id,
         incidentId,
         type,
@@ -66,7 +66,7 @@ export class PhotoVideoEvidenceService {
 
       return Promise.resolve(evidence);
     } catch (error) {
-      this.logger.error('Error uploading evidence', {
+      this.logError('Error uploading evidence', {
         error: error instanceof Error ? error.message : String(error),
         incidentId,
         type,
@@ -84,7 +84,7 @@ export class PhotoVideoEvidenceService {
       const evidence = this.evidenceFiles.find((e) => e.id === evidenceId);
 
       if (evidence) {
-        this.logger.log('Evidence file accessed', {
+        this.logInfo('Evidence file accessed', {
           evidenceId,
           accessedBy,
           incidentId: evidence.incidentId,
@@ -98,12 +98,12 @@ export class PhotoVideoEvidenceService {
           timestamp: new Date(),
         });
       } else {
-        this.logger.warn('Evidence file not found', { evidenceId, accessedBy });
+        this.logWarning('Evidence file not found', { evidenceId, accessedBy });
       }
 
       return Promise.resolve(evidence || null);
     } catch (error) {
-      this.logger.error('Error accessing evidence', {
+      this.logError('Error accessing evidence', {
         error: error instanceof Error ? error.message : String(error),
         evidenceId,
         accessedBy,
@@ -120,7 +120,7 @@ export class PhotoVideoEvidenceService {
       const evidenceIndex = this.evidenceFiles.findIndex((e) => e.id === evidenceId);
 
       if (evidenceIndex === -1) {
-        this.logger.warn('Evidence file not found for deletion', { evidenceId });
+        this.logWarning('Evidence file not found for deletion', { evidenceId });
         return Promise.resolve(false);
       }
 
@@ -129,7 +129,7 @@ export class PhotoVideoEvidenceService {
       // Remove from storage
       this.evidenceFiles.splice(evidenceIndex, 1);
 
-      this.logger.warn('Evidence file deleted', {
+      this.logWarning('Evidence file deleted', {
         evidenceId,
         deletedBy,
         reason,
@@ -147,7 +147,7 @@ export class PhotoVideoEvidenceService {
 
       return Promise.resolve(true);
     } catch (error) {
-      this.logger.error('Error deleting evidence', {
+      this.logError('Error deleting evidence', {
         error: error instanceof Error ? error.message : String(error),
         evidenceId,
         deletedBy,
@@ -163,14 +163,14 @@ export class PhotoVideoEvidenceService {
     try {
       const evidence = this.evidenceFiles.filter((e) => e.incidentId === incidentId);
 
-      this.logger.log('Retrieved evidence for incident', {
+      this.logInfo('Retrieved evidence for incident', {
         incidentId,
         count: evidence.length,
       });
 
       return evidence;
     } catch (error) {
-      this.logger.error('Error getting evidence by incident', {
+      this.logError('Error getting evidence by incident', {
         error: error instanceof Error ? error.message : String(error),
         incidentId,
       });
@@ -208,10 +208,10 @@ export class PhotoVideoEvidenceService {
         stats.totalSize += evidence.metadata.fileSize;
       }
 
-      this.logger.log('Retrieved evidence statistics', stats);
+      this.logInfo('Retrieved evidence statistics', stats);
       return stats;
     } catch (error) {
-      this.logger.error('Error getting evidence statistics', {
+      this.logError('Error getting evidence statistics', {
         error: error instanceof Error ? error.message : String(error),
       });
       throw error;

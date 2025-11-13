@@ -14,9 +14,9 @@ import {
 } from './cache-interfaces';
 import { CACHE_CONSTANTS, CACHE_EVENTS } from './cache-constants';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class CacheAccessPatternTrackerService {
-  private readonly logger = new Logger(CacheAccessPatternTrackerService.name);
+export class CacheAccessPatternTrackerService extends BaseService {
   private readonly accessPatterns = new Map<string, AccessPattern>();
   private readonly frequencyMap = new Map<string, AccessFrequency>();
   private readonly maxTrackedPatterns = CACHE_CONSTANTS.METRICS.MAX_TRACKED_PATTERNS;
@@ -39,7 +39,7 @@ export class CacheAccessPatternTrackerService {
         timestamp: new Date(),
       } as CacheAccessEvent);
     } catch (error) {
-      this.logger.error(`Failed to record access for key ${key}:`, error);
+      this.logError(`Failed to record access for key ${key}:`, error);
     }
   }
 
@@ -121,7 +121,7 @@ export class CacheAccessPatternTrackerService {
     }
 
     if (removedCount > 0) {
-      this.logger.log(`Cleaned up ${removedCount} old access patterns`);
+      this.logInfo(`Cleaned up ${removedCount} old access patterns`);
     }
 
     return removedCount;
@@ -130,7 +130,7 @@ export class CacheAccessPatternTrackerService {
   reset(): void {
     this.accessPatterns.clear();
     this.frequencyMap.clear();
-    this.logger.log('Access pattern tracking reset');
+    this.logInfo('Access pattern tracking reset');
   }
 
   private setupEventListeners(): void {

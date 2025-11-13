@@ -16,6 +16,7 @@ import {
 } from '../../database/models/appointment.model';
 import { User } from '../../database/models/user.model';
 
+import { BaseService } from '../../common/base';
 /**
  * Appointment Statistics Service
  *
@@ -27,9 +28,7 @@ import { User } from '../../database/models/user.model';
  * - Calendar export functionality
  */
 @Injectable()
-export class AppointmentStatisticsService {
-  private readonly logger = new Logger(AppointmentStatisticsService.name);
-
+export class AppointmentStatisticsService extends BaseService {
   constructor(
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
@@ -44,7 +43,7 @@ export class AppointmentStatisticsService {
    * @returns Statistics including totals, by status, by type, rates
    */
   async getStatistics(filters: StatisticsFiltersDto = {}): Promise<any> {
-    this.logger.log('Getting appointment statistics');
+    this.logInfo('Getting appointment statistics');
 
     try {
       const whereClause: any = {};
@@ -107,7 +106,7 @@ export class AppointmentStatisticsService {
         completionRate: total > 0 ? (completedCount / total) * 100 : 0,
       };
     } catch (error) {
-      this.logger.error(`Error getting statistics: ${error.message}`, error.stack);
+      this.logError(`Error getting statistics: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get statistics');
     }
   }
@@ -125,7 +124,7 @@ export class AppointmentStatisticsService {
     dateTo: string,
     groupBy: 'day' | 'week' | 'month' = 'day',
   ): Promise<{ trends: Array<{ date: string; count: number }> }> {
-    this.logger.log('Getting appointment trends');
+    this.logInfo('Getting appointment trends');
 
     try {
       const fromDate = new Date(dateFrom);
@@ -154,7 +153,7 @@ export class AppointmentStatisticsService {
 
       return { trends };
     } catch (error) {
-      this.logger.error(`Error getting appointment trends: ${error.message}`, error.stack);
+      this.logError(`Error getting appointment trends: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get appointment trends');
     }
   }
@@ -177,7 +176,7 @@ export class AppointmentStatisticsService {
     noShows: number;
     byStudent: any[];
   }> {
-    this.logger.log('Getting no-show statistics');
+    this.logInfo('Getting no-show statistics');
 
     try {
       const whereClause: any = {};
@@ -210,7 +209,7 @@ export class AppointmentStatisticsService {
         byStudent: [], // Could be enhanced with actual student aggregation
       };
     } catch (error) {
-      this.logger.error(`Error getting no-show stats: ${error.message}`, error.stack);
+      this.logError(`Error getting no-show stats: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get no-show statistics');
     }
   }
@@ -256,7 +255,7 @@ export class AppointmentStatisticsService {
     availableSlots: number;
     byDay: any[];
   }> {
-    this.logger.log('Getting utilization statistics');
+    this.logInfo('Getting utilization statistics');
 
     try {
       const fromDate = new Date(dateFrom);
@@ -306,7 +305,7 @@ export class AppointmentStatisticsService {
         byDay: [], // Could be enhanced with daily breakdown
       };
     } catch (error) {
-      this.logger.error(`Error getting utilization stats: ${error.message}`, error.stack);
+      this.logError(`Error getting utilization stats: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to get utilization statistics');
     }
   }
@@ -320,7 +319,7 @@ export class AppointmentStatisticsService {
    * @returns iCal format string
    */
   async exportCalendar(nurseId: string, dateFrom?: string, dateTo?: string): Promise<string> {
-    this.logger.log('Exporting calendar');
+    this.logInfo('Exporting calendar');
 
     try {
       const whereClause: any = { nurseId };
@@ -366,7 +365,7 @@ export class AppointmentStatisticsService {
 
       return icalContent;
     } catch (error) {
-      this.logger.error(`Error exporting calendar: ${error.message}`, error.stack);
+      this.logError(`Error exporting calendar: ${error.message}`, error.stack);
       throw new BadRequestException('Failed to export calendar');
     }
   }

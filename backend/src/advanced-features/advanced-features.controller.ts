@@ -13,10 +13,11 @@ import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.
 import { AdvancedFeaturesScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationAdministrationDto } from './dto/verify-medication-administration.dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Advanced Features')
 @Controller('advanced-features')
 @ApiBearerAuth()
-export class AdvancedFeaturesController {
+export class AdvancedFeaturesController extends BaseController {
   constructor(
     private readonly advancedFeaturesService: AdvancedFeaturesService,
   ) {}

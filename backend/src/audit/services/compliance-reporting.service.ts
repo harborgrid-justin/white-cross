@@ -4,6 +4,7 @@ import { literal, Op } from 'sequelize';
 import { AuditLog } from '@/database';
 import { ComplianceReport, PHIAccessSummary } from '../types/audit.types';
 
+import { BaseService } from '../../common/base';
 /**
  * ComplianceReportingService - HIPAA compliance reporting
  *
@@ -12,9 +13,7 @@ import { ComplianceReport, PHIAccessSummary } from '../types/audit.types';
  * and system usage for compliance officers and auditors.
  */
 @Injectable()
-export class ComplianceReportingService {
-  private readonly logger = new Logger(ComplianceReportingService.name);
-
+export class ComplianceReportingService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
@@ -81,7 +80,7 @@ export class ComplianceReportingService {
         })),
       };
     } catch (error) {
-      this.logger.error('Error generating compliance report:', error);
+      this.logError('Error generating compliance report:', error);
       throw new Error('Failed to generate compliance report');
     }
   }
@@ -118,7 +117,7 @@ export class ComplianceReportingService {
         successRate: totalAccess > 0 ? (successfulAccess / totalAccess) * 100 : 0,
       };
     } catch (error) {
-      this.logger.error('Error generating PHI access summary:', error);
+      this.logError('Error generating PHI access summary:', error);
       throw new Error('Failed to generate PHI access summary');
     }
   }

@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdministrationHistoryFiltersDto } from '../dto/administration/administration-filters.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Medication Administration Reporting Controller
  *
@@ -10,7 +11,7 @@ import { AdministrationHistoryFiltersDto } from '../dto/administration/administr
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
 @Controller('medications/administrations')
-export class MedicationAdministrationReportingController {
+export class MedicationAdministrationReportingController extends BaseController {
   /**
    * Get student administration history
    */

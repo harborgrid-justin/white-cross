@@ -4,21 +4,29 @@
  * @description Service for managing session keys, caching, and rotation
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import * as crypto from 'crypto';
 import { CacheService } from '../../cache/cache.service';
 import { SessionKey, EncryptionOptions } from '../types/encryption.types';
 import { KeyManagementService } from '../key-management.service';
 
 @Injectable()
-export class SessionKeyManagerService {
-  private readonly logger = new Logger(SessionKeyManagerService.name);
+export class SessionKeyManagerService extends BaseService {
   private readonly DEFAULT_SESSION_KEY_TTL = 24 * 60 * 60; // 24 hours
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly cacheService: CacheService,
     private readonly keyManagementService: KeyManagementService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'SessionKeyManagerService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Get or create session key for a conversation
@@ -29,7 +37,7 @@ export class SessionKeyManagerService {
       if (!options.skipCache) {
         const cached = await this.getCachedSessionKey(conversationId);
         if (cached) {
-          this.logger.debug('Session key retrieved from cache', {
+          this.logDebug('Session key retrieved from cache', {
             conversationId,
             keyId: cached.id,
           });
@@ -43,7 +51,7 @@ export class SessionKeyManagerService {
       // Cache the session key
       await this.cacheSessionKey(sessionKey, options);
 
-      this.logger.log('New session key generated', {
+      this.logInfo('New session key generated', {
         conversationId,
         keyId: sessionKey.id,
         ttl: options.keyTTL || this.DEFAULT_SESSION_KEY_TTL,
@@ -51,7 +59,7 @@ export class SessionKeyManagerService {
 
       return sessionKey;
     } catch (error) {
-      this.logger.error('Failed to get/create session key', {
+      this.logError('Failed to get/create session key', {
         error: error instanceof Error ? error.message : 'Unknown error',
         conversationId,
       });
@@ -63,7 +71,7 @@ export class SessionKeyManagerService {
    * Rotate session key for a conversation
    */
   async rotateSessionKey(conversationId: string): Promise<SessionKey> {
-    this.logger.log('Rotating session key', { conversationId });
+    this.logInfo('Rotating session key', { conversationId });
 
     try {
       // Get current key
@@ -80,7 +88,7 @@ export class SessionKeyManagerService {
       // Cache new key
       await this.cacheSessionKey(newKey, {});
 
-      this.logger.log('Session key rotated successfully', {
+      this.logInfo('Session key rotated successfully', {
         conversationId,
         oldKeyId: currentKey?.id,
         newKeyId: newKey.id,
@@ -88,7 +96,7 @@ export class SessionKeyManagerService {
 
       return newKey;
     } catch (error) {
-      this.logger.error('Session key rotation failed', {
+      this.logError('Session key rotation failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
         conversationId,
       });
@@ -111,7 +119,7 @@ export class SessionKeyManagerService {
 
       // If keyId is 'ephemeral', we can't decrypt
       if (metadata.keyId === 'ephemeral') {
-        this.logger.warn('Cannot decrypt message with ephemeral key');
+        this.logWarning('Cannot decrypt message with ephemeral key');
         return null;
       }
 
@@ -125,7 +133,7 @@ export class SessionKeyManagerService {
 
       return null;
     } catch (error) {
-      this.logger.error('Failed to get decryption key', {
+      this.logError('Failed to get decryption key', {
         error: error instanceof Error ? error.message : 'Unknown error',
         keyId: metadata.keyId,
       });

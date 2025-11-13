@@ -6,7 +6,9 @@
  * including CPU, memory, database, cache, WebSocket, and job queue statistics.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '../../shared/base/BaseService';
+import { LoggerService } from '../../shared/logging/logger.service';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import * as os from 'os';
@@ -46,9 +48,7 @@ interface MessageQueueServiceInterface {
  * ```
  */
 @Injectable()
-export class MetricsCollectionService {
-  private readonly logger = new Logger(MetricsCollectionService.name);
-
+export class MetricsCollectionService extends BaseService {
   // Optional service dependencies
   private cacheService?: CacheServiceInterface;
   private websocketService?: WebSocketServiceInterface;
@@ -263,7 +263,7 @@ export class MetricsCollectionService {
           memoryUsage: (stats.memoryUsage as number) || 0,
         };
       } catch (error) {
-        this.logger.warn('Failed to get cache stats', error);
+        this.logWarning('Failed to get cache stats', error);
       }
     }
 
@@ -289,7 +289,7 @@ export class MetricsCollectionService {
           queueMetrics.failedJobs += (stats.failed as number) || 0;
         });
       } catch (error) {
-        this.logger.warn('Failed to collect queue metrics', error);
+        this.logWarning('Failed to collect queue metrics', error);
       }
     }
 
@@ -393,7 +393,7 @@ export class MetricsCollectionService {
     // Check if query is slow
     if (queryTime > this.queryMetrics.slowQueryThreshold) {
       this.queryMetrics.slowQueries++;
-      this.logger.warn(
+      this.logWarning(
         `Slow query detected: ${queryTime}ms (threshold: ${this.queryMetrics.slowQueryThreshold}ms)`,
       );
     }
@@ -439,7 +439,7 @@ export class MetricsCollectionService {
 
     // Log slow jobs (>30 seconds)
     if (processingTime > 30000) {
-      this.logger.warn(
+      this.logWarning(
         `Slow job detected: ${jobType || 'unknown'} took ${processingTime}ms`,
       );
     }

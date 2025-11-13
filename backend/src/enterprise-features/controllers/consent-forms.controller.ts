@@ -3,10 +3,11 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { ConsentFormManagementService } from '../consent-form-management.service';
 import { ConsentFormResponseDto, CreateConsentFormDto, RenewConsentFormDto, RevokeConsentDto, SignFormDto, VerifySignatureDto } from '../dto';
 
+import { BaseController } from '../../common/base';
 @ApiTags('Consent Forms')
 @Controller('enterprise-features/consent-forms')
 @ApiBearerAuth()
-export class ConsentFormsController {
+export class ConsentFormsController extends BaseController {
   constructor(
     private readonly consentFormService: ConsentFormManagementService,
   ) {}

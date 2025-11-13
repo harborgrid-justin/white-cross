@@ -19,16 +19,29 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import Redis from 'ioredis';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 @Injectable()
 export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(TokenBlacklistService.name);
   private redisClient: Redis | null = null;
   private readonly BLACKLIST_PREFIX = 'token:blacklist:';
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'TokenBlacklistService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async onModuleInit() {
     await this.initializeRedis();
@@ -53,7 +66,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
         db: 0, // Use database 0 (same as cache service)
         retryStrategy: (times) => {
           if (times > 3) {
-            this.logger.error('Failed to connect to Redis after 3 attempts');
+            this.logError('Failed to connect to Redis after 3 attempts');
             return null;
           }
           return Math.min(times * 200, 1000);
@@ -63,22 +76,22 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
       });
 
       this.redisClient.on('connect', () => {
-        this.logger.log('Token Blacklist Redis connected');
+        this.logInfo('Token Blacklist Redis connected');
       });
 
       this.redisClient.on('error', (error) => {
-        this.logger.error('Token Blacklist Redis error:', error);
+        this.logError('Token Blacklist Redis error:', error);
       });
 
       await this.redisClient.ping();
-      this.logger.log('Token Blacklist Service initialized with Redis');
+      this.logInfo('Token Blacklist Service initialized with Redis');
     } catch (error) {
-      this.logger.error(
+      this.logError(
         'Failed to initialize Redis for token blacklist:',
         error,
       );
       // Fallback to in-memory storage (NOT recommended for production)
-      this.logger.warn(
+      this.logWarning(
         'SECURITY WARNING: Token blacklist will use in-memory storage. ' +
           'This is NOT suitable for production with multiple instances.',
       );
@@ -98,7 +111,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
       const decoded = this.jwtService.decode(token);
 
       if (!decoded || !decoded.exp) {
-        this.logger.warn('Cannot blacklist token without expiration');
+        this.logWarning('Cannot blacklist token without expiration');
         return;
       }
 
@@ -108,7 +121,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
 
       if (ttl <= 0) {
         // Token already expired, no need to blacklist
-        this.logger.debug('Token already expired, skipping blacklist');
+        this.logDebug('Token already expired, skipping blacklist');
         return;
       }
 
@@ -126,14 +139,14 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
           }),
         );
 
-        this.logger.log(
+        this.logInfo(
           `Token blacklisted for user ${userId || decoded.sub}, expires in ${ttl}s`,
         );
       } else {
-        this.logger.warn('Redis not available, token not blacklisted');
+        this.logWarning('Redis not available, token not blacklisted');
       }
     } catch (error) {
-      this.logger.error('Failed to blacklist token:', error);
+      this.logError('Failed to blacklist token:', error);
       throw error;
     }
   }
@@ -149,7 +162,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
       if (!this.redisClient) {
         // If Redis is not available, we cannot verify blacklist
         // In production, this should fail secure
-        this.logger.warn('Redis not available, cannot verify token blacklist');
+        this.logWarning('Redis not available, cannot verify token blacklist');
         return false;
       }
 
@@ -158,7 +171,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
 
       return exists === 1;
     } catch (error) {
-      this.logger.error('Failed to check token blacklist:', error);
+      this.logError('Failed to check token blacklist:', error);
       // Fail secure: if we can't check, assume it's not blacklisted
       // In stricter implementations, you might want to reject the token
       return false;
@@ -173,7 +186,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
   async blacklistAllUserTokens(userId: string): Promise<void> {
     try {
       if (!this.redisClient) {
-        this.logger.warn('Redis not available, cannot blacklist user tokens');
+        this.logWarning('Redis not available, cannot blacklist user tokens');
         return;
       }
 
@@ -185,9 +198,9 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
       // Store for 7 days (longer than refresh token lifetime)
       await this.redisClient.setex(key, 7 * 24 * 60 * 60, timestamp.toString());
 
-      this.logger.log(`All tokens blacklisted for user ${userId}`);
+      this.logInfo(`All tokens blacklisted for user ${userId}`);
     } catch (error) {
-      this.logger.error('Failed to blacklist user tokens:', error);
+      this.logError('Failed to blacklist user tokens:', error);
       throw error;
     }
   }
@@ -221,7 +234,7 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
 
       return tokenTime < blacklistTime;
     } catch (error) {
-      this.logger.error('Failed to check user token blacklist:', error);
+      this.logError('Failed to check user token blacklist:', error);
       return false;
     }
   }

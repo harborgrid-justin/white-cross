@@ -5,6 +5,7 @@ import { EncryptionService } from '../../infrastructure/encryption/encryption.se
 import { EditMessageDto } from '../dto/edit-message.dto';
 import { EditMessageResponse } from '../types/message-response.types';
 
+import { BaseService } from '../../common/base';
 /**
  * MessageManagementService
  *
@@ -17,9 +18,7 @@ import { EditMessageResponse } from '../types/message-response.types';
  * - Track edit history
  */
 @Injectable()
-export class MessageManagementService {
-  private readonly logger = new Logger(MessageManagementService.name);
-
+export class MessageManagementService extends BaseService {
   constructor(
     @InjectModel(Message) private messageModel: typeof Message,
     private readonly encryptionService: EncryptionService,
@@ -33,7 +32,7 @@ export class MessageManagementService {
     dto: EditMessageDto,
     userId: string,
   ): Promise<EditMessageResponse> {
-    this.logger.log(`Editing message ${messageId} by user ${userId}`);
+    this.logInfo(`Editing message ${messageId} by user ${userId}`);
 
     const message = await this.messageModel.findByPk(messageId);
 
@@ -82,7 +81,7 @@ export class MessageManagementService {
    * Delete a message (soft delete)
    */
   async deleteMessage(messageId: string, userId: string): Promise<void> {
-    this.logger.log(`Deleting message ${messageId} by user ${userId}`);
+    this.logInfo(`Deleting message ${messageId} by user ${userId}`);
 
     const message = await this.messageModel.findByPk(messageId);
 

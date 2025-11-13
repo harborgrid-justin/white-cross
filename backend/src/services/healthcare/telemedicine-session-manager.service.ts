@@ -6,6 +6,7 @@ import { Appointment   } from "../../database/models";
 import { Message   } from "../../database/models";
 import { HealthRecord   } from "../../database/models";
 
+import { BaseService } from '../../common/base';
 /**
  * Telemedicine Session Manager Service
  *
@@ -25,9 +26,7 @@ import { HealthRecord   } from "../../database/models";
  * @hipaa-requirement Telemedicine data privacy and security
  */
 @Injectable()
-export class TelemedicineSessionManagerService {
-  private readonly logger = new Logger(TelemedicineSessionManagerService.name);
-
+export class TelemedicineSessionManagerService extends BaseService {
   // Session states
   private readonly SESSION_STATES = {
     SCHEDULED: 'scheduled',
@@ -662,7 +661,7 @@ export class TelemedicineSessionManagerService {
   ): Promise<void> {
     // Send confirmation email/SMS to patient
     // Implementation would integrate with notification service
-    this.logger.log(`Confirmation sent for appointment ${appointment.id}`);
+    this.logInfo(`Confirmation sent for appointment ${appointment.id}`);
   }
 
   private async verifySessionAccess(appointment: Appointment, participantId: string): Promise<boolean> {
@@ -704,7 +703,7 @@ export class TelemedicineSessionManagerService {
 
   private async logSessionEvent(sessionId: string, event: string, details: any): Promise<void> {
     // Log session event for audit trail
-    this.logger.log(`Session ${sessionId}: ${event}`, details);
+    this.logInfo(`Session ${sessionId}: ${event}`, details);
   }
 
   private async getSessionParticipants(sessionId: string): Promise<SessionParticipant[]> {

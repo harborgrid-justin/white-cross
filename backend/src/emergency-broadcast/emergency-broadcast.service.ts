@@ -30,10 +30,9 @@ import { BroadcastDeliveryService } from './services/broadcast-delivery.service'
 import { BroadcastManagementService } from './services/broadcast-management.service';
 import { BroadcastTemplateService } from './services/broadcast-template.service';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class EmergencyBroadcastService {
-  private readonly logger = new Logger(EmergencyBroadcastService.name);
-
+export class EmergencyBroadcastService extends BaseService {
   constructor(
     @Inject(EmergencyBroadcastRepository)
     private readonly broadcastRepository: EmergencyBroadcastRepository,

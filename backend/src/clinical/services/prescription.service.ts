@@ -8,14 +8,13 @@ import { UpdatePrescriptionDto } from '../dto/prescription/update-prescription.d
 import { FillPrescriptionDto } from '../dto/prescription/fill-prescription.dto';
 import { PrescriptionFiltersDto } from '../dto/prescription/prescription-filters.dto';
 
+import { BaseService } from '../../common/base';
 /**
  * Prescription Service
  * Manages medication prescriptions including creation, filling, and tracking
  */
 @Injectable()
-export class PrescriptionService {
-  private readonly logger = new Logger(PrescriptionService.name);
-
+export class PrescriptionService extends BaseService {
   constructor(
     @InjectModel(Prescription)
     private prescriptionModel: typeof Prescription,
@@ -25,7 +24,7 @@ export class PrescriptionService {
    * Create a new prescription
    */
   async create(createDto: CreatePrescriptionDto): Promise<Prescription> {
-    this.logger.log(
+    this.logInfo(
       `Creating prescription for student ${createDto.studentId}: ${createDto.drugName}`,
     );
 
@@ -180,7 +179,7 @@ export class PrescriptionService {
         : fillDto.notes;
     }
 
-    this.logger.log(`Filled prescription ${id} at ${fillDto.pharmacyName}`);
+    this.logInfo(`Filled prescription ${id} at ${fillDto.pharmacyName}`);
     await prescription.save();
     return prescription;
   }
@@ -236,7 +235,7 @@ export class PrescriptionService {
       throw new NotFoundException(`Prescription ${id} not found`);
     }
 
-    this.logger.log(`Deleted prescription ${id}`);
+    this.logInfo(`Deleted prescription ${id}`);
   }
 
   /**

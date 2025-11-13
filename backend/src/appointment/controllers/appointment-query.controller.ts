@@ -16,6 +16,7 @@ import {
 import { AppointmentQueryService } from '../services/appointment-query.service';
 import { DateRangeDto } from '../dto/statistics.dto';
 
+import { BaseController } from '../../common/base';
 /**
  * Appointment Query Controller
  *
@@ -28,7 +29,7 @@ import { DateRangeDto } from '../dto/statistics.dto';
 @ApiTags('appointments-query')
 @ApiBearerAuth()
 @Controller('appointments')
-export class AppointmentQueryController {
+export class AppointmentQueryController extends BaseController {
   private readonly logger = new Logger(AppointmentQueryController.name);
 
   constructor(private readonly appointmentQueryService: AppointmentQueryService) {}

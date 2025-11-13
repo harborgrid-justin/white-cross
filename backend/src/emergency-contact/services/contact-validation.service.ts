@@ -13,10 +13,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { EmergencyContact } from '../../database/models/emergency-contact.model';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class ContactValidationService {
-  private readonly logger = new Logger(ContactValidationService.name);
-
+export class ContactValidationService extends BaseService {
   /**
    * Validate phone number format
    * Ensures phone number contains at least 10 digits
@@ -121,7 +120,7 @@ export class ContactValidationService {
       );
     }
 
-    this.logger.debug('Contact creation data validation passed');
+    this.logDebug('Contact creation data validation passed');
   }
 
   /**
@@ -171,6 +170,6 @@ export class ContactValidationService {
       );
     }
 
-    this.logger.debug('Contact update data validation passed');
+    this.logDebug('Contact update data validation passed');
   }
 }

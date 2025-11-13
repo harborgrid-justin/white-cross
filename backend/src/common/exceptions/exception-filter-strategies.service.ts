@@ -34,6 +34,10 @@ import { Request, Response } from 'express';
 import { QueryFailedError, EntityNotFoundError } from 'typeorm';
 import { ValidationError } from 'class-validator';
 
+import { BaseService } from '../../common/base';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../shared/logging/logger.service';
+import { Inject } from '@nestjs/common';
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -114,8 +118,6 @@ export interface ErrorNotificationConfig {
 @Catch()
 @Injectable()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(GlobalExceptionFilter.name);
-
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -159,7 +161,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       errorResponse.stack = stack;
     }
 
-    this.logger.error(
+    this.logError(
       `${request.method} ${request.url} - ${status} - ${message}`,
       stack,
     );
@@ -193,8 +195,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 @Catch(HttpException)
 @Injectable()
 export class HttpExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(HttpExceptionFilter.name);
-
   catch(exception: HttpException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -228,7 +228,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ...(errors && { errors }),
     };
 
-    this.logger.warn(
+    this.logWarning(
       `HTTP ${status} - ${request.method} ${request.url} - ${JSON.stringify(message)}`,
     );
 
@@ -255,8 +255,6 @@ export function AllExceptionsFilter(options?: ErrorLoggingOptions): ExceptionFil
   @Catch()
   @Injectable()
   class AllExceptionsFilterImpl implements ExceptionFilter {
-    private readonly logger = new Logger('ExceptionFilter');
-
     catch(exception: unknown, host: ArgumentsHost): void {
       const ctx = host.switchToHttp();
       const response = ctx.getResponse<Response>();
@@ -339,7 +337,7 @@ export function AllExceptionsFilter(options?: ErrorLoggingOptions): ExceptionFil
         logData.headers = this.sanitizeData(request.headers, options.sensitiveFields);
       }
 
-      this.logger.error(JSON.stringify(logData));
+      this.logError(JSON.stringify(logData));
     }
 
     private sanitizeData(data: any, sensitiveFields?: string[]): any {
@@ -359,7 +357,7 @@ export function AllExceptionsFilter(options?: ErrorLoggingOptions): ExceptionFil
 
     private alertCriticalError(error: ErrorResponse): void {
       // Placeholder for alerting logic (email, Slack, PagerDuty, etc.)
-      this.logger.error(`CRITICAL ERROR ALERT: ${JSON.stringify(error)}`);
+      this.logError(`CRITICAL ERROR ALERT: ${JSON.stringify(error)}`);
     }
   }
 
@@ -411,7 +409,7 @@ export class ValidationExceptionFilter implements ExceptionFilter {
       errors: validationErrors,
     };
 
-    this.logger.warn(`Validation failed: ${JSON.stringify(validationErrors)}`);
+    this.logWarning(`Validation failed: ${JSON.stringify(validationErrors)}`);
 
     response.status(status).json(errorResponse);
   }
@@ -543,7 +541,7 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
       method: request.method,
     };
 
-    this.logger.error(
+    this.logError(
       `Database error: ${message}`,
       process.env.NODE_ENV === 'development' ? exception.stack : undefined,
     );
@@ -623,7 +621,7 @@ export class SQLInjectionFilter implements ExceptionFilter {
     const isSuspicious = this.detectSQLInjection(request);
 
     if (isSuspicious) {
-      this.logger.error(`Potential SQL injection attempt detected from ${request.ip}`);
+      this.logError(`Potential SQL injection attempt detected from ${request.ip}`);
 
       const errorResponse: ErrorResponse = {
         success: false,
@@ -705,7 +703,7 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
       },
     };
 
-    this.logger.warn(`Unauthorized access attempt: ${request.method} ${request.url}`);
+    this.logWarning(`Unauthorized access attempt: ${request.method} ${request.url}`);
 
     response.status(HttpStatus.UNAUTHORIZED).json(errorResponse);
   }
@@ -746,7 +744,7 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
       },
     };
 
-    this.logger.warn(
+    this.logWarning(
       `Forbidden access: User ${user?.id} attempted to access ${request.url}`,
     );
 
@@ -849,7 +847,7 @@ export class ExternalServiceErrorFilter implements ExceptionFilter {
         },
       };
 
-      this.logger.error(
+      this.logError(
         `External service error: ${exception.message}`,
         exception.stack,
       );
@@ -907,7 +905,7 @@ export class TimeoutExceptionFilter implements ExceptionFilter {
         method: request.method,
       };
 
-      this.logger.warn(`Request timeout: ${request.method} ${request.url}`);
+      this.logWarning(`Request timeout: ${request.method} ${request.url}`);
 
       response.status(HttpStatus.REQUEST_TIMEOUT).json(errorResponse);
     }
@@ -932,10 +930,17 @@ export class TimeoutExceptionFilter implements ExceptionFilter {
  */
 export class BusinessLogicException extends HttpException {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     message: string,
     public readonly errorCode: string,
     public readonly details?: any,
   ) {
+    super({
+      serviceName: 'ExternalService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     super(message, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 }
@@ -1026,7 +1031,7 @@ export class HIPAAComplianceFilter implements ExceptionFilter {
       // No PHI or sensitive data
     };
 
-    this.logger.error(`HIPAA Audit - Error: ${JSON.stringify(auditLog)}`);
+    this.logError(`HIPAA Audit - Error: ${JSON.stringify(auditLog)}`);
   }
 
   private sanitizeErrorMessage(message: string): string {
@@ -1071,7 +1076,7 @@ export class PHIAccessViolationFilter implements ExceptionFilter {
     const user = (request as any).user;
 
     // Log violation for compliance
-    this.logger.error(`PHI Access Violation - User: ${user?.id}, Path: ${request.url}`);
+    this.logError(`PHI Access Violation - User: ${user?.id}, Path: ${request.url}`);
 
     const errorResponse: ErrorResponse = {
       success: false,
@@ -1326,22 +1331,22 @@ export function ErrorNotificationFilter(config: ErrorNotificationConfig): Except
     }
 
     private sendEmailNotification(notification: any): void {
-      this.logger.log(`[EMAIL] Error notification: ${JSON.stringify(notification)}`);
+      this.logInfo(`[EMAIL] Error notification: ${JSON.stringify(notification)}`);
       // Implement email sending logic
     }
 
     private sendSlackNotification(notification: any): void {
-      this.logger.log(`[SLACK] Error notification: ${JSON.stringify(notification)}`);
+      this.logInfo(`[SLACK] Error notification: ${JSON.stringify(notification)}`);
       // Implement Slack webhook logic
     }
 
     private sendPagerDutyNotification(notification: any): void {
-      this.logger.log(`[PAGERDUTY] Error notification: ${JSON.stringify(notification)}`);
+      this.logInfo(`[PAGERDUTY] Error notification: ${JSON.stringify(notification)}`);
       // Implement PagerDuty API logic
     }
 
     private sendWebhookNotification(notification: any): void {
-      this.logger.log(`[WEBHOOK] Error notification: ${JSON.stringify(notification)}`);
+      this.logInfo(`[WEBHOOK] Error notification: ${JSON.stringify(notification)}`);
       // Implement custom webhook logic
     }
   }
@@ -1403,7 +1408,7 @@ export class CriticalErrorFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
     };
 
-    this.logger.error(`CRITICAL ERROR: ${JSON.stringify(alert)}`);
+    this.logError(`CRITICAL ERROR: ${JSON.stringify(alert)}`);
 
     // Trigger immediate alerts (email, SMS, PagerDuty, etc.)
     this.triggerImmediateAlert(alert);
@@ -1469,7 +1474,7 @@ export class ErrorMetricsFilter implements ExceptionFilter {
     const count = this.errorCounts.get(key) || 0;
     this.errorCounts.set(key, count + 1);
 
-    this.logger.log(`Error metric: ${key} = ${count + 1}`);
+    this.logInfo(`Error metric: ${key} = ${count + 1}`);
 
     // Send metrics to monitoring service (Prometheus, CloudWatch, etc.)
     this.sendMetric({

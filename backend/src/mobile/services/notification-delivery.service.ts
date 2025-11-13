@@ -11,6 +11,7 @@ import {
 import { NotificationPlatformService } from './notification-platform.service';
 import { DeviceTokenService } from './device-token.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Notification Delivery Service
  *
@@ -38,9 +39,7 @@ import { DeviceTokenService } from './device-token.service';
  * ```
  */
 @Injectable()
-export class NotificationDeliveryService {
-  private readonly logger = new Logger(NotificationDeliveryService.name);
-
+export class NotificationDeliveryService extends BaseService {
   constructor(
     @InjectModel(PushNotification)
     private readonly notificationModel: typeof PushNotification,
@@ -106,13 +105,13 @@ export class NotificationDeliveryService {
         await this.deliverNotification(notification.id);
       }
 
-      this.logger.log(
+      this.logInfo(
         `Notification created: ${notification.id} for ${deviceTokens.length} recipients`,
       );
 
       return notification;
     } catch (error) {
-      this.logger.error('Error sending notification', error);
+      this.logError('Error sending notification', error);
       throw error;
     }
   }
@@ -229,11 +228,11 @@ export class NotificationDeliveryService {
 
       await notification.save();
 
-      this.logger.log(
+      this.logInfo(
         `Notification delivered: ${notificationId} - ${notification.successfulDeliveries} success, ${notification.failedDeliveries} failed`,
       );
     } catch (error) {
-      this.logger.error('Error delivering notification', error);
+      this.logError('Error delivering notification', error);
       throw error;
     }
   }

@@ -2,8 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { IntegrationType } from '../entities/integration-config.entity';
 import { CreateIntegrationDto } from '../dto/create-integration.dto';
 
+import { BaseService } from '../../common/base';
 @Injectable()
-export class IntegrationValidationService {
+export class IntegrationValidationService extends BaseService {
   /**
    * Validate core integration data fields
    */

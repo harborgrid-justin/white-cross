@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as crypto from 'crypto';
 
+import { BaseService } from '../../common/base';
 /**
  * PII (Personally Identifiable Information) field types
  */
@@ -110,8 +111,7 @@ export interface CSRFToken {
  * Enterprise-grade data security service
  */
 @Injectable()
-export class DataSecurityService {
-  private readonly logger = new Logger(DataSecurityService.name);
+export class DataSecurityService extends BaseService {
   private readonly csrfTokens: Map<string, CSRFToken> = new Map();
   private readonly rateLimitStore: Map<string, number[]> = new Map();
 
@@ -686,7 +686,7 @@ export class DataSecurityService {
     // Maximum input length to prevent DoS
     const MAX_INPUT_LENGTH = 100000;
     if (input.length > MAX_INPUT_LENGTH) {
-      this.logger.warn(`Input exceeds maximum length: ${input.length}`);
+      this.logWarning(`Input exceeds maximum length: ${input.length}`);
       throw new Error('Input exceeds maximum allowed length');
     }
 
@@ -719,7 +719,7 @@ export class DataSecurityService {
     // Maximum input length to prevent DoS
     const MAX_HTML_LENGTH = 500000;
     if (html.length > MAX_HTML_LENGTH) {
-      this.logger.warn(`HTML input exceeds maximum length: ${html.length}`);
+      this.logWarning(`HTML input exceeds maximum length: ${html.length}`);
       throw new Error('HTML input exceeds maximum allowed length');
     }
 
@@ -803,7 +803,7 @@ export class DataSecurityService {
     // Only allow alphanumeric, underscore, and dollar sign
     // Must start with letter, underscore, or dollar sign
     if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(identifier)) {
-      this.logger.warn(`Invalid SQL identifier attempted: ${identifier}`);
+      this.logWarning(`Invalid SQL identifier attempted: ${identifier}`);
       throw new Error('Invalid SQL identifier: must start with letter/underscore and contain only alphanumeric/underscore/$ characters');
     }
 
@@ -880,7 +880,7 @@ export class DataSecurityService {
     const parts = orderBy.toLowerCase().trim().split(/\s+/);
 
     if (parts.length > 2) {
-      this.logger.warn(`Invalid ORDER BY clause attempted: ${orderBy}`);
+      this.logWarning(`Invalid ORDER BY clause attempted: ${orderBy}`);
       throw new Error('Invalid ORDER BY clause: too many parts');
     }
 
@@ -889,7 +889,7 @@ export class DataSecurityService {
 
     // Validate column is in whitelist
     if (!allowedColumns.map(c => c.toLowerCase()).includes(column)) {
-      this.logger.warn(`Unauthorized column in ORDER BY: ${column}`);
+      this.logWarning(`Unauthorized column in ORDER BY: ${column}`);
       throw new Error(`Column "${column}" not allowed in ORDER BY. Allowed: ${allowedColumns.join(', ')}`);
     }
 
@@ -976,7 +976,7 @@ export class DataSecurityService {
 
       return crypto.timingSafeEqual(storedBuffer, providedBuffer);
     } catch (error) {
-      this.logger.warn('CSRF token validation error', error);
+      this.logWarning('CSRF token validation error', error);
       return false;
     }
   }
@@ -1064,7 +1064,7 @@ export class DataSecurityService {
     };
 
     // In production, store in dedicated audit log database
-    this.logger.log({
+    this.logInfo({
       message: 'Sensitive data access',
       ...fullEntry,
       // Redact sensitive metadata
@@ -1090,7 +1090,7 @@ export class DataSecurityService {
       metadata: { reason },
     });
 
-    this.logger.warn(`Failed access attempt: ${userId} -> ${resource}: ${reason}`);
+    this.logWarning(`Failed access attempt: ${userId} -> ${resource}: ${reason}`);
   }
 
   // ==================== Access Control ====================
@@ -1232,7 +1232,7 @@ export class DataSecurityService {
     const dataSize = JSON.stringify(data).length;
 
     if (dataSize > maxSize) {
-      this.logger.warn(`Potential data exfiltration: ${dataSize} bytes`);
+      this.logWarning(`Potential data exfiltration: ${dataSize} bytes`);
       return true;
     }
 
@@ -1245,7 +1245,7 @@ export class DataSecurityService {
     const piiThreshold = data.length * 2; // More than 2 PII fields per record
 
     if (piiCount > piiThreshold) {
-      this.logger.warn(`Potential PII exfiltration: ${piiCount} sensitive fields in ${data.length} records`);
+      this.logWarning(`Potential PII exfiltration: ${piiCount} sensitive fields in ${data.length} records`);
       return true;
     }
 

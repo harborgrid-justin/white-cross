@@ -5,6 +5,7 @@ import { PushNotification } from '../entities';
 import { NotificationStatus } from '../enums';
 import { NotificationDeliveryService } from './notification-delivery.service';
 
+import { BaseService } from '../../common/base';
 /**
  * Notification Scheduler Service
  *
@@ -25,9 +26,7 @@ import { NotificationDeliveryService } from './notification-delivery.service';
  * - Daily at 2 AM to clean up old notifications
  */
 @Injectable()
-export class NotificationSchedulerService {
-  private readonly logger = new Logger(NotificationSchedulerService.name);
-
+export class NotificationSchedulerService extends BaseService {
   constructor(
     @InjectModel(PushNotification)
     private readonly notificationModel: typeof PushNotification,
@@ -63,7 +62,7 @@ export class NotificationSchedulerService {
         limit: 100, // Process in batches
       });
 
-      this.logger.log(
+      this.logInfo(
         `Processing ${scheduledNotifications.length} scheduled notifications`,
       );
 
@@ -73,7 +72,7 @@ export class NotificationSchedulerService {
           if (notification.expiresAt && notification.expiresAt < now) {
             notification.status = NotificationStatus.EXPIRED;
             await notification.save();
-            this.logger.warn(`Notification ${notification.id} expired`);
+            this.logWarning(`Notification ${notification.id} expired`);
             continue;
           }
 
@@ -82,7 +81,7 @@ export class NotificationSchedulerService {
             await this.deliveryService.deliverNotification(notification.id);
           }
         } catch (error) {
-          this.logger.error(
+          this.logError(
             `Failed to deliver scheduled notification ${notification.id}`,
             error,
           );
@@ -91,7 +90,7 @@ export class NotificationSchedulerService {
 
       return scheduledNotifications.length;
     } catch (error) {
-      this.logger.error('Error processing scheduled notifications', error);
+      this.logError('Error processing scheduled notifications', error);
       return 0;
     }
   }
@@ -129,7 +128,7 @@ export class NotificationSchedulerService {
           (!n.nextRetryAt || n.nextRetryAt <= now),
       );
 
-      this.logger.log(
+      this.logInfo(
         `Retrying ${eligibleNotifications.length} failed notifications`,
       );
 
@@ -144,7 +143,7 @@ export class NotificationSchedulerService {
             await this.deliveryService.deliverNotification(notification.id);
           }
         } catch (error) {
-          this.logger.error(
+          this.logError(
             `Failed to retry notification ${notification.id}`,
             error,
           );
@@ -153,7 +152,7 @@ export class NotificationSchedulerService {
 
       return eligibleNotifications.length;
     } catch (error) {
-      this.logger.error('Error retrying failed notifications', error);
+      this.logError('Error retrying failed notifications', error);
       return 0;
     }
   }
@@ -188,13 +187,13 @@ export class NotificationSchedulerService {
         },
       });
 
-      this.logger.log(
+      this.logInfo(
         `Cleaned up ${deletedCount} old notifications (older than ${retentionDays} days)`,
       );
 
       return deletedCount;
     } catch (error) {
-      this.logger.error('Error cleaning up old notifications', error);
+      this.logError('Error cleaning up old notifications', error);
       return 0;
     }
   }
@@ -227,12 +226,12 @@ export class NotificationSchedulerService {
       );
 
       if (updatedCount > 0) {
-        this.logger.log(`Marked ${updatedCount} notifications as expired`);
+        this.logInfo(`Marked ${updatedCount} notifications as expired`);
       }
 
       return updatedCount;
     } catch (error) {
-      this.logger.error('Error marking expired notifications', error);
+      this.logError('Error marking expired notifications', error);
       return 0;
     }
   }
