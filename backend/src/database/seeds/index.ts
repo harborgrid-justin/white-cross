@@ -8,3 +8,5 @@ export * from './incidents.seed';
 export * from './schools.seed';
 export * from './students.seed';
 
+export * from './admin.seed';
+

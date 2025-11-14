@@ -12,6 +12,7 @@ import {
 } from '../models/incident-report.model';
 
 export interface IncidentSeedData {
+  id?: string;
   studentId: string;
   reportedById: string;
   type: IncidentType;
@@ -36,6 +37,8 @@ export interface IncidentSeedData {
   occurredAt: Date;
   createdBy?: string;
   updatedBy?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const LOCATIONS = [
@@ -250,6 +253,7 @@ export function generateIncidents(
           : statuses[Math.floor(Math.random() * statuses.length)]; // Lower severity can be resolved
 
       const incident: IncidentSeedData = {
+        // id is optional, let DB assign if not provided
         studentId,
         reportedById,
         type,
@@ -289,6 +293,9 @@ export function generateIncidents(
             : ComplianceStatus.COMPLIANT,
         occurredAt,
         createdBy: reportedById,
+        updatedBy: reportedById,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
 
       incidents.push(incident);

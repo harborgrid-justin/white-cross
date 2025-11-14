@@ -4,18 +4,21 @@
  */
 
 export interface SchoolSeedData {
+  id?: string;
   name: string;
   code: string;
   districtId: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  phone: string;
-  email: string;
-  principal: string;
-  totalEnrollment: number;
-  isActive: boolean;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  phone?: string;
+  email?: string;
+  principal?: string;
+  totalEnrollment?: number;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const SCHOOL_TYPES = [
@@ -87,18 +90,21 @@ export function generateSchools(
             : 1200;
 
       schools.push({
+        // id is optional, let DB assign if not provided
         name: `${city} ${schoolType} School`,
         code: `SCH-${schoolNumber}`,
         districtId: districtId,
         address: `${200 + schoolCounter * 5} School Street`,
         city: city,
-        state: 'NY', // Will vary based on district
+        state: 'NY',
         zipCode: `${10000 + schoolCounter * 50}`.substring(0, 5),
         phone: `555-${(200 + schoolCounter).toString().padStart(3, '0')}-2000`,
         email: `admin@${city.toLowerCase()}${schoolType.toLowerCase()}.edu`,
         principal: `${firstName} ${lastName}`,
         totalEnrollment: enrollmentBase + schoolCounter * 50,
         isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
 
       schoolCounter++;

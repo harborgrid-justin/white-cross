@@ -6,17 +6,24 @@
 import { Gender } from '../models/student.model';
 
 export interface StudentSeedData {
+  id?: string;
   studentNumber: string;
   firstName: string;
   lastName: string;
   dateOfBirth: Date;
   grade: string;
   gender: Gender;
-  medicalRecordNum: string;
+  photo?: string;
+  medicalRecordNum?: string;
   isActive: boolean;
   enrollmentDate: Date;
-  schoolId: string;
-  districtId: string;
+  nurseId?: string;
+  schoolId?: string;
+  districtId?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const FIRST_NAMES_MALE = [
@@ -202,17 +209,24 @@ export function generateStudents(
       const enrollmentDate = new Date(currentYear - yearsEnrolled, 8, 1); // September 1st
 
       students.push({
+        // id is optional, let DB assign if not provided
         studentNumber: `STU-${studentCounter.toString().padStart(6, '0')}`,
         firstName: firstName,
         lastName: lastName,
         dateOfBirth: dateOfBirth,
         grade: grade,
         gender: gender,
+        photo: undefined,
         medicalRecordNum: `MRN-${studentCounter.toString().padStart(8, '0')}`,
         isActive: true,
         enrollmentDate: enrollmentDate,
+        nurseId: undefined,
         schoolId: schoolId,
         districtId: districtId,
+        createdBy: undefined,
+        updatedBy: undefined,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       });
     }
   }

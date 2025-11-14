@@ -12,4 +12,6 @@ export * from './seed-incidents.command';
 export * from './seed-schools.command';
 export * from './seed-students.command';
 
+export * from './seed-admin.command';
+
 

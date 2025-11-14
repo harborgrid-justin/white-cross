@@ -4,15 +4,18 @@
  */
 
 export interface DistrictSeedData {
+  id?: string;
   name: string;
   code: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  phone: string;
-  email: string;
-  isActive: boolean;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  phone?: string;
+  email?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const US_STATES = ['NY', 'CA', 'TX', 'FL', 'IL', 'PA', 'OH', 'GA', 'NC', 'MI'];
@@ -47,6 +50,7 @@ export function generateDistricts(count: number): DistrictSeedData[] {
     const city = cityNames[i % cityNames.length];
 
     districts.push({
+      // id is optional, let DB assign if not provided
       name: `${city} ${districtType} School District`,
       code: `DIST-${state}-${districtNumber}`,
       address: `${100 + i * 10} District Office Boulevard`,
@@ -56,6 +60,8 @@ export function generateDistricts(count: number): DistrictSeedData[] {
       phone: `555-${(100 + i).toString().padStart(3, '0')}-1000`,
       email: `admin@${city.toLowerCase()}schools.edu`,
       isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 
