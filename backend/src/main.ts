@@ -14,7 +14,7 @@ import { AppConfigService } from './config';
 import { LoggerService } from './common/logging/logger.service';
 import { SentryService } from './infrastructure/monitoring/sentry.service';
 import { HipaaExceptionFilter } from './common/exceptions/filters';
-import { createSwaggerConfig, addGlobalSchemas } from '@/common/config/swagger.config';
+import { createSwaggerConfig, addGlobalSchemas, ERROR_RESPONSE_DTOS } from '@/common/config/swagger.config';
 
 // Global logger for bootstrap errors
 const bootstrapLogger = new LoggerService();
@@ -351,6 +351,7 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config, {
       operationIdFactory: (_controllerKey: string, methodKey: string) => methodKey,
       deepScanRoutes: true,
+      extraModels: ERROR_RESPONSE_DTOS,
     });
 
     // Add global response schemas

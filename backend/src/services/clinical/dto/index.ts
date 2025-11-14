@@ -12,3 +12,6 @@ export * from './protocol';
 export * from './treatment';
 export * from './visit';
 export * from './vitals';
+
+// Response DTOs
+export * from './prescription-response.dto';
