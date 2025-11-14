@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-describe('Sms.Service', () => {
+describe('EmailRateLimiter.Service', () => {
   let service: unknown;
   let mockDependency: jest.Mocked<unknown>;
 
@@ -13,7 +13,7 @@ describe('Sms.Service', () => {
       ],
     }).compile();
 
-    // service = module.get<Sms.Service>(Sms.Service);
+    // service = module.get<EmailRateLimiter.Service>(EmailRateLimiter.Service);
   });
 
   afterEach(() => {
