@@ -67,17 +67,17 @@ export type NonNullableFields<T> = {
 /**
  * Extract function parameter types as a tuple
  */
-export type ParameterTypes<T extends (...args: any) => any> = T extends (
+export type ParameterTypes<T extends (...args: never[]) => unknown> = T extends (
   ...args: infer P
-) => any
+) => unknown
   ? P
   : never;
 
 /**
  * Extract function return type
  */
-export type ReturnType<T extends (...args: any) => any> = T extends (
-  ...args: any
+export type ReturnType<T extends (...args: never[]) => unknown> = T extends (
+  ...args: never[]
 ) => infer R
   ? R
   : never;
@@ -85,14 +85,14 @@ export type ReturnType<T extends (...args: any) => any> = T extends (
 /**
  * Extract promise resolution type
  */
-export type PromiseType<T extends Promise<any>> = T extends Promise<infer U>
+export type PromiseType<T extends Promise<unknown>> = T extends Promise<infer U>
   ? U
   : never;
 
 /**
  * Extract array element type
  */
-export type ArrayElement<T extends readonly any[]> = T extends readonly (infer E)[]
+export type ArrayElement<T extends readonly unknown[]> = T extends readonly (infer E)[]
   ? E
   : never;
 
@@ -143,22 +143,23 @@ export type JSONSerializable<T> = T extends string | number | boolean | null
 /**
  * Constructor type
  */
-export type Constructor<T = any> = new (...args: any[]) => T;
+export type Constructor<T = object> = new (...args: never[]) => T;
 
 /**
  * Abstract constructor type
  */
-export type AbstractConstructor<T = any> = abstract new (...args: any[]) => T;
+export type AbstractConstructor<T = object> = abstract new (...args: never[]) => T;
 
 /**
  * Function type with any signature
+ * @deprecated Consider using more specific function types
  */
-export type AnyFunction = (...args: any[]) => any;
+export type AnyFunction = (...args: never[]) => unknown;
 
 /**
  * Async function type
  */
-export type AsyncFunction<T = any> = (...args: any[]) => Promise<T>;
+export type AsyncFunction<T = unknown> = (...args: never[]) => Promise<T>;
 
 /**
  * Predicate function type
@@ -221,7 +222,7 @@ export type NumberEnum<T extends number> = T;
  */
 export type Unpacked<T> = T extends (infer U)[]
   ? U
-  : T extends (...args: any[]) => infer U
+  : T extends (...args: never[]) => infer U
     ? U
     : T extends Promise<infer U>
       ? U

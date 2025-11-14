@@ -132,7 +132,7 @@ export interface PhotoSearchMetadata {
   ageMax?: number;
 
   /** Additional custom filters */
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 /**
@@ -158,7 +158,7 @@ export interface PhotoUploadMetadata {
   resolution?: string;
 
   /** Additional custom metadata */
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 /**
@@ -323,7 +323,7 @@ export interface BarcodeScanResult {
   entityType: 'student' | 'medication' | 'equipment' | 'unknown';
 
   /** Entity data (Student, Medication, etc.) */
-  entity?: any;
+  entity?: Student | Record<string, unknown>;
 
   /** Error message if scan failed */
   error?: string;
@@ -371,4 +371,345 @@ export interface MedicationVerificationResult {
 
   /** Error messages for failed checks */
   errors?: string[];
+}
+
+/**
+ * Health Records Response
+ *
+ * Response structure for student health records query.
+ */
+export interface HealthRecordsResponse {
+  /** Array of health records */
+  records: Record<string, unknown>[];
+
+  /** Pagination metadata */
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+/**
+ * Mental Health Records Response
+ *
+ * Response structure for student mental health records query.
+ */
+export interface MentalHealthRecordsResponse {
+  /** Array of mental health records */
+  records: Record<string, unknown>[];
+
+  /** Pagination metadata */
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+/**
+ * Photo Upload Response
+ *
+ * Response from photo upload operation.
+ */
+export interface PhotoUploadResponse {
+  /** Whether upload was successful */
+  success: boolean;
+
+  /** URL to uploaded photo */
+  photoUrl: string;
+
+  /** Photo ID in system */
+  photoId: string;
+
+  /** Facial recognition match confidence (0-100) */
+  matchConfidence?: number;
+
+  /** Upload timestamp */
+  uploadedAt: Date;
+}
+
+/**
+ * Photo Search Response
+ *
+ * Response from facial recognition photo search.
+ */
+export interface PhotoSearchResponse {
+  /** Whether search completed successfully */
+  success: boolean;
+
+  /** Array of matched students */
+  matches: Array<{
+    student: Student;
+    confidence: number;
+    photoUrl: string;
+  }>;
+
+  /** Total matches found */
+  totalMatches: number;
+}
+
+/**
+ * Academic Transcript Import Response
+ *
+ * Response from academic transcript import operation.
+ */
+export interface AcademicTranscriptImportResponse {
+  /** Whether import was successful */
+  success: boolean;
+
+  /** Number of records imported */
+  recordsImported: number;
+
+  /** Array of imported course IDs */
+  courseIds: string[];
+
+  /** Import timestamp */
+  importedAt: Date;
+
+  /** Any warnings or issues encountered */
+  warnings?: string[];
+}
+
+/**
+ * Academic History Response
+ *
+ * Response structure for academic history query.
+ */
+export interface AcademicHistoryResponse {
+  /** Student ID */
+  studentId: string;
+
+  /** Array of academic periods */
+  periods: Array<{
+    period: string;
+    year: string;
+    gpa: number;
+    courses: Array<{
+      courseId: string;
+      courseName: string;
+      grade: string;
+      credits: number;
+    }>;
+  }>;
+
+  /** Overall GPA */
+  overallGpa: number;
+
+  /** Total credits earned */
+  totalCredits: number;
+}
+
+/**
+ * Performance Trends Response
+ *
+ * Response structure for performance trend analysis.
+ */
+export interface PerformanceTrendsResponse {
+  /** Student ID */
+  studentId: string;
+
+  /** Analysis period */
+  period: string;
+
+  /** Trend analysis data */
+  trends: PerformanceTrendAnalysis;
+
+  /** Generated timestamp */
+  generatedAt: Date;
+}
+
+/**
+ * Bulk Grade Transition Response
+ *
+ * Response from bulk grade transition operation.
+ */
+export interface BulkGradeTransitionResponse {
+  /** Detailed results */
+  results: GradeTransitionResult;
+
+  /** Operation timestamp */
+  completedAt: Date;
+}
+
+/**
+ * Graduating Students Response
+ *
+ * Response structure for graduating students query.
+ */
+export interface GraduatingStudentsResponse {
+  /** Array of graduating students */
+  students: Student[];
+
+  /** Total count */
+  total: number;
+
+  /** Graduation date */
+  graduationDate: Date;
+
+  /** Class year */
+  classYear: string;
+}
+
+/**
+ * Grade Transition Response
+ *
+ * Response from individual grade transition operation.
+ */
+export interface GradeTransitionResponse {
+  /** Updated student */
+  student: Student;
+
+  /** Previous grade */
+  previousGrade: string;
+
+  /** New grade */
+  newGrade: string;
+
+  /** Transition type */
+  action: 'promoted' | 'retained' | 'graduated';
+
+  /** Transition timestamp */
+  transitionedAt: Date;
+}
+
+/**
+ * Graduation Response
+ *
+ * Response from student graduation operation.
+ */
+export interface GraduationResponse {
+  /** Graduated student */
+  student: Student;
+
+  /** Graduation date */
+  graduationDate: Date;
+
+  /** Final GPA */
+  finalGpa: number;
+
+  /** Total credits */
+  totalCredits: number;
+
+  /** Honors/distinctions */
+  honors?: string[];
+}
+
+/**
+ * Grade Transition History Response
+ *
+ * Response structure for grade transition history query.
+ */
+export interface GradeTransitionHistoryResponse {
+  /** Student ID */
+  studentId: string;
+
+  /** Array of historical transitions */
+  transitions: Array<{
+    date: Date;
+    fromGrade: string;
+    toGrade: string;
+    action: 'promoted' | 'retained' | 'graduated';
+    reason?: string;
+  }>;
+
+  /** Total transitions */
+  total: number;
+}
+
+/**
+ * Waitlist Add Response
+ *
+ * Response from adding student to waitlist.
+ */
+export interface WaitlistAddResponse {
+  /** Waitlist entry details */
+  entry: WaitlistEntry;
+
+  /** Success message */
+  message: string;
+}
+
+/**
+ * Waitlist Status Response
+ *
+ * Response structure for waitlist status query.
+ */
+export interface WaitlistStatusResponse {
+  /** Student ID */
+  studentId: string;
+
+  /** Array of active waitlist entries */
+  entries: WaitlistEntry[];
+
+  /** Total active entries */
+  totalActive: number;
+
+  /** Estimated total wait time */
+  totalEstimatedWait?: number;
+}
+
+/**
+ * Barcode Generation Response
+ *
+ * Response from barcode generation operation.
+ */
+export interface BarcodeGenerationResponse {
+  /** Generated barcode string */
+  barcodeString: string;
+
+  /** Barcode format */
+  format: 'CODE128' | 'QR' | 'PDF417';
+
+  /** Base64 encoded barcode image */
+  barcodeImage?: string;
+
+  /** Generation timestamp */
+  generatedAt: Date;
+}
+
+/**
+ * Barcode Verification Response
+ *
+ * Response from barcode verification operation.
+ */
+export interface BarcodeVerificationResponse {
+  /** Whether barcode is valid */
+  valid: boolean;
+
+  /** Associated student if found */
+  student?: Student;
+
+  /** Barcode string */
+  barcodeString: string;
+
+  /** Verification timestamp */
+  verifiedAt: Date;
+
+  /** Error message if invalid */
+  error?: string;
+}
+
+/**
+ * Waitlist Priority Update Response
+ *
+ * Response from waitlist priority update operation.
+ */
+export interface WaitlistPriorityUpdateResponse {
+  /** Updated waitlist entry */
+  entry: WaitlistEntry;
+
+  /** Previous priority */
+  previousPriority: string;
+
+  /** New priority */
+  newPriority: string;
+
+  /** Update timestamp */
+  updatedAt: Date;
+
+  /** Success message */
+  message: string;
 }
