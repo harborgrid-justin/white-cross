@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InsuranceClaimService } from '../insurance-claim.service';
 import { GenerateClaimDto, InsuranceClaimResponseDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Insurance Claims')
+
+@Version('1')
 @Controller('enterprise-features/insurance-claims')
 @ApiBearerAuth()
 export class InsuranceClaimsController extends BaseController {

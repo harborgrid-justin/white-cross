@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, Version } from '@nestjs/common';
 import { AuthenticatedRequest } from '../types/index';
 import { CreateBroadcastDto } from '../dto/create-broadcast.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -7,6 +7,8 @@ import { BroadcastService } from '../services/broadcast.service';
 import { BaseController } from '@/common/base';
 @ApiTags('Broadcasts')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('broadcasts')
 export class BroadcastController extends BaseController {
   constructor(private readonly broadcastService: BroadcastService) {}

@@ -4,20 +4,7 @@
  * compliance reporting, checklists, PHI disclosures, data retention, and violations
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Logger,
-  Param,
-  ParseIntPipe,
-  ParseUUIDPipe,
-  Post,
-  Put,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, ParseIntPipe, ParseUUIDPipe, Post, Put, Query, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
@@ -59,6 +46,8 @@ import { QueryStatisticsDto } from './dto/statistics.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('compliance')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('compliance')
 export class ComplianceController extends BaseController {
   private readonly logger = new Logger(ComplianceController.name);

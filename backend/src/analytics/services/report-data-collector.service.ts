@@ -5,8 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+// TypeORM removed - not using repository pattern for this analytics service
 import { BaseService } from '@/common/base';
 import {
   AnalyticsReportType,
@@ -22,12 +21,11 @@ import {
 
 @Injectable()
 export class ReportDataCollectorService extends BaseService {
-  constructor(
-    // In a real implementation, these would be injected repositories
-    // @InjectRepository(Student) private readonly studentRepository: Repository<Student>,
-    // @InjectRepository(HealthRecord) private readonly healthRecordRepository: Repository<HealthRecord>,
-    // etc.
-  ) {}
+  constructor() {
+    super('ReportDataCollector');
+    // In a real implementation, Sequelize repositories would be injected here
+    // Example: @Inject('StudentRepository') private readonly studentRepository: IStudentRepository
+  }
 
   /**
    * Collect data for a specific report type

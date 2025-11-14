@@ -2,13 +2,19 @@
  * @fileoverview Base Repository Utilities
  * @module database/repositories/shared
  * @description Common utilities and patterns shared between repository implementations
+ *
+ * @deprecated This file uses TypeORM and is deprecated. Use Sequelize BaseRepository instead.
+ * Located at: /database/repositories/base/base.repository.ts
+ * This file is not currently imported anywhere and will be removed in a future update.
  */
 
 import { Logger } from '@nestjs/common';
-import { DataSource, Repository, QueryRunner, SelectQueryBuilder } from 'typeorm';
+// TypeORM imports removed - this utility file is deprecated
+// import { DataSource, Repository, QueryRunner, SelectQueryBuilder } from 'typeorm';
 
 /**
  * Common repository utilities
+ * @deprecated Use Sequelize BaseRepository instead
  */
 export class BaseRepositoryUtilities {
   /**
@@ -20,18 +26,14 @@ export class BaseRepositoryUtilities {
 
   /**
    * Common initialization pattern for repositories
+   * @deprecated TypeORM specific - use Sequelize patterns
    */
   static initializeRepository<T>(
-    dataSource: DataSource,
+    dataSource: any, // was: DataSource
     entityClass: new () => T,
     repositoryName: string,
-  ): { repository: Repository<T>; logger: Logger } {
-    const repository = dataSource.getRepository(entityClass);
-    const logger = this.createRepositoryLogger(repositoryName);
-    
-    logger.log(`${repositoryName} initialized successfully`);
-    
-    return { repository, logger };
+  ): { repository: any; logger: Logger } {  // was: Repository<T>
+    throw new Error('Deprecated: Use Sequelize repository initialization instead');
   }
 
   /**
@@ -70,241 +72,156 @@ export class BaseRepositoryUtilities {
 
   /**
    * Common query builder setup with error handling
+   * @deprecated TypeORM specific - use Sequelize query patterns
    */
   static createQueryBuilderWithErrorHandling<T>(
-    repository: Repository<T>,
+    repository: any, // was: Repository<T>
     alias: string,
     logger: Logger,
     operation: string,
-  ): SelectQueryBuilder<T> {
-    try {
-      const queryBuilder = repository.createQueryBuilder(alias);
-      logger.debug(`Created query builder for ${operation} with alias '${alias}'`);
-      return queryBuilder;
-    } catch (error) {
-      this.handleRepositoryError(logger, `create query builder for ${operation}`, error);
-    }
+  ): any {  // was: SelectQueryBuilder<T>
+    throw new Error('Deprecated: Use Sequelize query builder patterns instead');
   }
 
   /**
    * Common transaction execution pattern
+   * @deprecated TypeORM specific - use Sequelize transaction patterns
    */
   static async executeInTransaction<T>(
-    dataSource: DataSource,
-    operation: (queryRunner: QueryRunner) => Promise<T>,
+    dataSource: any, // was: DataSource
+    operation: (queryRunner: any) => Promise<T>, // was: QueryRunner
     logger: Logger,
     operationName: string,
   ): Promise<T> {
-    const queryRunner = dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      logger.debug(`Starting transaction for ${operationName}`);
-      const result = await operation(queryRunner);
-      await queryRunner.commitTransaction();
-      logger.debug(`Successfully committed transaction for ${operationName}`);
-      return result;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      logger.error(`Transaction rolled back for ${operationName}:`, error);
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    throw new Error('Deprecated: Use Sequelize transaction management instead');
   }
 
   /**
    * Common find operation with error handling
+   * @deprecated TypeORM specific - use Sequelize repository methods
    */
   static async findWithErrorHandling<T>(
-    repository: Repository<T>,
+    repository: any, // was: Repository<T>
     logger: Logger,
     entityName: string,
     findOptions?: any,
   ): Promise<T[]> {
-    try {
-      logger.debug(`Finding ${entityName} entities`, findOptions);
-      const entities = await repository.find(findOptions);
-      logger.debug(`Found ${entities.length} ${entityName} entities`);
-      return entities;
-    } catch (error) {
-      this.handleRepositoryError(logger, `find ${entityName} entities`, error);
-    }
+    throw new Error('Deprecated: Use Sequelize repository find methods instead');
   }
 
   /**
    * Common findOne operation with error handling
+   * @deprecated TypeORM specific - use Sequelize repository methods
    */
   static async findOneWithErrorHandling<T>(
-    repository: Repository<T>,
+    repository: any, // was: Repository<T>
     logger: Logger,
     entityName: string,
     findOptions: any,
   ): Promise<T | null> {
-    try {
-      logger.debug(`Finding one ${entityName} entity`, findOptions);
-      const entity = await repository.findOne(findOptions);
-      if (entity) {
-        logger.debug(`Found ${entityName} entity`);
-      } else {
-        logger.debug(`No ${entityName} entity found`);
-      }
-      return entity;
-    } catch (error) {
-      this.handleRepositoryError(logger, `find one ${entityName} entity`, error);
-    }
+    throw new Error('Deprecated: Use Sequelize repository findOne methods instead');
   }
 
   /**
    * Common save operation with error handling
+   * @deprecated TypeORM specific - use Sequelize repository methods
    */
   static async saveWithErrorHandling<T>(
-    repository: Repository<T>,
+    repository: any, // was: Repository<T>
     logger: Logger,
     entityName: string,
     entity: T,
     entityId?: string | number,
   ): Promise<T> {
-    try {
-      const operation = entityId ? 'update' : 'create';
-      logger.debug(`Saving ${entityName} entity (${operation})`);
-      const savedEntity = await repository.save(entity);
-      this.logRepositorySuccess(logger, operation, entityName, entityId);
-      return savedEntity;
-    } catch (error) {
-      const operation = entityId ? 'update' : 'create';
-      this.handleRepositoryError(logger, `${operation} ${entityName}`, error, entityId);
-    }
+    throw new Error('Deprecated: Use Sequelize repository save methods instead');
   }
 
   /**
    * Common delete operation with error handling
+   * @deprecated TypeORM specific - use Sequelize repository methods
    */
   static async deleteWithErrorHandling<T>(
-    repository: Repository<T>,
+    repository: any, // was: Repository<T>
     logger: Logger,
     entityName: string,
     criteria: any,
   ): Promise<void> {
-    try {
-      logger.debug(`Deleting ${entityName} entity`, criteria);
-      const result = await repository.delete(criteria);
-      if (result.affected && result.affected > 0) {
-        this.logRepositorySuccess(logger, 'delete', entityName, undefined, { affected: result.affected });
-      } else {
-        logger.warn(`No ${entityName} entities were deleted`);
-      }
-    } catch (error) {
-      this.handleRepositoryError(logger, `delete ${entityName}`, error);
-    }
+    throw new Error('Deprecated: Use Sequelize repository delete methods instead');
   }
 
   /**
    * Common count operation with error handling
+   * @deprecated TypeORM specific - use Sequelize repository methods
    */
   static async countWithErrorHandling<T>(
-    repository: Repository<T>,
+    repository: any, // was: Repository<T>
     logger: Logger,
     entityName: string,
     countOptions?: any,
   ): Promise<number> {
-    try {
-      logger.debug(`Counting ${entityName} entities`, countOptions);
-      const count = await repository.count(countOptions);
-      logger.debug(`Found ${count} ${entityName} entities`);
-      return count;
-    } catch (error) {
-      this.handleRepositoryError(logger, `count ${entityName} entities`, error);
-    }
+    throw new Error('Deprecated: Use Sequelize repository count methods instead');
   }
 
   /**
    * Common pagination helper
+   * @deprecated TypeORM specific - use Sequelize pagination patterns
    */
   static applyPagination<T>(
-    queryBuilder: SelectQueryBuilder<T>,
+    queryBuilder: any, // was: SelectQueryBuilder<T>
     page: number = 1,
     limit: number = 10,
-  ): SelectQueryBuilder<T> {
-    const skip = (page - 1) * limit;
-    return queryBuilder.skip(skip).take(limit);
+  ): any {
+    throw new Error('Deprecated: Use Sequelize pagination (limit/offset) instead');
   }
 
   /**
    * Common sorting helper
+   * @deprecated TypeORM specific - use Sequelize order patterns
    */
   static applySorting<T>(
-    queryBuilder: SelectQueryBuilder<T>,
+    queryBuilder: any, // was: SelectQueryBuilder<T>
     sortField?: string,
     sortOrder: 'ASC' | 'DESC' = 'ASC',
-  ): SelectQueryBuilder<T> {
-    if (sortField) {
-      return queryBuilder.orderBy(sortField, sortOrder);
-    }
-    return queryBuilder;
+  ): any {
+    throw new Error('Deprecated: Use Sequelize order clause instead');
   }
 
   /**
    * Common search helper for text fields
+   * @deprecated TypeORM specific - use Sequelize Op.iLike patterns
    */
   static applyTextSearch<T>(
-    queryBuilder: SelectQueryBuilder<T>,
+    queryBuilder: any, // was: SelectQueryBuilder<T>
     searchTerm: string,
     searchFields: string[],
     alias: string,
-  ): SelectQueryBuilder<T> {
-    if (!searchTerm || searchFields.length === 0) {
-      return queryBuilder;
-    }
-
-    const conditions = searchFields.map((field, index) => 
-      `${alias}.${field} ILIKE :searchTerm${index}`
-    ).join(' OR ');
-
-    const parameters = searchFields.reduce((params, _, index) => {
-      params[`searchTerm${index}`] = `%${searchTerm}%`;
-      return params;
-    }, {} as Record<string, string>);
-
-    return queryBuilder.andWhere(`(${conditions})`, parameters);
+  ): any {
+    throw new Error('Deprecated: Use Sequelize Op.iLike or Op.like instead');
   }
 
   /**
    * Common date range filter helper
+   * @deprecated TypeORM specific - use Sequelize Op.between or Op.gte/lte
    */
   static applyDateRangeFilter<T>(
-    queryBuilder: SelectQueryBuilder<T>,
+    queryBuilder: any, // was: SelectQueryBuilder<T>
     dateField: string,
     startDate?: Date,
     endDate?: Date,
-  ): SelectQueryBuilder<T> {
-    if (startDate) {
-      queryBuilder.andWhere(`${dateField} >= :startDate`, { startDate });
-    }
-    if (endDate) {
-      queryBuilder.andWhere(`${dateField} <= :endDate`, { endDate });
-    }
-    return queryBuilder;
+  ): any {
+    throw new Error('Deprecated: Use Sequelize Op.between, Op.gte, Op.lte instead');
   }
 
   /**
    * Common exists check helper
+   * @deprecated TypeORM specific - use Sequelize count methods
    */
   static async checkExistsWithErrorHandling<T>(
-    repository: Repository<T>,
+    repository: any, // was: Repository<T>
     logger: Logger,
     entityName: string,
     criteria: any,
   ): Promise<boolean> {
-    try {
-      logger.debug(`Checking if ${entityName} exists`, criteria);
-      const count = await repository.count({ where: criteria });
-      const exists = count > 0;
-      logger.debug(`${entityName} ${exists ? 'exists' : 'does not exist'}`);
-      return exists;
-    } catch (error) {
-      this.handleRepositoryError(logger, `check if ${entityName} exists`, error);
-    }
+    throw new Error('Deprecated: Use Sequelize repository count methods instead');
   }
 }

@@ -4,21 +4,7 @@
  * @description HTTP endpoints for basic student CRUD operations
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -49,6 +35,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('students-core')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('students')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)

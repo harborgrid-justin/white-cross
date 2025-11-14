@@ -3,19 +3,7 @@
  * Emergency Broadcast System Controller
  */
 
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Logger,
-  Param,
-  Post,
-  Put,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Logger, Param, Post, Put, UsePipes, ValidationPipe, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmergencyBroadcastService } from './emergency-broadcast.service';
 import { BaseController } from '@/common/base';
@@ -30,9 +18,11 @@ import {
   UpdateEmergencyBroadcastDto,
 } from './dto';
 
-@ApiTags('Emergency Broadcast')
+@ApiTags('Emergency Broadcasts')
 @ApiBearerAuth()
-@Controller('emergency-broadcast')
+
+@Version('1')
+@Controller('emergency-broadcasts')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class EmergencyBroadcastController extends BaseController {
   private readonly logger = new Logger(EmergencyBroadcastController.name);

@@ -4,15 +4,7 @@
  * @description HTTP endpoints for student status management operations
  */
 
-import {
-  Body,
-  Controller,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Patch, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth';
 import { HealthRecordAuditInterceptor } from '@/health-record/interceptors';
@@ -30,6 +22,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('students-status')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('students')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)

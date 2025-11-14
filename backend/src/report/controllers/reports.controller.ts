@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReportGenerationService } from '../services/report-generation.service';
 import { ReportExportService } from '../services/report-export.service';
@@ -19,6 +19,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Reports')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('reports')
 export class ReportsController extends BaseController {
   private readonly logger = new Logger(ReportsController.name);

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ClinicalNoteService } from '../services/clinical-note.service';
 import { CreateNoteDto } from '../dto/note/create-note.dto';
@@ -8,6 +8,8 @@ import { NoteFiltersDto } from '../dto/note/note-filters.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Clinical Notes')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/notes')
 export class ClinicalNoteController extends BaseController {
   constructor(private readonly noteService: ClinicalNoteService) {}

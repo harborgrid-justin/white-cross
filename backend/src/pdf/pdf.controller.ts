@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res, Version } from '@nestjs/common';
 import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
@@ -20,6 +20,8 @@ import {
  */
 @ApiTags('PDF')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('pdf')
 export class PdfController extends BaseController {
   constructor(private readonly pdfService: PdfService) {}

@@ -128,9 +128,9 @@ export type EntityId = string | number;
 export type Timestamp = Date | ISODateString;
 
 /**
- * Record with string keys and any value
+ * Record with string keys and typed value
  */
-export type StringRecord<T = any> = Record<string, T>;
+export type StringRecord<T = unknown> = Record<string, T>;
 
 /**
  * Branded type for nominal typing
@@ -141,3 +141,46 @@ export type Brand<T, B> = T & { __brand: B };
  * Opaque type helper
  */
 export type Opaque<T, K> = T & { readonly __TYPE__: K };
+
+/**
+ * Structured error metadata value type (recursive)
+ */
+export type ErrorMetadataValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ErrorMetadataValue[]
+  | { [key: string]: ErrorMetadataValue };
+
+/**
+ * Error metadata with structured typing
+ */
+export interface ErrorMetadata {
+  [key: string]: ErrorMetadataValue;
+}
+
+/**
+ * Type guard for successful Result
+ */
+export function isSuccess<T, E>(result: Result<T, E>): result is { success: true; data: T } {
+  return result.success === true;
+}
+
+/**
+ * Type guard for failed Result
+ */
+export function isFailure<T, E>(result: Result<T, E>): result is { success: false; error: E } {
+  return result.success === false;
+}
+
+/**
+ * Unwrap a Result type, throwing if failed
+ */
+export function unwrapResult<T, E extends Error>(result: Result<T, E>): T {
+  if (isSuccess(result)) {
+    return result.data;
+  }
+  throw result.error;
+}

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ClinicalProtocolService } from '../services/clinical-protocol.service';
 import { CreateProtocolDto } from '../dto/protocol/create-protocol.dto';
@@ -8,6 +8,8 @@ import { ActivateProtocolDto } from '../dto/protocol/activate-protocol.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Protocols')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/protocols')
 export class ClinicalProtocolManagementController extends BaseController {
   constructor(private readonly protocolService: ClinicalProtocolService) {}

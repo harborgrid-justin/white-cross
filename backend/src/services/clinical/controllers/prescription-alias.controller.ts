@@ -1,4 +1,4 @@
-import { All, Controller, Req, Res } from '@nestjs/common';
+import { All, Controller, Req, Res, Version } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 
@@ -29,6 +29,8 @@ import { BaseController } from '@/common/base';
  * Frontend: POST /prescriptions -> Proxied to -> POST /clinical/prescriptions
  */
 @ApiExcludeController() // Exclude from Swagger docs as this is just an alias
+
+@Version('1')
 @Controller('prescriptions')
 export class PrescriptionAliasController extends BaseController {
   /**

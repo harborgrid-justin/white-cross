@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Request, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChronicConditionService } from './chronic-condition.service';
 import { CreateChronicConditionDto } from './dto/create-chronic-condition.dto';
@@ -8,6 +8,8 @@ import { ChronicCondition   } from '@/database/models';
 import { BaseController } from '@/common/base';
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('chronic-conditions')
 export class HealthRecordChronicConditionController extends BaseController {
   constructor(

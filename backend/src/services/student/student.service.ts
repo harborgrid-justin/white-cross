@@ -35,7 +35,30 @@ import { AddWaitlistDto } from './dto/add-waitlist.dto';
 import { WaitlistStatusDto } from './dto/waitlist-status.dto';
 import { GenerateBarcodeDto } from './dto/generate-barcode.dto';
 import { VerifyBarcodeDto } from './dto/verify-barcode.dto';
-import { PaginatedResponse, StudentDataExport, StudentStatistics } from './types';
+import {
+  PaginatedResponse,
+  StudentDataExport,
+  StudentStatistics,
+  HealthRecordsResponse,
+  MentalHealthRecordsResponse,
+  PhotoUploadResponse,
+  PhotoSearchResponse,
+  AcademicTranscriptImportResponse,
+  AcademicHistoryResponse,
+  PerformanceTrendsResponse,
+  BulkGradeTransitionResponse,
+  GraduatingStudentsResponse,
+  GradeTransitionResponse,
+  GraduationResponse,
+  GradeTransitionHistoryResponse,
+  BarcodeScanResult,
+  MedicationVerificationResult,
+  WaitlistAddResponse,
+  WaitlistStatusResponse,
+  WaitlistPriorityUpdateResponse,
+  BarcodeGenerationResponse,
+  BarcodeVerificationResponse,
+} from './types';
 
 import { BaseService } from '@/common/base';
 /**
@@ -145,7 +168,7 @@ export class StudentService extends BaseService {
     studentId: string,
     page?: number,
     limit?: number,
-  ): Promise<any> {
+  ): Promise<HealthRecordsResponse> {
     return this.healthRecordsService.getStudentHealthRecords(studentId, page, limit);
   }
 
@@ -153,17 +176,17 @@ export class StudentService extends BaseService {
     studentId: string,
     page?: number,
     limit?: number,
-  ): Promise<any> {
+  ): Promise<MentalHealthRecordsResponse> {
     return this.healthRecordsService.getStudentMentalHealthRecords(studentId, page, limit);
   }
 
   // ==================== Photo Management (delegated to StudentPhotoService) ====================
 
-  async uploadStudentPhoto(studentId: string, uploadPhotoDto: UploadPhotoDto): Promise<any> {
+  async uploadStudentPhoto(studentId: string, uploadPhotoDto: UploadPhotoDto): Promise<PhotoUploadResponse> {
     return this.photoService.uploadStudentPhoto(studentId, uploadPhotoDto);
   }
 
-  async searchStudentsByPhoto(searchPhotoDto: SearchPhotoDto): Promise<any> {
+  async searchStudentsByPhoto(searchPhotoDto: SearchPhotoDto): Promise<PhotoSearchResponse> {
     return this.photoService.searchStudentsByPhoto(searchPhotoDto);
   }
 
@@ -172,61 +195,61 @@ export class StudentService extends BaseService {
   async importAcademicTranscript(
     studentId: string,
     importTranscriptDto: ImportTranscriptDto,
-  ): Promise<any> {
+  ): Promise<AcademicTranscriptImportResponse> {
     return this.academicService.importAcademicTranscript(studentId, importTranscriptDto);
   }
 
-  async getAcademicHistory(studentId: string, query: AcademicHistoryDto): Promise<any> {
+  async getAcademicHistory(studentId: string, query: AcademicHistoryDto): Promise<AcademicHistoryResponse> {
     return this.academicService.getAcademicHistory(studentId, query);
   }
 
-  async getPerformanceTrends(studentId: string, query: PerformanceTrendsDto): Promise<any> {
+  async getPerformanceTrends(studentId: string, query: PerformanceTrendsDto): Promise<PerformanceTrendsResponse> {
     return this.academicService.getPerformanceTrends(studentId, query);
   }
 
-  async performBulkGradeTransition(bulkGradeTransitionDto: BulkGradeTransitionDto): Promise<any> {
+  async performBulkGradeTransition(bulkGradeTransitionDto: BulkGradeTransitionDto): Promise<BulkGradeTransitionResponse> {
     return this.academicService.performBulkGradeTransition(bulkGradeTransitionDto);
   }
 
-  async getGraduatingStudents(query: GraduatingStudentsDto): Promise<any> {
+  async getGraduatingStudents(query: GraduatingStudentsDto): Promise<GraduatingStudentsResponse> {
     return this.academicService.getGraduatingStudents(query);
   }
 
   // ==================== Individual Grade Transition Operations ====================
 
-  async advanceStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<any> {
+  async advanceStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<GradeTransitionResponse> {
     return this.academicService.advanceStudentGrade(id, gradeTransitionDto);
   }
 
-  async retainStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<any> {
+  async retainStudentGrade(id: string, gradeTransitionDto: GradeTransitionDto): Promise<GradeTransitionResponse> {
     return this.academicService.retainStudentGrade(id, gradeTransitionDto);
   }
 
-  async processStudentGraduation(id: string, graduationDto: GraduationDto): Promise<any> {
+  async processStudentGraduation(id: string, graduationDto: GraduationDto): Promise<GraduationResponse> {
     return this.academicService.processStudentGraduation(id, graduationDto);
   }
 
-  async getGradeTransitionHistory(id: string): Promise<any> {
+  async getGradeTransitionHistory(id: string): Promise<GradeTransitionHistoryResponse> {
     return this.academicService.getGradeTransitionHistory(id);
   }
 
   // ==================== Barcode Operations (delegated to StudentBarcodeService) ====================
 
-  async scanBarcode(scanBarcodeDto: StudentScanBarcodeDto): Promise<any> {
+  async scanBarcode(scanBarcodeDto: StudentScanBarcodeDto): Promise<BarcodeScanResult> {
     return this.barcodeService.scanBarcode(scanBarcodeDto);
   }
 
-  async verifyMedicationAdministration(verifyMedicationDto: VerifyMedicationDto): Promise<any> {
+  async verifyMedicationAdministration(verifyMedicationDto: VerifyMedicationDto): Promise<MedicationVerificationResult> {
     return this.barcodeService.verifyMedication(verifyMedicationDto);
   }
 
   // ==================== Waitlist Operations (delegated to StudentWaitlistService) ====================
 
-  async addStudentToWaitlist(addWaitlistDto: AddWaitlistDto): Promise<any> {
+  async addStudentToWaitlist(addWaitlistDto: AddWaitlistDto): Promise<WaitlistAddResponse> {
     return this.waitlistService.addStudentToWaitlist(addWaitlistDto);
   }
 
-  async getStudentWaitlistStatus(studentId: string, query: WaitlistStatusDto): Promise<any> {
+  async getStudentWaitlistStatus(studentId: string, query: WaitlistStatusDto): Promise<WaitlistStatusResponse> {
     return this.waitlistService.getStudentWaitlistStatus(studentId, query);
   }
 
@@ -249,14 +272,14 @@ export class StudentService extends BaseService {
   /**
    * Generate barcode for student
    */
-  async generateStudentBarcode(id: string, generateBarcodeDto: GenerateBarcodeDto): Promise<any> {
+  async generateStudentBarcode(id: string, generateBarcodeDto: GenerateBarcodeDto): Promise<BarcodeGenerationResponse> {
     return await this.barcodeService.generateBarcode(id, generateBarcodeDto);
   }
 
   /**
    * Verify student barcode
    */
-  async verifyStudentBarcode(verifyBarcodeDto: VerifyBarcodeDto): Promise<any> {
+  async verifyStudentBarcode(verifyBarcodeDto: VerifyBarcodeDto): Promise<BarcodeVerificationResponse> {
     return await this.barcodeService.verifyBarcode(verifyBarcodeDto);
   }
 
@@ -265,7 +288,7 @@ export class StudentService extends BaseService {
   /**
    * Add student to waitlist
    */
-  async addStudentToWaitlist(id: string, addWaitlistDto: AddWaitlistDto): Promise<any> {
+  async addStudentToWaitlist(id: string, addWaitlistDto: AddWaitlistDto): Promise<WaitlistAddResponse> {
     // Add studentId to the DTO since the service method expects it
     const dtoWithStudentId = { ...addWaitlistDto, studentId: id };
     return await this.waitlistService.addStudentToWaitlist(dtoWithStudentId);
@@ -274,7 +297,7 @@ export class StudentService extends BaseService {
   /**
    * Update waitlist priority
    */
-  async updateWaitlistPriority(id: string, priorityDto: WaitlistPriorityDto): Promise<any> {
+  async updateWaitlistPriority(id: string, priorityDto: WaitlistPriorityDto): Promise<WaitlistPriorityUpdateResponse> {
     return await this.waitlistService.updateWaitlistPriority(id, priorityDto);
   }
 }

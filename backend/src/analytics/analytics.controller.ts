@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Request, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Request, UseInterceptors, Version } from '@nestjs/common';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
@@ -18,6 +18,8 @@ import { BaseController } from '@/common/base';
  * HIPAA Compliance: Aggregated health data analysis while protecting PHI
  */
 @ApiTags('Analytics')
+
+@Version('1')
 @Controller('analytics')
 @ApiBearerAuth()
 @UseInterceptors(CacheInterceptor)

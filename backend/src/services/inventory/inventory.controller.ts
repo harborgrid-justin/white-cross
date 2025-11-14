@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { InventoryService } from './inventory.service';
 import { StockManagementService } from './services/stock-management.service';
@@ -16,6 +16,8 @@ import { AlertSeverity, AlertType } from './dto/inventory-alert.dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('inventory')
+
+@Version('1')
 @Controller('inventory')
 @ApiBearerAuth()
 export class InventoryController extends BaseController {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Logger, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Logger, Param, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MedicationInteractionService } from './medication-interaction.service';
 import { CheckNewMedicationDto, InteractionCheckResultDto } from './dto';
@@ -10,9 +10,11 @@ import { BaseController } from '@/common/base';
  *
  * Migrated from backend/src/routes/enhancedFeatures.ts
  */
-@ApiTags('medication-interaction')
+@ApiTags('Medication Interactions')
 @ApiBearerAuth()
-@Controller('medication-interaction')
+
+@Version('1')
+@Controller('medication-interactions')
 export class MedicationInteractionController extends BaseController {
   private readonly logger = new Logger(MedicationInteractionController.name);
 

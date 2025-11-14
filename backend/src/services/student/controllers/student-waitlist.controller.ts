@@ -4,18 +4,7 @@
  * @module student/controllers/student-waitlist.controller
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Query, UseGuards, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -40,6 +29,8 @@ import { BaseController } from '@/common/base';
  * - Remove from waitlist
  */
 @ApiTags('students')
+
+@Version('1')
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

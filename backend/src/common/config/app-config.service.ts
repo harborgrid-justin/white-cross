@@ -32,6 +32,7 @@ export class AppConfigService extends BaseService {
   private readonly cache = new Map<string, any>();
 
   constructor(private readonly configService: ConfigService) {
+    super({ serviceName: 'AppConfigService' });
     this.logInfo('AppConfigService initialized');
   }
 

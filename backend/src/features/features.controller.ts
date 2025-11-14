@@ -4,13 +4,15 @@
  * @description HTTP endpoints for feature flag management
  */
 
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Version } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FeaturesService } from './features.service';
 import { ToggleFeatureDto } from './dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('features')
+
+@Version('1')
 @Controller('features')
 // @ApiBearerAuth()
 export class FeaturesController extends BaseController {

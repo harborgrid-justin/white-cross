@@ -5,22 +5,7 @@
  * @security All endpoints should be protected by authentication guards in production
  */
 
-import {
-  Body,
-  ClassSerializerInterceptor,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  Query,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseInterceptors, UsePipes, ValidationPipe, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { AdminResetPasswordDto } from './dto/reset-password.dto';
@@ -36,6 +21,8 @@ import { UserRole } from './enums';
 import { BaseController } from '@/common/base';
 @ApiTags('users')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
@@ -185,17 +172,17 @@ export class UserController extends BaseController {
   }
 
   /**
-   * Change user password
+   * Update user password
    */
-  @Post(':id/change-password')
+  @Patch(':id/password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Change user password',
+    summary: 'Update user password',
     description:
-      'Change user password with current password verification (user-initiated)',
+      'Update user password with current password verification (user-initiated)',
   })
   @ApiParam({ name: 'id', description: 'User UUID' })
-  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 200, description: 'Password updated successfully' })
   @ApiResponse({ status: 401, description: 'Current password incorrect' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async changePassword(

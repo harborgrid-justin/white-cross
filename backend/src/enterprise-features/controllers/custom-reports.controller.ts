@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CustomReportBuilderService } from '../custom-report-builder.service';
 import { CreateReportDefinitionDto, ReportDefinitionResponseDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Custom Reports')
+
+@Version('1')
 @Controller('enterprise-features/custom-reports')
 @ApiBearerAuth()
 export class CustomReportsController extends BaseController {

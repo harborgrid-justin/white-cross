@@ -1,19 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseArrayPipe,
-  ParseIntPipe,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseArrayPipe, ParseIntPipe, ParseUUIDPipe, Patch, Post, Query, ValidationPipe, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BudgetService } from './budget.service';
 import { BaseController } from '@/common/base';
@@ -39,6 +24,8 @@ import {
  */
 @ApiTags('Budget')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('budget')
 export class BudgetController extends BaseController {
   constructor(private readonly budgetService: BudgetService) {}

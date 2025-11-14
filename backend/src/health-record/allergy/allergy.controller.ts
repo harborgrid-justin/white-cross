@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Request, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllergyService } from './allergy.service';
 import { CreateAllergyDto } from './dto/create-allergy.dto';
@@ -30,6 +18,8 @@ import { BaseController } from '@/common/base';
  * Access is logged for HIPAA compliance
  */
 @ApiTags('Health Records - Allergies')
+
+@Version('1')
 @Controller('health-records/allergies')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)

@@ -4,7 +4,7 @@
  * @description HTTP endpoints for appointment reminder management
  */
 
-import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReminderService } from '../services/reminder.service';
 import { ReminderProcessingResultDto } from '../dto/reminder.dto';
@@ -20,6 +20,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('appointments-reminders')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('appointments')
 export class ReminderController extends BaseController {
   private readonly logger = new Logger(ReminderController.name);

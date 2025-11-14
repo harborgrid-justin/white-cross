@@ -4,20 +4,7 @@
  * @description HTTP endpoints for alert and notification management
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth';
 import { CurrentUser } from '../auth/decorators';
@@ -26,6 +13,8 @@ import { AlertFilterDto, AlertsUpdatePreferencesDto, CreateAlertDto } from './dt
 
 import { BaseController } from '@/common/base';
 @ApiTags('alerts')
+
+@Version('1')
 @Controller('alerts')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

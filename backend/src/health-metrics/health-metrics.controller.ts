@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UsePipes, ValidationPipe, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HealthAlert, HealthMetricsService, MetricsOverview } from './health-metrics.service';
 import { CreateVitalsDto } from './dto/create-vitals.dto';
@@ -12,6 +12,8 @@ import { GetDepartmentQueryDto } from './dto/get-department-query.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Health Metrics')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('health-metrics')
 @UsePipes(new ValidationPipe({ transform: true }))
 export class HealthMetricsController extends BaseController {

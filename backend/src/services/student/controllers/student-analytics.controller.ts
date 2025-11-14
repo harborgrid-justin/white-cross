@@ -4,7 +4,7 @@
  * @module student/controllers/student-analytics.controller
  */
 
-import { Controller, Get, Param, ParseUUIDPipe, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@/services/auth';
@@ -21,6 +21,8 @@ import { BaseController } from '@/common/base';
  * - Data export functionality
  */
 @ApiTags('students')
+
+@Version('1')
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

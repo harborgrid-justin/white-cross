@@ -4,7 +4,7 @@
  * @module student/controllers/student-barcode.controller
  */
 
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth';
 import { StudentService } from '../student.service';
@@ -21,6 +21,8 @@ import { BaseController } from '@/common/base';
  * - Get barcode information
  */
 @ApiTags('students')
+
+@Version('1')
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

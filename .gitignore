@@ -12,6 +12,13 @@ vector-db/
 
 # Environment files
 .env
+.env.*
+!.env.example
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
 
 # Testing files
 vector-db.py

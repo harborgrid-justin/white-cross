@@ -1,19 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  ForbiddenException,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Request, UseGuards, Version } from '@nestjs/common';
 import { AuthenticatedUser, SecurityIncidentFilters } from './types/sequelize-models.types';
 import type { Request as ExpressRequest } from 'express';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -44,6 +29,8 @@ import { BaseController } from '@/common/base';
  * - Security incidents and IP restrictions
  */
 @ApiTags('Access Control')
+
+@Version('1')
 @Controller('access-control')
 @ApiBearerAuth()
 @UseGuards(PermissionsGuard, RolesGuard)

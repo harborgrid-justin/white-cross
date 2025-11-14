@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   AdministrationHistoryFiltersDto,
@@ -19,6 +19,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('medications/administrations')
 export class MedicationAdministrationCoreController extends BaseController {
   /**

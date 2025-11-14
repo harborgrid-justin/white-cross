@@ -4,7 +4,7 @@
  * @module student/controllers/student-query.controller
  */
 
-import { Controller, Get, Param, ParseUUIDPipe, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query, UseGuards, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -28,6 +28,8 @@ import { BaseController } from '@/common/base';
  * - List all grades
  */
 @ApiTags('students')
+
+@Version('1')
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

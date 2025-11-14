@@ -4,7 +4,7 @@
  * @description HTTP endpoints for advanced appointment operations (recurring, bulk, conflicts, calendar)
  */
 
-import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, ParseUUIDPipe, Post, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -35,6 +35,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('appointments-advanced')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('appointments')
 export class AppointmentAdvancedController extends BaseController {
   private readonly logger = new Logger(AppointmentAdvancedController.name);

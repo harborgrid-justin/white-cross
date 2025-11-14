@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { BaseController } from '@/common/base';
@@ -9,6 +9,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('medications/administrations')
 export class MedicationAdministrationSchedulingController extends BaseController {
   /**

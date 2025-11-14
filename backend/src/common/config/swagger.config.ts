@@ -12,6 +12,17 @@ export function createSwaggerConfig() {
         'Provides complete student health record management, medication tracking, ' +
         'vaccination monitoring, allergy management, chronic condition tracking, ' +
         'appointment scheduling, incident reporting, analytics, and administrative functions.\n\n' +
+        '## API Versioning\n' +
+        'This API uses **URI-based versioning** for safe evolution and backward compatibility.\n' +
+        '- **Current Version:** v1\n' +
+        '- **Base URL Pattern:** `/api/{version}/{resource}`\n' +
+        '- **Example:** `POST /api/v1/students`\n' +
+        '- **Health Checks:** Unversioned at `/health` for Kubernetes probe compatibility\n\n' +
+        '### Versioning Strategy\n' +
+        '- Major version changes indicate breaking changes\n' +
+        '- We maintain at least 2 major versions during transition periods\n' +
+        '- Deprecation notices include sunset dates and migration guides\n' +
+        '- See [API Versioning Guidelines](/docs/versioning-guidelines.md) for details\n\n' +
         '## Base URL\n' +
         'All API endpoints are prefixed with `/api/v1/` for version 1.\n' +
         'Example: `POST /api/v1/students`\n\n' +

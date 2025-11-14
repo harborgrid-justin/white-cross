@@ -4,7 +4,7 @@
  * @description HTTP endpoints for appointment status transitions
  */
 
-import { Body, Controller, Logger, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
+import { Body, Controller, Logger, Param, ParseUUIDPipe, Patch, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -26,6 +26,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('appointments-status')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('appointments')
 export class AppointmentStatusController extends BaseController {
   private readonly logger = new Logger(AppointmentStatusController.name);

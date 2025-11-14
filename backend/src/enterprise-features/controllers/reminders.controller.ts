@@ -1,10 +1,12 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReminderSchedulerService } from '../reminder-scheduler.service';
 import { CustomizeReminderPreferencesDto, ReminderScheduleResponseDto, ScheduleRemindersDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Appointment Reminders')
+
+@Version('1')
 @Controller('enterprise-features/reminders')
 @ApiBearerAuth()
 export class RemindersController extends BaseController {

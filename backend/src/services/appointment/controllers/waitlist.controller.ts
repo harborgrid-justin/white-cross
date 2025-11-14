@@ -4,18 +4,7 @@
  * @description HTTP endpoints for appointment waitlist management
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Logger,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, ParseUUIDPipe, Patch, Post, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -47,6 +36,8 @@ import {
  */
 @ApiTags('appointments-waitlist')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('appointments')
 export class WaitlistController extends BaseController {
   private readonly logger = new Logger(WaitlistController.name);

@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MessageTemplateLibraryService } from '../message-template-library.service';
 import { CreateMessageTemplateDto, MessageTemplateResponseDto, RenderTemplateDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Message Templates')
+
+@Version('1')
 @Controller('enterprise-features/message-templates')
 @ApiBearerAuth()
 export class MessageTemplatesController extends BaseController {
