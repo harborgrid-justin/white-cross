@@ -39,7 +39,9 @@ export class NotificationAnalyticsService extends BaseService {
   constructor(
     @InjectModel(PushNotification)
     private readonly notificationModel: typeof PushNotification,
-  ) {}
+  ) {
+    super("NotificationAnalyticsService");
+  }
 
   /**
    * Track notification interaction

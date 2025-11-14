@@ -25,10 +25,11 @@ import {
 @ApiTags('Budget')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('budget')
 export class BudgetController extends BaseController {
-  constructor(private readonly budgetService: BudgetService) {}
+  constructor(private readonly budgetService: BudgetService) {
+    super();
+  }
 
   // ==================== Budget Category Endpoints ====================
 

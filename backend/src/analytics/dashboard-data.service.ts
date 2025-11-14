@@ -31,7 +31,9 @@ export class DashboardDataService extends BaseService {
     private readonly eventEmitter: EventEmitter2,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-  ) {}
+  ) {
+    super("DashboardDataService");
+  }
 
   /**
    * Prepare dashboard data for a specific school and user type

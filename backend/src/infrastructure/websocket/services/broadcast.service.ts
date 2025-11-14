@@ -11,7 +11,8 @@ import { BroadcastMessageDto } from '../types/websocket.types';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class BroadcastService extends BaseService {
-  constructor(private readonly websocketGateway: WebSocketGateway) {}
+  constructor(private readonly websocketGateway: WebSocketGateway) {
+    super("BroadcastService");}
 
   /**
    * Broadcasts a message to a specific room

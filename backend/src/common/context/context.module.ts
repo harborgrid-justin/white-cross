@@ -7,8 +7,7 @@
 import { Module, Global, MiddlewareConsumer } from '@nestjs/common';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import {
-  RequestContextService,
-  ContextInitializerService
+  RequestContextService
 } from './request-context.service';
 import {
   ContextInterceptor,
@@ -20,7 +19,6 @@ import {
 @Module({
   providers: [
     RequestContextService,
-    ContextInitializerService,
     ContextInterceptor,
     ContextMiddleware,
     ContextGuard,
@@ -35,7 +33,6 @@ import {
   ],
   exports: [
     RequestContextService,
-    ContextInitializerService,
     ContextInterceptor,
     ContextMiddleware,
     ContextGuard,

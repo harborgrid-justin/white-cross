@@ -18,7 +18,9 @@ export class PrescriptionService extends BaseService {
   constructor(
     @InjectModel(Prescription)
     private prescriptionModel: typeof Prescription,
-  ) {}
+  ) {
+    super("PrescriptionService");
+  }
 
   /**
    * Create a new prescription

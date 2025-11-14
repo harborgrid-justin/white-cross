@@ -23,7 +23,9 @@ export class SecurityIncidentService extends BaseService {
     private readonly incidentModel: typeof SecurityIncidentEntity,
     @InjectModel(IpRestrictionEntity)
     private readonly ipRestrictionModel: typeof IpRestrictionEntity,
-  ) {}
+  ) {
+    super("SecurityIncidentService");
+  }
 
   // Alias for backward compatibility
   private get incidentRepo() {

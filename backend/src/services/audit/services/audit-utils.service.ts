@@ -15,6 +15,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class AuditUtilsService extends BaseService {
+  constructor() {
+    super('AuditUtilsService');
+  }
+
   /**
    * Validate audit log entry data
    *

@@ -31,7 +31,9 @@ export class ContactStatisticsService extends BaseService {
     private readonly emergencyContactModel: typeof EmergencyContact,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("ContactStatisticsService");
+  }
 
   /**
    * Get emergency contact statistics

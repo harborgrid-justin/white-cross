@@ -14,7 +14,6 @@ import { AlertFilterDto, AlertsUpdatePreferencesDto, CreateAlertDto } from './dt
 import { BaseController } from '@/common/base';
 @ApiTags('alerts')
 
-@Version('1')
 @Controller('alerts')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

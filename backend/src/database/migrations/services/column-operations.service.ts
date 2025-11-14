@@ -13,6 +13,10 @@ import { modifyColumnType } from '../utilities/column-operations.service';
 
 @Injectable()
 export class ColumnOperationsService extends BaseService {
+  constructor() {
+    super("ColumnOperationsService");
+  }
+
   /**
    * Adds a column with validation and default value population
    */

@@ -14,7 +14,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Clinic Visits')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/visits')
 export class ClinicVisitController extends BaseController {
   constructor(

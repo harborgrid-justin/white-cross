@@ -20,7 +20,6 @@ import {
 
 @ApiTags('health-record-vaccination')
 
-@Version('1')
 @Controller('health-record/vaccination')
 // @ApiBearerAuth()
 export class VaccinationController extends BaseController {

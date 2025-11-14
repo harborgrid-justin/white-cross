@@ -15,6 +15,7 @@ export class DiscoveryCacheService extends BaseService {
   private cleanupInterval: NodeJS.Timeout;
 
   constructor() {
+    super("DiscoveryCacheService");
     // Start cleanup process every 5 minutes
     this.cleanupInterval = setInterval(
       () => {

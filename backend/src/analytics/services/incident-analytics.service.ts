@@ -27,7 +27,9 @@ export class IncidentAnalyticsService extends BaseService {
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
     private readonly dateRangeService: DateRangeService,
-  ) {}
+  ) {
+    super("IncidentAnalyticsService");
+  }
 
   /**
    * Get incident analytics with detailed breakdown

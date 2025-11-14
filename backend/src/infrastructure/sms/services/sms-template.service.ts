@@ -30,6 +30,7 @@ export class SmsTemplateService extends BaseService {
   private readonly templates: Map<string, SmsTemplate> = new Map();
 
   constructor() {
+    super('SmsTemplateService');
     // Initialize with default templates
     this.initializeDefaultTemplates();
   }

@@ -13,7 +13,8 @@ import { RateLimiterService } from './rate-limiter.service';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ConversationHandlerService extends BaseService {
-  constructor(private readonly rateLimiter: RateLimiterService) {}
+  constructor(private readonly rateLimiter: RateLimiterService) {
+    super("ConversationHandlerService");}
 
   /**
    * Handles conversation join events

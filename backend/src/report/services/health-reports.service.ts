@@ -24,7 +24,9 @@ export class HealthReportsService extends BaseService {
     private allergyModel: typeof Allergy,
     @InjectConnection()
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("HealthReportsService");
+  }
 
   /**
    * Get comprehensive health trends with grouping and monthly analysis

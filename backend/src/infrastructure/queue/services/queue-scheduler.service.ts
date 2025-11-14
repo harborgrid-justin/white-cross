@@ -79,6 +79,7 @@ export class QueueSchedulerService extends BaseService {
   private queueServices: BaseQueueService[] = [];
 
   constructor() {
+    super("QueueSchedulerService");
     this.logInfo('Queue Scheduler Service initialized');
     this.setupDefaultScheduledJobs();
   }

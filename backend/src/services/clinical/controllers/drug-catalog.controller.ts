@@ -20,7 +20,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Drug Catalog')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/drugs')
 export class DrugCatalogController extends BaseController {
   constructor(private readonly drugInteractionService: DrugInteractionService) {}

@@ -40,7 +40,9 @@ export class AppointmentRecurringService extends BaseService {
     private readonly reminderModel: typeof AppointmentReminder,
     @InjectConnection()
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super('AppointmentRecurringService');
+  }
 
   /**
    * Create recurring appointments based on recurrence pattern

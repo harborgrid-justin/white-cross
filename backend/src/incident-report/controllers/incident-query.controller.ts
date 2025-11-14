@@ -31,13 +31,14 @@ import { BaseController } from '@/common/base';
 @ApiTags('incident-reports-query')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('incident-reports')
 export class IncidentQueryController extends BaseController {
   constructor(
     private readonly readService: IncidentReadService,
     private readonly statisticsService: IncidentStatisticsService,
-  ) {}
+  ) {
+    super();
+  }
 
   @Get('follow-up/required')
   @ApiOperation({ summary: 'Get incidents requiring follow-up' })

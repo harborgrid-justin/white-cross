@@ -33,7 +33,8 @@ export class PerformanceReporterService extends BaseService {
     private readonly queryAnalyzer: QueryAnalyzerService,
     private readonly slowQueryDetector: SlowQueryDetectorService,
     private readonly n1Detector: N1QueryDetectorService,
-  ) {}
+  ) {
+    super("PerformanceReporterService");}
 
   /**
    * Generate comprehensive performance report

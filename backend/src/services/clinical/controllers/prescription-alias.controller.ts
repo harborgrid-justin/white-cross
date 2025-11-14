@@ -30,7 +30,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiExcludeController() // Exclude from Swagger docs as this is just an alias
 
-@Version('1')
 @Controller('prescriptions')
 export class PrescriptionAliasController extends BaseController {
   /**

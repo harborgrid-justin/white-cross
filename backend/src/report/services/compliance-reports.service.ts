@@ -18,7 +18,9 @@ export class ComplianceReportsService extends BaseService {
     private auditLogModel: typeof AuditLog,
     @InjectConnection()
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ComplianceReportsService");
+  }
 
   /**
    * Get compliance report with HIPAA and medication compliance data

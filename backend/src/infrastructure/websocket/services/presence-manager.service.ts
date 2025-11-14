@@ -17,6 +17,10 @@ export interface PresenceStatus {
 
 @Injectable()
 export class PresenceManagerService extends BaseService {
+  constructor() {
+    super("PresenceManagerService");
+  }
+
   /**
    * In-memory presence tracking
    * Maps userId to presence status

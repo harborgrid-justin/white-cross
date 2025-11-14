@@ -7,7 +7,9 @@ import { BaseService } from '@/common/base';
 export class BulkMessagingService extends BaseService {
   private bulkMessages: BulkMessage[] = [];
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('BulkMessagingService');
+  }
 
   /**
    * Send bulk message to multiple recipients

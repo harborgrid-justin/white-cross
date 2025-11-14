@@ -30,7 +30,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Access Control')
 
-@Version('1')
 @Controller('access-control')
 @ApiBearerAuth()
 @UseGuards(PermissionsGuard, RolesGuard)

@@ -6,7 +6,6 @@ import { CaptureStatementDto, TranscribeVoiceStatementDto, VerifyStatementDto, W
 import { BaseController } from '@/common/base';
 @ApiTags('Witness Statements')
 
-@Version('1')
 @Controller('enterprise-features/witness-statements')
 @ApiBearerAuth()
 export class WitnessStatementsController extends BaseController {

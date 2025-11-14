@@ -16,11 +16,12 @@ import { ScreeningStatisticsQueryDto } from './dto/screening.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('health-records-screenings')
 
-@Version('1')
 @Controller('health-records/screenings')
 // @ApiBearerAuth()
 export class ScreeningController extends BaseController {
-  constructor(private readonly screeningService: ScreeningService) {}
+  constructor(private readonly screeningService: ScreeningService) {
+    super();
+  }
 
   /**
    * GAP-SCREEN-001: Get all screenings for a student

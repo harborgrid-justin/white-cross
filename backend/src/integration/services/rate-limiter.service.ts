@@ -25,6 +25,10 @@ export interface RateLimiterStatus {
  */
 @Injectable()
 export class RateLimiterService extends BaseService {
+  constructor() {
+    super("RateLimiterService");
+  }
+
   private readonly limiters = new Map<
     string,
     {

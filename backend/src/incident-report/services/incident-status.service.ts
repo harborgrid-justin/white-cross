@@ -28,7 +28,9 @@ export class IncidentStatusService extends BaseService {
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
     private readonly notificationService: IncidentNotificationService,
-  ) {}
+  ) {
+    super('IncidentStatusService');
+  }
 
   /**
    * Add follow-up notes to incident report

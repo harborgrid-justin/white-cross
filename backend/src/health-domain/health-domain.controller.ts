@@ -31,7 +31,6 @@ import {
 @ApiTags('Health Domains')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('health-domains')
 export class HealthDomainController extends BaseController {
   constructor(private readonly healthDomainService: HealthDomainService) {}

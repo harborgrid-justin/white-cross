@@ -6,7 +6,6 @@ import { GenerateClaimDto, InsuranceClaimResponseDto } from '../dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Insurance Claims')
 
-@Version('1')
 @Controller('enterprise-features/insurance-claims')
 @ApiBearerAuth()
 export class InsuranceClaimsController extends BaseController {

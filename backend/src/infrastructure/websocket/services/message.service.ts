@@ -11,7 +11,8 @@ import { MessageEventDto, MessageDeliveryDto, ReadReceiptDto, TypingIndicatorDto
 import { BaseService } from '@/common/base';
 @Injectable()
 export class MessageService extends BaseService {
-  constructor(private readonly broadcastService: BroadcastService) {}
+  constructor(private readonly broadcastService: BroadcastService) {
+    super("MessageService");}
 
   /**
    * Sends a message to a conversation room

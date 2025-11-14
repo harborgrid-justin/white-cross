@@ -13,7 +13,8 @@ import { RemediationStatus } from '@/database/models';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ViolationService extends BaseService {
-  constructor(private readonly violationRepository: ViolationRepository) {}
+  constructor(private readonly violationRepository: ViolationRepository) {
+    super("ViolationService");}
 
   async listViolations(query: QueryViolationDto) {
     const { page = 1, limit = 20, ...filters } = query;

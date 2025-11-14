@@ -29,6 +29,10 @@ export * from './swagger/responses';
  */
 @Injectable()
 export class SwaggerResponseBuildersService extends BaseService {
+  constructor() {
+    super("SwaggerResponseBuildersService");
+  }
+
   /**
    * Get success response builders
    */

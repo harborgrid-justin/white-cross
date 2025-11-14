@@ -5,7 +5,9 @@ import { TranslationResult } from './enterprise-features-interfaces';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class LanguageTranslationService extends BaseService {
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('LanguageTranslationService');
+  }
 
   /**
    * Translates a single message to the target language

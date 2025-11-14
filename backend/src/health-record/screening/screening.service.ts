@@ -16,6 +16,10 @@ export class ScreeningService extends BaseService {
   // Mock data store (in production, use actual Sequelize models)
   private screenings: Map<string, HealthScreeningAttributes> = new Map();
 
+  constructor() {
+    super('ScreeningService');
+  }
+
   /**
    * GAP-SCREEN-001: Get all screenings for a student
    */

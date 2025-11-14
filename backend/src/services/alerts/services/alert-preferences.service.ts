@@ -14,7 +14,9 @@ export class AlertPreferencesService extends BaseService {
   constructor(
     @InjectModel(AlertPreferences)
     private readonly alertPreferencesModel: typeof AlertPreferences,
-  ) {}
+  ) {
+    super("AlertPreferencesService");
+  }
 
   /**
    * Get user alert preferences

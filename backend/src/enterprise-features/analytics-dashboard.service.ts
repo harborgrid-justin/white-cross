@@ -20,7 +20,9 @@ export class AnalyticsDashboardService extends BaseService {
     private statisticsService: StatisticsService,
     private complianceService: ComplianceService,
     private exportService: ExportService,
-  ) {}
+  ) {
+    super('AnalyticsDashboardService');
+  }
 
   /**
    * Get real-time dashboard metrics

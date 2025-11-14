@@ -41,7 +41,9 @@ export class AllergyQueryService extends BaseService {
   constructor(
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
-  ) {}
+  ) {
+    super("AllergyQueryService");
+  }
 
   /**
    * Retrieves all allergy records for a specific student with severity-based ordering

@@ -17,7 +17,9 @@ export class SecurityAnalysisService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super('SecurityAnalysisService');
+  }
 
   /**
    * Detect suspicious login patterns

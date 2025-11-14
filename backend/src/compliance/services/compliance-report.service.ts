@@ -15,7 +15,9 @@ export class ComplianceReportService extends BaseService {
   constructor(
     @Inject('DatabaseComplianceReportRepository')
     private readonly reportRepository: ComplianceReportRepository,
-  ) {}
+  ) {
+    super("ComplianceReportService");
+  }
 
   async listReports(query: QueryComplianceReportDto) {
     const { page = 1, limit = 20, ...filters } = query;

@@ -20,7 +20,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Contacts')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('contacts')
 export class ContactController extends BaseController {
   constructor(

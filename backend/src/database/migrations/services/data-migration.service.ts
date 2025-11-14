@@ -12,6 +12,10 @@ import { DataTransformConfig, SeedDataConfig } from '../types/migration-utilitie
 
 @Injectable()
 export class DataMigrationService extends BaseService {
+  constructor() {
+    super("DataMigrationService");
+  }
+
   /**
    * Performs batch data transformation with progress tracking
    */

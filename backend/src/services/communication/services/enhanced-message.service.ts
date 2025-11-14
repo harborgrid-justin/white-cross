@@ -37,7 +37,9 @@ export class EnhancedMessageService extends BaseService {
     private readonly messageSender: MessageSenderService,
     private readonly messageManagement: MessageManagementService,
     private readonly messageQuery: MessageQueryService,
-  ) {}
+  ) {
+    super('EnhancedMessageService');
+  }
 
   // ===== Message Sending =====
 

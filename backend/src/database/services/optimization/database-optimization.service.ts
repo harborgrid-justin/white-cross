@@ -21,6 +21,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class DatabaseOptimizationService extends BaseService {
+  constructor() {
+    super("DatabaseOptimizationService");
+  }
+
   // Index Management Methods (Functions 1-10)
   listAllIndexes = IndexManagement.listAllIndexes;
   analyzeIndexUsage = IndexManagement.analyzeIndexUsage;

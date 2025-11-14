@@ -20,7 +20,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Reports')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('reports')
 export class ReportsController extends BaseController {
   private readonly logger = new Logger(ReportsController.name);

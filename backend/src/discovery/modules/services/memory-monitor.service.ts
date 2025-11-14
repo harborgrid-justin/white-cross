@@ -32,7 +32,8 @@ export class MemoryMonitorService extends BaseService {
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
-  ) {}
+  ) {
+    super("MemoryMonitorService");}
 
   /**
    * Start monitoring memory usage

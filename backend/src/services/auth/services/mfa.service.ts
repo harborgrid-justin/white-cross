@@ -16,7 +16,9 @@ export class MfaService extends BaseService {
     @InjectModel(User)
     private readonly userModel: typeof User,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    super("MfaService");
+  }
 
   /**
    * Initialize MFA setup for a user

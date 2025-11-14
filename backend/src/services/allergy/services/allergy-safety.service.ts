@@ -32,7 +32,9 @@ export class AllergySafetyService extends BaseService {
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
     private readonly allergyCrudService: AllergyCrudService,
-  ) {}
+  ) {
+    super("AllergySafetyService");
+  }
 
   /**
    * Verifies an allergy record through healthcare professional confirmation

@@ -35,6 +35,10 @@ export interface CircuitBreakerStatus {
  */
 @Injectable()
 export class CircuitBreakerService extends BaseService {
+  constructor() {
+    super("CircuitBreakerService");
+  }
+
   private readonly circuits = new Map<
     string,
     {

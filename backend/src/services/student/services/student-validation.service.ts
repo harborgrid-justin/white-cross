@@ -34,7 +34,9 @@ export class StudentValidationService extends BaseService {
     private readonly studentModel: typeof Student,
     @InjectModel(User)
     private readonly userModel: typeof User,
-  ) {}
+  ) {
+    super('StudentValidationService');
+  }
 
   /**
    * Validate student number uniqueness

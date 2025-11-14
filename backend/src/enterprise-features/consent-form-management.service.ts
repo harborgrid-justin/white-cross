@@ -10,7 +10,9 @@ import { BaseService } from '@/common/base';
 export class ConsentFormManagementService extends BaseService {
   private consentForms: ConsentForm[] = [];
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('ConsentFormManagementService');
+  }
 
   /**
    * Create a new consent form

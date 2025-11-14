@@ -146,11 +146,21 @@ export abstract class BaseService {
   protected readonly requestContext?: RequestContextService;
 
   constructor(
-    requestContextOrOptions?: RequestContextService | BaseServiceOptions | BaseServiceConfig,
+    requestContextOrOptions?: RequestContextService | BaseServiceOptions | BaseServiceConfig | string,
     options?: BaseServiceOptions,
   ) {
     // Handle different constructor signatures for backward compatibility
-    if (requestContextOrOptions instanceof RequestContextService) {
+    if (typeof requestContextOrOptions === 'string') {
+      // Simple string constructor: (serviceName)
+      this.options = {
+        serviceName: requestContextOrOptions,
+        autoLogErrors: true,
+        includeStackTrace: true,
+        paginationConstraints: {},
+        enableAuditLogging: true,
+        logger: undefined,
+      };
+    } else if (requestContextOrOptions instanceof RequestContextService) {
       // Legacy constructor: (requestContext, options?)
       this.requestContext = requestContextOrOptions;
       this.options = {
@@ -162,7 +172,7 @@ export abstract class BaseService {
         enableAuditLogging: options?.enableAuditLogging ?? true,
         logger: options?.logger,
       };
-    } else if (requestContextOrOptions && 'logger' in requestContextOrOptions) {
+    } else if (requestContextOrOptions && typeof requestContextOrOptions === 'object' && 'logger' in requestContextOrOptions) {
       // Config-based constructor: (config)
       const config = requestContextOrOptions as BaseServiceConfig;
       this.options = {

@@ -17,7 +17,9 @@ export class EnhancedAuditService extends BaseService {
   private auditLog: AuditLogEntry[] = [];
   private readonly maxLogSize = 10000;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    super('EnhancedAuditService');
+  }
 
   /**
    * Logs an audit event

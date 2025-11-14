@@ -10,7 +10,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Drug Safety')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/drugs')
 export class DrugSafetyController extends BaseController {
   constructor(

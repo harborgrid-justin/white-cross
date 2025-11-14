@@ -22,7 +22,9 @@ export class SessionManagementService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditService: AuditService,
-  ) {}
+  ) {
+    super("SessionManagementService");
+  }
 
   /**
    * Get Sequelize models dynamically

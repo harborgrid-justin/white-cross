@@ -35,7 +35,9 @@ export class BudgetService extends BaseService {
     private readonly budgetCategoryModel: typeof BudgetCategory,
     @InjectModel(BudgetTransaction)
     private readonly budgetTransactionModel: typeof BudgetTransaction,
-  ) {}
+  ) {
+    super('BudgetService');
+  }
 
   /**
    * Get budget categories with optional filtering

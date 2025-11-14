@@ -52,7 +52,8 @@ interface SecuritySchemeConfig {
 
 @Injectable()
 export class SwaggerSecuritySchemesService extends BaseService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    super("SwaggerSecuritySchemesService");}
 
   /**
    * Creates JWT Bearer token authentication scheme configuration.

@@ -20,11 +20,12 @@ import {
 
 @ApiTags('AI Search')
 
-@Version('1')
 @Controller('ai-search')
 @ApiBearerAuth()
 export class AiSearchController extends BaseController {
-  constructor(private readonly aiSearchService: AiSearchService) {}
+  constructor(private readonly aiSearchService: AiSearchService) {
+    super();
+  }
 
   @Post('query')
   @HttpCode(HttpStatus.OK)

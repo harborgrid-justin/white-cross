@@ -21,7 +21,9 @@ export class IntegrationConfigService extends BaseService {
     private readonly validationService: IntegrationValidationService,
     private readonly encryptionService: IntegrationEncryptionService,
     private readonly logService: IntegrationLogService,
-  ) {}
+  ) {
+    super("IntegrationConfigService");
+  }
 
   /**
    * Get all integration configurations with optional type filtering

@@ -39,7 +39,9 @@ export class AppointmentQueryService extends BaseService {
     @InjectModel(User)
     private readonly userModel: typeof User,
     private readonly schedulingService: AppointmentSchedulingService,
-  ) {}
+  ) {
+    super('AppointmentQueryService');
+  }
 
   /**
    * Get appointments by a specific date

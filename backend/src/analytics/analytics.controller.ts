@@ -19,7 +19,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Analytics')
 
-@Version('1')
 @Controller('analytics')
 @ApiBearerAuth()
 @UseInterceptors(CacheInterceptor)

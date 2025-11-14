@@ -9,6 +9,10 @@ import { IncidentType } from '../enums/incident-type.enum';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class IncidentValidationService extends BaseService {
+  constructor() {
+    super('IncidentValidationService');
+  }
+
   /**
    * Validate incident report data before creation
    */

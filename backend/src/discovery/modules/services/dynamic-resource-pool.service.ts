@@ -56,7 +56,9 @@ export class DynamicResourcePoolService extends BaseService {
     private readonly options: ResourcePoolGlobalOptions,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
-  ) {}
+  ) {
+    super("DynamicResourcePoolService");
+  }
 
   /**
    * Create a new resource pool

@@ -5,7 +5,9 @@ import { ReportDefinition, ReportExecutionResult } from './enterprise-features-i
 import { BaseService } from '@/common/base';
 @Injectable()
 export class CustomReportBuilderService extends BaseService {
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('CustomReportBuilderService');
+  }
 
   /**
    * Creates a new custom report definition

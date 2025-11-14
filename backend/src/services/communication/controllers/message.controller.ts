@@ -8,7 +8,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Messages')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('messages')
 export class MessageController extends BaseController {
   constructor(private readonly messageService: MessageService) {}

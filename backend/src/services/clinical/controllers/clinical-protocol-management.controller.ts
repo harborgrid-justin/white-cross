@@ -9,7 +9,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Protocols')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/protocols')
 export class ClinicalProtocolManagementController extends BaseController {
   constructor(private readonly protocolService: ClinicalProtocolService) {}

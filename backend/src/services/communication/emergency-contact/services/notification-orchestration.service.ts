@@ -31,7 +31,9 @@ export class NotificationOrchestrationService extends BaseService {
     private readonly emergencyContactModel: typeof EmergencyContact,
     private readonly notificationService: NotificationDeliveryService,
     private readonly contactManagementService: ContactManagementService,
-  ) {}
+  ) {
+    super("NotificationOrchestrationService");
+  }
 
   /**
    * Send emergency notification to all contacts for a student

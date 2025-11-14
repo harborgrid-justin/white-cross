@@ -7,7 +7,6 @@ import { GenerateComplianceReportDto, HIPAAComplianceCheckResponseDto, Regulatio
 import { BaseController } from '@/common/base';
 @ApiTags('Compliance & Regulations')
 
-@Version('1')
 @Controller('enterprise-features')
 @ApiBearerAuth()
 export class ComplianceController extends BaseController {

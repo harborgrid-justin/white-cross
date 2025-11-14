@@ -29,12 +29,13 @@ import { BaseController } from '@/common/base';
 @ApiTags('appointments-query')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('appointments')
 export class AppointmentQueryController extends BaseController {
   private readonly logger = new Logger(AppointmentQueryController.name);
 
-  constructor(private readonly appointmentQueryService: AppointmentQueryService) {}
+  constructor(private readonly appointmentQueryService: AppointmentQueryService) {
+    super();
+  }
 
   /**
    * Get appointments by date

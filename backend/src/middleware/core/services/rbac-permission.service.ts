@@ -27,6 +27,10 @@ import {
  */
 @Injectable()
 export class RbacPermissionService extends BaseService {
+  constructor() {
+    super('RbacPermissionService');
+  }
+
   /**
    * Check if user has specific permission
    *

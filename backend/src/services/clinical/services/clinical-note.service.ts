@@ -11,7 +11,9 @@ export class ClinicalNoteService extends BaseService {
   constructor(
     @InjectModel(ClinicalNote)
     private noteModel: typeof ClinicalNote,
-  ) {}
+  ) {
+    super("ClinicalNoteService");
+  }
 
   async create(createDto: CreateNoteDto): Promise<ClinicalNote> {
     return this.noteModel.create(createDto as any);

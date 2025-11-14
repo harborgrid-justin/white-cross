@@ -18,7 +18,9 @@ import { BaseService } from '@/common/base';
 export class SystemInitializationService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("SystemInitializationService");
+  }
 
   /**
    * Get Sequelize models dynamically

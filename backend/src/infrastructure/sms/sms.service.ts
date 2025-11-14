@@ -64,6 +64,7 @@ export class SmsService extends BaseService {
     @InjectQueue(SMS_QUEUE_NAME) private readonly smsQueue: Queue,
     private readonly smsSender: SmsSenderService,
   ) {
+    super("SmsService");
     this.isProduction = this.configService.get<string>('NODE_ENV') === 'production';
 
     this.logInfo(

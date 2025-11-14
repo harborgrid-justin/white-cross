@@ -4,6 +4,10 @@ import { HistogramEntry, MetricsSnapshot } from '../interfaces/metrics.interface
 import { BaseService } from '@/common/base';
 @Injectable()
 export class DiscoveryMetricsService extends BaseService {
+  constructor() {
+    super("DiscoveryMetricsService");
+  }
+
   private counters = new Map<string, Map<string, number>>();
   private histograms = new Map<string, Array<HistogramEntry>>();
   private gauges = new Map<

@@ -16,6 +16,10 @@ import { EmergencyContact } from '@/database/models';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ContactValidationService extends BaseService {
+  constructor() {
+    super('ContactValidationService');
+  }
+
   /**
    * Validate phone number format
    * Ensures phone number contains at least 10 digits

@@ -10,7 +10,8 @@ export class IntegrationEncryptionService extends BaseService {
   private readonly IV_LENGTH = 16; // 128 bits
   private readonly SALT_LENGTH = 32;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) {
+    super("IntegrationEncryptionService");}
 
   /**
    * Get encryption key from environment variables

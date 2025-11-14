@@ -126,7 +126,9 @@ export class MedicalImagingIntegrationService extends BaseService {
     @InjectModel(VitalSigns)
     private readonly vitalSignsModel: typeof VitalSigns,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MedicalImagingIntegrationService");
+  }
 
   /**
    * Upload and process medical images

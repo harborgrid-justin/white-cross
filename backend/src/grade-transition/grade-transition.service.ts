@@ -37,7 +37,9 @@ export class GradeTransitionService extends BaseService {
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("GradeTransitionService");
+  }
 
   /**
    * Perform bulk grade transition for end of school year

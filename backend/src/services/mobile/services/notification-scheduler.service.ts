@@ -31,7 +31,9 @@ export class NotificationSchedulerService extends BaseService {
     @InjectModel(PushNotification)
     private readonly notificationModel: typeof PushNotification,
     private readonly deliveryService: NotificationDeliveryService,
-  ) {}
+  ) {
+    super("NotificationSchedulerService");
+  }
 
   /**
    * Process scheduled notifications

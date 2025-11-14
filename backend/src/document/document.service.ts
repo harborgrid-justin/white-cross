@@ -24,7 +24,9 @@ export class DocumentService extends BaseService {
     @InjectModel(DocumentAuditTrail)
     private auditModel: typeof DocumentAuditTrail,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("DocumentService");
+  }
 
   /**
    * Get all documents with pagination and filters

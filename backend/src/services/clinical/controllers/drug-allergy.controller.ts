@@ -12,7 +12,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Drug Allergies')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/drugs')
 export class DrugAllergyController extends BaseController {
   constructor(

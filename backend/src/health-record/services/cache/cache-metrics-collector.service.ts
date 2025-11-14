@@ -19,6 +19,7 @@ export class CacheMetricsCollectorService extends BaseService {
   private readonly metrics: CacheMetrics = this.initializeMetrics();
 
   constructor(private readonly eventEmitter: EventEmitter2) {
+    super("CacheMetricsCollectorService");
     this.setupEventListeners();
   }
 

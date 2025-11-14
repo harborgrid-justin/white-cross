@@ -37,7 +37,8 @@ export class CacheMonitoringService extends BaseService {
   // Track service-level statistics
   private serviceStats = new Map<string, ServiceCacheStats>();
 
-  constructor(private readonly queryCacheService: QueryCacheService) {}
+  constructor(private readonly queryCacheService: QueryCacheService) {
+    super("CacheMonitoringService");}
 
   /**
    * Get comprehensive cache health report

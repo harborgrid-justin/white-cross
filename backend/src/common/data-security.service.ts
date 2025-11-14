@@ -1348,7 +1348,8 @@ export class DataSecurityService extends BaseService {
  */
 @Injectable()
 export class PIIRedactionInterceptor implements NestInterceptor {
-  constructor(private readonly dataSecurityService: DataSecurityService) {}
+  constructor(private readonly dataSecurityService: DataSecurityService) {
+    super("DataSecurityService");}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(

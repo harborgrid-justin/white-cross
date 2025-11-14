@@ -7,6 +7,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class StatisticsService extends BaseService {
+  constructor() {
+    super('StatisticsService');
+  }
+
   /**
    * Get appointment statistics
    */

@@ -19,7 +19,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Health Records - Allergies')
 
-@Version('1')
 @Controller('health-records/allergies')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)

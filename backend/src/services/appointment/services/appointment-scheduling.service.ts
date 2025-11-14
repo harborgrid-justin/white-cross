@@ -33,7 +33,9 @@ export class AppointmentSchedulingService extends BaseService {
     private readonly appointmentModel: typeof Appointment,
     @InjectModel(User)
     private readonly userModel: typeof User,
-  ) {}
+  ) {
+    super('AppointmentSchedulingService');
+  }
 
   /**
    * Check availability for a time slot with conflict detection

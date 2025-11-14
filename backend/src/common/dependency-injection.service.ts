@@ -38,7 +38,8 @@
  * // BAD - Circular dependency
  * @Injectable()
  * class UserService {
- *   constructor(private authService: AuthService) {}
+ *   constructor(private authService: AuthService) {
+    super("AuditService");}
  * }
  *
  * @Injectable()

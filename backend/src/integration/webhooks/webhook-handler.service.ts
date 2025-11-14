@@ -13,6 +13,10 @@ import {
 
 @Injectable()
 export class WebhookHandlerService extends BaseService {
+  constructor() {
+    super("WebhookHandlerService");
+  }
+
   /**
    * Validate webhook signature
    */

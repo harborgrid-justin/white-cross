@@ -21,12 +21,13 @@ import { BaseController } from '@/common/base';
 @ApiTags('appointments-reminders')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('appointments')
 export class ReminderController extends BaseController {
   private readonly logger = new Logger(ReminderController.name);
 
-  constructor(private readonly reminderService: ReminderService) {}
+  constructor(private readonly reminderService: ReminderService) {
+    super();
+  }
 
   /**
    * Process pending reminders

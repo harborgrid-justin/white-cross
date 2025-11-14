@@ -23,7 +23,9 @@ export class InventoryPurchaseOrderService extends BaseService {
     @InjectModel(InventoryItem)
     private readonly inventoryItemModel: typeof InventoryItem,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("InventoryPurchaseOrderService");
+  }
 
   /**
    * Create purchase order with comprehensive validation

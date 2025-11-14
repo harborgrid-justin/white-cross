@@ -16,7 +16,9 @@ export class ThreatDetectionService extends BaseService {
   constructor(
     @InjectModel(LoginAttemptEntity)
     private readonly loginAttemptModel: typeof LoginAttemptEntity,
-  ) {}
+  ) {
+    super("ThreatDetectionService");
+  }
 
   /**
    * Detect brute force attacks

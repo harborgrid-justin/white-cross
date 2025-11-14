@@ -30,7 +30,9 @@ export class IncidentWriteService extends BaseService {
     private readonly validationService: IncidentValidationService,
     private readonly notificationService: IncidentNotificationService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super('IncidentWriteService');
+  }
 
   /**
    * Create new incident report

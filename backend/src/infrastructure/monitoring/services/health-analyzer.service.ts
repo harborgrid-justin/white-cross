@@ -18,6 +18,10 @@ import {
 
 @Injectable()
 export class HealthAnalyzerService extends BaseService {
+  constructor() {
+    super("HealthAnalyzerService");
+  }
+
   /**
    * Determines enhanced overall status
    */

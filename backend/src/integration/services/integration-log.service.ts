@@ -37,7 +37,9 @@ export class IntegrationLogService extends BaseService {
   constructor(
     @InjectModel(IntegrationLog)
     private readonly logModel: typeof IntegrationLog,
-  ) {}
+  ) {
+    super("IntegrationLogService");
+  }
 
   /**
    * Create integration log entry

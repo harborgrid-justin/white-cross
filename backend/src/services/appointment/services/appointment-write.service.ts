@@ -58,7 +58,9 @@ export class AppointmentWriteService extends BaseService {
     private readonly userModel: typeof User,
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: AppConfigService,
-  ) {}
+  ) {
+    super('AppointmentWriteService');
+  }
 
   /**
    * Create new appointment

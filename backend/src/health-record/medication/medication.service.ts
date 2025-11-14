@@ -11,7 +11,9 @@ export class MedicationService extends BaseService {
   constructor(
     @InjectModel(Medication)
     private readonly medicationModel: typeof Medication,
-  ) {}
+  ) {
+    super("MedicationService");
+  }
 
   /**
    * Create a new medication

@@ -6,7 +6,6 @@ import { DeleteEvidenceDto, EvidenceFileResponseDto, UploadEvidenceDto } from '.
 import { BaseController } from '@/common/base';
 @ApiTags('Evidence Management')
 
-@Version('1')
 @Controller('enterprise-features/evidence')
 @ApiBearerAuth()
 export class EvidenceController extends BaseController {

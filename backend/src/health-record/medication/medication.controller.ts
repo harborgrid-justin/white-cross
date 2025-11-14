@@ -9,7 +9,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('medications')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('medications')
 export class HealthRecordMedicationController extends BaseController {
   constructor(private readonly medicationService: MedicationService) {}

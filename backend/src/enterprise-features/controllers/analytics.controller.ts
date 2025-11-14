@@ -6,7 +6,6 @@ import { DashboardMetricResponseDto } from '../dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Analytics Dashboard')
 
-@Version('1')
 @Controller('enterprise-features/analytics')
 @ApiBearerAuth()
 export class AnalyticsController extends BaseController {

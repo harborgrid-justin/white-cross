@@ -88,7 +88,9 @@ export class StudentService extends BaseService {
     private readonly barcodeService: StudentBarcodeService,
     private readonly waitlistService: StudentWaitlistService,
     private readonly validationService: StudentValidationService,
-  ) {}
+  ) {
+    super('StudentService');
+  }
 
   // ==================== CRUD Operations (delegated to StudentCrudService) ====================
 

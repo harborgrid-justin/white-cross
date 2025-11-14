@@ -35,7 +35,9 @@ export class HealthRecordChronicConditionService extends BaseService {
     private readonly chronicConditionModel: typeof ChronicCondition,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordChronicConditionService");
+  }
 
   /**
    * Add chronic condition to student with validation and audit logging

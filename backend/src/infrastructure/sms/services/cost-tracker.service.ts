@@ -31,6 +31,7 @@ export class CostTrackerService extends BaseService {
   private totalMessages = 0;
 
   constructor() {
+    super('CostTrackerService');
     this.logInfo('Cost tracker service initialized');
   }
 

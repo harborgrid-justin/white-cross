@@ -16,7 +16,9 @@ export class ConfigStatisticsService extends BaseService {
     @InjectModel(SystemConfig)
     private readonly configModel: typeof SystemConfig,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ConfigStatisticsService");
+  }
 
   /**
    * Get configuration statistics

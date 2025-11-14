@@ -39,6 +39,10 @@ export interface VoiceCallResult {
 
 @Injectable()
 export class NotificationDeliveryService extends BaseService {
+  constructor() {
+    super('NotificationDeliveryService');
+  }
+
   /**
    * Send SMS message
    * Integrates with SMS gateway (e.g., Twilio)

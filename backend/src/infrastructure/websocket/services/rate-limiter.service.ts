@@ -94,6 +94,7 @@ export class RateLimiterService extends BaseService {
   private readonly ENTRY_TTL = 30 * 60 * 1000;
 
   constructor() {
+    super('RateLimiterService');
     // Initialize default rate limit configurations
     this.initializeConfigs();
 

@@ -21,7 +21,9 @@ export class ApiKeyAuthService extends BaseService {
     @InjectModel(ApiKeyEntity)
     private readonly apiKeyModel: typeof ApiKeyEntity,
     private readonly configService: AppConfigService,
-  ) {}
+  ) {
+    super('ApiKeyAuthService');
+  }
 
   /**
    * Generate a new API key

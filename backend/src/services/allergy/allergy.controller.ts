@@ -23,7 +23,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Allergies')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('allergies')
 export class AllergyController extends BaseController {
   constructor(

@@ -22,6 +22,7 @@ export class CacheEvictionService extends BaseService {
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
   ) {
+    super("CacheEvictionService");
     this.initializeStrategies();
   }
 

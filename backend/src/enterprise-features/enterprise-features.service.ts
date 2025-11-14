@@ -55,6 +55,7 @@ export class EnterpriseFeaturesService extends BaseService {
     private readonly reportBuilderService: CustomReportBuilderService,
     private readonly analyticsService: AnalyticsDashboardService,
   ) {
+    super("EnterpriseFeaturesService");
     this.logInfo('Enterprise Features Service initialized with all specialized services');
   }
 

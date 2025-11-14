@@ -41,7 +41,9 @@ export class UserRoleAssignmentService extends BaseService {
     @InjectConnection() private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditService: AuditService,
     private readonly cacheService: PermissionCacheService,
-  ) {}
+  ) {
+    super("UserRoleAssignmentService");
+  }
 
   /**
    * Get Sequelize models dynamically

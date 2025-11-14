@@ -15,7 +15,8 @@ export class PresenceService extends BaseService {
   constructor(
     private readonly websocketGateway: WebSocketGateway,
     private readonly broadcastService: BroadcastService,
-  ) {}
+  ) {
+    super("PresenceService");}
 
   /**
    * Updates and broadcasts user presence status

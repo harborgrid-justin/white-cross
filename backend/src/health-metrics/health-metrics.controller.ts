@@ -13,11 +13,12 @@ import { BaseController } from '@/common/base';
 @ApiTags('Health Metrics')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('health-metrics')
 @UsePipes(new ValidationPipe({ transform: true }))
 export class HealthMetricsController extends BaseController {
-  constructor(private readonly healthMetricsService: HealthMetricsService) {}
+  constructor(private readonly healthMetricsService: HealthMetricsService) {
+    super();
+  }
 
   @Get('overview')
   @ApiOperation({

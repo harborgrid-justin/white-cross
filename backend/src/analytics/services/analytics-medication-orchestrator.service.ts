@@ -70,7 +70,8 @@ interface MedicationAdherenceResponse {
 export class AnalyticsMedicationOrchestratorService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
-  ) {}
+  ) {
+    super("AnalyticsMedicationOrchestratorService");}
 
   /**
    * Get medication usage statistics

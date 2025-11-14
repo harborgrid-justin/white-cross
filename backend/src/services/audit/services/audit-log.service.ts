@@ -19,7 +19,9 @@ export class AuditLogService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super('AuditLogService');
+  }
 
   /**
    * Log general system action

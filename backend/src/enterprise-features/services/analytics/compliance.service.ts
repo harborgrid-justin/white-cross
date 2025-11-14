@@ -8,7 +8,9 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class ComplianceService extends BaseService {
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('ComplianceService');
+  }
 
   /**
    * Get compliance metrics

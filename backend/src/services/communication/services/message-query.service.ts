@@ -35,7 +35,9 @@ export class MessageQueryService extends BaseService {
     @InjectModel(MessageRead) private messageReadModel: typeof MessageRead,
     @InjectModel(ConversationParticipant)
     private participantModel: typeof ConversationParticipant,
-  ) {}
+  ) {
+    super("MessageQueryService");
+  }
 
   /**
    * Get message history with pagination

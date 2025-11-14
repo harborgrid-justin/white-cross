@@ -26,7 +26,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Administration')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('administration')
 export class AdministrationController extends BaseController {
   constructor(

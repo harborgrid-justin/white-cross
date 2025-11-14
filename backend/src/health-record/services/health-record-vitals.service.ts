@@ -35,7 +35,9 @@ export class HealthRecordVitalsService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
-  ) {}
+  ) {
+    super("HealthRecordVitalsService");
+  }
 
   /**
    * Get growth chart data for student (height/weight over time)

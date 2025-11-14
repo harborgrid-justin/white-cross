@@ -6,7 +6,6 @@ import { CreateReportDefinitionDto, ReportDefinitionResponseDto } from '../dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Custom Reports')
 
-@Version('1')
 @Controller('enterprise-features/custom-reports')
 @ApiBearerAuth()
 export class CustomReportsController extends BaseController {

@@ -42,7 +42,9 @@ export class HealthRecordBatchService extends BaseService {
     private readonly healthRecordModel: typeof HealthRecord,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordBatchService");
+  }
 
   /**
    * Batch find health records by IDs (for DataLoader)

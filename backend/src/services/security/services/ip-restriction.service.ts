@@ -17,7 +17,9 @@ export class IpRestrictionService extends BaseService {
   constructor(
     @InjectModel(IpRestrictionEntity)
     private readonly ipRestrictionModel: typeof IpRestrictionEntity,
-  ) {}
+  ) {
+    super("IpRestrictionService");
+  }
 
   /**
    * Check if an IP address is allowed to access the system

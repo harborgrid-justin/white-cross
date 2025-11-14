@@ -30,7 +30,9 @@ export class DashboardService extends BaseService {
     private allergyModel: typeof Allergy,
     @InjectModel(ChronicCondition)
     private chronicConditionModel: typeof ChronicCondition,
-  ) {}
+  ) {
+    super("DashboardService");
+  }
 
   /**
    * Get real-time dashboard metrics

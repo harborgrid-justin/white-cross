@@ -6,7 +6,6 @@ import { DetectLanguageDto, TranslateBulkMessagesDto, TranslateMessageDto } from
 import { BaseController } from '@/common/base';
 @ApiTags('Language Translation')
 
-@Version('1')
 @Controller('enterprise-features/translate')
 @ApiBearerAuth()
 export class TranslationController extends BaseController {

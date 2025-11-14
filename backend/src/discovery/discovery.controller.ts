@@ -26,7 +26,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Discovery')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('discovery')
 @UseFilters(DiscoveryExceptionFilter)
 @UseGuards(AdminDiscoveryGuard, DiscoveryRateLimitGuard)

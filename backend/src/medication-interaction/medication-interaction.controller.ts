@@ -13,7 +13,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Medication Interactions')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('medication-interactions')
 export class MedicationInteractionController extends BaseController {
   private readonly logger = new Logger(MedicationInteractionController.name);

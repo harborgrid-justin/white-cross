@@ -39,7 +39,9 @@ export class ClinicalDecisionSupportService extends BaseService {
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ClinicalDecisionSupportService");
+  }
 
   /**
    * Analyze patient condition and provide clinical recommendations

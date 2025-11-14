@@ -48,7 +48,9 @@ export class NotificationDeliveryService extends BaseService {
     private readonly deviceTokenModel: typeof DeviceToken,
     private readonly platformService: NotificationPlatformService,
     private readonly deviceTokenService: DeviceTokenService,
-  ) {}
+  ) {
+    super("NotificationDeliveryService");
+  }
 
   /**
    * Send push notification to users

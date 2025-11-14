@@ -27,7 +27,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Health Records - Compliance')
 
-@Version('1')
 @Controller('health-records')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, HealthRecordRateLimitGuard)

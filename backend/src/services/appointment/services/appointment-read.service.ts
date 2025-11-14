@@ -27,7 +27,9 @@ export class AppointmentReadService extends BaseService {
     private readonly appointmentModel: typeof Appointment,
     @InjectModel(User)
     private readonly userModel: typeof User,
-  ) {}
+  ) {
+    super('AppointmentReadService');
+  }
 
   /**
    * Get appointments with filtering and pagination

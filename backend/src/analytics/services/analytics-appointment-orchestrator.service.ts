@@ -93,6 +93,10 @@ interface NoShowRateResponse {
  */
 @Injectable()
 export class AnalyticsAppointmentOrchestratorService extends BaseService {
+  constructor() {
+    super("AnalyticsAppointmentOrchestratorService");
+  }
+
   /**
    * Get appointment trends
    */

@@ -44,7 +44,9 @@ export class EmergencyBroadcastService extends BaseService {
     private readonly deliveryService: BroadcastDeliveryService,
     private readonly managementService: BroadcastManagementService,
     private readonly templateService: BroadcastTemplateService,
-  ) {}
+  ) {
+    super("EmergencyBroadcastService");
+  }
 
   /**
    * Determine priority from emergency type

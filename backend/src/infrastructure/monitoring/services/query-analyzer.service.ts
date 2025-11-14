@@ -26,7 +26,8 @@ export class QueryAnalyzerService extends BaseService {
     verySlow: 0,
   };
 
-  constructor() {}
+  constructor() {
+    super("QueryAnalyzerService");}
 
   /**
    * Record query execution and update metrics

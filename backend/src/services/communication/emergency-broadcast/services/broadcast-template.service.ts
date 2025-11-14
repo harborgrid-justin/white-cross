@@ -11,6 +11,10 @@ import { EmergencyTemplateDto } from '../dto';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class BroadcastTemplateService extends BaseService {
+  constructor() {
+    super('BroadcastTemplateService');
+  }
+
   /**
    * Get emergency broadcast templates
    */

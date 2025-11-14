@@ -10,7 +10,9 @@ export class MessageService extends BaseService {
   constructor(
     @InjectModel(Message) private messageModel: typeof Message,
     @InjectModel(MessageDelivery) private deliveryModel: typeof MessageDelivery,
-  ) {}
+  ) {
+    super("MessageService");
+  }
 
   /**
    * Send message to multiple recipients

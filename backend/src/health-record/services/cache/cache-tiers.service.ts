@@ -6,5 +6,9 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class CacheTiersService extends BaseService {
+  constructor() {
+    super("CacheTiersService");
+  }
+
   // Placeholder implementation
 }

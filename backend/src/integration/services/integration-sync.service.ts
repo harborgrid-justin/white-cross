@@ -25,7 +25,9 @@ export class IntegrationSyncService extends BaseService {
     private readonly configModel: typeof IntegrationConfig,
     private readonly configService: IntegrationConfigService,
     private readonly logService: IntegrationLogService,
-  ) {}
+  ) {
+    super("IntegrationSyncService");
+  }
 
   /**
    * Trigger integration sync

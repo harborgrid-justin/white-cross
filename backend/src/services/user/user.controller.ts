@@ -22,7 +22,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('users')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('users')
 @UseInterceptors(ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))

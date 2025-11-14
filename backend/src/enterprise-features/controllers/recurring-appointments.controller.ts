@@ -6,7 +6,6 @@ import { CreateRecurringTemplateDto, RecurringTemplateResponseDto } from '../dto
 import { BaseController } from '@/common/base';
 @ApiTags('Recurring Appointments')
 
-@Version('1')
 @Controller('enterprise-features/recurring-appointments')
 @ApiBearerAuth()
 export class RecurringAppointmentsController extends BaseController {

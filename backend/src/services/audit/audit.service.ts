@@ -31,7 +31,9 @@ export class AuditService extends BaseService {
     private readonly statisticsService: AuditStatisticsService,
     private readonly securityService: SecurityAnalysisService,
     private readonly utilsService: AuditUtilsService,
-  ) {}
+  ) {
+    super('AuditService');
+  }
 
   // ========== CORE AUDIT LOGGING ==========
 

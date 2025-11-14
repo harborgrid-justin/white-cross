@@ -25,6 +25,10 @@ import {
  */
 @Injectable()
 export class ComplianceReportBuilderService extends BaseService {
+  constructor() {
+    super("ComplianceReportBuilderService");
+  }
+
   /**
    * Build immunization compliance report
    */

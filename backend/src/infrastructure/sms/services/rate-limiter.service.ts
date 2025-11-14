@@ -25,6 +25,7 @@ export class RateLimiterService extends BaseService {
   private readonly DEFAULT_WINDOW_SECONDS = 3600; // 1 hour
 
   constructor(private readonly configService: ConfigService) {
+    super("RateLimiterService");
     // Load rate limits from configuration
     this.DEFAULT_PER_PHONE_LIMIT = this.configService.get<number>(
       'SMS_RATE_LIMIT_PER_PHONE',

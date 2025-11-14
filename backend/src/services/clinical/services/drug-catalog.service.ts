@@ -16,7 +16,9 @@ export class DrugCatalogService extends BaseService {
   constructor(
     @InjectModel(DrugCatalog)
     private drugCatalogModel: typeof DrugCatalog,
-  ) {}
+  ) {
+    super("DrugCatalogService");
+  }
 
   /**
    * Search drugs by name

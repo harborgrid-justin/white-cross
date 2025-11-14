@@ -25,7 +25,9 @@ export class L3CacheService extends BaseService {
     private readonly phiLogger: PHIAccessLogger,
     @InjectModel(CacheEntryModel)
     private readonly cacheEntryModel: typeof CacheEntryModel,
-  ) {}
+  ) {
+    super("L3CacheService");
+  }
 
   /**
    * Get data from L3 cache (Database result cache)

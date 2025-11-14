@@ -19,12 +19,13 @@ import { BaseController } from '@/common/base';
 @ApiTags('Chronic Conditions')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('chronic-conditions')
 export class ChronicConditionController extends BaseController {
   constructor(
     private readonly chronicConditionService: ChronicConditionService,
-  ) {}
+  ) {
+    super();
+  }
 
   @Post()
   @ApiOperation({

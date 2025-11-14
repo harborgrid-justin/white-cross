@@ -73,6 +73,7 @@ export class HealthCheckService extends BaseService {
     private readonly sequelize: Sequelize,
     private readonly configService: ConfigService,
   ) {
+    super("HealthCheckService");
     this.failedJobsThreshold = this.configService.get(
       'ALERT_FAILED_JOBS_THRESHOLD',
       100,

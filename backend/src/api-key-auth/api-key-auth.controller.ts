@@ -28,12 +28,13 @@ interface AuthenticatedRequest extends ExpressRequest {
  */
 @ApiTags('API Key Management')
 
-@Version('1')
 @Controller('api-keys')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class ApiKeyAuthController extends BaseController {
-  constructor(private readonly apiKeyAuthService: ApiKeyAuthService) {}
+  constructor(private readonly apiKeyAuthService: ApiKeyAuthService) {
+    super();
+  }
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.DISTRICT_ADMIN)

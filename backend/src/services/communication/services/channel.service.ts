@@ -5,6 +5,10 @@ import { ChannelSendData, ChannelSendResult } from '../interfaces/index';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ChannelService extends BaseService {
+  constructor() {
+    super('ChannelService');
+  }
+
   async sendViaChannel(
     channel: MessageType,
     data: ChannelSendData,

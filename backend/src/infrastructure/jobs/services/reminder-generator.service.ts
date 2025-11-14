@@ -39,7 +39,9 @@ interface MedicationReminderQueryResult {
  */
 @Injectable()
 export class ReminderGeneratorService extends BaseService {
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(@InjectConnection() private readonly sequelize: Sequelize) {
+    super("ReminderGeneratorService");
+  }
 
   /**
    * Generate reminders for specific student (used for on-demand requests)

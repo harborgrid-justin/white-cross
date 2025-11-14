@@ -339,6 +339,7 @@ export class AuthenticationService extends BaseService {
    * });
    */
   constructor(config: AuthenticationConfig) {
+    super("AuthenticationService");
     this.config = config;
   }
 

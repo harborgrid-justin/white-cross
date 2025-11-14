@@ -58,6 +58,10 @@ export interface HealthAlert {
 
 @Injectable()
 export class HealthMetricsService extends BaseService {
+  constructor() {
+    super('HealthMetricsService');
+  }
+
   async getMetricsOverview(
     timeRange: string = '24h',
     department?: string,

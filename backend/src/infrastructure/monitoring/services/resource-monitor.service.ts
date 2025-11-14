@@ -11,6 +11,10 @@ import * as os from 'os';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ResourceMonitorService extends BaseService {
+  constructor() {
+    super("ResourceMonitorService");
+  }
+
   /**
    * Checks system resource utilization
    */

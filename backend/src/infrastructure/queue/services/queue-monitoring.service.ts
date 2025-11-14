@@ -66,6 +66,7 @@ export class QueueMonitoringService extends BaseService {
   private healthHistory: Map<string, QueueHealth[]> = new Map();
 
   constructor() {
+    super("QueueMonitoringService");
     this.logInfo('Queue Monitoring Service initialized');
   }
 

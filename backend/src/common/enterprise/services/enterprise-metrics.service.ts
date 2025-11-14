@@ -20,6 +20,7 @@ export class EnterpriseMetricsService extends BaseService {
   private startTime = Date.now();
 
   constructor(private readonly moduleName: string) {
+    super("EnterpriseMetricsService");
     this.logInfo(
       `Enterprise metrics service initialized for module: ${moduleName}`,
     );

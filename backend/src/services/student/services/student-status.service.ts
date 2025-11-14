@@ -22,7 +22,9 @@ export class StudentStatusService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super('StudentStatusService');
+  }
 
   /**
    * Deactivate a student

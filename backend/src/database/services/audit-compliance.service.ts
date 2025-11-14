@@ -43,7 +43,9 @@ export class AuditComplianceService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super("AuditComplianceService");
+  }
 
   /**
    * Generate compliance report (HIPAA, FERPA, etc.)

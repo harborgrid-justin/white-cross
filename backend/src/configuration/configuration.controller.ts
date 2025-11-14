@@ -22,7 +22,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Configuration')
 
-@Version('1')
 @Controller('configurations')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

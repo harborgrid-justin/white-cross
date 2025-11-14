@@ -14,7 +14,9 @@ export class ClinicalProtocolService extends BaseService {
   constructor(
     @InjectModel(ClinicalProtocol)
     private protocolModel: typeof ClinicalProtocol,
-  ) {}
+  ) {
+    super("ClinicalProtocolService");
+  }
 
   async create(createDto: CreateProtocolDto): Promise<ClinicalProtocol> {
     return this.protocolModel.create(createDto as any);

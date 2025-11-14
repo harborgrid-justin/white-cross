@@ -3,6 +3,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class BroadcastService extends BaseService {
+  constructor() {
+    super('BroadcastService');
+  }
+
   async createBroadcast(data: any) {
     this.logInfo('Creating broadcast message');
     // Implementation would build recipient list based on audience criteria

@@ -11,6 +11,10 @@ import { EmailStatistics } from '../types/email.types';
 
 @Injectable()
 export class EmailStatisticsService extends BaseService {
+  constructor() {
+    super("EmailStatisticsService");
+  }
+
   private stats = {
     sent: 0,
     failed: 0,

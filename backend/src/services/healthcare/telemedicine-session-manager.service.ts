@@ -67,7 +67,9 @@ export class TelemedicineSessionManagerService extends BaseService {
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("TelemedicineSessionManagerService");
+  }
 
   /**
    * Schedule telemedicine consultation

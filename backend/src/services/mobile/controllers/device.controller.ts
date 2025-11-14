@@ -14,7 +14,6 @@ import { BaseController } from '@/common/base';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 
-@Version('1')
 @Controller('mobile/devices')
 export class DeviceController extends BaseController {
   constructor(private readonly notificationService: NotificationService) {}

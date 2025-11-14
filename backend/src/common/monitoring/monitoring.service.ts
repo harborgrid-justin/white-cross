@@ -25,6 +25,7 @@ export class MonitoringService extends BaseService {
     private readonly metricsProvider: IAPMetricsProvider,
     private readonly healthCheckService: HealthCheckService,
   ) {
+    super("MonitoringService");
     // Initialize default healthcare alerts
     this.initializeDefaultAlerts();
   }

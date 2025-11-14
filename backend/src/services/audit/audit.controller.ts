@@ -21,7 +21,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Audit')
 
-@Version('1')
 @Controller('audit')
 @ApiBearerAuth()
 export class AuditController extends BaseController {

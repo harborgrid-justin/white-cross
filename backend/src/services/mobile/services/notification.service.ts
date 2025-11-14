@@ -61,7 +61,9 @@ export class NotificationService extends BaseService {
     private readonly schedulerService: NotificationSchedulerService,
     private readonly analyticsService: NotificationAnalyticsService,
     private readonly templateService: NotificationTemplateService,
-  ) {}
+  ) {
+    super('NotificationService');
+  }
 
   // ==================== Device Token Management ====================
 

@@ -10,7 +10,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Follow-up Appointments')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/follow-ups')
 export class FollowUpController extends BaseController {
   constructor(private readonly followUpService: FollowUpService) {}

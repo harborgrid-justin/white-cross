@@ -35,7 +35,9 @@ export class IntegrationStatisticsService extends BaseService {
     private readonly configModel: typeof IntegrationConfig,
     @InjectModel(IntegrationLog)
     private readonly logModel: typeof IntegrationLog,
-  ) {}
+  ) {
+    super("IntegrationStatisticsService");
+  }
 
   /**
    * Get comprehensive integration statistics

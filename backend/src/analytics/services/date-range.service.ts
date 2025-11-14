@@ -14,6 +14,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class DateRangeService extends BaseService {
+  constructor() {
+    super("DateRangeService");
+  }
+
   /**
    * Get date range from period enum
    */

@@ -28,7 +28,8 @@ export class ReportGenerationService extends BaseService {
     private readonly attendanceReportsService: AttendanceReportsService,
     private readonly complianceReportsService: ComplianceReportsService,
     private readonly dashboardService: DashboardService,
-  ) {}
+  ) {
+    super("ReportGenerationService");}
 
   /**
    * Generate report by type

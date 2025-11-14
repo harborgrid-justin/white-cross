@@ -16,7 +16,9 @@ export class ConfigCrudService extends BaseService {
   constructor(
     @InjectModel(SystemConfig)
     private readonly configModel: typeof SystemConfig,
-  ) {}
+  ) {
+    super("ConfigCrudService");
+  }
 
   /**
    * Get a single configuration by key with optional scope filtering

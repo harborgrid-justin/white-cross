@@ -5,7 +5,7 @@
  * for the White Cross healthcare platform.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
 import {
   ICommand,
   ICommandResult,
@@ -19,7 +19,7 @@ export class CommandBus implements ICommandBus {
   private readonly handlers = new Map<string, ICommandHandler<any>>();
 
   constructor(
-    @Inject('TRANSACTION_MANAGER') private readonly transactionManager?: any,
+    @Optional() @Inject('TRANSACTION_MANAGER') private readonly transactionManager?: any,
   ) {}
 
   /**

@@ -6,7 +6,6 @@ import { BulkMessageResponseDto, SendBulkMessageDto } from '../dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Bulk Messaging')
 
-@Version('1')
 @Controller('enterprise-features/bulk-messages')
 @ApiBearerAuth()
 export class BulkMessagingController extends BaseController {

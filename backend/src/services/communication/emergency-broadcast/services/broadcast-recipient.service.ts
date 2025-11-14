@@ -42,7 +42,9 @@ export class BroadcastRecipientService extends BaseService {
   constructor(
     private readonly studentRepository: StudentRepository,
     private readonly broadcastRepository: EmergencyBroadcastRepository,
-  ) {}
+  ) {
+    super('BroadcastRecipientService');
+  }
 
   /**
    * Get recipients for broadcast based on audience criteria

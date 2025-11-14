@@ -5,7 +5,7 @@
  * for the White Cross healthcare platform.
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
 import {
   IQuery,
   IQueryResult,
@@ -20,7 +20,7 @@ export class QueryBus implements IQueryBus {
   private readonly cache = new Map<string, { result: any; timestamp: number; ttl: number }>();
 
   constructor(
-    @Inject('CACHE_MANAGER') private readonly cacheManager?: any,
+    @Optional() @Inject('CACHE_MANAGER') private readonly cacheManager?: any,
   ) {}
 
   /**

@@ -45,7 +45,6 @@ import type {
 @ApiTags('Monitoring & Metrics')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('monitoring')
 export class MonitoringController extends BaseController {
   constructor(private readonly monitoringService: MonitoringService) {}

@@ -13,7 +13,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Treatment Plans')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/treatment-plans')
 export class TreatmentPlanController extends BaseController {
   constructor(private readonly treatmentPlanService: TreatmentPlanService) {}

@@ -18,7 +18,8 @@ export class SlowQueryDetectorService extends BaseService {
   private slowQueries: SlowQuery[] = [];
   private alerts: PerformanceAlert[] = [];
 
-  constructor() {}
+  constructor() {
+    super("SlowQueryDetectorService");}
 
   /**
    * Check if query is slow and record it

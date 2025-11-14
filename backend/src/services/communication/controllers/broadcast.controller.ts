@@ -8,7 +8,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Broadcasts')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('broadcasts')
 export class BroadcastController extends BaseController {
   constructor(private readonly broadcastService: BroadcastService) {}

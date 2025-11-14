@@ -24,7 +24,6 @@ import {
 
 @ApiTagsAndAuth(['Emergency Contacts'])
 
-@Version('1')
 @Controller('emergency-contacts')
 export class EmergencyContactController extends BaseController {
   private readonly logger = ControllerUtilities.createControllerLogger('EmergencyContactController');

@@ -74,7 +74,9 @@ export class MedicalDeviceIntegrationService extends BaseService {
     @InjectModel(DeviceReading)
     private readonly deviceReadingModel: typeof DeviceReading,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MedicalDeviceIntegrationService");
+  }
 
   /**
    * Register a new medical device for a patient

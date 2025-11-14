@@ -27,7 +27,9 @@ export class InteractionCheckerService extends BaseService {
     private drugInteractionModel: typeof DrugInteraction,
     @InjectModel(StudentDrugAllergy)
     private studentDrugAllergyModel: typeof StudentDrugAllergy,
-  ) {}
+  ) {
+    super("InteractionCheckerService");
+  }
 
   /**
    * Check drug interactions for a list of drugs

@@ -93,7 +93,9 @@ export class AdvancedAppointmentSchedulerService extends BaseService {
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("AdvancedAppointmentSchedulerService");
+  }
 
   /**
    * Schedule appointment with intelligent optimization

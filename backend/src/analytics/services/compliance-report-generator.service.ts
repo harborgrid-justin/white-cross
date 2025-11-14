@@ -45,7 +45,8 @@ export class ComplianceReportGeneratorService extends BaseService {
     private readonly reportBuilder: ComplianceReportBuilderService,
     private readonly reportExporter: ComplianceReportExporterService,
     private readonly reportPersistence: ComplianceReportPersistenceService,
-  ) {}
+  ) {
+    super("ComplianceReportGeneratorService");}
 
   /**
    * Generate Immunization Compliance Report

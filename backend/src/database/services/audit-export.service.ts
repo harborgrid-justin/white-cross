@@ -20,7 +20,8 @@ import { BaseService } from '@/common/base';
 export class AuditExportService extends BaseService {
   constructor(
     private readonly auditQuery: AuditQueryService,
-  ) {}
+  ) {
+    super("AuditExportService");}
 
   /**
    * Export audit logs to CSV format

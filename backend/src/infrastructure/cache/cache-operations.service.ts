@@ -27,7 +27,8 @@ export class CacheOperationsService extends BaseService {
   constructor(
     private readonly cacheConfig: CacheConfigService,
     private readonly connectionService: CacheConnectionService,
-  ) {}
+  ) {
+    super("CacheOperationsService");}
 
   /**
    * Increment numeric value in Redis

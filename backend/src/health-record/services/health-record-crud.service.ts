@@ -38,7 +38,9 @@ export class HealthRecordCrudService extends BaseService {
     private readonly healthRecordModel: typeof HealthRecord,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordCrudService");
+  }
 
   /**
    * Get paginated health records for a student with filtering

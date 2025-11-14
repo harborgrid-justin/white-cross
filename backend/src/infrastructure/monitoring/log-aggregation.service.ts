@@ -30,6 +30,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class LogAggregationService extends BaseService {
+  constructor() {
+    super("LogAggregationService");
+  }
+
   // Log storage
   private logBuffer: LogEntry[] = [];
   private readonly maxLogEntries = 10000;

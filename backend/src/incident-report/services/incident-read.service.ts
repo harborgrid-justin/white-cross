@@ -25,7 +25,9 @@ export class IncidentReadService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
-  ) {}
+  ) {
+    super('IncidentReadService');
+  }
 
   /**
    * Get incident reports with pagination and filters

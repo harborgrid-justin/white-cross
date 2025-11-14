@@ -22,7 +22,9 @@ export class MessageManagementService extends BaseService {
   constructor(
     @InjectModel(Message) private messageModel: typeof Message,
     private readonly encryptionService: EncryptionService,
-  ) {}
+  ) {
+    super("MessageManagementService");
+  }
 
   /**
    * Edit an existing message

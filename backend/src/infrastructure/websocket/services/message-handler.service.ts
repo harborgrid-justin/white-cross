@@ -15,7 +15,8 @@ import { WebSocketUtilities } from '../shared/websocket-utilities';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class MessageHandlerService extends BaseService {
-  constructor(private readonly rateLimiter: RateLimiterService) {}
+  constructor(private readonly rateLimiter: RateLimiterService) {
+    super("MessageHandlerService");}
 
   /**
    * Handles message send events

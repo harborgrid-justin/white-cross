@@ -20,6 +20,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class ComplianceReportExporterService extends BaseService {
+  constructor() {
+    super("ComplianceReportExporterService");
+  }
+
   /**
    * Export report to specified format
    */

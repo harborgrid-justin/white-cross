@@ -26,7 +26,9 @@ export class ChronicConditionService extends BaseService {
   constructor(
     @InjectModel(ChronicCondition)
     private readonly chronicConditionModel: typeof ChronicCondition,
-  ) {}
+  ) {
+    super('ChronicConditionService');
+  }
 
   // ==================== CRUD Operations ====================
 

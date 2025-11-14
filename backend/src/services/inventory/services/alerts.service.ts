@@ -16,7 +16,9 @@ interface StockQueryResult {
 
 @Injectable()
 export class AlertsService extends BaseService {
-  constructor(private readonly sequelize: Sequelize) {}
+  constructor(private readonly sequelize: Sequelize) {
+    super('AlertsService');
+  }
 
   /**
    * Get all inventory alerts with priority sorting

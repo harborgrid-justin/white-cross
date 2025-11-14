@@ -46,7 +46,9 @@ export class ConversationService extends BaseService {
     @InjectModel(ConversationParticipant)
     private participantModel: typeof ConversationParticipant,
     @InjectModel(Message) private messageModel: typeof Message,
-  ) {}
+  ) {
+    super("ConversationService");
+  }
 
   /**
    * Create a new conversation

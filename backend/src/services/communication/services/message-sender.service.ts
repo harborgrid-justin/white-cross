@@ -35,7 +35,9 @@ export class MessageSenderService extends BaseService {
     private participantModel: typeof ConversationParticipant,
     private readonly encryptionService: EncryptionService,
     private readonly queueHelper: QueueIntegrationHelper,
-  ) {}
+  ) {
+    super("MessageSenderService");
+  }
 
   /**
    * Send a direct message (1-to-1)

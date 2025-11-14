@@ -36,7 +36,9 @@ export class HealthRecordAllergyService extends BaseService {
     private readonly allergyModel: typeof Allergy,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordAllergyService");
+  }
 
   /**
    * Add allergy to student with validation

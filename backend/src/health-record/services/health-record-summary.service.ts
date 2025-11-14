@@ -50,7 +50,9 @@ export class HealthRecordSummaryService extends BaseService {
     private readonly chronicConditionModel: typeof ChronicCondition,
     @InjectModel(Vaccination)
     private readonly vaccinationModel: typeof Vaccination,
-  ) {}
+  ) {
+    super("HealthRecordSummaryService");
+  }
 
   /**
    * Get comprehensive health summary for student

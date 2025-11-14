@@ -20,7 +20,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Security')
 
-@Version('1')
 @Controller('security')
 @ApiBearerAuth()
 export class SecurityController extends BaseController {

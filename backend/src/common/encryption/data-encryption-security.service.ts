@@ -65,6 +65,10 @@ export async function exportAuditLogs(sequelize: Sequelize, format: string): Pro
 
 @Injectable()
 export class DataEncryptionSecurityService extends BaseService {
+  constructor() {
+    super("DataEncryptionSecurityService");
+  }
+
   encryptColumn = encryptColumn;
   enableTDE = enableTDE;
   generateEncryptionKey = generateEncryptionKey;

@@ -24,6 +24,7 @@ export class EmailVerificationService extends BaseService {
     private readonly userModel: typeof User,
     private readonly configService: ConfigService,
   ) {
+    super("EmailVerificationService");
     // Clean up expired tokens every hour
     setInterval(() => this.cleanupExpiredTokens(), 60 * 60 * 1000);
   }

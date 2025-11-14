@@ -11,7 +11,8 @@ import { AlertData, NotificationData, ReminderData } from '../types/websocket.ty
 import { BaseService } from '@/common/base';
 @Injectable()
 export class AlertService extends BaseService {
-  constructor(private readonly broadcastService: BroadcastService) {}
+  constructor(private readonly broadcastService: BroadcastService) {
+    super("AlertService");}
 
   /**
    * Broadcasts an emergency alert to an organization

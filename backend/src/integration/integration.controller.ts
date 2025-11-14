@@ -10,7 +10,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Integrations')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('integrations')
 export class IntegrationController extends BaseController {
   constructor(

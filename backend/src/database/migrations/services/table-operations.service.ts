@@ -13,6 +13,10 @@ import { buildTableAttributes } from '../utilities/table-attributes-builder';
 
 @Injectable()
 export class TableOperationsService extends BaseService {
+  constructor() {
+    super("TableOperationsService");
+  }
+
   /**
    * Creates a comprehensive table with all standard fields and configurations
    */

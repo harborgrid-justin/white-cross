@@ -32,7 +32,9 @@ export class BroadcastManagementService extends BaseService {
     private readonly priorityService: BroadcastPriorityService,
     private readonly recipientService: BroadcastRecipientService,
     private readonly deliveryService: BroadcastDeliveryService,
-  ) {}
+  ) {
+    super("BroadcastManagementService");
+  }
 
   /**
    * Create emergency broadcast

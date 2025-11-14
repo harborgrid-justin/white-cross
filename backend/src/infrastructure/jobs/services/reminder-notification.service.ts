@@ -48,7 +48,9 @@ export class ReminderNotificationService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
     private readonly emailService: EmailService,
-  ) {}
+  ) {
+    super("ReminderNotificationService");
+  }
 
   /**
    * Send reminder notifications via email/SMS

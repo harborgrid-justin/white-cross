@@ -14,7 +14,6 @@ import { BaseController } from '@/common/base';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 
-@Version('1')
 @Controller('mobile/sync')
 export class SyncController extends BaseController {
   constructor(private readonly offlineSyncService: OfflineSyncService) {}

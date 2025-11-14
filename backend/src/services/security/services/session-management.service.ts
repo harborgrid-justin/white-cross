@@ -17,7 +17,9 @@ export class SessionManagementService extends BaseService {
   constructor(
     @InjectModel(SessionEntity)
     private readonly sessionModel: typeof SessionEntity,
-  ) {}
+  ) {
+    super("SessionManagementService");
+  }
 
   /**
    * Create a new session

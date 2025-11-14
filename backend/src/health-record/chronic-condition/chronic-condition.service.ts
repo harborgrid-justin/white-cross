@@ -19,7 +19,9 @@ export class ChronicConditionService extends BaseService {
     private readonly chronicConditionModel: typeof ChronicCondition,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("ChronicConditionService");
+  }
 
   async addChronicCondition(conditionData: any): Promise<ChronicCondition> {
     this.logInfo(

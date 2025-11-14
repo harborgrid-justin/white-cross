@@ -34,7 +34,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('appointments-core')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('appointments')
 export class AppointmentCoreController extends BaseController {
   private readonly logger = new Logger(AppointmentCoreController.name);
@@ -42,7 +41,9 @@ export class AppointmentCoreController extends BaseController {
   constructor(
     private readonly appointmentReadService: AppointmentReadService,
     private readonly appointmentWriteService: AppointmentWriteService,
-  ) {}
+  ) {
+    super();
+  }
 
   /**
    * Get appointments with pagination and filtering

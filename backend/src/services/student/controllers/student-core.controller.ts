@@ -36,7 +36,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('students-core')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('students')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)

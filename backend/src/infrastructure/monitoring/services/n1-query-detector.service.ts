@@ -18,7 +18,8 @@ export class N1QueryDetectorService extends BaseService {
   private n1Detections: N1QueryDetection[] = [];
   private alerts: PerformanceAlert[] = [];
 
-  constructor() {}
+  constructor() {
+    super("N1QueryDetectorService");}
 
   /**
    * Analyze query executions for N+1 patterns

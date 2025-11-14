@@ -14,6 +14,10 @@ import {
 
 @Injectable()
 export class BroadcastPriorityService extends BaseService {
+  constructor() {
+    super('BroadcastPriorityService');
+  }
+
   /**
    * Determine priority from emergency type
    */

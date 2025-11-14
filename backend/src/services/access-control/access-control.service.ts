@@ -55,7 +55,8 @@ export class AccessControlService extends BaseService {
     private readonly securityMonitoringService: SecurityMonitoringService,
     private readonly ipRestrictionManagementService: IpRestrictionManagementService,
     private readonly systemInitializationService: SystemInitializationService,
-  ) {}
+  ) {
+    super("AccessControlService");}
 
   // ============================================================================
   // ROLE MANAGEMENT

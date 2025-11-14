@@ -33,13 +33,14 @@ import { BaseController } from '@/common/base';
 @ApiTags('incident-reports-core')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('incident-reports')
 export class IncidentCoreController extends BaseController {
   constructor(
     private readonly readService: IncidentReadService,
     private readonly writeService: IncidentWriteService,
-  ) {}
+  ) {
+    super();
+  }
 
   @Get()
   @ApiOperation({

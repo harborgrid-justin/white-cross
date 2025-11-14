@@ -16,7 +16,8 @@ export class ConfigImportExportService extends BaseService {
   constructor(
     private readonly configCrudService: ConfigCrudService,
     private readonly configValidationService: ConfigValidationService,
-  ) {}
+  ) {
+    super("ConfigImportExportService");}
 
   /**
    * Export configurations as JSON

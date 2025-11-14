@@ -16,7 +16,9 @@ export class TreatmentPlanService extends BaseService {
   constructor(
     @InjectModel(TreatmentPlan)
     private treatmentPlanModel: typeof TreatmentPlan,
-  ) {}
+  ) {
+    super("TreatmentPlanService");
+  }
 
   /**
    * Create a new treatment plan

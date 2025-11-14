@@ -28,18 +28,7 @@ import { AuditExportService } from './audit-export.service';
 import { AuditRetentionService, RetentionPolicyResult } from './audit-retention.service';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+
 // Re-export interfaces for backward compatibility
 export type { AuditLogFilters, AuditLogQueryOptions, AuditStatistics, ComplianceReport };
 
@@ -68,6 +57,7 @@ export class AuditService extends BaseService implements IAuditLogger {
     private readonly auditExport: AuditExportService,
     private readonly auditRetention: AuditRetentionService,
   ) {
+    super("AuditService");
     this.logInfo('Audit service initialized with database support');
   }
 

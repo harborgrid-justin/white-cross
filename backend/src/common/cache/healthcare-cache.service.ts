@@ -106,12 +106,6 @@ class HealthcareMemoryCache extends EventEmitter {
     @Inject(LoggerService) logger: LoggerService,
     private config: HealthcareCacheConfig
   ) {
-    super({
-      serviceName: 'HealthcareCacheService',
-      logger,
-      enableAuditLogging: true,
-    });
-
     super();
     this.stats = this.initializeStats();
     this.encryptionKey = crypto.randomBytes(32); // 256-bit key

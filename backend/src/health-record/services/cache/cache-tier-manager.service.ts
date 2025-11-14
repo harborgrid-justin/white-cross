@@ -24,7 +24,9 @@ export class CacheTierManagerService extends BaseService {
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly redisCache: Cache,
-  ) {}
+  ) {
+    super("CacheTierManagerService");
+  }
 
   getFromL1<T>(key: string): T | null {
     const entry = this.l1Cache.get(key);

@@ -36,7 +36,9 @@ export class ReminderService extends BaseService {
     private readonly reminderModel: typeof AppointmentReminder,
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
-  ) {}
+  ) {
+    super('ReminderService');
+  }
 
   /**
    * Process pending reminders

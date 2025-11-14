@@ -6,7 +6,6 @@ import { AddToWaitlistDto, AutoFillFromWaitlistDto, WaitlistEntryResponseDto } f
 import { BaseController } from '@/common/base';
 @ApiTags('Waitlist Management')
 
-@Version('1')
 @Controller('enterprise-features/waitlist')
 @ApiBearerAuth()
 export class WaitlistController extends BaseController {

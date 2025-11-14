@@ -12,7 +12,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Grade Transition')
 
-@Version('1')
 @Controller('student-management/grade-transitions')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

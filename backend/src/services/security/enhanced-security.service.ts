@@ -43,7 +43,9 @@ export class EnhancedSecurityService extends BaseService {
     private readonly auditService: EnhancedAuditService,
     private readonly threatDetection: EnhancedThreatDetectionService,
     private readonly piiDetection: PIIDetectionService,
-  ) {}
+  ) {
+    super('EnhancedSecurityService');
+  }
 
   /**
    * Comprehensive security scan of data

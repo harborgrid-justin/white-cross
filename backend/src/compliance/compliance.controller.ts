@@ -47,7 +47,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('compliance')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('compliance')
 export class ComplianceController extends BaseController {
   private readonly logger = new Logger(ComplianceController.name);

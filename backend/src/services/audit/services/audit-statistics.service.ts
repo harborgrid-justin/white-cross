@@ -23,7 +23,9 @@ export class AuditStatisticsService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super('AuditStatisticsService');
+  }
 
   /**
    * Get audit statistics for a time period

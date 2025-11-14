@@ -40,7 +40,9 @@ export class MemoryOptimizedCacheService extends BaseService {
     private readonly options: MemoryCacheOptions,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
-  ) {}
+  ) {
+    super("MemoryOptimizedCacheService");
+  }
 
   /**
    * Register a cacheable provider discovered by Discovery Service

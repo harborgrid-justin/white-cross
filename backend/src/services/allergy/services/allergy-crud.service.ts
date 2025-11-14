@@ -25,7 +25,9 @@ export class AllergyCrudService extends BaseService {
     private readonly allergyModel: typeof Allergy,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("AllergyCrudService");
+  }
 
   /**
    * Creates a new allergy record with validation and duplicate checking

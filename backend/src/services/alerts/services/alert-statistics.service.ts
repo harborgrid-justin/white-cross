@@ -26,7 +26,9 @@ export class AlertStatisticsService extends BaseService {
   constructor(
     @InjectModel(Alert)
     private readonly alertModel: typeof Alert,
-  ) {}
+  ) {
+    super("AlertStatisticsService");
+  }
 
   /**
    * Get alert statistics

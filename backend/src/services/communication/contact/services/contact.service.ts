@@ -15,7 +15,9 @@ export class ContactService extends BaseService {
   constructor(
     @InjectModel(Contact)
     private readonly contactModel: typeof Contact,
-  ) {}
+  ) {
+    super("ContactService");
+  }
 
   /**
    * Get all contacts with pagination and filters

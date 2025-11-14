@@ -9,7 +9,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('chronic-conditions')
 export class HealthRecordChronicConditionController extends BaseController {
   constructor(

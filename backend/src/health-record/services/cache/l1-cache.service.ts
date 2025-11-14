@@ -15,6 +15,10 @@ import { InMemoryCacheEntry, CacheTier, CacheOperationResult } from './cache-int
 import { BaseService } from '@/common/base';
 @Injectable()
 export class L1CacheService extends BaseService {
+  constructor() {
+    super("L1CacheService");
+  }
+
   // L1 Cache: In-memory storage
   private readonly l1Cache = new Map<string, InMemoryCacheEntry>();
   private readonly maxL1Size = 1000; // Maximum entries in L1

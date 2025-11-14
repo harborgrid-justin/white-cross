@@ -6,7 +6,6 @@ import { ConsentFormResponseDto, CreateConsentFormDto, RenewConsentFormDto, Revo
 import { BaseController } from '@/common/base';
 @ApiTags('Consent Forms')
 
-@Version('1')
 @Controller('enterprise-features/consent-forms')
 @ApiBearerAuth()
 export class ConsentFormsController extends BaseController {

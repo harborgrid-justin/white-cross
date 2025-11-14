@@ -28,6 +28,7 @@ export class AbacPolicyService extends BaseService {
   private policies: Map<string, AbacPolicyRule> = new Map();
 
   constructor() {
+    super("AbacPolicyService");
     this.logInfo('ABAC Policy Service initialized');
     this.initializeDefaultPolicies();
   }

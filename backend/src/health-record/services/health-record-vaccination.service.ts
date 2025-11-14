@@ -35,7 +35,9 @@ export class HealthRecordVaccinationService extends BaseService {
     private readonly vaccinationModel: typeof Vaccination,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordVaccinationService");
+  }
 
   /**
    * Add vaccination to student with validation and audit logging

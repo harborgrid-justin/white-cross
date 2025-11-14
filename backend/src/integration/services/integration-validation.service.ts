@@ -5,6 +5,10 @@ import { CreateIntegrationDto } from '../dto/create-integration.dto';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class IntegrationValidationService extends BaseService {
+  constructor() {
+    super("IntegrationValidationService");
+  }
+
   /**
    * Validate core integration data fields
    */

@@ -8,7 +8,9 @@ import { BaseService } from '@/common/base';
 export class MessageTemplateLibraryService extends BaseService {
   private messageTemplates: MessageTemplate[] = [];
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('MessageTemplateLibraryService');
+  }
 
   /**
    * Create a new message template

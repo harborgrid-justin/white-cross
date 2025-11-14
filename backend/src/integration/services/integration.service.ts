@@ -20,7 +20,8 @@ export class IntegrationService extends BaseService {
     private readonly syncService: IntegrationSyncService,
     private readonly logService: IntegrationLogService,
     private readonly statisticsService: IntegrationStatisticsService,
-  ) {}
+  ) {
+    super("IntegrationService");}
 
   // Configuration Management
   getAllIntegrations(type?: string) {

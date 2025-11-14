@@ -17,7 +17,9 @@ import { BaseService } from '@/common/base';
 export class WaitlistManagementService extends BaseService {
   private waitlist: WaitlistEntry[] = []; // In production, this would be a database
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('WaitlistManagementService');
+  }
 
   /**
    * Add a student to the appointment waitlist

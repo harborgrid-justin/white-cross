@@ -9,7 +9,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Vital Signs')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('clinical/vital-signs')
 export class VitalSignsController extends BaseController {
   constructor(private readonly vitalsService: VitalSignsService) {}

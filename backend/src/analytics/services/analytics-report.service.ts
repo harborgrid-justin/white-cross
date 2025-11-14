@@ -63,7 +63,8 @@ export class AnalyticsReportService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
     private readonly reportGeneratorService: ComplianceReportGeneratorService,
-  ) {}
+  ) {
+    super("AnalyticsReportService");}
 
   /**
    * Generate custom report

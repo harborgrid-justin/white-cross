@@ -27,12 +27,13 @@ import { BaseController } from '@/common/base';
 @ApiTags('appointments-status')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('appointments')
 export class AppointmentStatusController extends BaseController {
   private readonly logger = new Logger(AppointmentStatusController.name);
 
-  constructor(private readonly appointmentStatusService: AppointmentStatusService) {}
+  constructor(private readonly appointmentStatusService: AppointmentStatusService) {
+    super();
+  }
 
   /**
    * Start an appointment (transition to IN_PROGRESS)

@@ -29,6 +29,10 @@ import { PerformanceEntry } from './interfaces/metrics.interface';
  */
 @Injectable()
 export class PerformanceTrackingService extends BaseService {
+  constructor() {
+    super("PerformanceTrackingService");
+  }
+
   // Performance tracking storage
   private performanceHistory: PerformanceEntry[] = [];
   private readonly maxPerformanceEntries = 1000;

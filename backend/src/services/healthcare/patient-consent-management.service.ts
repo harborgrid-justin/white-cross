@@ -36,7 +36,9 @@ export class PatientConsentManagementService extends BaseService {
     @InjectModel(User)
     private readonly userModel: typeof User,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("PatientConsentManagementService");
+  }
 
   /**
    * Create a new consent form

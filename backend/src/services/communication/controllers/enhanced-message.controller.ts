@@ -44,7 +44,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Enhanced Messaging')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('enhanced-messages')
 export class EnhancedMessageController extends BaseController {
   constructor(

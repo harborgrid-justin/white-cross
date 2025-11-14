@@ -23,6 +23,7 @@ export class PasswordResetService extends BaseService {
     private readonly userModel: typeof User,
     private readonly configService: ConfigService,
   ) {
+    super("PasswordResetService");
     // Clean up expired tokens every 15 minutes
     setInterval(() => this.cleanupExpiredTokens(), 15 * 60 * 1000);
   }

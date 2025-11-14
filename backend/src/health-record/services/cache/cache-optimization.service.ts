@@ -36,6 +36,7 @@ export class CacheOptimizationService extends BaseService {
     private readonly patternTracker: CacheAccessPatternTrackerService,
     private readonly eventEmitter: EventEmitter2,
   ) {
+    super("CacheOptimizationService");
     this.initializeOptimization();
   }
 

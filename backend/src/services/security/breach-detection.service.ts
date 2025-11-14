@@ -61,7 +61,9 @@ export class BreachDetectionService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super("BreachDetectionService");
+  }
 
   /**
    * Scheduled breach detection scan (runs every 5 minutes)

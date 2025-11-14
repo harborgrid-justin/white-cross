@@ -32,7 +32,9 @@ export class SearchService extends BaseService {
     private readonly vitalSignsModel: typeof VitalSigns,
     @InjectModel(ClinicVisit)
     private readonly clinicVisitModel: typeof ClinicVisit,
-  ) {}
+  ) {
+    super("SearchService");
+  }
 
   async searchHealthRecords(query: string, filters?: any): Promise<any[]> {
     this.logInfo(

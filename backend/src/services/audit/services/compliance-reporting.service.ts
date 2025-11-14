@@ -17,7 +17,9 @@ export class ComplianceReportingService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super('ComplianceReportingService');
+  }
 
   /**
    * Get compliance report for HIPAA

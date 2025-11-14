@@ -17,7 +17,9 @@ export class AlertDeliveryService extends BaseService {
     @InjectModel(DeliveryLog)
     private readonly deliveryLogModel: typeof DeliveryLog,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    super("AlertDeliveryService");
+  }
 
   /**
    * Send alert via WebSocket for real-time delivery

@@ -86,7 +86,9 @@ export class MetricsCollectionService extends BaseService {
   constructor(
     @InjectConnection()
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MetricsCollectionService");
+  }
 
   /**
    * Inject optional service dependencies

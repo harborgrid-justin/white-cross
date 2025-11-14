@@ -33,7 +33,9 @@ export class AuditLoggingService extends BaseService {
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
     private readonly auditHelper: AuditHelperService,
-  ) {}
+  ) {
+    super("AuditLoggingService");
+  }
 
   /**
    * Log entity creation

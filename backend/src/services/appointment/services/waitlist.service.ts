@@ -31,7 +31,9 @@ export class WaitlistService extends BaseService {
   constructor(
     @InjectModel(AppointmentWaitlist)
     private readonly waitlistModel: typeof AppointmentWaitlist,
-  ) {}
+  ) {
+    super('WaitlistService');
+  }
 
   /**
    * Add student to waitlist

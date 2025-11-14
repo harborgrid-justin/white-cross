@@ -14,7 +14,9 @@ export class StatisticsService extends BaseService {
     private readonly checklistRepository: ChecklistRepository,
     private readonly policyRepository: PolicyRepository,
     private readonly violationRepository: ViolationRepository,
-  ) {}
+  ) {
+    super("StatisticsService");
+  }
 
   async getComplianceStatistics(query: QueryStatisticsDto) {
     const { period = 'MONTHLY', startDate, endDate } = query;

@@ -12,6 +12,10 @@ import { EmailValidationResult } from '../types/email.types';
 
 @Injectable()
 export class EmailValidatorService extends BaseService {
+  constructor() {
+    super("EmailValidatorService");
+  }
+
   /**
    * Validate email address
    */

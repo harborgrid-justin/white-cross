@@ -39,7 +39,9 @@ enum SecurityIncidentStatus {
 export class SecurityMonitoringService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("SecurityMonitoringService");
+  }
 
   /**
    * Get Sequelize models dynamically

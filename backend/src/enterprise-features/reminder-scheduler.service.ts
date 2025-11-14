@@ -16,7 +16,9 @@ export class ReminderSchedulerService extends BaseService {
   private reminderSchedules: ReminderSchedule[] = []; // In production, this would be a database
   private reminderPreferences: Map<string, ReminderPreferences> = new Map(); // studentId -> preferences
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('ReminderSchedulerService');
+  }
 
   /**
    * Schedule reminders for an appointment

@@ -11,7 +11,9 @@ import { BaseService } from '@/common/base';
 export class InsuranceClaimService extends BaseService {
   private claims: InsuranceClaim[] = []; // In production, this would be a database
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('InsuranceClaimService');
+  }
 
   /**
    * Generate a new insurance claim

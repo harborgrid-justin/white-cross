@@ -57,7 +57,9 @@ export class HealthTrendAnalyticsService extends BaseService {
     private readonly healthMetricsAnalyzerService: HealthMetricsAnalyzerService,
     private readonly incidentAnalyticsService: IncidentAnalyticsService,
     private readonly predictiveInsightsService: PredictiveInsightsService,
-  ) {}
+  ) {
+    super("HealthTrendAnalyticsService");
+  }
 
   /**
    * Get population health summary for a time period

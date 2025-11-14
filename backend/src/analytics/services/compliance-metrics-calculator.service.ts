@@ -17,6 +17,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class ComplianceMetricsCalculatorService extends BaseService {
+  constructor() {
+    super("ComplianceMetricsCalculatorService");
+  }
+
   /**
    * Calculate immunization compliance metrics
    */

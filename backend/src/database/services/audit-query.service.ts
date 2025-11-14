@@ -53,7 +53,9 @@ export class AuditQueryService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super("AuditQueryService");
+  }
 
   /**
    * Query audit logs with filters and pagination

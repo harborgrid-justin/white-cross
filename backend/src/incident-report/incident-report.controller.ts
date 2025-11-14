@@ -16,7 +16,6 @@ import { UpdateIncidentReportDto } from './dto/update-incident-report.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Incident Reports')
 
-@Version('1')
 @Controller('incident-reports')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -27,7 +26,9 @@ export class IncidentReportController extends BaseController {
     private readonly witnessService: IncidentWitnessService,
     private readonly statisticsService: IncidentStatisticsService,
     private readonly notificationService: IncidentNotificationService,
-  ) {}
+  ) {
+    super();
+  }
 
   // ==================== INCIDENT REPORTS ====================
 

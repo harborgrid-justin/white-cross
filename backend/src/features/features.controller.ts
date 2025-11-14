@@ -12,7 +12,6 @@ import { ToggleFeatureDto } from './dto';
 import { BaseController } from '@/common/base';
 @ApiTags('features')
 
-@Version('1')
 @Controller('features')
 // @ApiBearerAuth()
 export class FeaturesController extends BaseController {

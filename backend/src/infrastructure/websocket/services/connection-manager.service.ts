@@ -12,6 +12,10 @@ import { ConnectionConfirmedDto } from '../dto';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ConnectionManagerService extends BaseService {
+  constructor() {
+    super("ConnectionManagerService");
+  }
+
   /**
    * Handles new WebSocket connections
    * Authenticates the client, joins appropriate rooms, and sends confirmation

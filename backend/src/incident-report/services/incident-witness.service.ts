@@ -14,7 +14,9 @@ export class IncidentWitnessService extends BaseService {
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
     private validationService: IncidentValidationService,
-  ) {}
+  ) {
+    super('IncidentWitnessService');
+  }
 
   /**
    * Add witness statement to incident report with validation

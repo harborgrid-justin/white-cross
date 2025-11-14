@@ -20,6 +20,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class AuditHelperService extends BaseService {
+  constructor() {
+    super('AuditHelperService');
+  }
+
   /**
    * Sanitize sensitive data before storing in audit logs
    * Recursively redacts sensitive fields defined in SENSITIVE_FIELDS

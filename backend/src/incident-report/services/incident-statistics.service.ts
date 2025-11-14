@@ -11,7 +11,9 @@ export class IncidentStatisticsService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
-  ) {}
+  ) {
+    super('IncidentStatisticsService');
+  }
 
   /**
    * Get comprehensive incident statistics

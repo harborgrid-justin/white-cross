@@ -44,7 +44,8 @@ export class ConfigurationService extends BaseService {
     private readonly configHistoryService: ConfigHistoryService,
     private readonly configImportExportService: ConfigImportExportService,
     private readonly configStatisticsService: ConfigStatisticsService,
-  ) {}
+  ) {
+    super("ConfigurationService");}
 
   /**
    * Get a single configuration by key - delegates to CRUD service

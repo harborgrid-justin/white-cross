@@ -2762,6 +2762,10 @@ export async function recommendCacheConfiguration(
  */
 @Injectable()
 export class DatabaseOptimizationService extends BaseService {
+  constructor() {
+    super("DatabaseOptimizationService");
+  }
+
   // Export all functions as methods
   listAllIndexes = listAllIndexes;
   analyzeIndexUsage = analyzeIndexUsage;

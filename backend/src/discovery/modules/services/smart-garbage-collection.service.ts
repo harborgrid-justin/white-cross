@@ -56,7 +56,9 @@ export class SmartGarbageCollectionService extends BaseService {
     @Inject('SMART_GC_OPTIONS') private readonly options: SmartGCOptions,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
-  ) {}
+  ) {
+    super("SmartGarbageCollectionService");
+  }
 
   /**
    * Start GC monitoring

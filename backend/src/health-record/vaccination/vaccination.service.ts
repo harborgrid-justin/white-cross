@@ -45,7 +45,9 @@ export class VaccinationService extends BaseService {
     private readonly scheduleHelper: VaccinationScheduleHelper,
     private readonly complianceHelper: VaccinationComplianceHelper,
     private readonly crudHelper: VaccinationCrudHelper,
-  ) {}
+  ) {
+    super("VaccinationService");
+  }
 
   /**
    * Add vaccination with CVX validation, dose tracking, and audit logging

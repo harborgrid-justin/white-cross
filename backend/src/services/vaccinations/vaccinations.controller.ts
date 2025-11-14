@@ -12,7 +12,6 @@ import { VaccinationsService } from './vaccinations.service';
 import { BaseController } from '@/common/base';
 @ApiTags('vaccinations')
 
-@Version('1')
 @Controller('vaccinations')
 @UseGuards(JwtAuthGuard)
 export class VaccinationsController extends BaseController {

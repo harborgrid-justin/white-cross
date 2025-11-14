@@ -8,6 +8,10 @@ import { MessageDeliveryStatusResult } from '../interfaces/index';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class CommunicationService extends BaseService {
+  constructor() {
+    super('CommunicationService');
+  }
+
   async createMessageTemplate(dto: CreateMessageTemplateDto): Promise<any> {
     this.logInfo('Creating message template');
     return { id: 'template-id', ...dto, createdAt: new Date() };

@@ -67,6 +67,10 @@ export function generateRestoreReport(backup: BackupMetadata, duration: number):
 
 @Injectable()
 export class BackupRestoreService extends BaseService {
+  constructor() {
+    super("BackupRestoreService");
+  }
+
   createFullBackup = createFullBackup;
   createIncrementalBackup = createIncrementalBackup;
   enablePITR = enablePITR;

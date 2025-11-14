@@ -22,7 +22,9 @@ export class IpRestrictionManagementService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditService: AuditService,
-  ) {}
+  ) {
+    super("IpRestrictionManagementService");
+  }
 
   /**
    * Get Sequelize models dynamically

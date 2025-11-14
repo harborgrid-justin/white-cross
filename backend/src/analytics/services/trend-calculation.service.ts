@@ -17,7 +17,8 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class TrendCalculationService extends BaseService {
-  constructor(private readonly dateRangeService: DateRangeService) {}
+  constructor(private readonly dateRangeService: DateRangeService) {
+    super("TrendCalculationService");}
 
   /**
    * Calculate trend direction based on previous and current values

@@ -9,6 +9,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ReportFormatterService extends BaseService {
+  constructor() {
+    super("ReportFormatterService");
+  }
+
   /**
    * Format report content based on requested format
    */

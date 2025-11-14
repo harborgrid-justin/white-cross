@@ -51,6 +51,7 @@ export class PoolOptimizationService extends BaseService {
     private readonly poolService: DynamicResourcePoolService,
     private readonly monitorService: ResourceMonitorService,
   ) {
+    super("PoolOptimizationService");
     this.initializeStrategies();
   }
 

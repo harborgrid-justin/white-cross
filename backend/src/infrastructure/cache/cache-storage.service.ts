@@ -44,7 +44,8 @@ export class CacheStorageService extends BaseService {
     private readonly connectionService: CacheConnectionService,
     private readonly serializationService: CacheSerializationService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super("CacheStorageService");}
 
   /**
    * Start L1 cache cleanup interval

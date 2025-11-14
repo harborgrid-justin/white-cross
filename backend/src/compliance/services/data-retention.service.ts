@@ -6,7 +6,8 @@ import { RetentionStatus } from '@/database/models';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class DataRetentionService extends BaseService {
-  constructor(private readonly retentionRepository: DataRetentionRepository) {}
+  constructor(private readonly retentionRepository: DataRetentionRepository) {
+    super("DataRetentionService");}
 
   async listPolicies(query: QueryDataRetentionDto) {
     return this.retentionRepository.findAll(query);

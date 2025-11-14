@@ -11,7 +11,9 @@ import { BaseService } from '@/common/base';
 export class PhotoVideoEvidenceService extends BaseService {
   private evidenceFiles: EvidenceFile[] = []; // In production, this would be a database
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('PhotoVideoEvidenceService');
+  }
 
   /**
    * Upload evidence file for an incident

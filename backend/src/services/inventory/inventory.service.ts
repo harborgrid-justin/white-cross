@@ -11,7 +11,9 @@ export class InventoryService extends BaseService {
   constructor(
     @InjectModel(InventoryItem)
     private readonly inventoryItemModel: typeof InventoryItem,
-  ) {}
+  ) {
+    super("InventoryService");
+  }
 
   /**
    * Create new inventory item

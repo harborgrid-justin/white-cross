@@ -34,7 +34,9 @@ export class AppointmentStatisticsService extends BaseService {
     private readonly appointmentModel: typeof Appointment,
     @InjectModel(User)
     private readonly userModel: typeof User,
-  ) {}
+  ) {
+    super('AppointmentStatisticsService');
+  }
 
   /**
    * Get appointment statistics with optional filtering

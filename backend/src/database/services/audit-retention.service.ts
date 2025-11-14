@@ -33,7 +33,9 @@ export class AuditRetentionService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super("AuditRetentionService");
+  }
 
   /**
    * Execute retention policy (delete old audit logs based on compliance requirements)

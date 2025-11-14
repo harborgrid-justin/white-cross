@@ -1007,6 +1007,10 @@ export function validateMigrationChecksums(
 
 @Injectable()
 export class MigrationVersionControlService extends BaseService {
+  constructor() {
+    super("MigrationVersionControlService");
+  }
+
   resolveMigrationDependencies = resolveMigrationDependencies;
   detectCircularDependencies = detectCircularDependencies;
   validateMigrationDependencies = validateMigrationDependencies;

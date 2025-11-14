@@ -34,7 +34,9 @@ export class ImportExportService extends BaseService {
     private readonly vitalSignsModel: typeof VitalSigns,
     @InjectModel(ClinicVisit)
     private readonly clinicVisitModel: typeof ClinicVisit,
-  ) {}
+  ) {
+    super("ImportExportService");
+  }
 
   async importRecords(data: any, format: string, user: any): Promise<any> {
     this.logInfo(

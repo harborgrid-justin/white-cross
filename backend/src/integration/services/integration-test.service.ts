@@ -24,7 +24,9 @@ export class IntegrationTestService extends BaseService {
     private readonly configModel: typeof IntegrationConfig,
     private readonly configService: IntegrationConfigService,
     private readonly logService: IntegrationLogService,
-  ) {}
+  ) {
+    super("IntegrationTestService");
+  }
 
   /**
    * Test integration connection

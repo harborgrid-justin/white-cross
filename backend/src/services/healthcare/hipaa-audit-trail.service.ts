@@ -31,7 +31,9 @@ export class HipaaAuditTrailService extends BaseService {
     @InjectModel(Patient)
     private readonly patientModel: typeof Patient,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("HipaaAuditTrailService");
+  }
 
   /**
    * Log PHI access event

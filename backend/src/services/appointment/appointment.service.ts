@@ -78,6 +78,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
     // Configuration
     private readonly config?: AppConfigService,
   ) {
+    super(requestContext);
     // Start periodic cleanup of expired waitlist entries
     if (this.config?.isProduction) {
       this.cleanupInterval = setInterval(

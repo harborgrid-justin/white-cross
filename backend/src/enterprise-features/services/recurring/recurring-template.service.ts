@@ -12,7 +12,9 @@ import { BaseService } from '@/common/base';
 export class RecurringTemplateService extends BaseService {
   private templates: RecurringTemplate[] = []; // In production, this would be a database
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('RecurringTemplateService');
+  }
 
   /**
    * Create a new recurring appointment template

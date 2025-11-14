@@ -41,7 +41,8 @@ export interface UserContext {
  * ```typescript
  * @Injectable()
  * export class MyService extends BaseService {
- *   constructor(private readonly context: RequestContextService) {}
+ *   constructor(private readonly context: RequestContextService) {
+    super("MyService");}
  *
  *   async doSomething() {
  *     const userId = this.context.userId;

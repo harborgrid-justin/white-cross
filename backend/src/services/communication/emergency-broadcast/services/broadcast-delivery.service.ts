@@ -18,7 +18,8 @@ interface DeliveryResult {
 
 @Injectable()
 export class BroadcastDeliveryService extends BaseService {
-  constructor(private readonly communicationService: CommunicationService) {}
+  constructor(private readonly communicationService: CommunicationService) {
+    super('BroadcastDeliveryService');}
 
   /**
    * Deliver messages to recipients via all specified channels

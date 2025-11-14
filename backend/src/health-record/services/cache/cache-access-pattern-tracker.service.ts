@@ -22,6 +22,7 @@ export class CacheAccessPatternTrackerService extends BaseService {
   private readonly maxTrackedPatterns = CACHE_CONSTANTS.METRICS.MAX_TRACKED_PATTERNS;
 
   constructor(private readonly eventEmitter: EventEmitter2) {
+    super("CacheAccessPatternTrackerService");
     this.setupEventListeners();
   }
 

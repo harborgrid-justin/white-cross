@@ -29,7 +29,9 @@ export class ConsentService extends BaseService {
     @InjectModel(ConsentSignature)
     private readonly consentSignatureModel: typeof ConsentSignature,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ConsentService");
+  }
 
   /**
    * Get all consent forms with optional filtering

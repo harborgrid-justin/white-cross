@@ -27,7 +27,9 @@ export class L2CacheService extends BaseService {
   constructor(
     @Inject(CACHE_MANAGER) private readonly redisCache: Cache,
     private readonly phiLogger: PHIAccessLogger,
-  ) {}
+  ) {
+    super("L2CacheService");
+  }
 
   /**
    * Get data from L2 cache (Redis)

@@ -34,7 +34,9 @@ export class StatisticsService extends BaseService {
     private readonly clinicVisitModel: typeof ClinicVisit,
     @InjectModel(School)
     private readonly schoolModel: typeof School,
-  ) {}
+  ) {
+    super("StatisticsService");
+  }
 
   async getStudentStatistics(studentId: string): Promise<any> {
     this.logInfo(`Getting statistics for student ${studentId}`);

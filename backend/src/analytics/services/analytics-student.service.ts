@@ -27,7 +27,9 @@ export class AnalyticsStudentService extends BaseService {
     private readonly appointmentModel: typeof Appointment,
     @InjectModel(MedicationLog)
     private readonly medicationLogModel: typeof MedicationLog,
-  ) {}
+  ) {
+    super("AnalyticsStudentService");
+  }
 
   /**
    * Get comprehensive health metrics for a specific student

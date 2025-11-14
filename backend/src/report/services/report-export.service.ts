@@ -16,6 +16,7 @@ export class ReportExportService extends BaseService {
   private readonly outputDir = path.join(process.cwd(), 'reports', 'generated');
 
   constructor() {
+    super('ReportExportService');
     this.ensureOutputDirectory();
   }
 

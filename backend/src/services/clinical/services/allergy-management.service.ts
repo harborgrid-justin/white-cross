@@ -17,7 +17,9 @@ export class AllergyManagementService extends BaseService {
     @InjectModel(StudentDrugAllergy)
     private studentDrugAllergyModel: typeof StudentDrugAllergy,
     private readonly drugCatalogService: DrugCatalogService,
-  ) {}
+  ) {
+    super("AllergyManagementService");
+  }
 
   /**
    * Add a student drug allergy

@@ -21,7 +21,6 @@ import { HealthRiskScoreDto, HighRiskQueryDto, HighRiskStudentDto } from './dto'
 @ApiTags('Health Risk Assessments')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('health-risk-assessments')
 export class HealthRiskAssessmentController extends BaseController {
   constructor(private readonly healthRiskAssessmentService: HealthRiskAssessmentService) {

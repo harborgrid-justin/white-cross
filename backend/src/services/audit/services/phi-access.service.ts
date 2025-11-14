@@ -19,7 +19,9 @@ export class PHIAccessService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super('PHIAccessService');
+  }
 
   /**
    * Log PHI access (HIPAA requirement)

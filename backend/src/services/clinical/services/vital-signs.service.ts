@@ -12,7 +12,9 @@ export class VitalSignsService extends BaseService {
   constructor(
     @InjectModel(VitalSigns)
     private vitalsModel: typeof VitalSigns,
-  ) {}
+  ) {
+    super("VitalSignsService");
+  }
 
   async record(recordDto: RecordVitalsDto): Promise<VitalSigns> {
     const vitals = await this.vitalsModel.create(recordDto as any);

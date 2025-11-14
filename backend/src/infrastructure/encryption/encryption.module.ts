@@ -25,6 +25,9 @@ import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '../cache/cache.module';
 import { EncryptionService } from './encryption.service';
 import { KeyManagementService } from './key-management.service';
+import { CryptoService } from './services/crypto.service';
+import { SessionKeyManagerService } from './services/session-key-manager.service';
+import { MessageEncryptionService } from './services/message-encryption.service';
 
 /**
  * Encryption Module
@@ -36,7 +39,13 @@ import { KeyManagementService } from './key-management.service';
     ConfigModule,
     CacheModule, // For Redis integration
   ],
-  providers: [EncryptionService, KeyManagementService],
+  providers: [
+    EncryptionService,
+    KeyManagementService,
+    CryptoService,
+    SessionKeyManagerService,
+    MessageEncryptionService,
+  ],
   exports: [EncryptionService, KeyManagementService],
 })
 export class EncryptionModule {}

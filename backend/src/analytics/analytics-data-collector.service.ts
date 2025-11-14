@@ -62,7 +62,9 @@ export class AnalyticsDataCollectorService extends BaseService {
     private readonly eventEmitter: EventEmitter2,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-  ) {}
+  ) {
+    super("AnalyticsDataCollectorService");
+  }
 
   /**
    * Collect comprehensive health metrics for a school

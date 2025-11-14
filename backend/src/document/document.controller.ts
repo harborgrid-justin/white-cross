@@ -13,7 +13,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('documents')
 
-@Version('1')
 @Controller('documents')
 @ApiBearerAuth()
 export class DocumentController extends BaseController {

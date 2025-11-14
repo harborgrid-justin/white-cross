@@ -9,7 +9,9 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class MetricsService extends BaseService {
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('MetricsService');
+  }
 
   /**
    * Get real-time dashboard metrics

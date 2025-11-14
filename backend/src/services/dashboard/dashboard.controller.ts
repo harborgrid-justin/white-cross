@@ -31,7 +31,6 @@ import {
 @ApiTags('dashboard')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('dashboard')
 export class DashboardController extends BaseController {
   constructor(private readonly dashboardService: DashboardService) {

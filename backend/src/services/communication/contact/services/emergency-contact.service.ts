@@ -20,7 +20,9 @@ export class EmergencyContactService extends BaseService {
   constructor(
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
-  ) {}
+  ) {
+    super("EmergencyContactService");
+  }
 
   /**
    * Find all emergency contacts with optional filters

@@ -31,10 +31,11 @@ import { BaseController } from '@/common/base';
 @ApiTags('incident-reports-status')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('incident-reports')
 export class IncidentStatusController extends BaseController {
-  constructor(private readonly statusService: IncidentStatusService) {}
+  constructor(private readonly statusService: IncidentStatusService) {
+    super();
+  }
 
   @Post(':id/notes')
   @ApiOperation({ summary: 'Add notes to incident report' })

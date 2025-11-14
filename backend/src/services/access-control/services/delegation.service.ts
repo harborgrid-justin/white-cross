@@ -21,6 +21,7 @@ export class DelegationService extends BaseService {
   private delegations: Map<string, PermissionDelegation> = new Map();
 
   constructor() {
+    super("DelegationService");
     this.logInfo('Permission Delegation Service initialized');
     this.startCleanupInterval();
   }

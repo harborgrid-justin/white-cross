@@ -19,7 +19,9 @@ export class AttendanceReportsService extends BaseService {
     @InjectModel(Student)
     private studentModel: typeof Student,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("AttendanceReportsService");
+  }
 
   /**
    * Analyze correlation between health visits, incidents, and attendance patterns

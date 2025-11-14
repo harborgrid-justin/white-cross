@@ -80,7 +80,9 @@ export class MedicationInteractionCheckerService extends BaseService {
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MedicationInteractionCheckerService");
+  }
 
   /**
    * Check medication interactions for a patient

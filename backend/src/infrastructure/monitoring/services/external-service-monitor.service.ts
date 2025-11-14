@@ -10,6 +10,10 @@ import { ExternalServiceHealthInfo } from '../types/health-check.types';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ExternalServiceMonitorService extends BaseService {
+  constructor() {
+    super("ExternalServiceMonitorService");
+  }
+
   /**
    * Checks external services health
    */

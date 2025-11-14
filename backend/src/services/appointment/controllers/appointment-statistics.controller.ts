@@ -31,7 +31,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('appointments-statistics')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('appointments')
 export class AppointmentStatisticsController extends BaseController {
   private readonly logger = new Logger(AppointmentStatisticsController.name);
@@ -39,7 +38,9 @@ export class AppointmentStatisticsController extends BaseController {
   constructor(
     private readonly appointmentStatisticsService: AppointmentStatisticsService,
     private readonly appointmentQueryService: AppointmentQueryService,
-  ) {}
+  ) {
+    super();
+  }
 
   /**
    * Get appointment statistics

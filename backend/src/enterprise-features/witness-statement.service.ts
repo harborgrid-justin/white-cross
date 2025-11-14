@@ -11,7 +11,9 @@ import { BaseService } from '@/common/base';
 export class WitnessStatementService extends BaseService {
   private statements: WitnessStatement[] = []; // In production, this would be a database
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('WitnessStatementService');
+  }
 
   /**
    * Capture a witness statement

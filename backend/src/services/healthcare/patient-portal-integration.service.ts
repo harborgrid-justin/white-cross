@@ -43,7 +43,9 @@ export class PatientPortalIntegrationService extends BaseService {
     @InjectModel(Message)
     private readonly messageModel: typeof Message,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("PatientPortalIntegrationService");
+  }
 
   /**
    * Authenticate patient portal access

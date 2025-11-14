@@ -6,7 +6,6 @@ import { CustomizeReminderPreferencesDto, ReminderScheduleResponseDto, ScheduleR
 import { BaseController } from '@/common/base';
 @ApiTags('Appointment Reminders')
 
-@Version('1')
 @Controller('enterprise-features/reminders')
 @ApiBearerAuth()
 export class RemindersController extends BaseController {

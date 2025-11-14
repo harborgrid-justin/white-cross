@@ -6,7 +6,8 @@ import { ChecklistItemStatus } from '@/database/models';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class ChecklistService extends BaseService {
-  constructor(private readonly checklistRepository: ChecklistRepository) {}
+  constructor(private readonly checklistRepository: ChecklistRepository) {
+    super("ChecklistService");}
 
   async listChecklists(query: QueryChecklistDto) {
     const { page = 1, limit = 20, ...filters } = query;

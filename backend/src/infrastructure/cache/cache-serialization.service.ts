@@ -24,7 +24,8 @@ const gunzip = promisify(zlib.gunzip);
  */
 @Injectable()
 export class CacheSerializationService extends BaseService {
-  constructor(private readonly cacheConfig: CacheConfigService) {}
+  constructor(private readonly cacheConfig: CacheConfigService) {
+    super("CacheSerializationService");}
 
   /**
    * Serialize value for storage in Redis

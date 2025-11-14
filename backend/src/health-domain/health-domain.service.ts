@@ -68,7 +68,9 @@ export class HealthDomainService extends BaseService {
 
     @Inject(forwardRef(() => ValidationService))
     private readonly validationService: ValidationService,
-  ) {}
+  ) {
+    super("HealthDomainService");
+  }
   /**
    * Health Records Operations
    */

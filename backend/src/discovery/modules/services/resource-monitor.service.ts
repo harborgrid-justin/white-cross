@@ -37,7 +37,8 @@ export class ResourceMonitorService extends BaseService {
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
-  ) {}
+  ) {
+    super("ResourceMonitorService");}
 
   /**
    * Start monitoring resources

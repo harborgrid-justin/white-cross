@@ -138,7 +138,9 @@ export class ValidationService extends BaseService {
     private readonly vitalSignsModel: typeof VitalSigns,
     @InjectModel(ClinicVisit)
     private readonly clinicVisitModel: typeof ClinicVisit,
-  ) {}
+  ) {
+    super("ValidationService");
+  }
 
   async validateHealthRecord(data: any): Promise<any> {
     this.logInfo('Validating health record data');

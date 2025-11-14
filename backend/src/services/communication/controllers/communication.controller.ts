@@ -11,7 +11,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Communication')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('communication')
 export class CommunicationController extends BaseController {
   constructor(private readonly communicationService: CommunicationService) {}

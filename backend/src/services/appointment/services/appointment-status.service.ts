@@ -36,7 +36,9 @@ export class AppointmentStatusService extends BaseService {
     @InjectModel(Appointment)
     private readonly appointmentModel: typeof Appointment,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super('AppointmentStatusService');
+  }
 
   /**
    * Start an appointment (transition to IN_PROGRESS)

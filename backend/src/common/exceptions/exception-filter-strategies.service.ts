@@ -22,6 +22,7 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
   BadRequestException,

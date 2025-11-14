@@ -10,7 +10,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('Medication Administration')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('medications/administrations')
 export class MedicationAdministrationSchedulingController extends BaseController {
   /**

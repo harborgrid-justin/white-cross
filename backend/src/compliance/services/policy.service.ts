@@ -6,7 +6,8 @@ import { PolicyStatus } from '@/database/models';
 import { BaseService } from '@/common/base';
 @Injectable()
 export class PolicyService extends BaseService {
-  constructor(private readonly policyRepository: PolicyRepository) {}
+  constructor(private readonly policyRepository: PolicyRepository) {
+    super("PolicyService");}
 
   async listPolicies(query: QueryPolicyDto) {
     return this.policyRepository.findAllPolicies(query);

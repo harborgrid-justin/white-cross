@@ -21,7 +21,6 @@ import {
 @ApiTags('Emergency Broadcasts')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('emergency-broadcasts')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class EmergencyBroadcastController extends BaseController {

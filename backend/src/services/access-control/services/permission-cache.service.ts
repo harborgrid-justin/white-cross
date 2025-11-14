@@ -36,6 +36,7 @@ export class PermissionCacheService extends BaseService {
   private readonly ROLE_PERMISSIONS_TTL = 15 * 60 * 1000; // 15 minutes
 
   constructor() {
+    super('PermissionCacheService');
     // Start cleanup interval
     this.startCleanupInterval();
     this.logInfo('Permission cache service initialized');

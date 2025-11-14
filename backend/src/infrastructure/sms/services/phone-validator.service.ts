@@ -15,6 +15,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class PhoneValidatorService extends BaseService {
+  constructor() {
+    super("PhoneValidatorService");
+  }
+
   /**
    * Validate a phone number and return detailed information
    *

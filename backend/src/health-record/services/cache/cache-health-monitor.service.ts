@@ -23,6 +23,7 @@ export class CacheHealthMonitorService extends BaseService {
     private readonly eventEmitter: EventEmitter2,
     private readonly metricsCollector: CacheMetricsCollectorService,
   ) {
+    super("CacheHealthMonitorService");
     this.startHealthMonitoring();
   }
 

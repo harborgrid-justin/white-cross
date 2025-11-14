@@ -4,4 +4,5 @@
  * @description Production-grade security exports for White Cross Healthcare Platform
  */
 
+export * from './security.module';
 export * from './production-security.service';

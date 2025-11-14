@@ -28,7 +28,9 @@ export class ContactVerificationService extends BaseService {
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
     private readonly notificationService: NotificationDeliveryService,
-  ) {}
+  ) {
+    super("ContactVerificationService");
+  }
 
   /**
    * Verify emergency contact information

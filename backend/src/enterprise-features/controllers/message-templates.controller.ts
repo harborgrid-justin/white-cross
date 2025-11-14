@@ -6,7 +6,6 @@ import { CreateMessageTemplateDto, MessageTemplateResponseDto, RenderTemplateDto
 import { BaseController } from '@/common/base';
 @ApiTags('Message Templates')
 
-@Version('1')
 @Controller('enterprise-features/message-templates')
 @ApiBearerAuth()
 export class MessageTemplatesController extends BaseController {

@@ -18,7 +18,9 @@ export class IncidentReportsService extends BaseService {
     private incidentReportModel: typeof IncidentReport,
     @InjectConnection()
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("IncidentReportsService");
+  }
 
   /**
    * Generate comprehensive incident statistics and safety analytics

@@ -37,12 +37,13 @@ import {
 @ApiTags('appointments-waitlist')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('appointments')
 export class WaitlistController extends BaseController {
   private readonly logger = new Logger(WaitlistController.name);
 
-  constructor(private readonly waitlistService: WaitlistService) {}
+  constructor(private readonly waitlistService: WaitlistService) {
+    super();
+  }
 
   /**
    * Add student to appointment waitlist

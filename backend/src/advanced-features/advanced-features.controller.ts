@@ -16,13 +16,14 @@ import { VerifyMedicationAdministrationDto } from './dto/verify-medication-admin
 import { BaseController } from '@/common/base';
 @ApiTags('Advanced Features')
 
-@Version('1')
 @Controller('advanced-features')
 @ApiBearerAuth()
 export class AdvancedFeaturesController extends BaseController {
   constructor(
     private readonly advancedFeaturesService: AdvancedFeaturesService,
-  ) {}
+  ) {
+    super();
+  }
 
   // ==================== Screening Endpoints ====================
 

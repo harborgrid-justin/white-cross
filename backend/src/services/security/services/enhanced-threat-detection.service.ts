@@ -22,7 +22,9 @@ export class EnhancedThreatDetectionService extends BaseService {
   private failedAttempts = new Map<string, { count: number; lastAttempt: Date }>();
   private readonly maxThreatEvents = 1000;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    super('EnhancedThreatDetectionService');
+  }
 
   /**
    * Detects and logs threat events

@@ -30,7 +30,8 @@ export class CacheInvalidationService extends BaseService {
     private readonly cacheConfig: CacheConfigService,
     private readonly storageService: CacheStorageService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super("CacheInvalidationService");}
 
   /**
    * Index tags for a cache key for efficient tag-based invalidation

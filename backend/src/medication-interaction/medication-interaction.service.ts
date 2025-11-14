@@ -40,7 +40,9 @@ export class MedicationInteractionService extends BaseService {
   constructor(
     @InjectModel(StudentMedication)
     private readonly studentMedicationModel: typeof StudentMedication,
-  ) {}
+  ) {
+    super("MedicationInteractionService");
+  }
 
   /**
    * Check for interactions in student's current medications

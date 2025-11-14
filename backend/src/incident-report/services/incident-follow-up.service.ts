@@ -17,7 +17,9 @@ export class IncidentFollowUpService extends BaseService {
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
     private validationService: IncidentValidationService,
-  ) {}
+  ) {
+    super('IncidentFollowUpService');
+  }
 
   /**
    * Add follow-up action to incident report with validation

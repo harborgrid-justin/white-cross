@@ -19,7 +19,9 @@ export class OAuthService extends BaseService {
     private readonly userModel: typeof User,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    super("OAuthService");
+  }
 
   /**
    * Handle OAuth login/registration

@@ -8,7 +8,9 @@ import { BaseService } from '@/common/base';
 export class TemplateService extends BaseService {
   constructor(
     @InjectModel(MessageTemplate) private templateModel: typeof MessageTemplate,
-  ) {}
+  ) {
+    super("TemplateService");
+  }
 
   async createTemplate(data: CreateTemplateDto & { createdById: string }) {
     this.logInfo(`Creating template: ${data.name}`);

@@ -20,7 +20,9 @@ export class ConfigHistoryService extends BaseService {
     @InjectModel(ConfigurationHistory)
     private readonly historyModel: typeof ConfigurationHistory,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ConfigHistoryService");
+  }
 
   /**
    * Create history record for configuration change

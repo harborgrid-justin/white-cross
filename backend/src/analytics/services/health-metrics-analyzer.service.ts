@@ -44,7 +44,9 @@ export class HealthMetricsAnalyzerService extends BaseService {
     private readonly dateRangeService: DateRangeService,
     private readonly trendCalculationService: TrendCalculationService,
     private readonly conditionAnalyticsService: ConditionAnalyticsService,
-  ) {}
+  ) {
+    super("HealthMetricsAnalyzerService");
+  }
 
   /**
    * Get population health summary for a time period

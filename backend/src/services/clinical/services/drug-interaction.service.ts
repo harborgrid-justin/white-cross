@@ -32,7 +32,9 @@ export class DrugInteractionService extends BaseService {
     private readonly drugCatalogService: DrugCatalogService,
     private readonly interactionChecker: InteractionCheckerService,
     private readonly allergyManager: AllergyManagementService,
-  ) {}
+  ) {
+    super("DrugInteractionService");
+  }
 
   // Drug Catalog Operations
 

@@ -21,7 +21,9 @@ export class ConfigurationService extends BaseService {
     @InjectModel(ConfigurationHistory)
     private historyModel: typeof ConfigurationHistory,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ConfigurationService");
+  }
 
   /**
    * Get a single configuration by key

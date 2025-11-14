@@ -25,7 +25,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Academic Transcripts')
 
-@Version('1')
 @Controller('academic-transcripts')
 // @ApiBearerAuth() // Uncomment when authentication is implemented
 export class AcademicTranscriptController extends BaseController {

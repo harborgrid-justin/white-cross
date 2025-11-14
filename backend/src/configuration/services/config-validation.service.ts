@@ -18,6 +18,10 @@ export interface ConfigurationValidationResult {
 
 @Injectable()
 export class ConfigValidationService extends BaseService {
+  constructor() {
+    super("ConfigValidationService");
+  }
+
   /**
    * Validate a configuration value against its type and constraints
    */

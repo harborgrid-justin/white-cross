@@ -17,7 +17,9 @@ export class ClinicVisitBasicService extends BaseService {
   constructor(
     @InjectModel(ClinicVisit)
     private readonly clinicVisitModel: typeof ClinicVisit,
-  ) {}
+  ) {
+    super("ClinicVisitBasicService");
+  }
 
   /**
    * Check in a student to the clinic

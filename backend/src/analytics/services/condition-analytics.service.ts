@@ -13,6 +13,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class ConditionAnalyticsService extends BaseService {
+  constructor() {
+    super("ConditionAnalyticsService");
+  }
+
   /**
    * Normalize condition names for consistent grouping
    */

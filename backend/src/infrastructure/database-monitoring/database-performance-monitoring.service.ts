@@ -66,6 +66,10 @@ export async function optimizeAlertRules(history: any[]): Promise<AlertConfig[]>
 
 @Injectable()
 export class PerformanceMonitoringService extends BaseService {
+  constructor() {
+    super("PerformanceMonitoringService");
+  }
+
   monitorConnections = monitorConnections;
   detectSlowQueries = detectSlowQueries;
   getResourceUtilization = getResourceUtilization;

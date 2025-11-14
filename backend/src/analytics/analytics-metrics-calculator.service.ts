@@ -35,7 +35,9 @@ export class AnalyticsMetricsCalculatorService extends BaseService {
     private readonly eventEmitter: EventEmitter2,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-  ) {}
+  ) {
+    super("AnalyticsMetricsCalculatorService");
+  }
 
   /**
    * Calculate comprehensive KPIs from health metrics

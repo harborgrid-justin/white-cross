@@ -21,7 +21,6 @@ import {
 @ApiTags('PDF')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('pdf')
 export class PdfController extends BaseController {
   constructor(private readonly pdfService: PdfService) {}

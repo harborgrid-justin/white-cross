@@ -38,7 +38,9 @@ export class EmergencyNotificationSystemService extends BaseService {
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("EmergencyNotificationSystemService");
+  }
 
   /**
    * Trigger emergency notification

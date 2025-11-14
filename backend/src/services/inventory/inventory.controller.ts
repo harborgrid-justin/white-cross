@@ -17,7 +17,6 @@ import { AlertSeverity, AlertType } from './dto/inventory-alert.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('inventory')
 
-@Version('1')
 @Controller('inventory')
 @ApiBearerAuth()
 export class InventoryController extends BaseController {

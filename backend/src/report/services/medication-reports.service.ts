@@ -20,7 +20,9 @@ export class MedicationReportsService extends BaseService {
     @InjectModel(StudentMedication)
     private studentMedicationModel: typeof StudentMedication,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MedicationReportsService");
+  }
 
   /**
    * Generate comprehensive medication usage and compliance report

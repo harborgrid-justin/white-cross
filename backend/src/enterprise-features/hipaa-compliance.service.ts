@@ -7,7 +7,9 @@ import { BaseService } from '@/common/base';
 export class HipaaComplianceService extends BaseService {
   private complianceChecks: HIPAAComplianceCheck[] = [];
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('HipaaComplianceService');
+  }
 
   /**
    * Perform HIPAA compliance audit

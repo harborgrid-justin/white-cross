@@ -44,7 +44,8 @@ interface IncidentsByLocationResponse {
 export class AnalyticsIncidentOrchestratorService extends BaseService {
   constructor(
     private readonly healthTrendService: HealthTrendAnalyticsService,
-  ) {}
+  ) {
+    super("AnalyticsIncidentOrchestratorService");}
 
   /**
    * Get incident trends

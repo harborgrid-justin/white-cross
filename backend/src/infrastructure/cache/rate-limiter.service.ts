@@ -38,7 +38,8 @@ export class RateLimiterService extends BaseService {
     uniqueKeys: new Set<string>(),
   };
 
-  constructor(private readonly cacheService: CacheService) {}
+  constructor(private readonly cacheService: CacheService) {
+    super("RateLimiterService");}
 
   /**
    * Register a rate limit configuration

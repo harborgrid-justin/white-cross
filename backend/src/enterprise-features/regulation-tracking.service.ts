@@ -7,7 +7,9 @@ import { BaseService } from '@/common/base';
 export class RegulationTrackingService extends BaseService {
   private regulationUpdates: RegulationUpdate[] = [];
 
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('RegulationTrackingService');
+  }
 
   /**
    * Track regulation changes for a specific state

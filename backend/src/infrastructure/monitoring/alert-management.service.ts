@@ -46,6 +46,7 @@ export class AlertManagementService extends BaseService {
   };
 
   constructor(private readonly configService: ConfigService) {
+    super("AlertManagementService");
     this.loadAlertConfig();
   }
 

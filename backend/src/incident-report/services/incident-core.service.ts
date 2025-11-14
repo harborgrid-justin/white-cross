@@ -17,7 +17,9 @@ export class IncidentCoreService extends BaseService {
     private incidentReportModel: typeof IncidentReport,
     private validationService: IncidentValidationService,
     private notificationService: IncidentNotificationService,
-  ) {}
+  ) {
+    super('IncidentCoreService');
+  }
 
   /**
    * Get incident reports with pagination and filters

@@ -12,13 +12,13 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { RequestContextService, ContextInitializerService } from './request-context.service';
+import { RequestContextService } from './request-context.service';
 import { BaseInterceptor } from '../interceptors/base.interceptor';
 
 @Injectable()
 export class ContextInterceptor extends BaseInterceptor implements NestInterceptor {
   constructor(
-    private readonly contextInitializer: ContextInitializerService,
+    private readonly contextService: RequestContextService,
   ) {
     super();
   }
@@ -82,25 +82,18 @@ export class ContextInterceptor extends BaseInterceptor implements NestIntercept
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { RequestContextService, ContextInitializerService } from './request-context.service';
+import { RequestContextService } from './request-context.service';
 
 @Injectable()
 export class ContextMiddleware implements NestMiddleware {
   constructor(
-    private readonly contextInitializer: ContextInitializerService,
+    private readonly contextService: RequestContextService,
   ) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    // Only initialize if not already in a context (e.g., from interceptor)
-    if (!RequestContextService.current) {
-      const requestContext = this.contextInitializer.createContext(req);
-
-      RequestContextService.run(requestContext, () => {
-        next();
-      });
-    } else {
-      next();
-    }
+    // Context is managed by request-scoped RequestContextService
+    // Just pass through to next middleware
+    next();
   }
 }
 

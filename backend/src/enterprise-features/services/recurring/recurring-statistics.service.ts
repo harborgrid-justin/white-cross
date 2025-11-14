@@ -8,6 +8,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class RecurringStatisticsService extends BaseService {
+  constructor() {
+    super('RecurringStatisticsService');
+  }
+
   /**
    * Get template statistics
    */

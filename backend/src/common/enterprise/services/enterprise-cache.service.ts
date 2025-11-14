@@ -50,6 +50,7 @@ export class EnterpriseCacheService extends BaseService {
   private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(private readonly moduleName: string) {
+    super("EnterpriseCacheService");
     this.stats = {
       hits: 0,
       misses: 0,

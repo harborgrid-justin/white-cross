@@ -47,7 +47,9 @@ import { BaseService } from '../../common/base';
 export class MaterializedViewService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MaterializedViewService");
+  }
 
   /**
    * Refresh student health summary materialized view

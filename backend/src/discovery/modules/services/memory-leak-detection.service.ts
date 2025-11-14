@@ -38,7 +38,8 @@ export class MemoryLeakDetectionService extends BaseService {
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
-  ) {}
+  ) {
+    super("MemoryLeakDetectionService");}
 
   /**
    * Add a provider to monitor for memory leaks

@@ -18,7 +18,9 @@ export class AlertRetryService extends BaseService {
     @InjectModel(DeliveryLog)
     private readonly deliveryLogModel: typeof DeliveryLog,
     private readonly deliveryService: AlertDeliveryService,
-  ) {}
+  ) {
+    super("AlertRetryService");
+  }
 
   /**
    * Retry failed alert deliveries with exponential backoff

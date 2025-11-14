@@ -45,7 +45,6 @@ import { UpdateMedicationDto } from './dto/update-medication.dto';
  */
 @ApiTags('medications')
 
-@Version('1')
 @Controller('medications')
 @ApiBearerAuth()
 export class MedicationController extends BaseController {

@@ -14,7 +14,9 @@ export class FollowUpService extends BaseService {
   constructor(
     @InjectModel(FollowUpAppointment)
     private followUpModel: typeof FollowUpAppointment,
-  ) {}
+  ) {
+    super("FollowUpService");
+  }
 
   async schedule(
     scheduleDto: ScheduleFollowUpDto,

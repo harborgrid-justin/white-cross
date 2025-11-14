@@ -19,7 +19,9 @@ export class EnhancedEncryptionService extends BaseService {
   private readonly defaultAlgorithm = 'aes-256-gcm';
   private readonly keyCache = new Map<string, Buffer>();
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    super('EnhancedEncryptionService');
+  }
 
   /**
    * Encrypts data using AES-256-GCM

@@ -6,10 +6,11 @@ import { BaseController } from '@/common/base';
 @ApiTags('Application')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller()
 export class AppController extends BaseController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) {
+    super();
+  }
 
   @Get()
   @ApiOperation({

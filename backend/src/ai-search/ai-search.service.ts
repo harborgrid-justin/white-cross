@@ -115,6 +115,7 @@ export class AiSearchService extends BaseService {
     new Map();
 
   constructor(private readonly configService: ConfigService) {
+    super("AiSearchService");
     this.initializeOpenAI();
   }
 

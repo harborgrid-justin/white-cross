@@ -21,6 +21,10 @@ import { VerifyMedicationAdministrationDto } from './dto/verify-medication-admin
 import { BaseService } from '@/common/base';
 @Injectable()
 export class AdvancedFeaturesService extends BaseService {
+  constructor() {
+    super('AdvancedFeaturesService');
+  }
+
   // ==================== Screening Service Methods ====================
 
   /**

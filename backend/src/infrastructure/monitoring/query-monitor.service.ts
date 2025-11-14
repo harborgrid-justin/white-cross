@@ -45,7 +45,9 @@ export class QueryMonitorService extends BaseService implements OnModuleInit, On
     private readonly slowQueryDetector: SlowQueryDetectorService,
     private readonly n1Detector: N1QueryDetectorService,
     private readonly performanceReporter: PerformanceReporterService,
-  ) {}
+  ) {
+    super("QueryMonitorService");
+  }
 
   async onModuleInit(): Promise<void> {
     this.logInfo('Initializing Query Monitor Service');

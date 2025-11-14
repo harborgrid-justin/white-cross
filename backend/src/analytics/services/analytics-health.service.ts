@@ -36,7 +36,9 @@ export class AnalyticsHealthService extends BaseService {
     private readonly appointmentModel: typeof Appointment,
     @InjectModel(MedicationLog)
     private readonly medicationLogModel: typeof MedicationLog,
-  ) {}
+  ) {
+    super("AnalyticsHealthService");
+  }
 
   /**
    * Get aggregated health metrics

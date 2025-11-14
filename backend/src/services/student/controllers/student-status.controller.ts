@@ -23,7 +23,6 @@ import { BaseController } from '@/common/base';
 @ApiTags('students-status')
 @ApiBearerAuth()
 
-@Version('1')
 @Controller('students')
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)

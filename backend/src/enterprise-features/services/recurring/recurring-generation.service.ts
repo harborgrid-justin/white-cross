@@ -8,6 +8,10 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class RecurringGenerationService extends BaseService {
+  constructor() {
+    super('RecurringGenerationService');
+  }
+
   /**
    * Generate upcoming appointments from all active templates
    */

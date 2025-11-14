@@ -8,7 +8,9 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class ExportService extends BaseService {
-  constructor(private eventEmitter: EventEmitter2) {}
+  constructor(private eventEmitter: EventEmitter2) {
+    super('ExportService');
+  }
 
   /**
    * Export dashboard data

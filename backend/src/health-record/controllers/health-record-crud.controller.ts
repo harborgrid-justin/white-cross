@@ -44,7 +44,6 @@ interface HealthRecordFilters {
  */
 @ApiTags('Health Records')
 
-@Version('1')
 @Controller('health-records')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, HealthRecordRateLimitGuard)
