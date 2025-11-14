@@ -1,0 +1,2901 @@
+{
+  "summary": {
+    "totalControllers": 109,
+    "controllersWithIssues": 85,
+    "totalControllerIssues": 4,
+    "totalEndpointIssues": 288,
+    "totalIssues": 292
+  },
+  "details": [
+    {
+      "file": "advanced-features/advanced-features.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 269,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "ai-search/ai-search.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 78,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getSearchSuggestions",
+          "line": 260,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "advancedSearch",
+          "line": 275,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "api-key-auth/api-key-auth.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 39,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "generateApiKey",
+          "line": 62,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "listApiKeys",
+          "line": 77,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "compliance/compliance.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "Controller",
+          "line": 68,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "configuration/configuration.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 36,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 506,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 524,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "ApiResponse",
+          "line": 364,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Req",
+          "line": 436,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Put",
+          "line": 452,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "document/document.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 22,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 288,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 216,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "ApiResponse",
+          "line": 229,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/bulk-messaging.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "constructor",
+          "line": 31,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 15,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/compliance.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 40,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 51,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/consent-forms.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "Post",
+          "line": 88,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 105,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 119,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 17,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Date",
+          "line": 46,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Delete",
+          "line": 74,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "super",
+          "line": 33,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "Post",
+          "line": 59,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/custom-reports.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "createReport",
+          "line": 42,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 15,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiOperation",
+          "line": 35,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/evidence.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "super",
+          "line": 33,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 17,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "Get",
+          "line": 46,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/insurance-claims.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "constructor",
+          "line": 31,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 17,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "generateClaim",
+          "line": 41,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/message-templates.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "createTemplate",
+          "line": 41,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 15,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 34,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/recurring-appointments.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 17,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "ApiOperation",
+          "line": 37,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/reminders.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 17,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Controller",
+          "line": 28,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Post",
+          "line": 35,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/translation.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 15,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 22,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiBearerAuth",
+          "line": 29,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/waitlist.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "autoFillFromWaitlist",
+          "line": 64,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "enterprise-features/controllers/witness-statements.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 17,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Put",
+          "line": 48,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Post",
+          "line": 35,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "grade-transition/grade-transition.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "graduation",
+          "line": 89,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "health-domain/health-domain.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 43,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Delete",
+          "line": 142,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getStudentAllergies",
+          "line": 205,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getCriticalAllergies",
+          "line": 220,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getImmunizationCompliance",
+          "line": 303,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getCatchUpSchedule",
+          "line": 421,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Get",
+          "line": 453,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiOperation",
+          "line": 503,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getStudentChronicConditions",
+          "line": 565,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Get",
+          "line": 661,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getHealthStatistics",
+          "line": 672,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "ApiResponse",
+          "line": 64,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "ApiResponse",
+          "line": 152,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Body",
+          "line": 230,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Query",
+          "line": 341,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "getExemptionRates",
+          "line": 515,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "health-record/chronic-condition/chronic-condition.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 19,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "health-record/controllers/health-record-compliance.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 44,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "getPHIAccessStatistics",
+          "line": 97,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Query",
+          "line": 147,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "health-record/controllers/health-record-crud.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 58,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "health-record/medication/medication.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "Body",
+          "line": 137,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "health-record/screening/screening.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 30,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "health-risk-assessment/health-risk-assessment.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 36,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "incident-report/controllers/incident-core.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 45,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "incident-report/controllers/incident-status.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 40,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 157,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "incident-report/incident-report.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 35,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "createIncidentReport",
+          "line": 314,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "updateIncidentReport",
+          "line": 329,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Param",
+          "line": 341,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Body",
+          "line": 382,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 390,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 412,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Query",
+          "line": 507,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Body",
+          "line": 536,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 299,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "Param",
+          "line": 353,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "addEvidence",
+          "line": 368,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "getFollowUpActions",
+          "line": 427,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "getWitnessStatements",
+          "line": 522,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "infrastructure/monitoring/monitoring.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "resolveAlert",
+          "line": 220,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "trackPerformance",
+          "line": 289,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getActiveAlerts",
+          "line": 154,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "acknowledgeAlert",
+          "line": 187,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getRecentPerformance",
+          "line": 257,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "integration/integration.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "Param",
+          "line": 182,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "medication-interaction/medication-interaction.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 29,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Post",
+          "line": 87,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 68,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "pdf/pdf.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 32,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "generateStudentHealthSummary",
+          "line": 57,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "generateMedicationLog",
+          "line": 82,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "generateImmunizationReport",
+          "line": 107,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "generateIncidentReport",
+          "line": 132,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Body",
+          "line": 159,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "mergePdfs",
+          "line": 181,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "addWatermark",
+          "line": 203,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "report/controllers/reports.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 37,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/academic-transcript/academic-transcript.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "Param",
+          "line": 306,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getAcademicHistory",
+          "line": 192,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "generateReport",
+          "line": 249,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/administration/administration.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "super",
+          "line": 57,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "deleteDistrict",
+          "line": 96,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "deleteSchool",
+          "line": 135,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "getLicenseById",
+          "line": 159,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Post",
+          "line": 197,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Post",
+          "line": 245,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 43,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Patch",
+          "line": 82,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Patch",
+          "line": 121,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiOperation",
+          "line": 179,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 228,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "createDistrict",
+          "line": 65,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "createSchool",
+          "line": 104,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "createLicense",
+          "line": 143,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "getDistricts",
+          "line": 72,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "getSchools",
+          "line": 111,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "getLicenses",
+          "line": 150,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "Get",
+          "line": 186,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/alerts/alerts.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Patch",
+          "methodName": "Post",
+          "line": 60,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/allergy/allergy.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "checkDrugAllergyConflict",
+          "line": 529,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/appointment/controllers/appointment-status.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 98,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/audit/audit.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 142,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 165,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiQuery",
+          "line": 186,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 221,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 238,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/auth/auth.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 208,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 332,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/budget/budget.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "operations",
+          "line": 40,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "updateBudgetTransaction",
+          "line": 314,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 326,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 340,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "getSpendingTrends",
+          "line": 352,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 365,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "getCategoryYearComparison",
+          "line": 377,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 148,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 291,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "createBudgetTransaction",
+          "line": 303,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/chronic-condition/chronic-condition.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "getChronicConditionStatistics",
+          "line": 230,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/clinic-visit.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "getStudentVisitSummary",
+          "line": 222,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 46,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiQuery",
+          "line": 125,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/clinical-protocol-management.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 17,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 36,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiParam",
+          "line": 57,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "Controller",
+          "line": 30,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/clinical-protocol-query.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 22,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/drug-allergy.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 25,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "constructor",
+          "line": 36,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/drug-catalog.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 31,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getDrugById",
+          "line": 65,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Get",
+          "line": 119,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 75,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/drug-interaction-management.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 26,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 43,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "checkInteractions",
+          "line": 54,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/drug-safety.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 68,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/follow-up.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 24,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiBearerAuth",
+          "line": 30,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Post",
+          "line": 36,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 42,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 18,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Get",
+          "line": 54,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Get",
+          "line": 60,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "update",
+          "line": 69,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "Get",
+          "line": 48,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "confirm",
+          "line": 75,
+          "issues": [
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/medication-administration-core.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 32,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 49,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 67,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Delete",
+          "line": 139,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/medication-administration-reporting.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 23,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/medication-administration-safety.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 23,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "super",
+          "line": 36,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Error",
+          "line": 49,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/medication-administration-scheduling.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 22,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiQuery",
+          "line": 166,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/medication-administration-special.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 24,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "super",
+          "line": 37,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 53,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 69,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiOperation",
+          "line": 89,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/prescription-alias.controller.ts",
+      "controllerIssues": [
+        "Missing @ApiTags decorator",
+        "Missing @ApiBearerAuth decorator (may require authentication)"
+      ],
+      "endpointIssues": []
+    },
+    {
+      "file": "services/clinical/controllers/prescription.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "create",
+          "line": 44,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "findAll",
+          "line": 55,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 67,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 19,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "findByStudent",
+          "line": 79,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "Param",
+          "line": 93,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "update",
+          "line": 105,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "fill",
+          "line": 117,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "ApiResponse",
+          "line": 129,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/clinical/controllers/treatment-plan.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 21,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiOperation",
+          "line": 95,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiParam",
+          "line": 104,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 83,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/communication/contact/contact.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiParam",
+          "line": 88,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 216,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "update",
+          "line": 261,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Get",
+          "line": 98,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "ApiResponse",
+          "line": 230,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 120,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/communication/controllers/communication.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 558,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 563,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 568,
+          "issues": [
+            "Missing @ApiOperation decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/communication/controllers/enhanced-message.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "getQueueMetrics",
+          "line": 569,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/communication/controllers/message.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "getDeliveryStatus",
+          "line": 245,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/communication/emergency-broadcast/emergency-broadcast.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 165,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "recordAcknowledgment",
+          "line": 216,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 38,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 125,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Put",
+          "line": 195,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "ApiResponse",
+          "line": 80,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Get",
+          "line": 178,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/communication/emergency-contact/emergency-contact.controller.ts",
+      "controllerIssues": [
+        "Missing @ApiBearerAuth decorator (may require authentication)"
+      ],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTagsAndAuth",
+          "line": 40,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "Get",
+          "line": 57,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Get",
+          "line": 75,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Delete",
+          "line": 131,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 214,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 256,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "Post",
+          "line": 93,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "Patch",
+          "line": 112,
+          "issues": [
+            "Missing @ApiOperation decorator",
+            "Missing @ApiResponse decorator(s)",
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/dashboard/dashboard.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "getDashboardStats",
+          "line": 91,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "logInfo",
+          "line": 140,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "logInfo",
+          "line": 189,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "getChartData",
+          "line": 234,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/inventory/inventory.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiParam",
+          "line": 685,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Post",
+          "line": 697,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiResponse",
+          "line": 307,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiQuery",
+          "line": 663,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/medication/medication.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 58,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 316,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 366,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/mobile/controllers/device.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 22,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "Get",
+          "line": 49,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "super",
+          "line": 39,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/mobile/controllers/notification.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 22,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 32,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/mobile/controllers/sync.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 22,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 32,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "getStatistics",
+          "line": 70,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/security/security.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 360,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Get",
+          "methodName": "ApiResponse",
+          "line": 451,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "Get",
+          "line": 458,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "Get",
+          "line": 372,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator",
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "generateIncidentReport",
+          "line": 404,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        },
+        {
+          "method": "Delete",
+          "methodName": "Get",
+          "line": 412,
+          "issues": [
+            "Has path parameter(s) but missing @ApiParam decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-academic.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 36,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-analytics.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 35,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-barcode.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 35,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 81,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-core.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "students",
+          "line": 46,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "findAll",
+          "line": 106,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-grade.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 35,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 77,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 119,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-health.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "access",
+          "line": 38,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-management.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 140,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiTags",
+          "line": 42,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-photo.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 38,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 82,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-query.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Get",
+          "methodName": "ApiTags",
+          "line": 42,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-status.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Patch",
+          "methodName": "ApiTags",
+          "line": 33,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "Controller",
+          "line": 45,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiParam",
+          "line": 54,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/student/controllers/student-waitlist.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiTags",
+          "line": 43,
+          "issues": [
+            "Missing @ApiResponse decorator(s)"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "ApiResponse",
+          "line": 131,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Put",
+          "methodName": "ApiResponse",
+          "line": 89,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/user/user.controller.ts",
+      "controllerIssues": [],
+      "endpointIssues": [
+        {
+          "method": "Post",
+          "methodName": "ApiOperation",
+          "line": 198,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Post",
+          "methodName": "HttpCode",
+          "line": 218,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "HttpCode",
+          "line": 154,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        },
+        {
+          "method": "Patch",
+          "methodName": "ApiParam",
+          "line": 177,
+          "issues": [
+            "Has @Body parameter but missing @ApiBody decorator"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "services/vaccinations/vaccinations.controller.ts",
+      "controllerIssues": [
+        "Missing @ApiBearerAuth decorator (may require authentication)"
+      ],
+      "endpointIssues": []
+    }
+  ]
+}

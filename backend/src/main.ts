@@ -338,41 +338,55 @@ async function bootstrap() {
   }
 
   // Swagger API Documentation
-  const config = createSwaggerConfig();
+  // SECURITY: Only enable Swagger in non-production environments by default
+  const isProduction = configService.get('NODE_ENV') === 'production';
+  const swaggerEnabledInProduction = configService.get('SWAGGER_ENABLED_IN_PRODUCTION') === 'true';
+  const enableSwagger = !isProduction || swaggerEnabledInProduction;
 
-  const document = SwaggerModule.createDocument(app, config, {
-    operationIdFactory: (_controllerKey: string, methodKey: string) => methodKey,
-    deepScanRoutes: true,
-  });
+  if (enableSwagger) {
+    bootstrapLogger.log('🔍 Enabling Swagger API Documentation...');
 
-  // Add global response schemas
-  addGlobalSchemas(document);
+    const config = createSwaggerConfig();
 
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-      displayRequestDuration: true,
-      docExpansion: 'none',
-      filter: true,
-      showRequestHeaders: true,
-      tryItOutEnabled: true,
-    },
-    customSiteTitle: 'White Cross Health API Documentation',
-    customfavIcon: '/favicon.ico',
-    customJs: [
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js',
-    ],
-    customCssUrl: [
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-    ],
-  });
+    const document = SwaggerModule.createDocument(app, config, {
+      operationIdFactory: (_controllerKey: string, methodKey: string) => methodKey,
+      deepScanRoutes: true,
+    });
 
-  // Also expose the JSON spec at /api/docs-json for automated tools
-  app.getHttpAdapter().get('/api/docs-json', (_req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.json(document);
-  });
+    // Add global response schemas
+    addGlobalSchemas(document);
+
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        docExpansion: 'none',
+        filter: true,
+        showRequestHeaders: true,
+        tryItOutEnabled: true,
+      },
+      customSiteTitle: configService.get('SWAGGER_UI_TITLE') || 'White Cross Health API Documentation',
+      customfavIcon: '/favicon.ico',
+      customJs: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js',
+      ],
+      customCssUrl: [
+        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
+      ],
+    });
+
+    // Also expose the JSON spec at /api/docs-json for automated tools
+    app.getHttpAdapter().get('/api/docs-json', (_req, res) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.json(document);
+    });
+
+    bootstrapLogger.log(`✅ Swagger UI available at: ${configService.get('NODE_ENV') === 'development' ? 'http://localhost:' + configService.get('PORT') : ''}/api/docs`);
+  } else {
+    bootstrapLogger.warn('⚠️  Swagger API Documentation DISABLED in production for security');
+    bootstrapLogger.warn('    Set SWAGGER_ENABLED_IN_PRODUCTION=true to enable (not recommended)');
+  }
 
   // Validate critical configuration before starting
   configService.validateCriticalConfig();
