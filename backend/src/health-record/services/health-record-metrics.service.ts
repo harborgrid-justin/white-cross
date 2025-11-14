@@ -8,28 +8,16 @@
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { EnterpriseMetricsService } from '@/common/enterprise/services/enterprise-metrics.service';
 import { ComplianceLevel, HealthRecordOperation } from '../interfaces/health-record-types';
-import { HealthMetricSnapshot   } from '@/database/models';
-
-import { BaseService } from '@/common/base';
+import { HealthMetricSnapshot } from '@/database/models';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 export interface HealthRecordMetricSnapshot {
   timestamp: Date;
   phiOperations: {
@@ -71,13 +59,20 @@ export interface HealthRecordMetricSnapshot {
  * with HIPAA compliance tracking and persistent database storage
  */
 @Injectable()
-export class HealthRecordMetricsService implements OnModuleDestroy {
+export class HealthRecordMetricsService extends BaseService implements OnModuleDestroy {
   private readonly enterpriseMetrics: EnterpriseMetricsService;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(HealthMetricSnapshot)
     private readonly healthMetricSnapshotModel: typeof HealthMetricSnapshot,
   ) {
+    super({
+      serviceName: 'HealthRecordMetricsService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.enterpriseMetrics = new EnterpriseMetricsService('health-record');
     this.logInfo(
       'Health Record Metrics Service initialized with database persistence',

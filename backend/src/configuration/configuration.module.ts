@@ -13,6 +13,9 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 
+// Import database module for Sequelize instance access
+import { DatabaseModule } from '../database/database.module';
+
 // Import Sequelize models
 import { SystemConfig } from '@/database/models';
 import { ConfigurationHistory } from '@/database/models';
@@ -29,7 +32,10 @@ import { ConfigStatisticsService } from './services/config-statistics.service';
 import { ConfigurationController } from './configuration.controller';
 
 @Module({
-  imports: [SequelizeModule.forFeature([SystemConfig, ConfigurationHistory])],
+  imports: [
+    SequelizeModule.forFeature([SystemConfig, ConfigurationHistory]),
+    DatabaseModule, // Import to access Sequelize instance
+  ],
   controllers: [ConfigurationController],
   providers: [
     ConfigurationService,

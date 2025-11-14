@@ -4,7 +4,10 @@
  * @description Service for sending different types of SMS messages
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bullmq';
 import { TwilioProvider } from '../providers/twilio.provider';
 import { PhoneValidatorService } from './phone-validator.service';
 import { RateLimiterService } from './rate-limiter.service';
@@ -19,31 +22,23 @@ import {
   SmsPriority,
 } from '../dto';
 import { SmsTemplateService } from './sms-template.service';
+import { SMS_QUEUE_NAME } from '../processors/sms-queue.processor';
 
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 /**
  * Service for sending different types of SMS messages
  */
 @Injectable()
 export class SmsSenderService extends BaseSmsService {
+  private readonly logger: Logger;
+
   constructor(
-    @Inject(LoggerService) logger: LoggerService,
-    configService: any,
-    smsQueue: any,
+    configService: ConfigService,
+    @InjectQueue(SMS_QUEUE_NAME) smsQueue: Queue,
     private readonly twilioProvider: TwilioProvider,
     private readonly phoneValidator: PhoneValidatorService,
     private readonly rateLimiter: RateLimiterService,
     private readonly templateService: SmsTemplateService,
   ) {
-    super({
-      serviceName: 'SmsSenderService',
-      logger,
-      enableAuditLogging: true,
-    });
-
     super(configService, smsQueue);
     this.logger = new Logger(SmsSenderService.name);
   }
@@ -92,7 +87,8 @@ export class SmsSenderService extends BaseSmsService {
 
       this.logInfo(`Alert SMS queued successfully for ${normalizedPhone}`);
     } catch (error) {
-      this.logError(`Failed to send alert SMS to ${to}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logError(`Failed to send alert SMS to ${to}: ${errorMessage}`);
       throw error;
     }
   }
@@ -120,14 +116,9 @@ export class SmsSenderService extends BaseSmsService {
 
       // 4. Send via appropriate method
       if (this.twilioProvider.isReady() && this.isProduction) {
-        await this.queueSms(
-          normalizedPhone,
-          truncatedMessage,
-          SmsPriority.NORMAL,
-          {
-            type: 'generic',
-          },
-        );
+        await this.queueSms(normalizedPhone, truncatedMessage, SmsPriority.NORMAL, {
+          type: 'generic',
+        });
       } else {
         await this.logSmsToConsole(normalizedPhone, truncatedMessage);
       }
@@ -136,9 +127,10 @@ export class SmsSenderService extends BaseSmsService {
       await this.rateLimiter.incrementPhoneNumber(normalizedPhone);
       await this.rateLimiter.incrementAccount('default');
 
-      this.logInfo(`SMS queued successfully for ${normalizedPhone}`);
+      this.logInfo(`SMS sent successfully to ${normalizedPhone}`);
     } catch (error) {
-      this.logError(`Failed to send SMS to ${to}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logError(`Failed to send SMS to ${to}: ${errorMessage}`);
       throw error;
     }
   }
@@ -166,10 +158,7 @@ export class SmsSenderService extends BaseSmsService {
       if (data.templateVariables) {
         // Simple variable substitution
         Object.entries(data.templateVariables).forEach(([key, value]) => {
-          message = message.replace(
-            new RegExp(`{{${key}}}`, 'g'),
-            String(value),
-          );
+          message = message.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
         });
       }
 
@@ -177,9 +166,7 @@ export class SmsSenderService extends BaseSmsService {
 
       // Queue with advanced options
       if (this.twilioProvider.isReady() && this.isProduction) {
-        const delay = data.scheduledFor
-          ? new Date(data.scheduledFor).getTime() - Date.now()
-          : 0;
+        const delay = data.scheduledFor ? new Date(data.scheduledFor).getTime() - Date.now() : 0;
 
         await this.queueSms(
           normalizedPhone,
@@ -196,10 +183,9 @@ export class SmsSenderService extends BaseSmsService {
       // Increment rate limits
       await this.rateLimiter.incrementPhoneNumber(normalizedPhone);
       await this.rateLimiter.incrementAccount('default');
-
-      this.logInfo(`Advanced SMS queued for ${normalizedPhone}`);
     } catch (error) {
-      this.logError(`Failed to send advanced SMS to ${to}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logError(`Failed to send advanced SMS to ${to}: ${errorMessage}`);
       throw error;
     }
   }
@@ -223,34 +209,24 @@ export class SmsSenderService extends BaseSmsService {
       await this.checkRateLimits(normalizedPhone);
 
       // Render template
-      const message = await this.templateService.renderTemplate(
-        data.templateId,
-        data.variables,
-      );
+      const message = await this.templateService.renderTemplate(data.templateId, data.variables);
       const truncatedMessage = this.truncateMessage(message);
 
       // Send
       if (this.twilioProvider.isReady() && this.isProduction) {
-        await this.queueSms(
-          normalizedPhone,
-          truncatedMessage,
-          SmsPriority.NORMAL,
-          {
-            templateId: data.templateId,
-            type: 'templated',
-          },
-        );
+        await this.queueSms(normalizedPhone, truncatedMessage, SmsPriority.NORMAL, {
+          templateId: data.templateId,
+          type: 'templated',
+        });
       } else {
         await this.logSmsToConsole(normalizedPhone, truncatedMessage);
       }
 
       // Increment rate limits
       await this.rateLimiter.incrementPhoneNumber(normalizedPhone);
-      await this.rateLimiter.incrementAccount('default');
-
-      this.logInfo(`Templated SMS queued for ${normalizedPhone}`);
     } catch (error) {
-      this.logError(`Failed to send templated SMS to ${to}: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logError(`Failed to send templated SMS to ${to}: ${errorMessage}`);
       throw error;
     }
   }
@@ -308,14 +284,15 @@ export class SmsSenderService extends BaseSmsService {
         successCount++;
         estimatedCost += 0.0079; // Rough estimate
       } catch (error) {
-        results.push({ phoneNumber: recipient, error: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        results.push({ phoneNumber: recipient, error: errorMessage });
       }
     }
 
     const failedCount = data.recipients.length - successCount;
     const failures = results
       .filter((r) => r.error)
-      .map((r) => ({ phoneNumber: r.phoneNumber, error: r.error! }));
+      .map((r) => ({ phoneNumber: r.phoneNumber, error: r.error }));
 
     this.logInfo(`Bulk SMS completed - ${successCount} successful, ${failedCount} failed`);
 
@@ -336,7 +313,7 @@ export class SmsSenderService extends BaseSmsService {
     // Check per-phone rate limit
     const phoneLimit = await this.rateLimiter.checkPhoneNumberLimit(phoneNumber);
     if (phoneLimit.isLimited) {
-      this.logWarning(`Rate limit exceeded for ${phoneNumber}`);
+      this.logWarning(`Rate limit exceeded for ${String(phoneNumber)}`);
       throw this.createRateLimitException(
         `Rate limit exceeded for this phone number. Try again in ${phoneLimit.resetInSeconds} seconds.`,
         phoneLimit.resetInSeconds,

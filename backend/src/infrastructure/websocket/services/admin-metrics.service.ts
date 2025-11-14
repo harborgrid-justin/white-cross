@@ -16,7 +16,6 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  Logger,
   OnModuleDestroy,
   OnModuleInit,
   Optional,
@@ -26,20 +25,8 @@ import { WebSocketService } from '../websocket.service';
 import * as os from 'os';
 import { promisify } from 'util';
 import { exec } from 'child_process';
-
-import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 const execAsync = promisify(exec);
 
 /**
@@ -122,7 +109,7 @@ export interface SystemAlert {
 }
 
 @Injectable()
-export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
+export class AdminMetricsService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private isEnabled = false;
   private metricsInterval: NodeJS.Timeout | null = null;
   private previousCpuInfo: { totalTick: number; totalIdle: number } | null = null;
@@ -142,11 +129,18 @@ export class AdminMetricsService implements OnModuleInit, OnModuleDestroy {
   };
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @Optional()
     @Inject(forwardRef(() => WebSocketService))
-    private readonly webSocketService?: WebSocketService,
+    private readonly webSocketService: WebSocketService | undefined,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'AdminMetricsService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   async onModuleInit() {
     this.isEnabled = this.configService.get<boolean>('ADMIN_METRICS_ENABLED', true);

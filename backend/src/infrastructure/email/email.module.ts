@@ -16,7 +16,11 @@ import { EmailService } from './email.service';
 import { EmailTemplateService } from './email-template.service';
 import { EMAIL_QUEUE_NAME, EmailQueueService } from './email-queue.service';
 import { EmailRateLimiterService } from './email-rate-limiter.service';
+import { EmailValidatorService } from './services/email-validator.service';
+import { EmailSenderService } from './services/email-sender.service';
+import { EmailStatisticsService } from './services/email-statistics.service';
 import { AppointmentEmailListener } from './listeners/appointment.listener';
+import { LoggerService } from '@/common/logging/logger.service';
 
 @Module({
   imports: [
@@ -53,6 +57,10 @@ import { AppointmentEmailListener } from './listeners/appointment.listener';
     EmailTemplateService,
     EmailQueueService,
     EmailRateLimiterService,
+    EmailValidatorService,
+    EmailSenderService,
+    EmailStatisticsService,
+    LoggerService,
     // Event-driven architecture listeners
     AppointmentEmailListener,
   ],

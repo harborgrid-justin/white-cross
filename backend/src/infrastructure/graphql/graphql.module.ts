@@ -35,7 +35,7 @@ import { HealthRecordModule } from '@/health-record';
 import { EmergencyContactModule } from '../../services/communication/emergency-contact';
 import { ChronicConditionModule } from '../../services/chronic-condition';
 import { IncidentReportModule } from '../../incident-report';
-import { AllergyModule } from '../../services/allergy';
+import { AllergyModule } from '../../health-record/allergy';
 import { AuthModule } from '../../services/auth';
 import { GraphQLJSON } from 'graphql-scalars';
 import { containsPHI, sanitizeGraphQLError } from './errors/phi-sanitizer';

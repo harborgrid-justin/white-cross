@@ -26,10 +26,10 @@ export class BroadcastService extends BaseService {
         return;
       }
 
-      const message = new BroadcastMessageDto({
-        ...data as Record<string, any>,
+      const message: BroadcastMessageDto = {
+        data: data as Record<string, any>,
         timestamp: new Date().toISOString(),
-      });
+      };
 
       server.to(room).emit(event, message);
 
@@ -56,10 +56,10 @@ export class BroadcastService extends BaseService {
         return;
       }
 
-      const message = new BroadcastMessageDto({
-        ...data as Record<string, any>,
+      const message: BroadcastMessageDto = {
+        data: data as Record<string, any>,
         timestamp: new Date().toISOString(),
-      });
+      };
 
       for (const room of rooms) {
         server.to(room).emit(event, message);

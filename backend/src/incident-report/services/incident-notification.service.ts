@@ -1,33 +1,29 @@
-import { Injectable, Logger, NotFoundException, OnModuleDestroy, Optional } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, OnModuleDestroy, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EmergencyContact, IncidentReport } from '@/database';
 import { ContactPriority } from '@/services/communication/contact/enums';
 import { AppConfigService } from '@/common/config';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 @Injectable()
-export class IncidentNotificationService implements OnModuleDestroy {
+export class IncidentNotificationService extends BaseService implements OnModuleDestroy {
   private notificationListeners: Set<string> = new Set();
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
     @InjectModel(EmergencyContact)
     private emergencyContactModel: typeof EmergencyContact,
     @Optional() private readonly config?: AppConfigService,
   ) {
+    super({
+      serviceName: 'IncidentNotificationService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.logInfo('IncidentNotificationService initialized');
   }
 

@@ -38,9 +38,19 @@ import { HealthRecordMetricsService } from './services/health-record-metrics.ser
 
 // Analytics Optimization Services (Phase 4)
 import { CacheStrategyService } from './services/cache-strategy.service';
+import { CacheStrategyOrchestratorService } from './services/cache/cache-strategy-orchestrator.service';
+import { CacheOptimizationService } from './services/cache/cache-optimization.service';
+import { L1CacheService } from './services/cache/l1-cache.service';
+import { L2CacheService } from './services/cache/l2-cache.service';
+import { L3CacheService } from './services/cache/l3-cache.service';
+import { CacheAccessPatternTrackerService } from './services/cache/cache-access-pattern-tracker.service';
 import { QueryPerformanceAnalyzer } from './services/query-performance-analyzer.service';
 import { IntelligentCacheInvalidationService } from './services/intelligent-cache-invalidation.service';
 import { ResourceOptimizationService } from './services/resource-optimization.service';
+import { ResourceMetricsCollector } from './services/resource-metrics-collector.service';
+import { ResourceMonitor } from './services/resource-monitor.service';
+import { ResourceOptimizationEngine } from './services/resource-optimization-engine.service';
+import { ResourceReporter } from './services/resource-reporter.service';
 
 // Enterprise Pattern Interceptors
 import { HealthRecordAuditInterceptor } from './interceptors/health-record-audit.interceptor';
@@ -139,9 +149,19 @@ import { CacheEntry   } from '@/database/models';
 
     // Analytics Optimization Services (Phase 4)
     CacheStrategyService,
+    CacheStrategyOrchestratorService,
+    CacheOptimizationService,
+    L1CacheService,
+    L2CacheService,
+    L3CacheService,
+    CacheAccessPatternTrackerService,
     QueryPerformanceAnalyzer,
     IntelligentCacheInvalidationService,
     ResourceOptimizationService,
+    ResourceMetricsCollector,
+    ResourceMonitor,
+    ResourceOptimizationEngine,
+    ResourceReporter,
 
     // Enterprise Pattern Interceptors
     HealthRecordAuditInterceptor,

@@ -9,6 +9,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ComplianceController } from './compliance.controller';
 import { ComplianceService } from './compliance.service';
 import { DatabaseModule } from '../database/database.module';
+import { AuditModule } from '../services/audit/audit.module';
 
 // Services
 import { AuditService } from '../services/audit/audit.service';
@@ -65,6 +66,7 @@ import { RemediationAction } from '@/database/models';
 @Module({
   imports: [
     DatabaseModule,
+    AuditModule, // Import AuditModule to get AuditService and its dependencies
     // Re-register models needed for @InjectModel() in this module's services
     SequelizeModule.forFeature([
       AuditLog,
@@ -84,8 +86,7 @@ import { RemediationAction } from '@/database/models';
     // Main service
     ComplianceService,
 
-    // Domain services
-    AuditService,
+    // Domain services (AuditService now comes from AuditModule)
     ConsentService,
     ComplianceReportService,
     ChecklistService,
@@ -111,7 +112,7 @@ import { RemediationAction } from '@/database/models';
   exports: [
     // Export services for use in other modules
     ComplianceService,
-    AuditService,
+    // AuditService is exported by AuditModule
     ConsentService,
     ComplianceReportService,
     ChecklistService,

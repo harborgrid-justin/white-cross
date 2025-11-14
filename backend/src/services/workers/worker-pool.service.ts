@@ -43,10 +43,11 @@ export class WorkerPoolService extends BaseService implements OnModuleInit, OnMo
    * @param options - Pool configuration options
    */
   constructor(
-    @Inject(LoggerService) logger: LoggerService,
     workerScript: string,
     options: WorkerPoolOptions = {}
   ) {
+    // Create a simple logger for manual instantiation
+    const logger = new LoggerService();
     super({ serviceName: 'WorkerPoolService', logger });
 
     this.eventEmitter = new EventEmitter();

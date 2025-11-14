@@ -10,6 +10,10 @@ import {
   DeviceTokenService,
   OfflineSyncService,
 } from './services';
+import { OfflineSyncEntityRegistryService } from './services/offline-sync-entity-registry.service';
+import { OfflineSyncWatermarkService } from './services/offline-sync-watermark.service';
+import { OfflineSyncQueueService } from './services/offline-sync-queue.service';
+import { OfflineSyncConflictService } from './services/offline-sync-conflict.service';
 import { DeviceController, NotificationController, SyncController } from './controllers';
 import { DeviceToken, PushNotification, SyncConflict, SyncQueueItem } from './entities';
 import { AuthModule } from '../auth';
@@ -45,8 +49,12 @@ import { AuthModule } from '../auth';
     NotificationSchedulerService,
     NotificationAnalyticsService,
     DeviceTokenService,
-    // Sync service
+    // Sync service and its dependencies
     OfflineSyncService,
+    OfflineSyncEntityRegistryService,
+    OfflineSyncWatermarkService,
+    OfflineSyncQueueService,
+    OfflineSyncConflictService,
   ],
   controllers: [NotificationController, DeviceController, SyncController],
   exports: [NotificationService, OfflineSyncService],

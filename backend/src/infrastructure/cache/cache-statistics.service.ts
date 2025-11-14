@@ -124,8 +124,6 @@ export class CacheStatisticsService extends HealthIndicator {
       logger,
       enableAuditLogging: true,
     });
-
-    super();
   }
 
   /**

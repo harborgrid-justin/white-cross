@@ -9,23 +9,11 @@
  * - Metrics export for monitoring systems
  */
 
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-
-import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 export interface ConnectionPoolMetrics {
   active: number;
   idle: number;
@@ -44,7 +32,7 @@ export interface ConnectionHealthStatus {
 }
 
 @Injectable()
-export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
+export class ConnectionMonitorService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private monitoringInterval: NodeJS.Timeout | null = null;
   private healthCheckInterval: NodeJS.Timeout | null = null;
 
@@ -64,7 +52,16 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
     issues: [],
   };
 
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    @InjectConnection() private readonly sequelize: Sequelize,
+  ) {
+    super({
+      serviceName: 'ConnectionMonitorService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   async onModuleInit(): Promise<void> {
     this.logInfo('Initializing Connection Pool Monitor');

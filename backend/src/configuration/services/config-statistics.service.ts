@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { SystemConfig } from '@/database/models';
 
@@ -15,6 +15,7 @@ export class ConfigStatisticsService extends BaseService {
   constructor(
     @InjectModel(SystemConfig)
     private readonly configModel: typeof SystemConfig,
+    @InjectConnection()
     private readonly sequelize: Sequelize,
   ) {
     super("ConfigStatisticsService");

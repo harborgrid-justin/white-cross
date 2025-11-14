@@ -10,19 +10,6 @@ import { LoggerService } from '@/common/logging/logger.service';
 import { InjectQueue, Process, Processor } from '@nestjs/bull';
 import { Job, Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 import {
   EmailPriority,
   EmailQueueJobData,
@@ -41,14 +28,21 @@ export const EMAIL_QUEUE_NAME = 'email-queue';
  */
 @Processor(EMAIL_QUEUE_NAME)
 @Injectable()
-export class EmailQueueService implements OnModuleInit {
+export class EmailQueueService extends BaseService implements OnModuleInit {
   private readonly maxRetries: number;
   private readonly backoffDelay: number;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectQueue(EMAIL_QUEUE_NAME) private readonly emailQueue: Queue,
     private readonly configService: ConfigService,
   ) {
+    super({
+      serviceName: 'EmailQueueService',
+      logger,
+      enableAuditLogging: false,
+    });
+
     this.maxRetries = this.configService.get<number>('EMAIL_QUEUE_MAX_RETRIES', 3);
     this.backoffDelay = this.configService.get<number>('EMAIL_QUEUE_BACKOFF_DELAY', 5000);
   }

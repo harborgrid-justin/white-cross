@@ -4,7 +4,7 @@
  * @description Service for managing message-related queues with Bull and Redis
  */
 
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import type { Job, Queue } from 'bull';
 import { JobPriority, QueueName } from './enums';
@@ -19,27 +19,16 @@ import {
   SendMessageJobDto,
 } from './dtos';
 import { FailedJobInfo, QueueHealth, QueueJobOptions, QueueMetrics, QueueStats } from './interfaces';
-
-import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 /**
  * Message Queue Service
  * Manages all message-related background job queues
  */
 @Injectable()
-export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
+export class MessageQueueService extends BaseService implements OnModuleInit, OnModuleDestroy {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectQueue(QueueName.MESSAGE_DELIVERY)
     private readonly messageDeliveryQueue: Queue,
 
@@ -59,7 +48,13 @@ export class MessageQueueService implements OnModuleInit, OnModuleDestroy {
     private readonly cleanupQueue: Queue,
 
     private readonly queueConfig: QueueConfigService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'MessageQueueService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   async onModuleInit() {
     this.logInfo('Message Queue Service initialized');

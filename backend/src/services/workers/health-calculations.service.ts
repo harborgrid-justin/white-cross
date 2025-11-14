@@ -10,7 +10,7 @@
  * - Statistical aggregations
  */
 
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { join } from 'path';
 import { WorkerPoolService } from './worker-pool.service';
 import { BaseService } from '../../common/base';
@@ -66,9 +66,18 @@ export interface StatisticalAggregations {
 
 @Injectable()
 export class HealthCalculationsService
+  extends BaseService
   implements OnModuleInit, OnModuleDestroy
 {
   private workerPool: WorkerPoolService | null = null;
+
+  constructor(@Inject(LoggerService) logger: LoggerService) {
+    super({
+      serviceName: 'HealthCalculationsService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   /**
    * Initialize worker pool on module init

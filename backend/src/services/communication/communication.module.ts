@@ -27,6 +27,9 @@ import { BroadcastService } from './services/broadcast.service';
 import { TemplateService } from './services/template.service';
 import { CommunicationService } from './services/communication.service';
 import { EnhancedMessageService } from './services/enhanced-message.service';
+import { MessageSenderService } from './services/message-sender.service';
+import { MessageManagementService } from './services/message-management.service';
+import { MessageQueryService } from './services/message-query.service';
 import { ConversationService } from './services/conversation.service';
 
 // Helpers
@@ -62,6 +65,9 @@ import { CommunicationGateway } from './gateways/communication.gateway';
     TemplateService,
     CommunicationService,
     EnhancedMessageService,
+    MessageSenderService,
+    MessageManagementService,
+    MessageQueryService,
     ConversationService,
     QueueIntegrationHelper,
     CommunicationGateway,

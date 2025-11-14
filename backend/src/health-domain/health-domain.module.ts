@@ -6,7 +6,7 @@ import { HealthDomainController } from './health-domain.controller';
 
 // Import all health-record sub-modules
 import { VaccinationModule } from '../health-record/vaccination/vaccination.module';
-import { AllergyModule } from '../services/allergy/allergy.module';
+import { AllergyModule } from '../health-record/allergy/allergy.module';
 import { ChronicConditionModule } from '../services/chronic-condition/chronic-condition.module';
 import { VitalsModule } from '../health-record/vitals/vitals.module';
 import { SearchModule } from '../health-record/search/search.module';

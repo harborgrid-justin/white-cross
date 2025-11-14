@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, OnModuleInit, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit, Inject } from '@nestjs/common';
 import { BaseService } from '../../../common/base';
 import { LoggerService } from '../../../common/logging/logger.service';
 import {
@@ -48,8 +48,16 @@ export interface NotificationTemplate {
  * ```
  */
 @Injectable()
-export class NotificationTemplateService implements OnModuleInit {
+export class NotificationTemplateService extends BaseService implements OnModuleInit {
   private readonly templates: Map<string, NotificationTemplate> = new Map();
+
+  constructor(@Inject(LoggerService) logger: LoggerService) {
+    super({
+      serviceName: 'NotificationTemplateService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   /**
    * Initialize templates on module startup

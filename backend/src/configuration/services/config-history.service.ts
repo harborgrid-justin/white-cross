@@ -5,7 +5,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectModel, InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 import { SystemConfig } from '@/database/models';
 import { ConfigurationHistory } from '@/database/models';
@@ -19,6 +19,7 @@ export class ConfigHistoryService extends BaseService {
     private readonly configModel: typeof SystemConfig,
     @InjectModel(ConfigurationHistory)
     private readonly historyModel: typeof ConfigurationHistory,
+    @InjectConnection()
     private readonly sequelize: Sequelize,
   ) {
     super("ConfigHistoryService");

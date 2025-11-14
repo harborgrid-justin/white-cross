@@ -14,6 +14,7 @@ import { PhoneValidatorService } from './services/phone-validator.service';
 import { SmsTemplateService } from './services/sms-template.service';
 import { RateLimiterService } from './services/rate-limiter.service';
 import { CostTrackerService } from './services/cost-tracker.service';
+import { SmsSenderService } from './services/sms-sender.service';
 import { SMS_QUEUE_NAME, SmsQueueProcessor } from './processors/sms-queue.processor';
 
 @Module({
@@ -36,6 +37,7 @@ import { SMS_QUEUE_NAME, SmsQueueProcessor } from './processors/sms-queue.proces
     SmsTemplateService,
     RateLimiterService,
     CostTrackerService,
+    SmsSenderService,
 
     // Queue Processor
     SmsQueueProcessor,
