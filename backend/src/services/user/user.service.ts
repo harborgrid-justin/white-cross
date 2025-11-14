@@ -7,7 +7,12 @@
  * @security Account lockout after 5 failed attempts
  */
 
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { RequestContextService } from '@/common/context/request-context.service';
@@ -40,7 +45,6 @@ export class UserService extends BaseService {
   async getUsers(filters: UserFiltersDto) {
     try {
       const { page = 1, limit = 20, search, role, isActive } = filters;
-      const offset = (page - 1) * limit;
 
       const whereClause: any = {};
 
@@ -60,39 +64,33 @@ export class UserService extends BaseService {
         whereClause.isActive = isActive;
       }
 
-      const { rows: users, count: total } =
-        await this.userModel.findAndCountAll({
-          where: whereClause,
-          offset,
-          limit,
-          attributes: {
-            exclude: [
-              'password',
-              'passwordResetToken',
-              'passwordResetExpires',
-              'emailVerificationToken',
-              'emailVerificationExpires',
-              'twoFactorSecret',
-            ],
-          },
-          order: [['createdAt', 'DESC']],
-        });
+      // Use BaseService pagination method
+      const result = await this.createPaginatedQuery(this.userModel, {
+        page,
+        limit,
+        where: whereClause,
+        attributes: {
+          exclude: [
+            'password',
+            'passwordResetToken',
+            'passwordResetExpires',
+            'emailVerificationToken',
+            'emailVerificationExpires',
+            'twoFactorSecret',
+          ],
+        },
+        order: [['createdAt', 'DESC']],
+      });
 
       // Convert to safe objects
-      const safeUsers = users.map((user) => user.toSafeObject());
+      const safeUsers = result.data.map((user) => user.toSafeObject());
 
       return {
         users: safeUsers,
-        pagination: {
-          total,
-          page,
-          limit,
-          pages: Math.ceil(total / limit),
-        },
+        pagination: result.pagination,
       };
     } catch (error) {
-      this.logger.error('Error fetching users:', error);
-      throw error;
+      this.handleError('Failed to fetch users', error);
     }
   }
 
@@ -118,16 +116,17 @@ export class UserService extends BaseService {
       );
 
       if (!users || users.length === 0) {
-        throw new NotFoundException('User not found');
+        // Use BaseService method for consistent error handling
+        const user = await this.findEntityOrFail(this.userModel, id, 'User');
+        return user.toSafeObject();
       }
 
-      return users[0]!.toSafeObject();
+      return users[0].toSafeObject();
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error('Error fetching user by ID:', error);
-      throw error;
+      this.handleError('Failed to fetch user by ID', error);
     }
   }
 
@@ -150,9 +149,7 @@ export class UserService extends BaseService {
       // Create user (password will be hashed by BeforeCreate hook)
       const user = await this.userModel.create(createUserDto as any);
 
-      this.logger.log(
-        `User created: ${user.firstName} ${user.lastName} (${user.email})`,
-      );
+      this.logger.log(`User created: ${user.firstName} ${user.lastName} (${user.email})`);
 
       return user.toSafeObject();
     } catch (error) {
@@ -172,11 +169,8 @@ export class UserService extends BaseService {
    */
   async updateUser(id: string, updateUserDto: UpdateUserDto) {
     try {
-      const user = await this.userModel.findByPk(id);
-
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      // Use BaseService method for consistent error handling
+      const user = await this.findEntityOrFail(this.userModel, id, 'User');
 
       // Check if email is taken by another user
       if (updateUserDto.email && updateUserDto.email !== user.email) {
@@ -191,20 +185,14 @@ export class UserService extends BaseService {
 
       await user.update(updateUserDto);
 
-      this.logger.log(
-        `User updated: ${user.firstName} ${user.lastName} (${user.email})`,
-      );
+      this.logInfo(`User updated: ${user.firstName} ${user.lastName} (${user.email})`);
 
       return user.toSafeObject();
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof ConflictException
-      ) {
+      if (error instanceof NotFoundException || error instanceof ConflictException) {
         throw error;
       }
-      this.logger.error('Error updating user:', error);
-      throw error;
+      this.handleError('Failed to update user', error);
     }
   }
 
@@ -216,16 +204,11 @@ export class UserService extends BaseService {
    */
   async changePassword(id: string, changePasswordDto: UserChangePasswordDto) {
     try {
-      const user = await this.userModel.findByPk(id);
-
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      // Use BaseService method for consistent error handling
+      const user = await this.findEntityOrFail(this.userModel, id, 'User');
 
       // Verify current password
-      const isValidPassword = await user.comparePassword(
-        changePasswordDto.currentPassword,
-      );
+      const isValidPassword = await user.comparePassword(changePasswordDto.currentPassword);
 
       if (!isValidPassword) {
         throw new UnauthorizedException('Current password is incorrect');
@@ -235,20 +218,14 @@ export class UserService extends BaseService {
       user.password = changePasswordDto.newPassword;
       await user.save();
 
-      this.logger.log(
-        `Password changed for user: ${user.firstName} ${user.lastName}`,
-      );
+      this.logInfo(`Password changed for user: ${user.firstName} ${user.lastName}`);
 
       return { success: true };
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof UnauthorizedException
-      ) {
+      if (error instanceof NotFoundException || error instanceof UnauthorizedException) {
         throw error;
       }
-      this.logger.error('Error changing password:', error);
-      throw error;
+      this.handleError('Failed to change password', error);
     }
   }
 
@@ -259,25 +236,19 @@ export class UserService extends BaseService {
    */
   async deactivateUser(id: string) {
     try {
-      const user = await this.userModel.findByPk(id);
-
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      // Use BaseService method for consistent error handling
+      const user = await this.findEntityOrFail(this.userModel, id, 'User');
 
       await user.update({ isActive: false });
 
-      this.logger.log(
-        `User deactivated: ${user.firstName} ${user.lastName} (${user.email})`,
-      );
+      this.logInfo(`User deactivated: ${user.firstName} ${user.lastName} (${user.email})`);
 
       return user.toSafeObject();
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error('Error deactivating user:', error);
-      throw error;
+      this.handleError('Failed to deactivate user', error);
     }
   }
 
@@ -288,25 +259,19 @@ export class UserService extends BaseService {
    */
   async reactivateUser(id: string) {
     try {
-      const user = await this.userModel.findByPk(id);
-
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      // Use BaseService method for consistent error handling
+      const user = await this.findEntityOrFail(this.userModel, id, 'User');
 
       await user.update({ isActive: true });
 
-      this.logger.log(
-        `User reactivated: ${user.firstName} ${user.lastName} (${user.email})`,
-      );
+      this.logInfo(`User reactivated: ${user.firstName} ${user.lastName} (${user.email})`);
 
       return user.toSafeObject();
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error('Error reactivating user:', error);
-      throw error;
+      this.handleError('Failed to reactivate user', error);
     }
   }
 
@@ -333,10 +298,7 @@ export class UserService extends BaseService {
 
       // Get role distribution
       const byRoleResults = await this.userModel.findAll({
-        attributes: [
-          'role',
-          [this.userModel.sequelize!.fn('COUNT', '*'), 'count'],
-        ],
+        attributes: ['role', [this.userModel.sequelize.fn('COUNT', '*'), 'count']],
         group: ['role'],
         raw: true,
       });
@@ -415,28 +377,22 @@ export class UserService extends BaseService {
    */
   async resetUserPassword(id: string, newPassword: string) {
     try {
-      const user = await this.userModel.findByPk(id);
-
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
+      // Use BaseService method for consistent error handling
+      const user = await this.findEntityOrFail(this.userModel, id, 'User');
 
       // Update password and set mustChangePassword flag
       user.password = newPassword;
       user.mustChangePassword = true;
       await user.save();
 
-      this.logger.log(
-        `Password reset for user: ${user.firstName} ${user.lastName} (${user.email})`,
-      );
+      this.logInfo(`Password reset for user: ${user.firstName} ${user.lastName} (${user.email})`);
 
       return { success: true };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error('Error resetting user password:', error);
-      throw error;
+      this.handleError('Failed to reset user password', error);
     }
   }
 

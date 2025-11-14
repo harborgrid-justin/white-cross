@@ -1,0 +1,20 @@
+{
+  "node": {
+    "60a76c9a9b4ad7c70ac5696a449c9886d3c1f7e0b7": {
+      "workers": {
+        "app/login/page": {
+          "moduleId": "[project]/.next-internal/server/app/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/identity-access/actions/auth.login.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "handleLoginSubmission",
+          "filename": "src/identity-access/actions/auth.login.ts"
+        }
+      },
+      "layer": {
+        "app/login/page": "action-browser"
+      },
+      "exportedName": "handleLoginSubmission",
+      "filename": "src/identity-access/actions/auth.login.ts"
+    }
+  },
+  "edge": {}
+}

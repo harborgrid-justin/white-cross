@@ -1,0 +1,906 @@
+{
+  "node": {
+    "60a76c9a9b4ad7c70ac5696a449c9886d3c1f7e0b7": {
+      "workers": {
+        "app/login/page": {
+          "moduleId": "[project]/.next-internal/server/app/login/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/identity-access/actions/auth.login.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "handleLoginSubmission",
+          "filename": "src/identity-access/actions/auth.login.ts"
+        }
+      },
+      "layer": {
+        "app/login/page": "action-browser"
+      },
+      "filename": "src/identity-access/actions/auth.login.ts",
+      "exportedName": "handleLoginSubmission"
+    },
+    "7fe22b086e54131e2da80588001a3fca4cc808b133": {
+      "workers": {
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/dashboard/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/dashboard.aggregation.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/dashboard.alerts.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/dashboard.utils.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getDashboardData",
+          "filename": "src/lib/actions/dashboard.aggregation.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/page": "action-browser"
+      },
+      "filename": "src/lib/actions/dashboard.aggregation.ts",
+      "exportedName": "getDashboardData"
+    },
+    "60ee91299b8808aaf85eb687fb9823b31fc246c44b": {
+      "workers": {
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/dashboard/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/dashboard.aggregation.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/dashboard.alerts.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/dashboard.utils.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "acknowledgeHealthAlert",
+          "filename": "src/lib/actions/dashboard.alerts.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/page": "action-browser"
+      },
+      "filename": "src/lib/actions/dashboard.alerts.ts",
+      "exportedName": "acknowledgeHealthAlert"
+    },
+    "00e6964bfa542a0ea937f9c5fab5df3458e87f668a": {
+      "workers": {
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/dashboard/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/dashboard.aggregation.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/dashboard.alerts.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/dashboard.utils.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "refreshDashboardData",
+          "filename": "src/lib/actions/dashboard.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/page": "action-browser"
+      },
+      "filename": "src/lib/actions/dashboard.utils.ts",
+      "exportedName": "refreshDashboardData"
+    },
+    "400393513545cdd62893942da58de8ac996dd17cb0": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "medicationExists",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.utils.ts",
+      "exportedName": "medicationExists"
+    },
+    "40140ad48672705c368f02508e39ce91ff0e087de7": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "clearMedicationCache",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.utils.ts",
+      "exportedName": "clearMedicationCache"
+    },
+    "4055eb507e57b2e2429031b5cf7180bc546020fd5b": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationsDashboardData",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.utils.ts",
+      "exportedName": "getMedicationsDashboardData"
+    },
+    "4062815d8964f3a49334c8b8d64509b480200fcb44": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationCount",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.utils.ts",
+      "exportedName": "getMedicationCount"
+    },
+    "7f090b15eaa6ba59e64d0a5695468d2580649a852d": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getPaginatedMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getPaginatedMedications"
+    },
+    "7f1254e46fbfcba42143409be06dd95b6bfef5adc4": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationHistory",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getMedicationHistory"
+    },
+    "7f4fa70258d1ebca6a6798fdc410d4b32b9f01b10d": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getStudentMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getStudentMedications"
+    },
+    "7f7555da66663b3c9e93ecc9422786937377b717bd": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationStats",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getMedicationStats"
+    },
+    "7fabc7f03050f8d9bb16c1ed00934cfa5aad1874f6": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getMedications"
+    },
+    "7fac88345d8fc7c8edbd3ecb2513ed3718233e10bd": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedication",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getMedication"
+    },
+    "7fb400f442e71c24467a1c520ab99a301a52b0e145": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getOverdueMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getOverdueMedications"
+    },
+    "7fed37e125bdc5e7be41e3a69fe030b2c64c132c07": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getDueMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.cache.ts",
+      "exportedName": "getDueMedications"
+    },
+    "400e6b793ec6e2aad3acd1b430e7347083cd165939": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteMedication",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.crud.ts",
+      "exportedName": "deleteMedication"
+    },
+    "408dccdd4b4eb522bfd0548cf3f788258e0a9c2c89": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createMedicationFromForm",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.crud.ts",
+      "exportedName": "createMedicationFromForm"
+    },
+    "40a9d57210a8f47ab3affe42bf20a146b4ebf9e42a": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createMedication",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.crud.ts",
+      "exportedName": "createMedication"
+    },
+    "6028cdda10f910886a0b95ff2ba224a620853aef44": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateMedicationFromForm",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.crud.ts",
+      "exportedName": "updateMedicationFromForm"
+    },
+    "60aafe6e826a7558366c3d04d475e8bdf1a1298e53": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateMedication",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.crud.ts",
+      "exportedName": "updateMedication"
+    },
+    "4056addd475fb85124f1c2e5c64c6eb7e441eb3335": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "administerMedicationFromForm",
+          "filename": "src/lib/actions/medications.administration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.administration.ts",
+      "exportedName": "administerMedicationFromForm"
+    },
+    "40f9eee4752911fd22b402390581bc6c2141e61815": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "administerMedication",
+          "filename": "src/lib/actions/medications.administration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.administration.ts",
+      "exportedName": "administerMedication"
+    },
+    "604a6f6f331098cf6a807e3783a071cd7d3755191f": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "discontinueMedication",
+          "filename": "src/lib/actions/medications.status.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.status.ts",
+      "exportedName": "discontinueMedication"
+    },
+    "70c66053094e4ff095f7f4d3775bbe17c715768fa4": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "requestMedicationRefill",
+          "filename": "src/lib/actions/medications.status.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "filename": "src/lib/actions/medications.status.ts",
+      "exportedName": "requestMedicationRefill"
+    },
+    "7f9ba877bd43434c78f2d985e3acf815ac88abb20e": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getCurrentUserProfile",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.cache.ts",
+      "exportedName": "getCurrentUserProfile"
+    },
+    "7fb8fb277277f26e14657b591aa9828c66f2ba3968": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getProfileSettings",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.cache.ts",
+      "exportedName": "getProfileSettings"
+    },
+    "7f56947cc0b7ff2b95bc2415fe08da397da9f0d15c": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getSecurityLogs",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.cache.ts",
+      "exportedName": "getSecurityLogs"
+    },
+    "7fbb558c044ab200ced757830993c0e3fb591b8ccf": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getActiveSessions",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.cache.ts",
+      "exportedName": "getActiveSessions"
+    },
+    "609c253f112d692e935cdc5a9e62474ecd6be2b73e": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateProfileFromForm",
+          "filename": "src/lib/actions/profile.forms.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.forms.ts",
+      "exportedName": "updateProfileFromForm"
+    },
+    "6013c98fd3f7993a7b99b701ff35d750827909d7ba": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "changePasswordFromForm",
+          "filename": "src/lib/actions/profile.forms.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.forms.ts",
+      "exportedName": "changePasswordFromForm"
+    },
+    "608b7bdad2d385e579e49ce11b9ba8100f5fa3d393": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "uploadAvatarAction",
+          "filename": "src/lib/actions/profile.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.crud.ts",
+      "exportedName": "uploadAvatarAction"
+    },
+    "40bb1833dd9b13b834a002b6d9513b5afc8dab6d64": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "enableTwoFactorAction",
+          "filename": "src/lib/actions/profile.security.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.security.ts",
+      "exportedName": "enableTwoFactorAction"
+    },
+    "40e5e2b058d30a225fc718256adf3c5c7b766676ed": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "disableTwoFactorAction",
+          "filename": "src/lib/actions/profile.security.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "filename": "src/lib/actions/profile.security.ts",
+      "exportedName": "disableTwoFactorAction"
+    },
+    "00fbb869dfaf3f848ff8b914b599314f691327f20f": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getOverdueTrainingAction",
+          "filename": "src/lib/actions/compliance.training.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.training.ts",
+      "exportedName": "getOverdueTrainingAction"
+    },
+    "40cd0fe129c6da2d6976d99fc482a486f77fac546e": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getTrainingRecordsAction",
+          "filename": "src/lib/actions/compliance.training.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.training.ts",
+      "exportedName": "getTrainingRecordsAction"
+    },
+    "40cf2baba9edb824fb6f07a905920d9a0ca211a716": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getUserTrainingStatusAction",
+          "filename": "src/lib/actions/compliance.training.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.training.ts",
+      "exportedName": "getUserTrainingStatusAction"
+    },
+    "703b946d69506c841d2f402592979be47f2d39710d": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "recordTrainingCompletionAction",
+          "filename": "src/lib/actions/compliance.training.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.training.ts",
+      "exportedName": "recordTrainingCompletionAction"
+    },
+    "401cac934aa2ab9a556a36f2317f849b6be5c74007": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAuditLogsAction",
+          "filename": "src/lib/actions/compliance.audit.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.audit.ts",
+      "exportedName": "getAuditLogsAction"
+    },
+    "4077b065345d2a1343b751dc966c095c57b4412a32": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "exportAuditLogsAction",
+          "filename": "src/lib/actions/compliance.audit.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.audit.ts",
+      "exportedName": "exportAuditLogsAction"
+    },
+    "605eeb92c5bac8eb0c575abbf1506b074dd050a077": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "verifyAuditIntegrityAction",
+          "filename": "src/lib/actions/compliance.audit.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.audit.ts",
+      "exportedName": "verifyAuditIntegrityAction"
+    },
+    "60f9314276ce105f61ef32cde6e689fcdc8bb0ddc5": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createAuditLogAction",
+          "filename": "src/lib/actions/compliance.audit.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.audit.ts",
+      "exportedName": "createAuditLogAction"
+    },
+    "402a1253bf3647c20b9191fe296cd8f858729c8121": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createPolicyAction",
+          "filename": "src/lib/actions/compliance.policy.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.policy.ts",
+      "exportedName": "createPolicyAction"
+    },
+    "40355d695f4c3808a01a33d77825b54657f195b509": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getPolicyAcknowledgmentsAction",
+          "filename": "src/lib/actions/compliance.policy.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.policy.ts",
+      "exportedName": "getPolicyAcknowledgmentsAction"
+    },
+    "40a85aa0b33ce2b8561481c50200afdae17010e96a": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getPoliciesAction",
+          "filename": "src/lib/actions/compliance.policy.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.policy.ts",
+      "exportedName": "getPoliciesAction"
+    },
+    "606428f35df6ee9def7abf5211a2219cd943a2b512": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "acknowledgePolicyAction",
+          "filename": "src/lib/actions/compliance.policy.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.policy.ts",
+      "exportedName": "acknowledgePolicyAction"
+    },
+    "40888e346c6c2e937ff673c419d2db7e2f7eb19ec5": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getComplianceReportsAction",
+          "filename": "src/lib/actions/compliance.reports.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.reports.ts",
+      "exportedName": "getComplianceReportsAction"
+    },
+    "40944b758b4608fb4a8f485cc66f9241da34cffce2": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getComplianceAlertsAction",
+          "filename": "src/lib/actions/compliance.reports.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.reports.ts",
+      "exportedName": "getComplianceAlertsAction"
+    },
+    "40d2eb72c4e671ed34c5cbe674f721691dff7a5441": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getComplianceMetricsAction",
+          "filename": "src/lib/actions/compliance.reports.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.reports.ts",
+      "exportedName": "getComplianceMetricsAction"
+    },
+    "6000ab3ce75d076418e979b99b4f60a8ee3e35b598": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "generateComplianceReportAction",
+          "filename": "src/lib/actions/compliance.reports.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.reports.ts",
+      "exportedName": "generateComplianceReportAction"
+    },
+    "60cff2697bcb399831ba9bb34a5645abf8f12ef03b": {
+      "workers": {
+        "app/(dashboard)/compliance/training/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/compliance/training/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/compliance.training.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/compliance.audit.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/compliance.policy.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/compliance.reports.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "resolveComplianceViolationAction",
+          "filename": "src/lib/actions/compliance.reports.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/compliance/training/page": "rsc"
+      },
+      "filename": "src/lib/actions/compliance.reports.ts",
+      "exportedName": "resolveComplianceViolationAction"
+    },
+    "401c3b2e139b9cd667cfe6b8a267cbe4ed0bba7a2b": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteHealthRecordAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "filename": "src/lib/actions/health-records.crud.ts",
+      "exportedName": "deleteHealthRecordAction"
+    },
+    "601350e016c74379f9d38d00de45cbba64fcb8c3de": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createHealthRecordAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "filename": "src/lib/actions/health-records.crud.ts",
+      "exportedName": "createHealthRecordAction"
+    },
+    "602c56788cb4489bd68f5c78fbc0e1b8ea9933b502": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "action-browser"
+      },
+      "filename": "src/lib/actions/health-records.crud.ts",
+      "exportedName": "getHealthRecordsAction"
+    },
+    "70976e72785808b0c22fece96600204947582b83a5": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateHealthRecordAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "filename": "src/lib/actions/health-records.crud.ts",
+      "exportedName": "updateHealthRecordAction"
+    },
+    "6071e6cda37f781b11e42ce907acc67bf7893c4d8a": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createImmunizationAction",
+          "filename": "src/lib/actions/health-records.immunizations.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "filename": "src/lib/actions/health-records.immunizations.ts",
+      "exportedName": "createImmunizationAction"
+    },
+    "404e468b55a224ed8b919346dffcfe92ae0b75c5d8": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getStudentAllergiesAction",
+          "filename": "src/lib/actions/health-records.allergies.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "filename": "src/lib/actions/health-records.allergies.ts",
+      "exportedName": "getStudentAllergiesAction"
+    },
+    "603e9cc08c1ce4432d53176d17604022a4a08926ab": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createAllergyAction",
+          "filename": "src/lib/actions/health-records.allergies.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "filename": "src/lib/actions/health-records.allergies.ts",
+      "exportedName": "createAllergyAction"
+    },
+    "004e89d6aec3dc95bec36ee8e5764906cfd6539ed7": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsStats",
+          "filename": "src/lib/actions/health-records.stats.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "action-browser"
+      },
+      "filename": "src/lib/actions/health-records.stats.ts",
+      "exportedName": "getHealthRecordsStats"
+    },
+    "00b4b9e56569e7f810f3bb4ac72dc59b66119068d4": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsDashboardData",
+          "filename": "src/lib/actions/health-records.stats.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "filename": "src/lib/actions/health-records.stats.ts",
+      "exportedName": "getHealthRecordsDashboardData"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "+eNbGBqzx3w4uxUVkmJMc1kzcaP2GBgUxLg6PkpeymI="
+}

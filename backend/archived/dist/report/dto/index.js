@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportScheduleDto = exports.MedicationUsageDto = exports.IncidentStatisticsDto = exports.HealthTrendsDto = exports.ExportOptionsDto = exports.DashboardMetricsDto = exports.BaseReportDto = exports.AttendanceCorrelationDto = void 0;
+var attendance_correlation_dto_1 = require("./attendance-correlation.dto");
+Object.defineProperty(exports, "AttendanceCorrelationDto", { enumerable: true, get: function () { return attendance_correlation_dto_1.AttendanceCorrelationDto; } });
+var base_report_dto_1 = require("./base-report.dto");
+Object.defineProperty(exports, "BaseReportDto", { enumerable: true, get: function () { return base_report_dto_1.BaseReportDto; } });
+var dashboard_metrics_dto_1 = require("./dashboard-metrics.dto");
+Object.defineProperty(exports, "DashboardMetricsDto", { enumerable: true, get: function () { return dashboard_metrics_dto_1.DashboardMetricsDto; } });
+var export_options_dto_1 = require("./export-options.dto");
+Object.defineProperty(exports, "ExportOptionsDto", { enumerable: true, get: function () { return export_options_dto_1.ExportOptionsDto; } });
+var health_trends_dto_1 = require("./health-trends.dto");
+Object.defineProperty(exports, "HealthTrendsDto", { enumerable: true, get: function () { return health_trends_dto_1.HealthTrendsDto; } });
+var incident_statistics_dto_1 = require("./incident-statistics.dto");
+Object.defineProperty(exports, "IncidentStatisticsDto", { enumerable: true, get: function () { return incident_statistics_dto_1.IncidentStatisticsDto; } });
+var medication_usage_dto_1 = require("./medication-usage.dto");
+Object.defineProperty(exports, "MedicationUsageDto", { enumerable: true, get: function () { return medication_usage_dto_1.MedicationUsageDto; } });
+var report_schedule_dto_1 = require("./report-schedule.dto");
+Object.defineProperty(exports, "ReportScheduleDto", { enumerable: true, get: function () { return report_schedule_dto_1.ReportScheduleDto; } });
+//# sourceMappingURL=index.js.map

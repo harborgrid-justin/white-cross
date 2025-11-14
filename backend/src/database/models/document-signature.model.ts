@@ -43,7 +43,7 @@ export class DocumentSignature extends Model {
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Document)
+  @ForeignKey(() => 'Document')
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -108,6 +108,6 @@ export class DocumentSignature extends Model {
 
   // Associations
 
-  @BelongsTo(() => Document)
+  @BelongsTo(() => 'Document')
   document: Document;
 }

@@ -1,0 +1,1 @@
+{"version":3,"file":"broadcast-message.dto.js","sourceRoot":"","sources":["../../../../src/infrastructure/websocket/dto/broadcast-message.dto.ts"],"names":[],"mappings":";;;;AA2BA,MAAa,mBAAmB;IAU9B,SAAS,CAAS;IAElB,YAAY,IAAgB;QAC1B,MAAM,CAAC,MAAM,CAAC,IAAI,EAAE,IAAI,CAAC,CAAC;QAC1B,IAAI,CAAC,SAAS,GAAG,IAAI,IAAI,EAAE,CAAC,WAAW,EAAE,CAAC;IAC5C,CAAC;;;;CACF;AAhBD,kDAgBC"}

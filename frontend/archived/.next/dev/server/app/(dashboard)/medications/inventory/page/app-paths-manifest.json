@@ -1,0 +1,3 @@
+{
+  "/(dashboard)/medications/inventory/page": "app/(dashboard)/medications/inventory/page.js"
+}

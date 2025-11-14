@@ -182,9 +182,9 @@ export * from './training-module.model';
 export * from './license.model';
 
 // Document management
+export * from './document.model';
 export * from './document-signature.model';
 export * from './document-audit-trail.model';
-export * from './document.model';
 
 // Consent management
 export * from './consent-form.model';

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/immunizations/new/loading.tsx"],"sourcesContent":["export default function NewVaccineLoading() {\r\n  return (\r\n    <div className=\"min-h-screen bg-gray-50\">\r\n      <div className=\"p-6\">\r\n        <div className=\"max-w-4xl\">\r\n          <div className=\"animate-pulse space-y-6\">\r\n            <div className=\"h-8 w-64 bg-gray-200 rounded\" />\r\n            <div className=\"h-4 w-96 bg-gray-200 rounded\" />\r\n            <div className=\"bg-white rounded-lg shadow p-6 space-y-4\">\r\n              <div className=\"h-10 bg-gray-200 rounded\" />\r\n              <div className=\"h-10 bg-gray-200 rounded\" />\r\n              <div className=\"h-32 bg-gray-200 rounded\" />\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;QAAI,WAAU;kBACb,cAAA,8OAAC;YAAI,WAAU;sBACb,cAAA,8OAAC;gBAAI,WAAU;0BACb,cAAA,8OAAC;oBAAI,WAAU;;sCACb,8OAAC;4BAAI,WAAU;;;;;;sCACf,8OAAC;4BAAI,WAAU;;;;;;sCACf,8OAAC;4BAAI,WAAU;;8CACb,8OAAC;oCAAI,WAAU;;;;;;8CACf,8OAAC;oCAAI,WAAU;;;;;;8CACf,8OAAC;oCAAI,WAAU;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AAO7B","debugId":null}}]
+}

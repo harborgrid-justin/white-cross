@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/settings/profile/%40modal/default.tsx"],"sourcesContent":["/**\r\n * @fileoverview Profile Modal Default - Default state for profile modal slot\r\n * @module app/(dashboard)/profile/@modal/default\r\n * @category Profile - Parallel Routes\r\n */\r\n\r\n/**\r\n * Default Modal Component\r\n * \r\n * Provides the default (empty) state for the profile modal parallel route slot.\r\n * This component is rendered when no specific modal route is active.\r\n * \r\n * @returns Empty fragment (no modal displayed)\r\n */\r\nexport default function DefaultModal() {\r\n  return null;\r\n}"],"names":[],"mappings":"AAAA;;;;CAIC,GAED;;;;;;;CAOC;;;;AACc,SAAS;IACtB,OAAO;AACT","debugId":null}}]
+}

@@ -1,0 +1,35 @@
+{
+  "node": {
+    "4046c4eae0498c9eb595c7b1b074d6c86b665f309a": {
+      "workers": {
+        "app/(dashboard)/students/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/students/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/students.crud.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createStudent",
+          "filename": "src/lib/actions/students.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/students/new/page": "action-browser"
+      },
+      "exportedName": "createStudent",
+      "filename": "src/lib/actions/students.crud.ts"
+    },
+    "60bc6a098439532302e1e557eb696b9ff56552956a": {
+      "workers": {
+        "app/(dashboard)/students/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/students/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/students.crud.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateStudent",
+          "filename": "src/lib/actions/students.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/students/new/page": "action-browser"
+      },
+      "exportedName": "updateStudent",
+      "filename": "src/lib/actions/students.crud.ts"
+    }
+  },
+  "edge": {}
+}

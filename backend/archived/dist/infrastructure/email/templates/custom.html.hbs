@@ -1,0 +1,11 @@
+{{!-- Custom Email Template - Uses base template to eliminate duplication --}}
+{{!-- Variables: title, body --}}
+
+{{> base.html.hbs
+    pageTitle=title
+    headerSubtitle=null
+    title=null
+    content=body
+    buttonColor="#007bff"
+    footerContent=""
+}}

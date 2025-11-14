@@ -1,0 +1,1726 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/pages-old/documents/store/documentsSlice.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../../index.html">All files</a> / <a href="index.html">src/pages-old/documents/store</a> documentsSlice.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/547</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/547</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a>
+<a name='L149'></a><a href='#L149'>149</a>
+<a name='L150'></a><a href='#L150'>150</a>
+<a name='L151'></a><a href='#L151'>151</a>
+<a name='L152'></a><a href='#L152'>152</a>
+<a name='L153'></a><a href='#L153'>153</a>
+<a name='L154'></a><a href='#L154'>154</a>
+<a name='L155'></a><a href='#L155'>155</a>
+<a name='L156'></a><a href='#L156'>156</a>
+<a name='L157'></a><a href='#L157'>157</a>
+<a name='L158'></a><a href='#L158'>158</a>
+<a name='L159'></a><a href='#L159'>159</a>
+<a name='L160'></a><a href='#L160'>160</a>
+<a name='L161'></a><a href='#L161'>161</a>
+<a name='L162'></a><a href='#L162'>162</a>
+<a name='L163'></a><a href='#L163'>163</a>
+<a name='L164'></a><a href='#L164'>164</a>
+<a name='L165'></a><a href='#L165'>165</a>
+<a name='L166'></a><a href='#L166'>166</a>
+<a name='L167'></a><a href='#L167'>167</a>
+<a name='L168'></a><a href='#L168'>168</a>
+<a name='L169'></a><a href='#L169'>169</a>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a>
+<a name='L172'></a><a href='#L172'>172</a>
+<a name='L173'></a><a href='#L173'>173</a>
+<a name='L174'></a><a href='#L174'>174</a>
+<a name='L175'></a><a href='#L175'>175</a>
+<a name='L176'></a><a href='#L176'>176</a>
+<a name='L177'></a><a href='#L177'>177</a>
+<a name='L178'></a><a href='#L178'>178</a>
+<a name='L179'></a><a href='#L179'>179</a>
+<a name='L180'></a><a href='#L180'>180</a>
+<a name='L181'></a><a href='#L181'>181</a>
+<a name='L182'></a><a href='#L182'>182</a>
+<a name='L183'></a><a href='#L183'>183</a>
+<a name='L184'></a><a href='#L184'>184</a>
+<a name='L185'></a><a href='#L185'>185</a>
+<a name='L186'></a><a href='#L186'>186</a>
+<a name='L187'></a><a href='#L187'>187</a>
+<a name='L188'></a><a href='#L188'>188</a>
+<a name='L189'></a><a href='#L189'>189</a>
+<a name='L190'></a><a href='#L190'>190</a>
+<a name='L191'></a><a href='#L191'>191</a>
+<a name='L192'></a><a href='#L192'>192</a>
+<a name='L193'></a><a href='#L193'>193</a>
+<a name='L194'></a><a href='#L194'>194</a>
+<a name='L195'></a><a href='#L195'>195</a>
+<a name='L196'></a><a href='#L196'>196</a>
+<a name='L197'></a><a href='#L197'>197</a>
+<a name='L198'></a><a href='#L198'>198</a>
+<a name='L199'></a><a href='#L199'>199</a>
+<a name='L200'></a><a href='#L200'>200</a>
+<a name='L201'></a><a href='#L201'>201</a>
+<a name='L202'></a><a href='#L202'>202</a>
+<a name='L203'></a><a href='#L203'>203</a>
+<a name='L204'></a><a href='#L204'>204</a>
+<a name='L205'></a><a href='#L205'>205</a>
+<a name='L206'></a><a href='#L206'>206</a>
+<a name='L207'></a><a href='#L207'>207</a>
+<a name='L208'></a><a href='#L208'>208</a>
+<a name='L209'></a><a href='#L209'>209</a>
+<a name='L210'></a><a href='#L210'>210</a>
+<a name='L211'></a><a href='#L211'>211</a>
+<a name='L212'></a><a href='#L212'>212</a>
+<a name='L213'></a><a href='#L213'>213</a>
+<a name='L214'></a><a href='#L214'>214</a>
+<a name='L215'></a><a href='#L215'>215</a>
+<a name='L216'></a><a href='#L216'>216</a>
+<a name='L217'></a><a href='#L217'>217</a>
+<a name='L218'></a><a href='#L218'>218</a>
+<a name='L219'></a><a href='#L219'>219</a>
+<a name='L220'></a><a href='#L220'>220</a>
+<a name='L221'></a><a href='#L221'>221</a>
+<a name='L222'></a><a href='#L222'>222</a>
+<a name='L223'></a><a href='#L223'>223</a>
+<a name='L224'></a><a href='#L224'>224</a>
+<a name='L225'></a><a href='#L225'>225</a>
+<a name='L226'></a><a href='#L226'>226</a>
+<a name='L227'></a><a href='#L227'>227</a>
+<a name='L228'></a><a href='#L228'>228</a>
+<a name='L229'></a><a href='#L229'>229</a>
+<a name='L230'></a><a href='#L230'>230</a>
+<a name='L231'></a><a href='#L231'>231</a>
+<a name='L232'></a><a href='#L232'>232</a>
+<a name='L233'></a><a href='#L233'>233</a>
+<a name='L234'></a><a href='#L234'>234</a>
+<a name='L235'></a><a href='#L235'>235</a>
+<a name='L236'></a><a href='#L236'>236</a>
+<a name='L237'></a><a href='#L237'>237</a>
+<a name='L238'></a><a href='#L238'>238</a>
+<a name='L239'></a><a href='#L239'>239</a>
+<a name='L240'></a><a href='#L240'>240</a>
+<a name='L241'></a><a href='#L241'>241</a>
+<a name='L242'></a><a href='#L242'>242</a>
+<a name='L243'></a><a href='#L243'>243</a>
+<a name='L244'></a><a href='#L244'>244</a>
+<a name='L245'></a><a href='#L245'>245</a>
+<a name='L246'></a><a href='#L246'>246</a>
+<a name='L247'></a><a href='#L247'>247</a>
+<a name='L248'></a><a href='#L248'>248</a>
+<a name='L249'></a><a href='#L249'>249</a>
+<a name='L250'></a><a href='#L250'>250</a>
+<a name='L251'></a><a href='#L251'>251</a>
+<a name='L252'></a><a href='#L252'>252</a>
+<a name='L253'></a><a href='#L253'>253</a>
+<a name='L254'></a><a href='#L254'>254</a>
+<a name='L255'></a><a href='#L255'>255</a>
+<a name='L256'></a><a href='#L256'>256</a>
+<a name='L257'></a><a href='#L257'>257</a>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a>
+<a name='L277'></a><a href='#L277'>277</a>
+<a name='L278'></a><a href='#L278'>278</a>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a>
+<a name='L300'></a><a href='#L300'>300</a>
+<a name='L301'></a><a href='#L301'>301</a>
+<a name='L302'></a><a href='#L302'>302</a>
+<a name='L303'></a><a href='#L303'>303</a>
+<a name='L304'></a><a href='#L304'>304</a>
+<a name='L305'></a><a href='#L305'>305</a>
+<a name='L306'></a><a href='#L306'>306</a>
+<a name='L307'></a><a href='#L307'>307</a>
+<a name='L308'></a><a href='#L308'>308</a>
+<a name='L309'></a><a href='#L309'>309</a>
+<a name='L310'></a><a href='#L310'>310</a>
+<a name='L311'></a><a href='#L311'>311</a>
+<a name='L312'></a><a href='#L312'>312</a>
+<a name='L313'></a><a href='#L313'>313</a>
+<a name='L314'></a><a href='#L314'>314</a>
+<a name='L315'></a><a href='#L315'>315</a>
+<a name='L316'></a><a href='#L316'>316</a>
+<a name='L317'></a><a href='#L317'>317</a>
+<a name='L318'></a><a href='#L318'>318</a>
+<a name='L319'></a><a href='#L319'>319</a>
+<a name='L320'></a><a href='#L320'>320</a>
+<a name='L321'></a><a href='#L321'>321</a>
+<a name='L322'></a><a href='#L322'>322</a>
+<a name='L323'></a><a href='#L323'>323</a>
+<a name='L324'></a><a href='#L324'>324</a>
+<a name='L325'></a><a href='#L325'>325</a>
+<a name='L326'></a><a href='#L326'>326</a>
+<a name='L327'></a><a href='#L327'>327</a>
+<a name='L328'></a><a href='#L328'>328</a>
+<a name='L329'></a><a href='#L329'>329</a>
+<a name='L330'></a><a href='#L330'>330</a>
+<a name='L331'></a><a href='#L331'>331</a>
+<a name='L332'></a><a href='#L332'>332</a>
+<a name='L333'></a><a href='#L333'>333</a>
+<a name='L334'></a><a href='#L334'>334</a>
+<a name='L335'></a><a href='#L335'>335</a>
+<a name='L336'></a><a href='#L336'>336</a>
+<a name='L337'></a><a href='#L337'>337</a>
+<a name='L338'></a><a href='#L338'>338</a>
+<a name='L339'></a><a href='#L339'>339</a>
+<a name='L340'></a><a href='#L340'>340</a>
+<a name='L341'></a><a href='#L341'>341</a>
+<a name='L342'></a><a href='#L342'>342</a>
+<a name='L343'></a><a href='#L343'>343</a>
+<a name='L344'></a><a href='#L344'>344</a>
+<a name='L345'></a><a href='#L345'>345</a>
+<a name='L346'></a><a href='#L346'>346</a>
+<a name='L347'></a><a href='#L347'>347</a>
+<a name='L348'></a><a href='#L348'>348</a>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a>
+<a name='L362'></a><a href='#L362'>362</a>
+<a name='L363'></a><a href='#L363'>363</a>
+<a name='L364'></a><a href='#L364'>364</a>
+<a name='L365'></a><a href='#L365'>365</a>
+<a name='L366'></a><a href='#L366'>366</a>
+<a name='L367'></a><a href='#L367'>367</a>
+<a name='L368'></a><a href='#L368'>368</a>
+<a name='L369'></a><a href='#L369'>369</a>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a>
+<a name='L372'></a><a href='#L372'>372</a>
+<a name='L373'></a><a href='#L373'>373</a>
+<a name='L374'></a><a href='#L374'>374</a>
+<a name='L375'></a><a href='#L375'>375</a>
+<a name='L376'></a><a href='#L376'>376</a>
+<a name='L377'></a><a href='#L377'>377</a>
+<a name='L378'></a><a href='#L378'>378</a>
+<a name='L379'></a><a href='#L379'>379</a>
+<a name='L380'></a><a href='#L380'>380</a>
+<a name='L381'></a><a href='#L381'>381</a>
+<a name='L382'></a><a href='#L382'>382</a>
+<a name='L383'></a><a href='#L383'>383</a>
+<a name='L384'></a><a href='#L384'>384</a>
+<a name='L385'></a><a href='#L385'>385</a>
+<a name='L386'></a><a href='#L386'>386</a>
+<a name='L387'></a><a href='#L387'>387</a>
+<a name='L388'></a><a href='#L388'>388</a>
+<a name='L389'></a><a href='#L389'>389</a>
+<a name='L390'></a><a href='#L390'>390</a>
+<a name='L391'></a><a href='#L391'>391</a>
+<a name='L392'></a><a href='#L392'>392</a>
+<a name='L393'></a><a href='#L393'>393</a>
+<a name='L394'></a><a href='#L394'>394</a>
+<a name='L395'></a><a href='#L395'>395</a>
+<a name='L396'></a><a href='#L396'>396</a>
+<a name='L397'></a><a href='#L397'>397</a>
+<a name='L398'></a><a href='#L398'>398</a>
+<a name='L399'></a><a href='#L399'>399</a>
+<a name='L400'></a><a href='#L400'>400</a>
+<a name='L401'></a><a href='#L401'>401</a>
+<a name='L402'></a><a href='#L402'>402</a>
+<a name='L403'></a><a href='#L403'>403</a>
+<a name='L404'></a><a href='#L404'>404</a>
+<a name='L405'></a><a href='#L405'>405</a>
+<a name='L406'></a><a href='#L406'>406</a>
+<a name='L407'></a><a href='#L407'>407</a>
+<a name='L408'></a><a href='#L408'>408</a>
+<a name='L409'></a><a href='#L409'>409</a>
+<a name='L410'></a><a href='#L410'>410</a>
+<a name='L411'></a><a href='#L411'>411</a>
+<a name='L412'></a><a href='#L412'>412</a>
+<a name='L413'></a><a href='#L413'>413</a>
+<a name='L414'></a><a href='#L414'>414</a>
+<a name='L415'></a><a href='#L415'>415</a>
+<a name='L416'></a><a href='#L416'>416</a>
+<a name='L417'></a><a href='#L417'>417</a>
+<a name='L418'></a><a href='#L418'>418</a>
+<a name='L419'></a><a href='#L419'>419</a>
+<a name='L420'></a><a href='#L420'>420</a>
+<a name='L421'></a><a href='#L421'>421</a>
+<a name='L422'></a><a href='#L422'>422</a>
+<a name='L423'></a><a href='#L423'>423</a>
+<a name='L424'></a><a href='#L424'>424</a>
+<a name='L425'></a><a href='#L425'>425</a>
+<a name='L426'></a><a href='#L426'>426</a>
+<a name='L427'></a><a href='#L427'>427</a>
+<a name='L428'></a><a href='#L428'>428</a>
+<a name='L429'></a><a href='#L429'>429</a>
+<a name='L430'></a><a href='#L430'>430</a>
+<a name='L431'></a><a href='#L431'>431</a>
+<a name='L432'></a><a href='#L432'>432</a>
+<a name='L433'></a><a href='#L433'>433</a>
+<a name='L434'></a><a href='#L434'>434</a>
+<a name='L435'></a><a href='#L435'>435</a>
+<a name='L436'></a><a href='#L436'>436</a>
+<a name='L437'></a><a href='#L437'>437</a>
+<a name='L438'></a><a href='#L438'>438</a>
+<a name='L439'></a><a href='#L439'>439</a>
+<a name='L440'></a><a href='#L440'>440</a>
+<a name='L441'></a><a href='#L441'>441</a>
+<a name='L442'></a><a href='#L442'>442</a>
+<a name='L443'></a><a href='#L443'>443</a>
+<a name='L444'></a><a href='#L444'>444</a>
+<a name='L445'></a><a href='#L445'>445</a>
+<a name='L446'></a><a href='#L446'>446</a>
+<a name='L447'></a><a href='#L447'>447</a>
+<a name='L448'></a><a href='#L448'>448</a>
+<a name='L449'></a><a href='#L449'>449</a>
+<a name='L450'></a><a href='#L450'>450</a>
+<a name='L451'></a><a href='#L451'>451</a>
+<a name='L452'></a><a href='#L452'>452</a>
+<a name='L453'></a><a href='#L453'>453</a>
+<a name='L454'></a><a href='#L454'>454</a>
+<a name='L455'></a><a href='#L455'>455</a>
+<a name='L456'></a><a href='#L456'>456</a>
+<a name='L457'></a><a href='#L457'>457</a>
+<a name='L458'></a><a href='#L458'>458</a>
+<a name='L459'></a><a href='#L459'>459</a>
+<a name='L460'></a><a href='#L460'>460</a>
+<a name='L461'></a><a href='#L461'>461</a>
+<a name='L462'></a><a href='#L462'>462</a>
+<a name='L463'></a><a href='#L463'>463</a>
+<a name='L464'></a><a href='#L464'>464</a>
+<a name='L465'></a><a href='#L465'>465</a>
+<a name='L466'></a><a href='#L466'>466</a>
+<a name='L467'></a><a href='#L467'>467</a>
+<a name='L468'></a><a href='#L468'>468</a>
+<a name='L469'></a><a href='#L469'>469</a>
+<a name='L470'></a><a href='#L470'>470</a>
+<a name='L471'></a><a href='#L471'>471</a>
+<a name='L472'></a><a href='#L472'>472</a>
+<a name='L473'></a><a href='#L473'>473</a>
+<a name='L474'></a><a href='#L474'>474</a>
+<a name='L475'></a><a href='#L475'>475</a>
+<a name='L476'></a><a href='#L476'>476</a>
+<a name='L477'></a><a href='#L477'>477</a>
+<a name='L478'></a><a href='#L478'>478</a>
+<a name='L479'></a><a href='#L479'>479</a>
+<a name='L480'></a><a href='#L480'>480</a>
+<a name='L481'></a><a href='#L481'>481</a>
+<a name='L482'></a><a href='#L482'>482</a>
+<a name='L483'></a><a href='#L483'>483</a>
+<a name='L484'></a><a href='#L484'>484</a>
+<a name='L485'></a><a href='#L485'>485</a>
+<a name='L486'></a><a href='#L486'>486</a>
+<a name='L487'></a><a href='#L487'>487</a>
+<a name='L488'></a><a href='#L488'>488</a>
+<a name='L489'></a><a href='#L489'>489</a>
+<a name='L490'></a><a href='#L490'>490</a>
+<a name='L491'></a><a href='#L491'>491</a>
+<a name='L492'></a><a href='#L492'>492</a>
+<a name='L493'></a><a href='#L493'>493</a>
+<a name='L494'></a><a href='#L494'>494</a>
+<a name='L495'></a><a href='#L495'>495</a>
+<a name='L496'></a><a href='#L496'>496</a>
+<a name='L497'></a><a href='#L497'>497</a>
+<a name='L498'></a><a href='#L498'>498</a>
+<a name='L499'></a><a href='#L499'>499</a>
+<a name='L500'></a><a href='#L500'>500</a>
+<a name='L501'></a><a href='#L501'>501</a>
+<a name='L502'></a><a href='#L502'>502</a>
+<a name='L503'></a><a href='#L503'>503</a>
+<a name='L504'></a><a href='#L504'>504</a>
+<a name='L505'></a><a href='#L505'>505</a>
+<a name='L506'></a><a href='#L506'>506</a>
+<a name='L507'></a><a href='#L507'>507</a>
+<a name='L508'></a><a href='#L508'>508</a>
+<a name='L509'></a><a href='#L509'>509</a>
+<a name='L510'></a><a href='#L510'>510</a>
+<a name='L511'></a><a href='#L511'>511</a>
+<a name='L512'></a><a href='#L512'>512</a>
+<a name='L513'></a><a href='#L513'>513</a>
+<a name='L514'></a><a href='#L514'>514</a>
+<a name='L515'></a><a href='#L515'>515</a>
+<a name='L516'></a><a href='#L516'>516</a>
+<a name='L517'></a><a href='#L517'>517</a>
+<a name='L518'></a><a href='#L518'>518</a>
+<a name='L519'></a><a href='#L519'>519</a>
+<a name='L520'></a><a href='#L520'>520</a>
+<a name='L521'></a><a href='#L521'>521</a>
+<a name='L522'></a><a href='#L522'>522</a>
+<a name='L523'></a><a href='#L523'>523</a>
+<a name='L524'></a><a href='#L524'>524</a>
+<a name='L525'></a><a href='#L525'>525</a>
+<a name='L526'></a><a href='#L526'>526</a>
+<a name='L527'></a><a href='#L527'>527</a>
+<a name='L528'></a><a href='#L528'>528</a>
+<a name='L529'></a><a href='#L529'>529</a>
+<a name='L530'></a><a href='#L530'>530</a>
+<a name='L531'></a><a href='#L531'>531</a>
+<a name='L532'></a><a href='#L532'>532</a>
+<a name='L533'></a><a href='#L533'>533</a>
+<a name='L534'></a><a href='#L534'>534</a>
+<a name='L535'></a><a href='#L535'>535</a>
+<a name='L536'></a><a href='#L536'>536</a>
+<a name='L537'></a><a href='#L537'>537</a>
+<a name='L538'></a><a href='#L538'>538</a>
+<a name='L539'></a><a href='#L539'>539</a>
+<a name='L540'></a><a href='#L540'>540</a>
+<a name='L541'></a><a href='#L541'>541</a>
+<a name='L542'></a><a href='#L542'>542</a>
+<a name='L543'></a><a href='#L543'>543</a>
+<a name='L544'></a><a href='#L544'>544</a>
+<a name='L545'></a><a href='#L545'>545</a>
+<a name='L546'></a><a href='#L546'>546</a>
+<a name='L547'></a><a href='#L547'>547</a>
+<a name='L548'></a><a href='#L548'>548</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >/**</span></span></span>
+<span class="cstat-no" title="statement not covered" > * @module pages/documents/store/documentsSlice</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @description</span>
+<span class="cstat-no" title="statement not covered" > * Production-grade Redux state management for document management system.</span>
+<span class="cstat-no" title="statement not covered" > * Handles CRUD operations for documents with support for versioning, digital signatures,</span>
+<span class="cstat-no" title="statement not covered" > * audit trails, and HIPAA-compliant access control.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ## Architecture</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * This slice uses the entity slice factory pattern (`createEntitySlice`) for standardized</span>
+<span class="cstat-no" title="statement not covered" > * CRUD operations with normalized state management via Redux Toolkit's `EntityAdapter`.</span>
+<span class="cstat-no" title="statement not covered" > * This provides optimized entity management with O(1) lookups and efficient updates.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ## State Structure</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * The state is normalized using EntityAdapter pattern:</span>
+<span class="cstat-no" title="statement not covered" > * - **entities**: Normalized document entities by ID for fast lookups</span>
+<span class="cstat-no" title="statement not covered" > * - **ids**: Ordered array of document IDs for iteration</span>
+<span class="cstat-no" title="statement not covered" > * - **loading**: Operation-specific loading flags</span>
+<span class="cstat-no" title="statement not covered" > * - **error**: Operation-specific error messages</span>
+<span class="cstat-no" title="statement not covered" > * - **pagination**: Page metadata for list views</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ## Key Features</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * - **Document Upload**: Support for multiple file types with size validation</span>
+<span class="cstat-no" title="statement not covered" > * - **Version Control**: Automatic versioning with audit trail</span>
+<span class="cstat-no" title="statement not covered" > * - **Digital Signatures**: Electronic signature capture and validation</span>
+<span class="cstat-no" title="statement not covered" > * - **Access Control**: Role-based document visibility and permissions</span>
+<span class="cstat-no" title="statement not covered" > * - **Tag System**: Flexible tagging for categorization and search</span>
+<span class="cstat-no" title="statement not covered" > * - **Status Tracking**: DRAFT, PENDING_REVIEW, APPROVED, ARCHIVED workflow</span>
+<span class="cstat-no" title="statement not covered" > * - **Audit Trail**: Complete history of document access and modifications</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @remarks</span>
+<span class="cstat-no" title="statement not covered" > * ## Document Management Workflows</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ### Document Upload and Processing</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * 1. User selects file(s) for upload</span>
+<span class="cstat-no" title="statement not covered" > * 2. Client validates file type, size, and content</span>
+<span class="cstat-no" title="statement not covered" > * 3. File uploaded to secure storage (S3/Azure Blob)</span>
+<span class="cstat-no" title="statement not covered" > * 4. Document metadata created with PENDING_REVIEW status</span>
+<span class="cstat-no" title="statement not covered" > * 5. OCR/text extraction performed for searchability</span>
+<span class="cstat-no" title="statement not covered" > * 6. Virus scanning completed before approval</span>
+<span class="cstat-no" title="statement not covered" > * 7. Administrator reviews and approves document</span>
+<span class="cstat-no" title="statement not covered" > * 8. Document status updated to APPROVED</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ### Document Versioning Workflow</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * 1. User uploads new version of existing document</span>
+<span class="cstat-no" title="statement not covered" > * 2. Previous version archived with version number</span>
+<span class="cstat-no" title="statement not covered" > * 3. New version created with incremented version number</span>
+<span class="cstat-no" title="statement not covered" > * 4. Audit trail updated with version change details</span>
+<span class="cstat-no" title="statement not covered" > * 5. Users notified of new version availability</span>
+<span class="cstat-no" title="statement not covered" > * 6. Previous versions remain accessible for compliance</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ### Digital Signature Workflow</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * 1. Document marked as requiring signature</span>
+<span class="cstat-no" title="statement not covered" > * 2. Signature request sent to designated signers</span>
+<span class="cstat-no" title="statement not covered" > * 3. Signer reviews document content</span>
+<span class="cstat-no" title="statement not covered" > * 4. Electronic signature captured (typed, drawn, or image)</span>
+<span class="cstat-no" title="statement not covered" > * 5. Signature cryptographically bound to document</span>
+<span class="cstat-no" title="statement not covered" > * 6. Timestamp and IP address recorded</span>
+<span class="cstat-no" title="statement not covered" > * 7. Document locked for editing after signing</span>
+<span class="cstat-no" title="statement not covered" > * 8. Signed document archived with certificate</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ### Document Access Audit Trail</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * All document operations are logged:</span>
+<span class="cstat-no" title="statement not covered" > * - **View**: User ID, timestamp, IP address, duration</span>
+<span class="cstat-no" title="statement not covered" > * - **Download**: User ID, timestamp, IP address, file hash</span>
+<span class="cstat-no" title="statement not covered" > * - **Edit**: User ID, timestamp, changes made, previous version</span>
+<span class="cstat-no" title="statement not covered" > * - **Share**: User ID, timestamp, recipient(s), expiration</span>
+<span class="cstat-no" title="statement not covered" > * - **Delete**: User ID, timestamp, reason, soft delete only</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ## PHI Handling</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Documents containing PHI (Protected Health Information) receive special handling:</span>
+<span class="cstat-no" title="statement not covered" > * - Encryption at rest using AES-256</span>
+<span class="cstat-no" title="statement not covered" > * - Encryption in transit using TLS 1.3</span>
+<span class="cstat-no" title="statement not covered" > * - Access limited to authorized users only</span>
+<span class="cstat-no" title="statement not covered" > * - Audit logging for all access attempts</span>
+<span class="cstat-no" title="statement not covered" > * - Automatic expiration for shared links</span>
+<span class="cstat-no" title="statement not covered" > * - Watermarks on downloaded copies</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ## Document Retention Policy</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * - **Medical Records**: Retained for 7 years after last treatment</span>
+<span class="cstat-no" title="statement not covered" > * - **Consent Forms**: Retained for 7 years after student graduation</span>
+<span class="cstat-no" title="statement not covered" > * - **Incident Reports**: Retained for 10 years</span>
+<span class="cstat-no" title="statement not covered" > * - **General Documents**: Retained for 3 years</span>
+<span class="cstat-no" title="statement not covered" > * - **Archived Documents**: Moved to cold storage after retention period</span>
+<span class="cstat-no" title="statement not covered" > * - **Deletion**: Physical deletion only after legal hold clearance</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ## Performance Considerations</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * - Pagination for large document lists</span>
+<span class="cstat-no" title="statement not covered" > * - Lazy loading of document content (metadata first, content on-demand)</span>
+<span class="cstat-no" title="statement not covered" > * - Thumbnail generation for image documents</span>
+<span class="cstat-no" title="statement not covered" > * - PDF preview generation for quick viewing</span>
+<span class="cstat-no" title="statement not covered" > * - Client-side caching with cache invalidation</span>
+<span class="cstat-no" title="statement not covered" > * - Compression for large files during upload/download</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @see {@link module:pages/compliance/store/complianceSlice} for compliance document tracking</span>
+<span class="cstat-no" title="statement not covered" > * @see {@link module:pages/students/store/studentsSlice} for student-specific documents</span>
+<span class="cstat-no" title="statement not covered" > * @see {@link module:pages/incidents/store/incidentReportsSlice} for incident documentation</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * // Upload new document</span>
+<span class="cstat-no" title="statement not covered" > * dispatch(documentsThunks.create({</span>
+<span class="cstat-no" title="statement not covered" > *   name: 'Consent Form - Annual Physical',</span>
+<span class="cstat-no" title="statement not covered" > *   type: 'application/pdf',</span>
+<span class="cstat-no" title="statement not covered" > *   size: 245678,</span>
+<span class="cstat-no" title="statement not covered" > *   url: 's3://bucket/documents/consent-form.pdf',</span>
+<span class="cstat-no" title="statement not covered" > *   studentId: 'student-123',</span>
+<span class="cstat-no" title="statement not covered" > *   tags: ['consent', 'medical', 'physical'],</span>
+<span class="cstat-no" title="statement not covered" > *   category: 'CONSENT_FORM'</span>
+<span class="cstat-no" title="statement not covered" > * }));</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * // Fetch student documents</span>
+<span class="cstat-no" title="statement not covered" > * dispatch(documentsThunks.fetchAll({</span>
+<span class="cstat-no" title="statement not covered" > *   studentId: 'student-123',</span>
+<span class="cstat-no" title="statement not covered" > *   category: 'MEDICAL_RECORDS',</span>
+<span class="cstat-no" title="statement not covered" > *   isActive: true</span>
+<span class="cstat-no" title="statement not covered" > * }));</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * // Update document status</span>
+<span class="cstat-no" title="statement not covered" > * dispatch(documentsThunks.update('doc-456', {</span>
+<span class="cstat-no" title="statement not covered" > *   status: 'APPROVED',</span>
+<span class="cstat-no" title="statement not covered" > *   reviewedBy: currentUserId,</span>
+<span class="cstat-no" title="statement not covered" > *   reviewedAt: new Date().toISOString()</span>
+<span class="cstat-no" title="statement not covered" > * }));</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * // Access documents using selectors</span>
+<span class="cstat-no" title="statement not covered" > * const allDocuments = useSelector(documentsSelectors.selectAll);</span>
+<span class="cstat-no" title="statement not covered" > * const studentDocs = useSelector(state =&gt;</span>
+<span class="cstat-no" title="statement not covered" > *   selectDocumentsByStudent(state, studentId)</span>
+<span class="cstat-no" title="statement not covered" > * );</span>
+<span class="cstat-no" title="statement not covered" > * const activeDocuments = useSelector(selectActiveDocuments);</span>
+<span class="cstat-no" title="statement not covered" > * const recentDocuments = useSelector(state =&gt;</span>
+<span class="cstat-no" title="statement not covered" > *   selectRecentDocuments(state, 30)</span>
+<span class="cstat-no" title="statement not covered" > * );</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >import { createEntitySlice, EntityApiService } from '../../../stores/sliceFactory';</span>
+<span class="cstat-no" title="statement not covered" >import { documentsApi } from '../../../services';</span>
+<span class="cstat-no" title="statement not covered" >import type { Document as DocumentType } from '../../../types/documents';</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// Use the imported Document type instead of local interface</span>
+<span class="cstat-no" title="statement not covered" >type Document = DocumentType;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Document creation data.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Defines the structure for creating new documents in the system.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @interface CreateDocumentData</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} name - Document filename</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} type - MIME type (e.g., application/pdf, image/jpeg)</span>
+<span class="cstat-no" title="statement not covered" > * @property {number} size - File size in bytes</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} url - Storage URL (S3/Azure Blob)</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} [studentId] - Associated student ID (for student-specific documents)</span>
+<span class="cstat-no" title="statement not covered" > * @property {string[]} [tags] - Tags for categorization and search</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const newDoc: CreateDocumentData = {</span>
+<span class="cstat-no" title="statement not covered" > *   name: 'vaccination-record.pdf',</span>
+<span class="cstat-no" title="statement not covered" > *   type: 'application/pdf',</span>
+<span class="cstat-no" title="statement not covered" > *   size: 156789,</span>
+<span class="cstat-no" title="statement not covered" > *   url: 's3://documents/vaccination-record.pdf',</span>
+<span class="cstat-no" title="statement not covered" > *   studentId: 'student-123',</span>
+<span class="cstat-no" title="statement not covered" > *   tags: ['vaccination', 'medical', 'immunization']</span>
+<span class="cstat-no" title="statement not covered" > * };</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >interface CreateDocumentData {</span>
+<span class="cstat-no" title="statement not covered" >  name: string;</span>
+<span class="cstat-no" title="statement not covered" >  type: string;</span>
+<span class="cstat-no" title="statement not covered" >  size: number;</span>
+<span class="cstat-no" title="statement not covered" >  url: string;</span>
+<span class="cstat-no" title="statement not covered" >  studentId?: string;</span>
+<span class="cstat-no" title="statement not covered" >  tags?: string[];</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Document update data.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Partial update data for modifying existing documents.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @interface UpdateDocumentData</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} [name] - Updated document name</span>
+<span class="cstat-no" title="statement not covered" > * @property {string[]} [tags] - Updated tags</span>
+<span class="cstat-no" title="statement not covered" > * @property {boolean} [isActive] - Active/archived status</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @remarks</span>
+<span class="cstat-no" title="statement not covered" > * Only metadata can be updated after document creation.</span>
+<span class="cstat-no" title="statement not covered" > * To update content, upload a new version using versioning workflow.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const updates: UpdateDocumentData = {</span>
+<span class="cstat-no" title="statement not covered" > *   tags: ['consent', 'medical', 'updated'],</span>
+<span class="cstat-no" title="statement not covered" > *   isActive: true</span>
+<span class="cstat-no" title="statement not covered" > * };</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >interface UpdateDocumentData {</span>
+<span class="cstat-no" title="statement not covered" >  name?: string;</span>
+<span class="cstat-no" title="statement not covered" >  tags?: string[];</span>
+<span class="cstat-no" title="statement not covered" >  isActive?: boolean;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Document filters for querying.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Defines available filter options for document queries.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @interface DocumentFilters</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} [studentId] - Filter by student</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} [type] - Filter by MIME type</span>
+<span class="cstat-no" title="statement not covered" > * @property {string} [uploadedBy] - Filter by uploader user ID</span>
+<span class="cstat-no" title="statement not covered" > * @property {string[]} [tags] - Filter by tags</span>
+<span class="cstat-no" title="statement not covered" > * @property {boolean} [isActive] - Filter by active status</span>
+<span class="cstat-no" title="statement not covered" > * @property {number} [page] - Page number for pagination</span>
+<span class="cstat-no" title="statement not covered" > * @property {number} [limit] - Items per page</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const filters: DocumentFilters = {</span>
+<span class="cstat-no" title="statement not covered" > *   studentId: 'student-123',</span>
+<span class="cstat-no" title="statement not covered" > *   category: 'MEDICAL_RECORDS',</span>
+<span class="cstat-no" title="statement not covered" > *   isActive: true,</span>
+<span class="cstat-no" title="statement not covered" > *   page: 1,</span>
+<span class="cstat-no" title="statement not covered" > *   limit: 20</span>
+<span class="cstat-no" title="statement not covered" > * };</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >interface DocumentFilters {</span>
+<span class="cstat-no" title="statement not covered" >  studentId?: string;</span>
+<span class="cstat-no" title="statement not covered" >  type?: string;</span>
+<span class="cstat-no" title="statement not covered" >  uploadedBy?: string;</span>
+<span class="cstat-no" title="statement not covered" >  tags?: string[];</span>
+<span class="cstat-no" title="statement not covered" >  isActive?: boolean;</span>
+<span class="cstat-no" title="statement not covered" >  page?: number;</span>
+<span class="cstat-no" title="statement not covered" >  limit?: number;</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Documents API service adapter.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Adapts the documents API to the entity service interface required by</span>
+<span class="cstat-no" title="statement not covered" > * the slice factory. Provides standardized CRUD operations with consistent</span>
+<span class="cstat-no" title="statement not covered" > * error handling and response formatting.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @const {EntityApiService&lt;Document, CreateDocumentData, UpdateDocumentData&gt;}</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @remarks</span>
+<span class="cstat-no" title="statement not covered" > * ## API Integration Notes</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * - `getAll`: Supports filtering by student, type, category, tags, status</span>
+<span class="cstat-no" title="statement not covered" > * - `getById`: Loads full document metadata with access history</span>
+<span class="cstat-no" title="statement not covered" > * - `create`: Validates file type and size before storage</span>
+<span class="cstat-no" title="statement not covered" > * - `update`: Only metadata updates allowed (name, tags, status)</span>
+<span class="cstat-no" title="statement not covered" > * - `delete`: Soft-deletes documents for audit trail preservation</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * ## Error Handling</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * All methods handle common error scenarios:</span>
+<span class="cstat-no" title="statement not covered" > * - Invalid file types (rejected with validation error)</span>
+<span class="cstat-no" title="statement not covered" > * - File size exceeding limits (rejected with size error)</span>
+<span class="cstat-no" title="statement not covered" > * - Unauthorized access (RBAC permission check failures)</span>
+<span class="cstat-no" title="statement not covered" > * - Storage failures (automatic retry with exponential backoff)</span>
+<span class="cstat-no" title="statement not covered" > * - Virus detection (document quarantined, user notified)</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >const documentsApiService: EntityApiService&lt;Document, CreateDocumentData, UpdateDocumentData&gt; = {</span>
+<span class="cstat-no" title="statement not covered" >  /**</span>
+<span class="cstat-no" title="statement not covered" >   * Fetch all documents with optional filtering.</span>
+<span class="cstat-no" title="statement not covered" >   *</span>
+<span class="cstat-no" title="statement not covered" >   * @async</span>
+<span class="cstat-no" title="statement not covered" >   * @param {DocumentFilters} [params] - Filter and pagination parameters</span>
+<span class="cstat-no" title="statement not covered" >   * @returns {Promise&lt;{data: Document[], total: number, pagination?: Object}&gt;}</span>
+<span class="cstat-no" title="statement not covered" >   */</span>
+<span class="cstat-no" title="statement not covered" >  async getAll(params?: DocumentFilters) {</span>
+<span class="cstat-no" title="statement not covered" >    const response = await documentsApi.getDocuments(params);</span>
+<span class="cstat-no" title="statement not covered" >    return {</span>
+<span class="cstat-no" title="statement not covered" >      data: response.documents || [],</span>
+<span class="cstat-no" title="statement not covered" >      total: response.pagination?.total || 0,</span>
+<span class="cstat-no" title="statement not covered" >      pagination: response.pagination ? {</span>
+<span class="cstat-no" title="statement not covered" >        page: response.pagination.page,</span>
+<span class="cstat-no" title="statement not covered" >        pageSize: response.pagination.limit,</span>
+<span class="cstat-no" title="statement not covered" >        total: response.pagination.total,</span>
+<span class="cstat-no" title="statement not covered" >        totalPages: response.pagination.pages</span>
+<span class="cstat-no" title="statement not covered" >      } : undefined,</span>
+<span class="cstat-no" title="statement not covered" >    };</span>
+<span class="cstat-no" title="statement not covered" >  },</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  /**</span>
+<span class="cstat-no" title="statement not covered" >   * Fetch single document by ID.</span>
+<span class="cstat-no" title="statement not covered" >   *</span>
+<span class="cstat-no" title="statement not covered" >   * @async</span>
+<span class="cstat-no" title="statement not covered" >   * @param {string} id - Document unique identifier</span>
+<span class="cstat-no" title="statement not covered" >   * @returns {Promise&lt;{data: Document}&gt;}</span>
+<span class="cstat-no" title="statement not covered" >   */</span>
+<span class="cstat-no" title="statement not covered" >  async getById(id: string) {</span>
+<span class="cstat-no" title="statement not covered" >    const response = await documentsApi.getDocumentById(id);</span>
+<span class="cstat-no" title="statement not covered" >    return { data: response.document };</span>
+<span class="cstat-no" title="statement not covered" >  },</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  /**</span>
+<span class="cstat-no" title="statement not covered" >   * Create new document.</span>
+<span class="cstat-no" title="statement not covered" >   *</span>
+<span class="cstat-no" title="statement not covered" >   * @async</span>
+<span class="cstat-no" title="statement not covered" >   * @param {CreateDocumentData} data - Document creation data</span>
+<span class="cstat-no" title="statement not covered" >   * @returns {Promise&lt;{data: Document}&gt;}</span>
+<span class="cstat-no" title="statement not covered" >   */</span>
+<span class="cstat-no" title="statement not covered" >  async create(data: CreateDocumentData) {</span>
+<span class="cstat-no" title="statement not covered" >    const response = await documentsApi.createDocument(data as any);</span>
+<span class="cstat-no" title="statement not covered" >    return { data: response.document };</span>
+<span class="cstat-no" title="statement not covered" >  },</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  /**</span>
+<span class="cstat-no" title="statement not covered" >   * Update existing document metadata.</span>
+<span class="cstat-no" title="statement not covered" >   *</span>
+<span class="cstat-no" title="statement not covered" >   * @async</span>
+<span class="cstat-no" title="statement not covered" >   * @param {string} id - Document unique identifier</span>
+<span class="cstat-no" title="statement not covered" >   * @param {UpdateDocumentData} data - Partial update data</span>
+<span class="cstat-no" title="statement not covered" >   * @returns {Promise&lt;{data: Document}&gt;}</span>
+<span class="cstat-no" title="statement not covered" >   */</span>
+<span class="cstat-no" title="statement not covered" >  async update(id: string, data: UpdateDocumentData) {</span>
+<span class="cstat-no" title="statement not covered" >    const response = await documentsApi.updateDocument(id, data as any);</span>
+<span class="cstat-no" title="statement not covered" >    return { data: response.document };</span>
+<span class="cstat-no" title="statement not covered" >  },</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  /**</span>
+<span class="cstat-no" title="statement not covered" >   * Delete document (soft delete).</span>
+<span class="cstat-no" title="statement not covered" >   *</span>
+<span class="cstat-no" title="statement not covered" >   * @async</span>
+<span class="cstat-no" title="statement not covered" >   * @param {string} id - Document unique identifier</span>
+<span class="cstat-no" title="statement not covered" >   * @returns {Promise&lt;{success: boolean}&gt;}</span>
+<span class="cstat-no" title="statement not covered" >   */</span>
+<span class="cstat-no" title="statement not covered" >  async delete(id: string) {</span>
+<span class="cstat-no" title="statement not covered" >    await documentsApi.deleteDocument(id);</span>
+<span class="cstat-no" title="statement not covered" >    return { success: true };</span>
+<span class="cstat-no" title="statement not covered" >  },</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Documents slice factory instance.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Creates the Redux slice using the entity factory pattern with standardized</span>
+<span class="cstat-no" title="statement not covered" > * CRUD operations, normalized state, and built-in selectors.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @const</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @property {Object} slice - Redux slice with reducers and actions</span>
+<span class="cstat-no" title="statement not covered" > * @property {EntityAdapter} adapter - Entity adapter with normalized selectors</span>
+<span class="cstat-no" title="statement not covered" > * @property {Object} thunks - Async thunk creators for API operations</span>
+<span class="cstat-no" title="statement not covered" > * @property {Object} actions - Synchronous action creators</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >const documentsSliceFactory = createEntitySlice&lt;Document, CreateDocumentData, UpdateDocumentData&gt;(</span>
+<span class="cstat-no" title="statement not covered" >  'documents',</span>
+<span class="cstat-no" title="statement not covered" >  documentsApiService,</span>
+<span class="cstat-no" title="statement not covered" >  {</span>
+<span class="cstat-no" title="statement not covered" >    enableBulkOperations: true,</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// Export the slice and its components</span>
+<span class="cstat-no" title="statement not covered" >export const documentsSlice = documentsSliceFactory.slice;</span>
+<span class="cstat-no" title="statement not covered" >export const documentsReducer = documentsSlice.reducer;</span>
+<span class="cstat-no" title="statement not covered" >export const documentsActions = documentsSliceFactory.actions;</span>
+<span class="cstat-no" title="statement not covered" >export const documentsSelectors = documentsSliceFactory.adapter.getSelectors((state: any) =&gt; state.documents);</span>
+<span class="cstat-no" title="statement not covered" >export const documentsThunks = documentsSliceFactory.thunks;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >// =====================</span>
+<span class="cstat-no" title="statement not covered" >// CUSTOM SELECTORS</span>
+<span class="cstat-no" title="statement not covered" >// =====================</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Select documents by student ID.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Custom selector that filters documents belonging to a specific student.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @function selectDocumentsByStudent</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @param {any} state - Redux root state</span>
+<span class="cstat-no" title="statement not covered" > * @param {string} studentId - Student unique identifier</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @returns {Document[]} Filtered array of student's documents</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const studentDocuments = selectDocumentsByStudent(state, 'student-123');</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const selectDocumentsByStudent = (state: any, studentId: string): Document[] =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const allDocuments = documentsSelectors.selectAll(state) as Document[];</span>
+<span class="cstat-no" title="statement not covered" >  return allDocuments.filter(document =&gt; document.studentId === studentId);</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Select active documents.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Derived selector that filters documents with APPROVED or PENDING_REVIEW status.</span>
+<span class="cstat-no" title="statement not covered" > * Excludes archived and draft documents.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @function selectActiveDocuments</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @param {any} state - Redux root state</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @returns {Document[]} Array of active documents</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @remarks</span>
+<span class="cstat-no" title="statement not covered" > * Active documents are those that are currently in use and accessible.</span>
+<span class="cstat-no" title="statement not covered" > * Archived documents are excluded for performance but can be queried separately.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const activeDocuments = selectActiveDocuments(state);</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const selectActiveDocuments = (state: any): Document[] =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const allDocuments = documentsSelectors.selectAll(state) as Document[];</span>
+<span class="cstat-no" title="statement not covered" >  return allDocuments.filter(document =&gt;</span>
+<span class="cstat-no" title="statement not covered" >    document.status === 'APPROVED' || document.status === 'PENDING_REVIEW'</span>
+<span class="cstat-no" title="statement not covered" >  );</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Select documents by category/type.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Custom selector that filters documents by category (e.g., MEDICAL_RECORDS, CONSENT_FORMS).</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @function selectDocumentsByType</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @param {any} state - Redux root state</span>
+<span class="cstat-no" title="statement not covered" > * @param {string} category - Document category to filter by</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @returns {Document[]} Filtered array of documents in the category</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const medicalRecords = selectDocumentsByType(state, 'MEDICAL_RECORDS');</span>
+<span class="cstat-no" title="statement not covered" > * const consentForms = selectDocumentsByType(state, 'CONSENT_FORMS');</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const selectDocumentsByType = (state: any, category: string): Document[] =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const allDocuments = documentsSelectors.selectAll(state) as Document[];</span>
+<span class="cstat-no" title="statement not covered" >  return allDocuments.filter(document =&gt; document.category === category);</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Select documents by uploader.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Custom selector that filters documents uploaded by a specific user.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @function selectDocumentsByUploader</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @param {any} state - Redux root state</span>
+<span class="cstat-no" title="statement not covered" > * @param {string} uploadedBy - Uploader user ID</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @returns {Document[]} Filtered array of documents uploaded by the user</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const myUploads = selectDocumentsByUploader(state, currentUserId);</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const selectDocumentsByUploader = (state: any, uploadedBy: string): Document[] =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const allDocuments = documentsSelectors.selectAll(state) as Document[];</span>
+<span class="cstat-no" title="statement not covered" >  return allDocuments.filter(document =&gt; document.uploadedBy === uploadedBy);</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Select documents by tag.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Custom selector that filters documents containing a specific tag.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @function selectDocumentsByTag</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @param {any} state - Redux root state</span>
+<span class="cstat-no" title="statement not covered" > * @param {string} tag - Tag to filter by</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @returns {Document[]} Filtered array of documents with the tag</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @remarks</span>
+<span class="cstat-no" title="statement not covered" > * Tags are case-insensitive for filtering. Documents can have multiple tags.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * const vaccinationDocs = selectDocumentsByTag(state, 'vaccination');</span>
+<span class="cstat-no" title="statement not covered" > * const urgentDocs = selectDocumentsByTag(state, 'urgent');</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const selectDocumentsByTag = (state: any, tag: string): Document[] =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const allDocuments = documentsSelectors.selectAll(state) as Document[];</span>
+<span class="cstat-no" title="statement not covered" >  return allDocuments.filter(document =&gt;</span>
+<span class="cstat-no" title="statement not covered" >    document.tags &amp;&amp; document.tags.includes(tag)</span>
+<span class="cstat-no" title="statement not covered" >  );</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >/**</span>
+<span class="cstat-no" title="statement not covered" > * Select recent documents within time window.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * Derived selector that filters documents created within the last N days.</span>
+<span class="cstat-no" title="statement not covered" > * Results are sorted by creation date in descending order (most recent first).</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @function selectRecentDocuments</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @param {any} state - Redux root state</span>
+<span class="cstat-no" title="statement not covered" > * @param {number} [days=7] - Number of days to look back (default: 7)</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @returns {Document[]} Array of recent documents, sorted by creation date descending</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @remarks</span>
+<span class="cstat-no" title="statement not covered" > * This selector performs client-side filtering and sorting. For large document</span>
+<span class="cstat-no" title="statement not covered" > * collections, consider using server-side filtering with date range parameters.</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * @example</span>
+<span class="cstat-no" title="statement not covered" > * ```typescript</span>
+<span class="cstat-no" title="statement not covered" > * // Get documents from last 7 days (default)</span>
+<span class="cstat-no" title="statement not covered" > * const lastWeek = selectRecentDocuments(state);</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * // Get documents from last 24 hours</span>
+<span class="cstat-no" title="statement not covered" > * const today = selectRecentDocuments(state, 1);</span>
+<span class="cstat-no" title="statement not covered" > *</span>
+<span class="cstat-no" title="statement not covered" > * // Get documents from last 30 days</span>
+<span class="cstat-no" title="statement not covered" > * const lastMonth = selectRecentDocuments(state, 30);</span>
+<span class="cstat-no" title="statement not covered" > * ```</span>
+<span class="cstat-no" title="statement not covered" > */</span>
+<span class="cstat-no" title="statement not covered" >export const selectRecentDocuments = (state: any, days: number = 7): Document[] =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  const allDocuments = documentsSelectors.selectAll(state) as Document[];</span>
+<span class="cstat-no" title="statement not covered" >  const cutoffDate = new Date();</span>
+<span class="cstat-no" title="statement not covered" >  cutoffDate.setDate(cutoffDate.getDate() - days);</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >  return allDocuments.filter(document =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    const createdDate = new Date(document.createdAt!);</span>
+<span class="cstat-no" title="statement not covered" >    return createdDate &gt;= cutoffDate;</span>
+<span class="cstat-no" title="statement not covered" >  }).sort((a, b) =&gt; new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());</span>
+<span class="cstat-no" title="statement not covered" >};</span>
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2025-10-26T22:59:10.915Z
+            </div>
+        <script src="../../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../../sorter.js"></script>
+        <script src="../../../../block-navigation.js"></script>
+    </body>
+</html>
+    

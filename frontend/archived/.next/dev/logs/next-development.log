@@ -1,0 +1,111 @@
+[00:00:01.262] Server  WARN    Sentry DSN not configured, error tracking disabled
+[00:00:01.262] Server  LOG     Server instrumentation initialized
+[00:00:01.311] Server  LOG      ✓ Ready in 1057ms
+[00:00:11.041] Server  ERROR   Sentry DSN not configured, error tracking disabled
+[00:00:11.041] Server  LOG     Edge runtime instrumentation initialized
+[00:00:14.071] Server  LOG      ○ Compiling /login ...
+[00:00:16.943] Server  WARN    [CsrfProtection] No CSRF token found in document or cookies
+[00:00:17.304] Browser WARN    [CsrfProtection] No CSRF token found in document or cookies
+[00:00:19.897] Server  LOG     [Login Action] Response received: {}
+[00:00:19.898] Server  LOG     [Login Action] Extracted auth data: {}
+[00:00:19.898] Server  LOG     [Login Action] Setting auth token: {}
+[00:00:19.899] Server  LOG     [Login Action] Auth token cookie set, verifying: {}
+[00:00:21.558] Server  LOG     [Dashboard] Loading combined dashboard data
+[00:00:21.559] Server  LOG     [Dashboard] Loading dashboard statistics from backend with filters: {}
+[00:00:21.561] Server  LOG     [Next API Client] Auth check: {}
+[00:00:21.562] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:21.564] Server  LOG     [Dashboard] Loading health alerts with filters: {}
+[00:00:21.564] Server  LOG     [Dashboard] Health alerts loaded successfully
+[00:00:21.565] Server  LOG     [Dashboard] Loading recent activities with filters: {}
+[00:00:21.565] Server  LOG     [Dashboard] Recent activities loaded successfully
+[00:00:21.565] Server  LOG     [Dashboard] Loading system status
+[00:00:21.566] Server  LOG     [Dashboard] System status loaded successfully
+[00:00:21.754] Server  LOG     [Dashboard] Dashboard statistics loaded successfully from backend
+[00:00:21.754] Server  LOG     [Dashboard] Combined dashboard data loaded successfully
+[00:00:21.769] Server  LOG     [Dashboard] Loading combined dashboard data
+[00:00:21.769] Server  LOG     [Dashboard] Loading dashboard statistics from backend with filters: {}
+[00:00:21.781] Server  LOG     [Next API Client] Auth check: {}
+[00:00:21.781] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:21.782] Server  LOG     [Dashboard] Loading health alerts with filters: {}
+[00:00:21.782] Server  LOG     [Dashboard] Health alerts loaded successfully
+[00:00:21.783] Server  LOG     [Dashboard] Loading recent activities with filters: {}
+[00:00:21.783] Server  LOG     [Dashboard] Recent activities loaded successfully
+[00:00:21.783] Server  LOG     [Dashboard] Loading system status
+[00:00:21.784] Server  LOG     [Dashboard] System status loaded successfully
+[00:00:21.834] Server  LOG     [Dashboard] Dashboard statistics loaded successfully from backend
+[00:00:21.835] Server  LOG     [Dashboard] Combined dashboard data loaded successfully
+[00:00:27.330] Browser LOG     Download the Apollo DevTools for a better development experience: %s https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+[00:00:40.227] Server  LOG     [Next API Client] Auth check: {}
+[00:00:40.228] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:40.228] Server  LOG     [Next API Client] Auth check: {}
+[00:00:40.229] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:40.387] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:00:42.091] Server  WARN    [CsrfProtection] No CSRF token found in document or cookies
+[00:00:42.321] Server  LOG      ✓ Compiled in 336ms
+[00:00:42.328] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.328] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:42.332] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.332] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:42.335] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.335] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:42.337] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.337] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:42.339] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.340] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:42.341] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.341] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:42.382] Server  ERROR    ⨯ TypeError: controller[kState].transformAlgorithm is not a function
+[00:00:42.382] Server  ERROR   Request error: {}
+[00:00:42.984] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.985] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:42.986] Server  LOG     [Next API Client] Auth check: {}
+[00:00:42.987] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:43.331] Browser WARN    [CsrfProtection] No CSRF token found in document or cookies
+[00:00:50.954] Server  WARN    [CsrfProtection] No CSRF token found in document or cookies
+[00:00:50.979] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:00:52.589] Browser ERROR   uncaughtError: Error: Rendered more hooks than during the previous render.
+[00:00:53.324] Browser LOG     Download the Apollo DevTools for a better development experience: %s https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+[00:00:59.951] Server  LOG     [Next API Client] Auth check: {}
+[00:00:59.951] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:00:59.953] Server  LOG     [Next API Client] Auth check: {}
+[00:00:59.954] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:01:00.212] Browser WARN    [CsrfProtection] No CSRF token found in document or cookies
+[00:01:03.816] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:01:10.231] Browser LOG     Download the Apollo DevTools for a better development experience: %s https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+[00:03:37.274] Server  LOG     [Health Records] Fetching from: "/health-record" {}
+[00:03:37.277] Server  LOG     [Next API Client] Auth check: {}
+[00:03:37.278] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:03:37.293] Server  ERROR   [Health Records] Error in getHealthRecordsAction: "Cannot GET /health-record"
+[00:03:37.401] Server  LOG     [Health Records] Fetching from: "/health-record" {}
+[00:03:37.403] Server  LOG     [Next API Client] Auth check: {}
+[00:03:37.404] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:03:37.411] Server  ERROR   [Health Records] Error in getHealthRecordsAction: "Cannot GET /health-record"
+[00:03:37.483] Server  LOG     [Health Records] Loading health records statistics
+[00:03:37.484] Server  LOG     [Health Records] Health records statistics loaded successfully
+[00:03:37.500] Server  LOG     [Health Records] Fetching from: "/health-record" {}
+[00:03:37.501] Server  LOG     [Next API Client] Auth check: {}
+[00:03:37.501] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:03:37.507] Server  ERROR   [Health Records] Error in getHealthRecordsAction: "Cannot GET /health-record"
+[00:03:37.524] Server  LOG     [Health Records] Loading health records statistics
+[00:03:37.525] Server  LOG     [Health Records] Health records statistics loaded successfully
+[00:03:37.652] Browser ERROR   Failed to fetch health records: Cannot GET /health-record
+[00:03:37.652] Browser ERROR   Failed to fetch health records: Cannot GET /health-record
+[00:03:37.658] Server  LOG     [Health Records] Fetching from: "/health-record" {}
+[00:03:37.664] Server  LOG     [Next API Client] Auth check: {}
+[00:03:37.664] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:03:37.671] Server  ERROR   [Health Records] Error in getHealthRecordsAction: "Cannot GET /health-record"
+[00:03:37.683] Server  LOG     [Health Records] Loading health records statistics
+[00:03:37.684] Server  LOG     [Health Records] Health records statistics loaded successfully
+[00:03:37.696] Server  LOG     [Health Records] Fetching from: "/health-record" {}
+[00:03:37.706] Server  LOG     [Next API Client] Auth check: {}
+[00:03:37.706] Server  LOG     [Next API Client] Added Authorization header: {}
+[00:03:37.711] Server  ERROR   [Health Records] Error in getHealthRecordsAction: "Cannot GET /health-record"
+[00:03:37.724] Server  LOG     [Health Records] Loading health records statistics
+[00:03:37.724] Server  LOG     [Health Records] Health records statistics loaded successfully
+[00:03:37.817] Browser ERROR   Failed to fetch health records: Cannot GET /health-record
+[00:03:37.817] Browser ERROR   Failed to fetch health records: Cannot GET /health-record
+[01:21:06.514] Browser ERROR   Failed to fetch RSC payload for http://localhost:3000/students. Falling back to browser navigation. {}
+[01:21:06.515] Browser ERROR   Failed to fetch RSC payload for http://localhost:3000/dashboard. Falling back to browser navigation. {}
+[01:30:18.161] Browser ERROR   Failed to fetch RSC payload for http://localhost:3000/dashboard. Falling back to browser navigation. {}
+[01:32:49.499] Browser ERROR   Failed to fetch RSC payload for http://localhost:3000/students. Falling back to browser navigation. {}
+[01:32:49.499] Browser ERROR   Failed to fetch RSC payload for http://localhost:3000/dashboard. Falling back to browser navigation. {}

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/compliance/%40modal/default.tsx"],"sourcesContent":["/**\r\n * @fileoverview Default Modal for Compliance - Default modal when no specific modal route is active\r\n * @module app/(dashboard)/compliance/@modal/default\r\n * @category Compliance - Parallel Routes\r\n */\r\n\r\nexport default function ComplianceModalDefault() {\r\n  return null;\r\n}"],"names":[],"mappings":"AAAA;;;;CAIC;;;;AAEc,SAAS;IACtB,OAAO;AACT","debugId":null}}]
+}

@@ -45,7 +45,7 @@ export class DocumentAuditTrail extends Model {
   @Column(DataType.UUID)
   declare id: string;
 
-  @ForeignKey(() => Document)
+  @ForeignKey(() => 'Document')
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -109,6 +109,6 @@ export class DocumentAuditTrail extends Model {
 
   // Associations
 
-  @BelongsTo(() => Document)
+  @BelongsTo(() => 'Document')
   document: Document;
 }

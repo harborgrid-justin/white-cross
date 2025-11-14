@@ -1,6 +1,0 @@
-#!/bin/bash
-# White Cross Vector Database Pipeline Launcher
-# Quick access to the vector CLI tool
-
-cd "$(dirname "$0")/vector-prep"
-python vector-cli.py "$@"

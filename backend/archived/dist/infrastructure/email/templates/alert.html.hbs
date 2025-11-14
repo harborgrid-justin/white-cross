@@ -1,0 +1,11 @@
+{{!-- Alert Email Template - Uses base template to eliminate duplication --}}
+{{!-- Variables: title, message, severity, alertId, category, timestamp, additionalInfo --}}
+
+{{> base.html.hbs
+    pageTitle="Alert"
+    headerSubtitle="Alert Notification"
+    title=null
+    content="<div style='display: inline-block; padding: 8px 16px; border-radius: 4px; font-weight: bold; font-size: 14px; margin: 20px 0; background-color: {{#eq severity 'CRITICAL'}}#dc3545{{/eq}}{{#eq severity 'HIGH'}}#fd7e14{{/eq}}{{#eq severity 'MEDIUM'}}#ffc107{{/eq}}{{#eq severity 'LOW'}}#28a745{{/eq}}; color: {{#eq severity 'MEDIUM'}}#333{{else}}white{{/eq}};'>{{uppercase severity}} ALERT</div><div style='font-size: 24px; font-weight: bold; color: #2c3e50; margin: 20px 0;'>{{title}}</div><div style='font-size: 16px; color: #555; margin: 20px 0; line-height: 1.8;'>{{message}}</div><div style='background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 4px;'><div style='margin: 8px 0; font-size: 14px;'><span style='font-weight: bold; color: #495057;'>Alert ID:</span> {{alertId}}</div><div style='margin: 8px 0; font-size: 14px;'><span style='font-weight: bold; color: #495057;'>Category:</span> {{category}}</div><div style='margin: 8px 0; font-size: 14px;'><span style='font-weight: bold; color: #495057;'>Severity:</span> {{severity}}</div>{{#if timestamp}}<div style='margin: 8px 0; font-size: 14px;'><span style='font-weight: bold; color: #495057;'>Time:</span> {{formatDate timestamp}}</div>{{/if}}</div>{{#if additionalInfo}}<div style='background-color: #f8f9fa; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; border-radius: 4px;'><div style='font-weight: bold; color: #495057; margin-bottom: 10px;'>Additional Information:</div>{{#each additionalInfo}}<div style='margin: 8px 0; font-size: 14px;'><span style='font-weight: bold; color: #495057;'>{{@key}}:</span> {{this}}</div>{{/each}}</div>{{/if}}"
+    buttonColor="#007bff"
+    footerContent="<p>This is an automated message from White Cross Healthcare Platform.</p><p>Please do not reply to this email.</p>"
+}}

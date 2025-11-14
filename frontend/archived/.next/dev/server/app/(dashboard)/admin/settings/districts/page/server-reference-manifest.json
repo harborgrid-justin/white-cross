@@ -1,0 +1,50 @@
+{
+  "node": {
+    "0018872ad5d456a505fdf08b70ef1f44e4d171c220": {
+      "workers": {
+        "app/(dashboard)/admin/settings/districts/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/districts/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.districts.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "revalidateDistrictsCache",
+          "filename": "src/lib/actions/admin.districts.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/districts/page": "rsc"
+      },
+      "exportedName": "revalidateDistrictsCache",
+      "filename": "src/lib/actions/admin.districts.ts"
+    },
+    "401b780634ff25f1a8b3dec22b12dcd686d7117d89": {
+      "workers": {
+        "app/(dashboard)/admin/settings/districts/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/districts/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.districts.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAdminDistricts",
+          "filename": "src/lib/actions/admin.districts.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/districts/page": "rsc"
+      },
+      "exportedName": "getAdminDistricts",
+      "filename": "src/lib/actions/admin.districts.ts"
+    },
+    "40a4903b9e2b0fe165598adca72db362ce04e082be": {
+      "workers": {
+        "app/(dashboard)/admin/settings/districts/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/districts/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.districts.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAdminDistrictById",
+          "filename": "src/lib/actions/admin.districts.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/districts/page": "rsc"
+      },
+      "exportedName": "getAdminDistrictById",
+      "filename": "src/lib/actions/admin.districts.ts"
+    }
+  },
+  "edge": {}
+}

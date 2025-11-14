@@ -1,0 +1,20 @@
+{
+  "node": {
+    "004e89d6aec3dc95bec36ee8e5764906cfd6539ed7": {
+      "workers": {
+        "app/(dashboard)/health-records/[id]/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/[id]/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsStats",
+          "filename": "src/lib/actions/health-records.stats.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/[id]/page": "action-browser"
+      },
+      "exportedName": "getHealthRecordsStats",
+      "filename": "src/lib/actions/health-records.stats.ts"
+    }
+  },
+  "edge": {}
+}

@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ReportGenerationService = exports.ReportExportService = exports.MedicationReportsService = exports.IncidentReportsService = exports.HealthReportsService = exports.DashboardService = exports.ComplianceReportsService = exports.AttendanceReportsService = void 0;
+var attendance_reports_service_1 = require("./attendance-reports.service");
+Object.defineProperty(exports, "AttendanceReportsService", { enumerable: true, get: function () { return attendance_reports_service_1.AttendanceReportsService; } });
+var compliance_reports_service_1 = require("./compliance-reports.service");
+Object.defineProperty(exports, "ComplianceReportsService", { enumerable: true, get: function () { return compliance_reports_service_1.ComplianceReportsService; } });
+var dashboard_service_1 = require("./dashboard.service");
+Object.defineProperty(exports, "DashboardService", { enumerable: true, get: function () { return dashboard_service_1.DashboardService; } });
+var health_reports_service_1 = require("./health-reports.service");
+Object.defineProperty(exports, "HealthReportsService", { enumerable: true, get: function () { return health_reports_service_1.HealthReportsService; } });
+var incident_reports_service_1 = require("./incident-reports.service");
+Object.defineProperty(exports, "IncidentReportsService", { enumerable: true, get: function () { return incident_reports_service_1.IncidentReportsService; } });
+var medication_reports_service_1 = require("./medication-reports.service");
+Object.defineProperty(exports, "MedicationReportsService", { enumerable: true, get: function () { return medication_reports_service_1.MedicationReportsService; } });
+var report_export_service_1 = require("./report-export.service");
+Object.defineProperty(exports, "ReportExportService", { enumerable: true, get: function () { return report_export_service_1.ReportExportService; } });
+var report_generation_service_1 = require("./report-generation.service");
+Object.defineProperty(exports, "ReportGenerationService", { enumerable: true, get: function () { return report_generation_service_1.ReportGenerationService; } });
+//# sourceMappingURL=index.js.map

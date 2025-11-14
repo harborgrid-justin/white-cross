@@ -1,106 +1,59 @@
-#!/usr/bin/env node
-
 const fs = require('fs');
 const path = require('path');
 
-const modelsDir = '/workspaces/white-cross/backend/src/database/models';
+// Define the mapping of old import paths to new ones
+const importMappings = {
+  "'../../emergency-broadcast/emergency-broadcast.enums'": "'../../../services/communication/emergency-broadcast/emergency-broadcast.enums'",
+  '"../../emergency-broadcast/emergency-broadcast.enums"': '"../../../services/communication/emergency-broadcast/emergency-broadcast.enums"',
+  "'@/emergency-broadcast'": "'../emergency-broadcast.enums'",
+  '"@/emergency-broadcast"': '"../emergency-broadcast.enums"',
+  "'@/contact'": "'../../contact/enums'",
+  '"@/contact"': '"../../contact/enums"',
+  "'@/contact/services'": "'../../contact/services'",
+  '"@/contact/services"': '"../../contact/services"',
+  // Add more mappings as needed for other moved services
+  // For example, if there were imports from '../../emergency-contact/'
+  // "'../../emergency-contact/something'": "'../../../services/communication/emergency-contact/something'",
+};
 
-// List of files that need to be fixed based on the error output
-const filesToFix = [
-  'follow-up-appointment.model.ts',
-  'growth-tracking.model.ts',
-  'health-metric-snapshot.model.ts',
-  'health-screening.model.ts',
-  'immunization.model.ts',
-  'integration-config.model.ts',
-  'integration-log.model.ts',
-  'inventory-item.model.ts',
-  'inventory-transaction.model.ts',
-  'lab-results.model.ts',
-  'license.model.ts',
-  'maintenance-log.model.ts',
-  'medical-history.model.ts',
-  'medication-log.model.ts',
-  'mental-health-record.model.ts',
-  'message-delivery.model.ts',
-  'message-reaction.model.ts',
-  'message-read.model.ts',
-  'message-template.model.ts',
-  'message.model.ts',
-  'performance-metric.model.ts',
-  'phi-disclosure-audit.model.ts',
-  'phi-disclosure.model.ts',
-  'policy-acknowledgment.model.ts',
-  'policy-document.model.ts',
-  'purchase-order-item.model.ts',
-  'purchase-order.model.ts',
-  'push-notification.model.ts',
-  'remediation-action.model.ts',
-  'report-execution.model.ts',
-  'report-schedule.model.ts',
-  'report-template.model.ts',
-  'sis-sync-conflict.model.ts',
-  'student-drug-allergy.model.ts',
-  'student-medication.model.ts',
-  'supplier.model.ts',
-  'sync-conflict.model.ts',
-  'sync-queue-item.model.ts',
-  'sync-session.model.ts',
-  'sync-state.model.ts',
-  'system-config.model.ts',
-  'threat-detection.model.ts',
-  'training-module.model.ts',
-  'treatment-plan.model.ts',
-  'vaccination.model.ts',
-  'vendor.model.ts',
-  'webhook.model.ts',
-  'witness-statement.model.ts'
-];
+function fixImportsInFile(filePath) {
+  try {
+    let content = fs.readFileSync(filePath, 'utf8');
+    let changed = false;
 
-function fixImportStatement(content) {
-  // Fix malformed import statements with extra commas or incorrect syntax
-  return content.replace(
-    /import\s*{\s*([^}]+)\s*}\s*,\s*([^}]+)\s*}\s*from\s*'sequelize-typescript';/gs,
-    (match, group1, group2) => {
-      // Combine both groups and clean up
-      const combined = (group1 + ',' + group2)
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item && item !== '')
-        .join(',\n  ');
-      
-      return `import {\n  ${combined}\n} from 'sequelize-typescript';`;
+    for (const [oldImport, newImport] of Object.entries(importMappings)) {
+      if (content.includes(oldImport)) {
+        content = content.replace(new RegExp(oldImport.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newImport);
+        changed = true;
+        console.log(`Fixed import in ${filePath}: ${oldImport} -> ${newImport}`);
+      }
     }
-  );
-}
 
-function fixTrailingCommas(content) {
-  // Fix trailing commas in object literals
-  return content.replace(/,(\s*[}\]])/g, '$1');
-}
-
-// Process each file
-filesToFix.forEach(filename => {
-  const filePath = path.join(modelsDir, filename);
-  
-  if (fs.existsSync(filePath)) {
-    try {
-      let content = fs.readFileSync(filePath, 'utf8');
-      
-      // Fix import statements
-      content = fixImportStatement(content);
-      
-      // Fix trailing commas
-      content = fixTrailingCommas(content);
-      
+    if (changed) {
       fs.writeFileSync(filePath, content, 'utf8');
-      console.log(`Fixed: ${filename}`);
-    } catch (error) {
-      console.error(`Error processing ${filename}:`, error.message);
     }
-  } else {
-    console.log(`File not found: ${filename}`);
+  } catch (error) {
+    console.error(`Error processing ${filePath}:`, error.message);
   }
-});
+}
 
-console.log('Import fixes completed!');
+function walkDirectory(dir) {
+  const files = fs.readdirSync(dir);
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat.isDirectory() && !file.startsWith('.') && file !== 'node_modules' && file !== 'dist') {
+      walkDirectory(filePath);
+    } else if (stat.isFile() && file.endsWith('.ts')) {
+      fixImportsInFile(filePath);
+    }
+  }
+}
+
+// Start from the src directory
+const srcDir = path.join(__dirname, 'src');
+console.log('Starting import fix process...');
+walkDirectory(srcDir);
+console.log('Import fix process completed.');

@@ -1,0 +1,320 @@
+{
+  "node": {
+    "400393513545cdd62893942da58de8ac996dd17cb0": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "medicationExists",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "medicationExists",
+      "filename": "src/lib/actions/medications.utils.ts"
+    },
+    "40140ad48672705c368f02508e39ce91ff0e087de7": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "clearMedicationCache",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "clearMedicationCache",
+      "filename": "src/lib/actions/medications.utils.ts"
+    },
+    "4055eb507e57b2e2429031b5cf7180bc546020fd5b": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationsDashboardData",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getMedicationsDashboardData",
+      "filename": "src/lib/actions/medications.utils.ts"
+    },
+    "4062815d8964f3a49334c8b8d64509b480200fcb44": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationCount",
+          "filename": "src/lib/actions/medications.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getMedicationCount",
+      "filename": "src/lib/actions/medications.utils.ts"
+    },
+    "7f090b15eaa6ba59e64d0a5695468d2580649a852d": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getPaginatedMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getPaginatedMedications",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "7f1254e46fbfcba42143409be06dd95b6bfef5adc4": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationHistory",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getMedicationHistory",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "7f4fa70258d1ebca6a6798fdc410d4b32b9f01b10d": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getStudentMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getStudentMedications",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "7f7555da66663b3c9e93ecc9422786937377b717bd": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedicationStats",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getMedicationStats",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "7fabc7f03050f8d9bb16c1ed00934cfa5aad1874f6": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getMedications",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "7fac88345d8fc7c8edbd3ecb2513ed3718233e10bd": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getMedication",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getMedication",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "7fb400f442e71c24467a1c520ab99a301a52b0e145": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getOverdueMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getOverdueMedications",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "7fed37e125bdc5e7be41e3a69fe030b2c64c132c07": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getDueMedications",
+          "filename": "src/lib/actions/medications.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "getDueMedications",
+      "filename": "src/lib/actions/medications.cache.ts"
+    },
+    "400e6b793ec6e2aad3acd1b430e7347083cd165939": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteMedication",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "deleteMedication",
+      "filename": "src/lib/actions/medications.crud.ts"
+    },
+    "408dccdd4b4eb522bfd0548cf3f788258e0a9c2c89": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createMedicationFromForm",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "createMedicationFromForm",
+      "filename": "src/lib/actions/medications.crud.ts"
+    },
+    "40a9d57210a8f47ab3affe42bf20a146b4ebf9e42a": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createMedication",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "createMedication",
+      "filename": "src/lib/actions/medications.crud.ts"
+    },
+    "6028cdda10f910886a0b95ff2ba224a620853aef44": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateMedicationFromForm",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "updateMedicationFromForm",
+      "filename": "src/lib/actions/medications.crud.ts"
+    },
+    "60aafe6e826a7558366c3d04d475e8bdf1a1298e53": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateMedication",
+          "filename": "src/lib/actions/medications.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "updateMedication",
+      "filename": "src/lib/actions/medications.crud.ts"
+    },
+    "4056addd475fb85124f1c2e5c64c6eb7e441eb3335": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "administerMedicationFromForm",
+          "filename": "src/lib/actions/medications.administration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "administerMedicationFromForm",
+      "filename": "src/lib/actions/medications.administration.ts"
+    },
+    "40f9eee4752911fd22b402390581bc6c2141e61815": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "administerMedication",
+          "filename": "src/lib/actions/medications.administration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "administerMedication",
+      "filename": "src/lib/actions/medications.administration.ts"
+    },
+    "604a6f6f331098cf6a807e3783a071cd7d3755191f": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "discontinueMedication",
+          "filename": "src/lib/actions/medications.status.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "discontinueMedication",
+      "filename": "src/lib/actions/medications.status.ts"
+    },
+    "70c66053094e4ff095f7f4d3775bbe17c715768fa4": {
+      "workers": {
+        "app/(dashboard)/medications/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/medications/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/medications.utils.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/medications.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/medications.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/medications.administration.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE4 => \"[project]/src/lib/actions/medications.status.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "requestMedicationRefill",
+          "filename": "src/lib/actions/medications.status.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/medications/page": "rsc"
+      },
+      "exportedName": "requestMedicationRefill",
+      "filename": "src/lib/actions/medications.status.ts"
+    }
+  },
+  "edge": {}
+}

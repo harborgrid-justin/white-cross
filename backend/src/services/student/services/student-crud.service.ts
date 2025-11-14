@@ -180,8 +180,6 @@ export class StudentCrudService extends BaseService {
    */
   async findOne(id: string): Promise<Student> {
     try {
-      this.validateUUID(id, 'Student ID');
-
       const students = await this.queryCacheService.findWithCache(
         this.studentModel,
         { where: { id } },
@@ -193,7 +191,8 @@ export class StudentCrudService extends BaseService {
       );
 
       if (!students || students.length === 0) {
-        throw new NotFoundException(`Student with ID ${id} not found`);
+        // Use BaseService method for consistent error handling
+        return await this.findEntityOrFail(this.studentModel, id, 'Student');
       }
 
       return students[0];
@@ -548,8 +547,7 @@ export class StudentCrudService extends BaseService {
   }
 
   private async validateNurseAssignment(nurseId: string): Promise<void> {
-    this.validateUUID(nurseId, 'Nurse ID');
-
+    // Use BaseService method for consistent validation and error handling
     const nurse = await this.userModel.findOne({
       where: {
         id: nurseId,

@@ -1,0 +1,35 @@
+{
+  "node": {
+    "7f8f56025a572600cb01d7840061b1c2cc8f5edf37": {
+      "workers": {
+        "app/(dashboard)/students/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/students/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/students.cache.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getStudentCount",
+          "filename": "src/lib/actions/students.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/students/page": "action-browser"
+      },
+      "exportedName": "getStudentCount",
+      "filename": "src/lib/actions/students.cache.ts"
+    },
+    "7f5bb8aeb4012ba7a270d2edcccd28edbbb643a105": {
+      "workers": {
+        "app/(dashboard)/students/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/students/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/students.cache.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getStudents",
+          "filename": "src/lib/actions/students.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/students/page": "action-browser"
+      },
+      "exportedName": "getStudents",
+      "filename": "src/lib/actions/students.cache.ts"
+    }
+  },
+  "edge": {}
+}

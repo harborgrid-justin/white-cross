@@ -1,0 +1,20 @@
+{
+  "node": {
+    "40a521c0889536c5ec0f0840bb1df44e324452a90e": {
+      "workers": {
+        "app/(dashboard)/admin/settings/users/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/users/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.users.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteAdminUserAction",
+          "filename": "src/lib/actions/admin.users.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/users/page": "action-browser"
+      },
+      "exportedName": "deleteAdminUserAction",
+      "filename": "src/lib/actions/admin.users.ts"
+    }
+  },
+  "edge": {}
+}

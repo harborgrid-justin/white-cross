@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/reports/%40modal/default.tsx"],"sourcesContent":["/**\r\n * Default fallback for the @modal parallel route slot\r\n * This component is rendered when no modal should be displayed\r\n */\r\nexport default function DefaultModal() {\r\n  return null;\r\n}"],"names":[],"mappings":"AAAA;;;CAGC;;;;AACc,SAAS;IACtB,OAAO;AACT","debugId":null}}]
+}

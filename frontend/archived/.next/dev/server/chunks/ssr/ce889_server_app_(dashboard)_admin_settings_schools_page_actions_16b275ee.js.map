@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/.next-internal/server/app/%28dashboard%29/admin/settings/schools/page/actions.js%20%28server%20actions%20loader%29"],"sourcesContent":["export {getDistrictsForSchoolFilter as '00da42840b6558cd8727b1a7caece5af0489c124d2'} from 'ACTIONS_MODULE0'\nexport {revalidateSchoolsCache as '00e3c5399f70a5154eca466f1c0a24605b6f2b6268'} from 'ACTIONS_MODULE0'\nexport {getAdminSchoolById as '4005f304d9c9e2a102962f07a42bfe1b13ad58cb78'} from 'ACTIONS_MODULE0'\nexport {getAdminSchools as '40a56f04584de97e44324992bc32c9f767d0aad305'} from 'ACTIONS_MODULE0'\nexport {getDistrictsForSchoolFilter as '00da42840b6558cd8727b1a7caece5af0489c124d2'} from 'ACTIONS_MODULE0'\nexport {revalidateSchoolsCache as '00e3c5399f70a5154eca466f1c0a24605b6f2b6268'} from 'ACTIONS_MODULE0'\nexport {getAdminSchoolById as '4005f304d9c9e2a102962f07a42bfe1b13ad58cb78'} from 'ACTIONS_MODULE0'\nexport {getAdminSchools as '40a56f04584de97e44324992bc32c9f767d0aad305'} from 'ACTIONS_MODULE0'\n"],"names":[],"mappings":";AAAA","debugId":null}}]
+}

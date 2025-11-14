@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/medications/%40modal/default.tsx"],"sourcesContent":["export default function MedicationsModalDefault() {\r\n  return null;\r\n}"],"names":[],"mappings":";;;;AAAe,SAAS;IACtB,OAAO;AACT","debugId":null}}]
+}

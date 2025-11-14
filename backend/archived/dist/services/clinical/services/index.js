@@ -1,0 +1,28 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VitalSignsService = exports.TreatmentPlanService = exports.PrescriptionService = exports.InteractionCheckerService = exports.FollowUpService = exports.DrugInteractionService = exports.DrugCatalogService = exports.ClinicalProtocolService = exports.ClinicalNoteService = exports.ClinicVisitBasicService = exports.ClinicVisitAnalyticsService = exports.AllergyManagementService = void 0;
+var allergy_management_service_1 = require("./allergy-management.service");
+Object.defineProperty(exports, "AllergyManagementService", { enumerable: true, get: function () { return allergy_management_service_1.AllergyManagementService; } });
+var clinic_visit_analytics_service_1 = require("./clinic-visit-analytics.service");
+Object.defineProperty(exports, "ClinicVisitAnalyticsService", { enumerable: true, get: function () { return clinic_visit_analytics_service_1.ClinicVisitAnalyticsService; } });
+var clinic_visit_basic_service_1 = require("./clinic-visit-basic.service");
+Object.defineProperty(exports, "ClinicVisitBasicService", { enumerable: true, get: function () { return clinic_visit_basic_service_1.ClinicVisitBasicService; } });
+var clinical_note_service_1 = require("./clinical-note.service");
+Object.defineProperty(exports, "ClinicalNoteService", { enumerable: true, get: function () { return clinical_note_service_1.ClinicalNoteService; } });
+var clinical_protocol_service_1 = require("./clinical-protocol.service");
+Object.defineProperty(exports, "ClinicalProtocolService", { enumerable: true, get: function () { return clinical_protocol_service_1.ClinicalProtocolService; } });
+var drug_catalog_service_1 = require("./drug-catalog.service");
+Object.defineProperty(exports, "DrugCatalogService", { enumerable: true, get: function () { return drug_catalog_service_1.DrugCatalogService; } });
+var drug_interaction_service_1 = require("./drug-interaction.service");
+Object.defineProperty(exports, "DrugInteractionService", { enumerable: true, get: function () { return drug_interaction_service_1.DrugInteractionService; } });
+var follow_up_service_1 = require("./follow-up.service");
+Object.defineProperty(exports, "FollowUpService", { enumerable: true, get: function () { return follow_up_service_1.FollowUpService; } });
+var interaction_checker_service_1 = require("./interaction-checker.service");
+Object.defineProperty(exports, "InteractionCheckerService", { enumerable: true, get: function () { return interaction_checker_service_1.InteractionCheckerService; } });
+var prescription_service_1 = require("./prescription.service");
+Object.defineProperty(exports, "PrescriptionService", { enumerable: true, get: function () { return prescription_service_1.PrescriptionService; } });
+var treatment_plan_service_1 = require("./treatment-plan.service");
+Object.defineProperty(exports, "TreatmentPlanService", { enumerable: true, get: function () { return treatment_plan_service_1.TreatmentPlanService; } });
+var vital_signs_service_1 = require("./vital-signs.service");
+Object.defineProperty(exports, "VitalSignsService", { enumerable: true, get: function () { return vital_signs_service_1.VitalSignsService; } });
+//# sourceMappingURL=index.js.map

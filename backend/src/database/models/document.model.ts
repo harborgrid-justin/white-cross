@@ -339,10 +339,10 @@ export class Document extends Model {
   @HasMany(() => Document, 'parentId')
   versions?: Document[];
 
-  @HasMany(() => DocumentSignature, 'documentId')
+  @HasMany(() => 'DocumentSignature', 'documentId')
   signatures?: DocumentSignature[];
 
-  @HasMany(() => DocumentAuditTrail, 'documentId')
+  @HasMany(() => 'DocumentAuditTrail', 'documentId')
   auditTrail?: DocumentAuditTrail[];
 
   // Hooks
