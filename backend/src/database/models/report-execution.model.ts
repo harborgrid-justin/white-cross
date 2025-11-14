@@ -62,7 +62,7 @@ export interface ReportExecutionAttributes {
     where: {
       deletedAt: null,
     },
-    order: [['createdAt', 'DESC']],
+    order: [['startedAt', 'DESC']],
   },
 }))
 @Table({
@@ -70,12 +70,12 @@ export interface ReportExecutionAttributes {
   timestamps: false,
   indexes: [
     {
-      fields: ['createdAt'],
-      name: 'idx_report_execution_created_at',
+      fields: ['startedAt'],
+      name: 'idx_report_execution_started_at',
     },
     {
-      fields: ['updatedAt'],
-      name: 'idx_report_execution_updated_at',
+      fields: ['status', 'startedAt'],
+      name: 'idx_report_execution_status_started',
     },
   ],
 })

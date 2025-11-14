@@ -28,7 +28,7 @@ export interface PolicyAcknowledgmentAttributes {
     where: {
       deletedAt: null,
     },
-    order: [['createdAt', 'DESC']],
+    order: [['acknowledgedAt', 'DESC']],
   },
 }))
 @Table({
@@ -38,14 +38,6 @@ export interface PolicyAcknowledgmentAttributes {
     {
       unique: true,
       fields: ['policyId', 'userId'],
-    },
-    {
-      fields: ['createdAt'],
-      name: 'idx_policy_acknowledgment_created_at',
-    },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_policy_acknowledgment_updated_at',
     },
   ],
 })

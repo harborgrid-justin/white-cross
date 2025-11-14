@@ -67,16 +67,9 @@ export interface SyncConflictAttributes {
       fields: ['createdAt'],
       name: 'idx_sync_conflict_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_sync_conflict_updated_at',
-    },
   ],
 })
-export class SyncConflict
-  extends Model<SyncConflictAttributes>
-  implements SyncConflictAttributes
-{
+export class SyncConflict extends Model<SyncConflictAttributes> implements SyncConflictAttributes {
   @PrimaryKey
   @Default(() => uuidv4())
   @Column(DataType.UUID)

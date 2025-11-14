@@ -45,10 +45,6 @@ export interface PhiDisclosureAuditAttributes {
       fields: ['createdAt'],
       name: 'idx_phi_disclosure_audit_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_phi_disclosure_audit_updated_at',
-    },
   ],
 })
 export class PhiDisclosureAudit

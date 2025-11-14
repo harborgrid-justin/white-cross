@@ -81,10 +81,6 @@ export interface CreatePerformanceMetricAttributes {
       fields: ['createdAt'],
       name: 'idx_performance_metric_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_performance_metric_updated_at',
-    },
   ],
 })
 export class PerformanceMetric extends Model<
