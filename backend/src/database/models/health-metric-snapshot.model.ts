@@ -54,10 +54,6 @@ export interface HealthMetricSnapshotAttributes {
       fields: ['createdAt'],
       name: 'idx_health_metric_snapshot_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_health_metric_snapshot_updated_at',
-    },
   ],
 })
 export class HealthMetricSnapshot
@@ -130,3 +126,6 @@ export class HealthMetricSnapshot
     await createModelAuditHook('HealthMetricSnapshot', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default HealthMetricSnapshot;

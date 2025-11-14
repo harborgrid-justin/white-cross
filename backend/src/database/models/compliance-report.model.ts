@@ -187,3 +187,6 @@ export class ComplianceReport
     await createModelAuditHook('ComplianceReport', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ComplianceReport;

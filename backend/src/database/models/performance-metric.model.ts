@@ -156,3 +156,6 @@ export class PerformanceMetric extends Model<
     await createModelAuditHook('PerformanceMetric', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PerformanceMetric;

@@ -135,3 +135,6 @@ export class MaintenanceLog
     await createModelAuditHook('MaintenanceLog', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MaintenanceLog;

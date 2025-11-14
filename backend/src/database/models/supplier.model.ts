@@ -91,3 +91,6 @@ export class Supplier
     await createModelAuditHook('Supplier', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Supplier;

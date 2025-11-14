@@ -417,3 +417,6 @@ export class Prescription
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Prescription;

@@ -208,3 +208,6 @@ export class SyncSession extends Model {
     await createModelAuditHook('SyncSession', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SyncSession;

@@ -119,3 +119,6 @@ export class HealthScreening
     await createModelAuditHook('HealthScreening', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default HealthScreening;

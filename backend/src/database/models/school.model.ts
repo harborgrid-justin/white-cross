@@ -280,3 +280,6 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   })
   declare incidentReports?: IncidentReport[];
 }
+
+// Default export for Sequelize-TypeScript
+export default School;

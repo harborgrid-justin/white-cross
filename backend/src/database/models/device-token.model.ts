@@ -228,3 +228,6 @@ export class DeviceToken
     await createModelAuditHook('DeviceToken', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default DeviceToken;

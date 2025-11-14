@@ -244,3 +244,6 @@ export class SyncQueueItem
     await createModelAuditHook('SyncQueueItem', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SyncQueueItem;

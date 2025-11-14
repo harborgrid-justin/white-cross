@@ -202,3 +202,6 @@ export class DrugCatalog
     await createModelAuditHook('DrugCatalog', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default DrugCatalog;

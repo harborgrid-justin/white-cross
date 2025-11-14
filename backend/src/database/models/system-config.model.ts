@@ -345,3 +345,6 @@ export class SystemConfig extends Model<
     await createModelAuditHook('SystemConfig', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SystemConfig;

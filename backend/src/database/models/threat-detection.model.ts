@@ -113,3 +113,6 @@ export class ThreatDetection
     await createModelAuditHook('ThreatDetection', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ThreatDetection;

@@ -13,7 +13,7 @@ import { IpRestrictionType } from '../../services/security/enums/ip-restriction-
 export class IpRestriction extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.STRING)
+  @Column(DataType.UUID)
   declare id: string;
 
   @Column({
@@ -89,3 +89,6 @@ export class IpRestriction extends Model {
   })
   declare updatedAt: Date;
 }
+
+// Default export for Sequelize-TypeScript
+export default IpRestriction;

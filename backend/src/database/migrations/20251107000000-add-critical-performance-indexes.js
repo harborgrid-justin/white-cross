@@ -113,23 +113,23 @@ module.exports = {
       // Students table - parent foreign keys
       console.log('Verifying student foreign key indexes...');
       // schoolId already indexed
-      // gradeLevel for filtering
+      // grade for filtering (corrected column name)
       await queryInterface.addIndex(
         'students',
-        ['gradeLevel'],
+        ['grade'],
         {
-          name: 'idx_students_grade_level',
+          name: 'idx_students_grade',
           using: 'BTREE',
           transaction
         }
       );
 
-      // Student status for active/inactive filtering
+      // Student isActive for active/inactive filtering (corrected column name)
       await queryInterface.addIndex(
         'students',
-        ['status'],
+        ['isActive'],
         {
-          name: 'idx_students_status',
+          name: 'idx_students_is_active',
           using: 'BTREE',
           transaction
         }
@@ -138,9 +138,9 @@ module.exports = {
       // Composite for common query: active students by school and grade
       await queryInterface.addIndex(
         'students',
-        ['schoolId', 'status', 'gradeLevel'],
+        ['schoolId', 'isActive', 'grade'],
         {
-          name: 'idx_students_school_status_grade',
+          name: 'idx_students_school_active_grade',
           using: 'BTREE',
           transaction
         }
@@ -152,26 +152,42 @@ module.exports = {
       console.log('Adding appointment query indexes...');
 
       // Query Pattern: Appointments by student and date range
-      await queryInterface.addIndex(
-        'appointments',
-        ['studentId', 'appointmentDate', 'status'],
-        {
-          name: 'idx_appointments_student_date_status',
-          using: 'BTREE',
-          transaction
+      // Check if index already exists before creating
+      try {
+        await queryInterface.addIndex(
+          'appointments',
+          ['studentId', 'scheduledAt', 'status'],
+          {
+            name: 'idx_appointments_student_scheduled_status',
+            using: 'BTREE',
+            transaction
+          }
+        );
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
         }
-      );
+        console.log('Index idx_appointments_student_scheduled_status already exists, skipping...');
+      }
 
       // Query Pattern: Nurse schedule view
-      await queryInterface.addIndex(
-        'appointments',
-        ['nurseId', 'appointmentDate', 'status'],
-        {
-          name: 'idx_appointments_nurse_date_status',
-          using: 'BTREE',
-          transaction
+      // Check if index already exists before creating  
+      try {
+        await queryInterface.addIndex(
+          'appointments',
+          ['nurseId', 'scheduledAt', 'status'],
+          {
+            name: 'idx_appointments_nurse_scheduled_status',
+            using: 'BTREE',
+            transaction
+          }
+        );
+      } catch (error) {
+        if (!error.message.includes('already exists')) {
+          throw error;
         }
-      );
+        console.log('Index idx_appointments_nurse_scheduled_status already exists, skipping...');
+      }
 
       // ========================================
       // PRIORITY 6: Clinical Notes - Query Optimization
@@ -292,12 +308,12 @@ module.exports = {
       await queryInterface.removeIndex('clinical_notes', 'idx_clinical_notes_creator_date', { transaction });
       await queryInterface.removeIndex('clinical_notes', 'idx_clinical_notes_student_date', { transaction });
 
-      await queryInterface.removeIndex('appointments', 'idx_appointments_nurse_date_status', { transaction });
-      await queryInterface.removeIndex('appointments', 'idx_appointments_student_date_status', { transaction });
+      await queryInterface.removeIndex('appointments', 'idx_appointments_nurse_scheduled_status', { transaction });
+      await queryInterface.removeIndex('appointments', 'idx_appointments_student_scheduled_status', { transaction });
 
-      await queryInterface.removeIndex('students', 'idx_students_school_status_grade', { transaction });
-      await queryInterface.removeIndex('students', 'idx_students_status', { transaction });
-      await queryInterface.removeIndex('students', 'idx_students_grade_level', { transaction });
+      await queryInterface.removeIndex('students', 'idx_students_school_active_grade', { transaction });
+      await queryInterface.removeIndex('students', 'idx_students_is_active', { transaction });
+      await queryInterface.removeIndex('students', 'idx_students_grade', { transaction });
 
       await queryInterface.removeIndex('health_records', 'idx_health_records_confidential_date', { transaction });
       await queryInterface.removeIndex('health_records', 'idx_health_records_student_followup_status', { transaction });

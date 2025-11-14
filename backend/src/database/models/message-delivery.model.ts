@@ -219,3 +219,6 @@ export class MessageDelivery extends Model<
     await createModelAuditHook('MessageDelivery', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MessageDelivery;

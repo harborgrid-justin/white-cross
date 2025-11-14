@@ -16,11 +16,11 @@ import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-t
 export class LoginAttempt extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.STRING)
+  @Column(DataType.UUID)
   declare id: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
   })
   userId?: string; // May be null if login attempt failed before user identification
@@ -68,3 +68,6 @@ export class LoginAttempt extends Model {
   })
   metadata?: Record<string, any>; // Additional context (e.g., 2FA status, device info)
 }
+
+// Default export for Sequelize-TypeScript
+export default LoginAttempt;

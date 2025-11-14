@@ -88,7 +88,7 @@ export class User extends Model<UserAttributes> {
   })
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.STRING)
+  @Column(DataType.UUID)
   declare id: string;
 
   @ApiProperty({
@@ -176,7 +176,7 @@ export class User extends Model<UserAttributes> {
     required: false,
   })
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
     field: 'schoolId',
   })
@@ -188,7 +188,7 @@ export class User extends Model<UserAttributes> {
     required: false,
   })
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
     field: 'districtId',
   })
@@ -707,3 +707,6 @@ export class User extends Model<UserAttributes> {
   })
   declare updatedAt: Date;
 }
+
+// Default export for Sequelize-TypeScript
+export default User;

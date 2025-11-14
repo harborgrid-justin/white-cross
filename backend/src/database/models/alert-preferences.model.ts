@@ -267,3 +267,6 @@ export class AlertPreferences
     await createModelAuditHook('AlertPreferences', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AlertPreferences;

@@ -265,3 +265,6 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
     await createModelAuditHook('License', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default License;

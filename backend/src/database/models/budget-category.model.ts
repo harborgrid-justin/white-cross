@@ -135,3 +135,6 @@ export class BudgetCategory extends Model<BudgetCategory> {
     await createModelAuditHook('BudgetCategory', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default BudgetCategory;

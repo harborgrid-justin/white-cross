@@ -158,3 +158,6 @@ export class SISSyncConflict extends Model {
     await createModelAuditHook('SISSyncConflict', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SISSyncConflict;

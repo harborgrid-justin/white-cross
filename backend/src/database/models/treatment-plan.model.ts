@@ -120,3 +120,6 @@ export class TreatmentPlan
     await createModelAuditHook('TreatmentPlan', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default TreatmentPlan;

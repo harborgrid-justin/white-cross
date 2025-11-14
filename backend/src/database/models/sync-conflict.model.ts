@@ -167,3 +167,6 @@ export class SyncConflict
     await createModelAuditHook('SyncConflict', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SyncConflict;

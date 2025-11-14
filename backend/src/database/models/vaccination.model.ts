@@ -594,3 +594,6 @@ export class Vaccination
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Vaccination;

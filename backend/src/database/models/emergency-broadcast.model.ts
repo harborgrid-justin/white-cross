@@ -229,3 +229,6 @@ export class EmergencyBroadcast
     await createModelAuditHook('EmergencyBroadcast', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default EmergencyBroadcast;

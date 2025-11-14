@@ -219,3 +219,6 @@ export class FollowUpAction extends Model<
     await createModelAuditHook('FollowUpAction', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default FollowUpAction;

@@ -129,3 +129,6 @@ export class GrowthTracking
     await createModelAuditHook('GrowthTracking', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default GrowthTracking;

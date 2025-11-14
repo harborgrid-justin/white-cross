@@ -33,7 +33,7 @@ import type { Document } from './document.model';
   indexes: [
     { fields: ['documentId'] },
     { fields: ['signedBy'] },
-    { fields: ['signedAt'] },
+    { fields: ['signed_at'] },
     { fields: ['documentId', 'signedBy'] }, // Compound index for common queries
   ],
 })
@@ -111,3 +111,6 @@ export class DocumentSignature extends Model {
   @BelongsTo(() => 'Document')
   document: Document;
 }
+
+// Default export for Sequelize-TypeScript
+export default DocumentSignature;

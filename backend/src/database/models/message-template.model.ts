@@ -160,3 +160,6 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
     await createModelAuditHook('MessageTemplate', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MessageTemplate;

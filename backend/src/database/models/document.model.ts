@@ -409,3 +409,6 @@ export class Document extends Model {
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Document;

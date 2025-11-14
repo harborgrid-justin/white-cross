@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { StudentMedication, StudentMedicationAttributes } from '@/database/models';
@@ -6,6 +6,8 @@ import { Student } from '@/database/models';
 import { Medication } from '@/database/models';
 import { ListMedicationsQueryDto } from './dto/list-medications-query.dto';
 import { QueryCacheService } from '@/database/services/query-cache.service';
+import { BaseService } from '@/common/base';
+import { RequestContextService } from '@/common/context/request-context.service';
 
 /**
  * Medication Repository
@@ -22,16 +24,28 @@ import { QueryCacheService } from '@/database/services/query-cache.service';
  * - Caller must ensure proper audit logging
  */
 @Injectable()
-export class MedicationRepository {
-  private readonly logger = new Logger(MedicationRepository.name);
-
+export class MedicationRepository extends BaseService {
   constructor(
     @InjectModel(StudentMedication)
     private readonly studentMedicationModel: typeof StudentMedication,
     @InjectModel(Medication)
     private readonly medicationModel: typeof Medication,
     private readonly queryCacheService: QueryCacheService,
-  ) {}
+    @Optional() protected readonly requestContext?: RequestContextService,
+  ) {
+    super(
+      requestContext ||
+        ({
+          requestId: 'system',
+          userId: undefined,
+          getLogContext: () => ({ requestId: 'system' }),
+          getAuditContext: () => ({
+            requestId: 'system',
+            timestamp: new Date(),
+          }),
+        } as any),
+    );
+  }
 
   /**
    * Find all medications with pagination and filtering
@@ -50,8 +64,13 @@ export class MedicationRepository {
   async findAll(
     query: ListMedicationsQueryDto,
   ): Promise<{ medications: StudentMedication[]; total: number }> {
+    // Validate student ID if provided
+    if (query.studentId) {
+      this.validateUUID(query.studentId, 'Student ID');
+    }
+
     // Build where clause for StudentMedication table
-    const where: any = {};
+    const where: Record<string, any> = {};
 
     if (query.studentId) {
       where.studentId = query.studentId;
@@ -68,14 +87,7 @@ export class MedicationRepository {
         model: Medication,
         as: 'medication',
         required: false, // LEFT JOIN to include records even if medication is null
-        attributes: [
-          'id',
-          'name',
-          'genericName',
-          'manufacturer',
-          'dosageForm',
-          'strength',
-        ], // Only needed fields
+        attributes: ['id', 'name', 'genericName', 'manufacturer', 'dosageForm', 'strength'], // Only needed fields
         // OPTIMIZATION: Search filtering happens at JOIN level, not in application
         where: query.search
           ? {
@@ -105,20 +117,18 @@ export class MedicationRepository {
       },
     ];
 
-    // OPTIMIZATION: Use distinct: true for accurate count with JOINs
-    // Without this, count may be inflated when using includes
+    // Use BaseService createPaginatedQuery method
+    const paginationOptions = this.createPaginatedQuery(
+      query.page || 1,
+      query.limit || 20,
+      where,
+      [['createdAt', 'DESC']],
+      include,
+      { distinct: true, subQuery: false },
+    );
+
     const { rows: medications, count: total } =
-      await this.studentMedicationModel.findAndCountAll({
-        where,
-        offset: ((query.page || 1) - 1) * (query.limit || 20),
-        limit: query.limit || 20,
-        order: [['createdAt', 'DESC']],
-        include,
-        distinct: true, // Ensures accurate count with JOINs
-        // OPTIMIZATION: Use subQuery: false for better performance with pagination
-        // This generates a more efficient SQL query with JOINs instead of subqueries
-        subQuery: false,
-      });
+      await this.studentMedicationModel.findAndCountAll(paginationOptions);
 
     return { medications, total };
   }
@@ -131,6 +141,8 @@ export class MedicationRepository {
    * Expected performance: 50-70% reduction in database queries for medication lookups
    */
   async findById(id: string): Promise<StudentMedication | null> {
+    this.validateUUID(id, 'Medication ID');
+
     const medications = await this.queryCacheService.findWithCache(
       this.studentMedicationModel,
       {
@@ -147,7 +159,7 @@ export class MedicationRepository {
       },
     );
 
-    return medications.length > 0 ? medications[0]! : null;
+    return medications.length > 0 ? medications[0] : null;
   }
 
   /**
@@ -158,14 +170,18 @@ export class MedicationRepository {
     page: number = 1,
     limit: number = 20,
   ): Promise<{ medications: StudentMedication[]; total: number }> {
+    this.validateUUID(studentId, 'Student ID');
+
+    const paginationOptions = this.createPaginatedQuery(
+      page,
+      limit,
+      { studentId },
+      [['createdAt', 'DESC']],
+      [{ model: Medication, as: 'medication' }],
+    );
+
     const { rows: medications, count: total } =
-      await this.studentMedicationModel.findAndCountAll({
-        where: { studentId },
-        offset: (page - 1) * limit,
-        limit,
-        order: [['createdAt', 'DESC']],
-        include: [{ model: Medication, as: 'medication' }],
-      });
+      await this.studentMedicationModel.findAndCountAll(paginationOptions);
 
     return { medications, total };
   }
@@ -173,21 +189,21 @@ export class MedicationRepository {
   /**
    * Create a new medication
    */
-  async create(data: any): Promise<StudentMedication> {
+  async create(data: Record<string, any>): Promise<StudentMedication> {
     // Map the DTO fields to model fields
     const medicationData: Partial<StudentMedicationAttributes> = {
-      studentId: data.studentId,
-      medicationId: data.medicationId, // This would need to be resolved from medicationName
-      dosage: data.dosage,
-      frequency: data.frequency,
-      route: data.route,
-      instructions: data.instructions,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      prescribedBy: data.prescribedBy,
-      prescriptionNumber: data.prescriptionNumber,
-      refillsRemaining: data.refillsRemaining || 0,
-      createdBy: data.createdBy,
+      studentId: data.studentId as string,
+      medicationId: data.medicationId as string,
+      dosage: data.dosage as string,
+      frequency: data.frequency as string,
+      route: data.route as string,
+      instructions: data.instructions as string,
+      startDate: data.startDate as Date,
+      endDate: data.endDate as Date,
+      prescribedBy: data.prescribedBy as string,
+      prescriptionNumber: data.prescriptionNumber as string,
+      refillsRemaining: (data.refillsRemaining as number) || 0,
+      createdBy: data.createdBy as string,
       isActive: true,
     };
 
@@ -197,11 +213,10 @@ export class MedicationRepository {
   /**
    * Update an existing medication
    */
-  async update(id: string, data: any): Promise<StudentMedication> {
-    const medication = await this.studentMedicationModel.findByPk(id);
-    if (!medication) {
-      throw new Error('Medication not found');
-    }
+  async update(id: string, data: Record<string, any>): Promise<StudentMedication> {
+    this.validateUUID(id, 'Medication ID');
+
+    const medication = await this.findEntityOrFail(this.studentMedicationModel, id, 'Medication');
 
     await medication.update(data);
     return medication.reload({
@@ -215,15 +230,10 @@ export class MedicationRepository {
   /**
    * Deactivate a medication (soft delete)
    */
-  async deactivate(
-    id: string,
-    _reason: string,
-    _deactivationType: string,
-  ): Promise<StudentMedication> {
-    const medication = await this.studentMedicationModel.findByPk(id);
-    if (!medication) {
-      throw new Error('Medication not found');
-    }
+  async deactivate(id: string): Promise<StudentMedication> {
+    this.validateUUID(id, 'Medication ID');
+
+    const medication = await this.findEntityOrFail(this.studentMedicationModel, id, 'Medication');
 
     medication.isActive = false;
     medication.endDate = new Date();
@@ -242,10 +252,9 @@ export class MedicationRepository {
    * Activate a medication (restore from soft delete)
    */
   async activate(id: string): Promise<StudentMedication> {
-    const medication = await this.studentMedicationModel.findByPk(id);
-    if (!medication) {
-      throw new Error('Medication not found');
-    }
+    this.validateUUID(id, 'Medication ID');
+
+    const medication = await this.findEntityOrFail(this.studentMedicationModel, id, 'Medication');
 
     medication.isActive = true;
     medication.endDate = undefined;
@@ -263,6 +272,8 @@ export class MedicationRepository {
    * Check if medication exists
    */
   async exists(id: string): Promise<boolean> {
+    this.validateUUID(id, 'Medication ID');
+
     const count = await this.studentMedicationModel.count({
       where: { id },
     });
@@ -283,15 +294,7 @@ export class MedicationRepository {
       {
         where: { isActive: true },
         order: [['name', 'ASC']],
-        attributes: [
-          'id',
-          'name',
-          'genericName',
-          'type',
-          'manufacturer',
-          'dosageForm',
-          'strength',
-        ],
+        attributes: ['id', 'name', 'genericName', 'type', 'manufacturer', 'dosageForm', 'strength'],
       },
       {
         ttl: 3600, // 1 hour - medication catalog changes infrequently
@@ -323,9 +326,7 @@ export class MedicationRepository {
       // Return in same order as requested IDs, null for missing
       return ids.map((id) => medicationMap.get(id) || null);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`Failed to batch fetch medications: ${message}`);
-      throw new Error('Failed to batch fetch medications');
+      this.handleError('Failed to batch fetch medications', error);
     }
   }
 
@@ -352,18 +353,14 @@ export class MedicationRepository {
           if (!medicationsByStudent.has(studentId)) {
             medicationsByStudent.set(studentId, []);
           }
-          medicationsByStudent.get(studentId)!.push(medication);
+          medicationsByStudent.get(studentId)?.push(medication);
         }
       });
 
       // Return medications array for each student, empty array for missing
       return studentIds.map((id) => medicationsByStudent.get(id) || []);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(
-        `Failed to batch fetch medications by student IDs: ${message}`,
-      );
-      throw new Error('Failed to batch fetch medications by student IDs');
+      this.handleError('Failed to batch fetch medications by student IDs', error);
     }
   }
 }

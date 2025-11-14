@@ -246,3 +246,6 @@ export class DeliveryLog
     await createModelAuditHook('DeliveryLog', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default DeliveryLog;

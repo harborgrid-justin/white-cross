@@ -340,3 +340,6 @@ export class ChronicCondition
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ChronicCondition;

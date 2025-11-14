@@ -305,3 +305,6 @@ export class ClinicVisit
     return duration !== null && duration > 30;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ClinicVisit;

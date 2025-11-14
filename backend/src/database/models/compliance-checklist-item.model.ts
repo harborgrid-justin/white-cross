@@ -166,3 +166,6 @@ export class ComplianceChecklistItem
     await createModelAuditHook('ComplianceChecklistItem', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ComplianceChecklistItem;

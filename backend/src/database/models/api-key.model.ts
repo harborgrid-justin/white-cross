@@ -142,3 +142,6 @@ export class ApiKey extends Model {
     return this.isActive && !this.isExpired();
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ApiKey;

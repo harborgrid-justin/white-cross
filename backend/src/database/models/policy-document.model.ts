@@ -161,3 +161,6 @@ export class PolicyDocument
     await createModelAuditHook('PolicyDocument', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PolicyDocument;

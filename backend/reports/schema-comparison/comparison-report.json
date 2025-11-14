@@ -1,0 +1,3514 @@
+{
+  "timestamp": "2025-11-14T18:48:44.245Z",
+  "summary": {
+    "totalIssues": 947,
+    "missingTablesCount": 100,
+    "extraTablesCount": 0,
+    "missingColumnsCount": 847,
+    "extraColumnsCount": 0,
+    "typeMismatchesCount": 0
+  },
+  "issues": {
+    "missingTables": [
+      "witness_statements",
+      "webhooks",
+      "vital_signs",
+      "vendors",
+      "vaccinations",
+      "users",
+      "treatment_plans",
+      "training_modules",
+      "threat_detections",
+      "system_configurations",
+      "sync_states",
+      "sync_sessions",
+      "sync_queue_items",
+      "sync_conflicts",
+      "suppliers",
+      "students",
+      "student_medications",
+      "student_drug_allergies",
+      "sis_sync_conflicts",
+      "sessions",
+      "security_incidents",
+      "schools",
+      "report_templates",
+      "report_schedules",
+      "report_executions",
+      "remediation_actions",
+      "push_notifications",
+      "purchase_orders",
+      "purchase_order_items",
+      "prescriptions",
+      "policy_documents",
+      "policy_acknowledgments",
+      "phi_disclosures",
+      "phi_disclosure_audits",
+      "performance_metrics",
+      "messages",
+      "message_templates",
+      "message_reads",
+      "message_reactions",
+      "message_deliveries",
+      "mental_health_records",
+      "medications",
+      "medication_logs",
+      "medical_history",
+      "maintenance_logs",
+      "login_attempts",
+      "licenses",
+      "lab_results",
+      "ip_restrictions",
+      "inventory_transactions",
+      "inventory_items",
+      "integration_logs",
+      "integration_configs",
+      "incident_reports",
+      "immunizations",
+      "health_screenings",
+      "health_records",
+      "health_metric_snapshots",
+      "growth_tracking",
+      "follow_up_appointments",
+      "follow_up_actions",
+      "emergency_contacts",
+      "emergency_broadcasts",
+      "drug_interactions",
+      "drug_catalog",
+      "documents",
+      "document_signatures",
+      "document_audit_trails",
+      "districts",
+      "device_tokens",
+      "delivery_logs",
+      "data_retention_policies",
+      "conversations",
+      "conversation_participants",
+      "contacts",
+      "consent_signatures",
+      "consent_forms",
+      "configuration_history",
+      "compliance_violations",
+      "compliance_reports",
+      "compliance_checklist_items",
+      "clinical_protocols",
+      "clinical_notes",
+      "clinic_visits",
+      "chronic_conditions",
+      "cache_entries",
+      "budget_transactions",
+      "budget_categories",
+      "backup_logs",
+      "audit_logs",
+      "appointments",
+      "appointment_waitlist",
+      "appointment_reminders",
+      "api_keys",
+      "analytics_reports",
+      "allergies",
+      "alerts",
+      "alert_rules",
+      "alert_preferences",
+      "academic_transcripts"
+    ],
+    "extraTables": [],
+    "missingColumns": [
+      {
+        "table": "witness_statements",
+        "column": "id"
+      },
+      {
+        "table": "witness_statements",
+        "column": "statement"
+      },
+      {
+        "table": "witness_statements",
+        "column": "verifiedBy"
+      },
+      {
+        "table": "witness_statements",
+        "column": "verifiedAt"
+      },
+      {
+        "table": "webhooks",
+        "column": "id"
+      },
+      {
+        "table": "webhooks",
+        "column": "events"
+      },
+      {
+        "table": "webhooks",
+        "column": "isActive"
+      },
+      {
+        "table": "webhooks",
+        "column": "headers"
+      },
+      {
+        "table": "webhooks",
+        "column": "createdBy"
+      },
+      {
+        "table": "vital_signs",
+        "column": "id"
+      },
+      {
+        "table": "vital_signs",
+        "column": "studentId"
+      },
+      {
+        "table": "vital_signs",
+        "column": "measurementDate"
+      },
+      {
+        "table": "vital_signs",
+        "column": "temperature"
+      },
+      {
+        "table": "vital_signs",
+        "column": "heartRate"
+      },
+      {
+        "table": "vital_signs",
+        "column": "respiratoryRate"
+      },
+      {
+        "table": "vital_signs",
+        "column": "bloodPressureSystolic"
+      },
+      {
+        "table": "vital_signs",
+        "column": "bloodPressureDiastolic"
+      },
+      {
+        "table": "vital_signs",
+        "column": "oxygenSaturation"
+      },
+      {
+        "table": "vital_signs",
+        "column": "weight"
+      },
+      {
+        "table": "vital_signs",
+        "column": "height"
+      },
+      {
+        "table": "vital_signs",
+        "column": "bmi"
+      },
+      {
+        "table": "vital_signs",
+        "column": "pain"
+      },
+      {
+        "table": "vital_signs",
+        "column": "isAbnormal"
+      },
+      {
+        "table": "vital_signs",
+        "column": "abnormalFlags"
+      },
+      {
+        "table": "vital_signs",
+        "column": "notes"
+      },
+      {
+        "table": "vendors",
+        "column": "id"
+      },
+      {
+        "table": "vendors",
+        "column": "address"
+      },
+      {
+        "table": "vendors",
+        "column": "paymentTerms"
+      },
+      {
+        "table": "vendors",
+        "column": "notes"
+      },
+      {
+        "table": "vendors",
+        "column": "isActive"
+      },
+      {
+        "table": "vaccinations",
+        "column": "id"
+      },
+      {
+        "table": "vaccinations",
+        "column": "healthRecordId"
+      },
+      {
+        "table": "vaccinations",
+        "column": "doseNumber"
+      },
+      {
+        "table": "vaccinations",
+        "column": "totalDoses"
+      },
+      {
+        "table": "vaccinations",
+        "column": "seriesComplete"
+      },
+      {
+        "table": "vaccinations",
+        "column": "reactions"
+      },
+      {
+        "table": "vaccinations",
+        "column": "adverseEvents"
+      },
+      {
+        "table": "vaccinations",
+        "column": "exemptionStatus"
+      },
+      {
+        "table": "vaccinations",
+        "column": "exemptionReason"
+      },
+      {
+        "table": "vaccinations",
+        "column": "vfcEligibility"
+      },
+      {
+        "table": "vaccinations",
+        "column": "visProvided"
+      },
+      {
+        "table": "vaccinations",
+        "column": "visDate"
+      },
+      {
+        "table": "vaccinations",
+        "column": "consentObtained"
+      },
+      {
+        "table": "vaccinations",
+        "column": "notes"
+      },
+      {
+        "table": "vaccinations",
+        "column": "createdBy"
+      },
+      {
+        "table": "vaccinations",
+        "column": "updatedBy"
+      },
+      {
+        "table": "vaccinations",
+        "column": "deletedAt"
+      },
+      {
+        "table": "users",
+        "column": "id"
+      },
+      {
+        "table": "users",
+        "column": "email"
+      },
+      {
+        "table": "users",
+        "column": "password"
+      },
+      {
+        "table": "users",
+        "column": "firstName"
+      },
+      {
+        "table": "users",
+        "column": "lastName"
+      },
+      {
+        "table": "users",
+        "column": "isActive"
+      },
+      {
+        "table": "users",
+        "column": "lastLogin"
+      },
+      {
+        "table": "users",
+        "column": "schoolId"
+      },
+      {
+        "table": "users",
+        "column": "districtId"
+      },
+      {
+        "table": "users",
+        "column": "emailVerified"
+      },
+      {
+        "table": "users",
+        "column": "emailVerificationToken"
+      },
+      {
+        "table": "users",
+        "column": "emailVerificationExpires"
+      },
+      {
+        "table": "users",
+        "column": "passwordResetToken"
+      },
+      {
+        "table": "users",
+        "column": "passwordResetExpires"
+      },
+      {
+        "table": "users",
+        "column": "passwordChangedAt"
+      },
+      {
+        "table": "users",
+        "column": "twoFactorEnabled"
+      },
+      {
+        "table": "users",
+        "column": "twoFactorSecret"
+      },
+      {
+        "table": "users",
+        "column": "failedLoginAttempts"
+      },
+      {
+        "table": "users",
+        "column": "lockoutUntil"
+      },
+      {
+        "table": "users",
+        "column": "lastPasswordChange"
+      },
+      {
+        "table": "users",
+        "column": "mustChangePassword"
+      },
+      {
+        "table": "users",
+        "column": "mfaEnabled"
+      },
+      {
+        "table": "users",
+        "column": "mfaBackupCodes"
+      },
+      {
+        "table": "users",
+        "column": "mfaEnabledAt"
+      },
+      {
+        "table": "users",
+        "column": "oauthProviderId"
+      },
+      {
+        "table": "users",
+        "column": "profilePictureUrl"
+      },
+      {
+        "table": "users",
+        "column": "isEmailVerified"
+      },
+      {
+        "table": "users",
+        "column": "emailVerifiedAt"
+      },
+      {
+        "table": "users",
+        "column": "deletedAt"
+      },
+      {
+        "table": "treatment_plans",
+        "column": "id"
+      },
+      {
+        "table": "treatment_plans",
+        "column": "studentId"
+      },
+      {
+        "table": "treatment_plans",
+        "column": "diagnosis"
+      },
+      {
+        "table": "treatment_plans",
+        "column": "planDetails"
+      },
+      {
+        "table": "treatment_plans",
+        "column": "startDate"
+      },
+      {
+        "table": "treatment_plans",
+        "column": "endDate"
+      },
+      {
+        "table": "treatment_plans",
+        "column": "prescribedBy"
+      },
+      {
+        "table": "training_modules",
+        "column": "id"
+      },
+      {
+        "table": "training_modules",
+        "column": "description"
+      },
+      {
+        "table": "training_modules",
+        "column": "content"
+      },
+      {
+        "table": "training_modules",
+        "column": "duration"
+      },
+      {
+        "table": "training_modules",
+        "column": "completionCount"
+      },
+      {
+        "table": "threat_detections",
+        "column": "id"
+      },
+      {
+        "table": "threat_detections",
+        "column": "details"
+      },
+      {
+        "table": "threat_detections",
+        "column": "isResolved"
+      },
+      {
+        "table": "threat_detections",
+        "column": "resolvedAt"
+      },
+      {
+        "table": "threat_detections",
+        "column": "resolvedBy"
+      },
+      {
+        "table": "system_configurations",
+        "column": "id"
+      },
+      {
+        "table": "system_configurations",
+        "column": "value"
+      },
+      {
+        "table": "system_configurations",
+        "column": "description"
+      },
+      {
+        "table": "system_configurations",
+        "column": "defaultValue"
+      },
+      {
+        "table": "system_configurations",
+        "column": "isPublic"
+      },
+      {
+        "table": "system_configurations",
+        "column": "isEditable"
+      },
+      {
+        "table": "system_configurations",
+        "column": "requiresRestart"
+      },
+      {
+        "table": "system_configurations",
+        "column": "sortOrder"
+      },
+      {
+        "table": "sync_states",
+        "column": "id"
+      },
+      {
+        "table": "sync_states",
+        "column": "entityId"
+      },
+      {
+        "table": "sync_states",
+        "column": "lastSyncAt"
+      },
+      {
+        "table": "sync_states",
+        "column": "errorMessage"
+      },
+      {
+        "table": "sync_sessions",
+        "column": "id"
+      },
+      {
+        "table": "sync_sessions",
+        "column": "configId"
+      },
+      {
+        "table": "sync_sessions",
+        "column": "stats"
+      },
+      {
+        "table": "sync_sessions",
+        "column": "recordsProcessed"
+      },
+      {
+        "table": "sync_sessions",
+        "column": "recordsSuccessful"
+      },
+      {
+        "table": "sync_sessions",
+        "column": "recordsFailed"
+      },
+      {
+        "table": "sync_sessions",
+        "column": "completionMessage"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "id"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "data"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "timestamp"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "syncedAt"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "attempts"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "maxAttempts"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "lastError"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "conflictDetected"
+      },
+      {
+        "table": "sync_queue_items",
+        "column": "requiresOnline"
+      },
+      {
+        "table": "sync_conflicts",
+        "column": "id"
+      },
+      {
+        "table": "sync_conflicts",
+        "column": "clientVersion"
+      },
+      {
+        "table": "sync_conflicts",
+        "column": "serverVersion"
+      },
+      {
+        "table": "sync_conflicts",
+        "column": "resolvedAt"
+      },
+      {
+        "table": "sync_conflicts",
+        "column": "resolvedBy"
+      },
+      {
+        "table": "sync_conflicts",
+        "column": "mergedData"
+      },
+      {
+        "table": "suppliers",
+        "column": "id"
+      },
+      {
+        "table": "suppliers",
+        "column": "address"
+      },
+      {
+        "table": "suppliers",
+        "column": "isActive"
+      },
+      {
+        "table": "students",
+        "column": "id"
+      },
+      {
+        "table": "students",
+        "column": "isActive"
+      },
+      {
+        "table": "students",
+        "column": "enrollmentDate"
+      },
+      {
+        "table": "students",
+        "column": "nurseId"
+      },
+      {
+        "table": "students",
+        "column": "schoolId"
+      },
+      {
+        "table": "students",
+        "column": "districtId"
+      },
+      {
+        "table": "students",
+        "column": "createdBy"
+      },
+      {
+        "table": "students",
+        "column": "updatedBy"
+      },
+      {
+        "table": "students",
+        "column": "deletedAt"
+      },
+      {
+        "table": "student_medications",
+        "column": "id"
+      },
+      {
+        "table": "student_medications",
+        "column": "studentId"
+      },
+      {
+        "table": "student_medications",
+        "column": "medicationId"
+      },
+      {
+        "table": "student_medications",
+        "column": "instructions"
+      },
+      {
+        "table": "student_medications",
+        "column": "startDate"
+      },
+      {
+        "table": "student_medications",
+        "column": "endDate"
+      },
+      {
+        "table": "student_medications",
+        "column": "isActive"
+      },
+      {
+        "table": "student_medications",
+        "column": "refillsRemaining"
+      },
+      {
+        "table": "student_medications",
+        "column": "createdBy"
+      },
+      {
+        "table": "student_medications",
+        "column": "updatedBy"
+      },
+      {
+        "table": "student_drug_allergies",
+        "column": "id"
+      },
+      {
+        "table": "student_drug_allergies",
+        "column": "studentId"
+      },
+      {
+        "table": "student_drug_allergies",
+        "column": "drugId"
+      },
+      {
+        "table": "student_drug_allergies",
+        "column": "reaction"
+      },
+      {
+        "table": "student_drug_allergies",
+        "column": "notes"
+      },
+      {
+        "table": "student_drug_allergies",
+        "column": "diagnosedDate"
+      },
+      {
+        "table": "sis_sync_conflicts",
+        "column": "id"
+      },
+      {
+        "table": "sis_sync_conflicts",
+        "column": "localValue"
+      },
+      {
+        "table": "sis_sync_conflicts",
+        "column": "sisValue"
+      },
+      {
+        "table": "sis_sync_conflicts",
+        "column": "resolvedBy"
+      },
+      {
+        "table": "sessions",
+        "column": "id"
+      },
+      {
+        "table": "sessions",
+        "column": "sessionToken"
+      },
+      {
+        "table": "sessions",
+        "column": "userId"
+      },
+      {
+        "table": "sessions",
+        "column": "ipAddress"
+      },
+      {
+        "table": "sessions",
+        "column": "userAgent"
+      },
+      {
+        "table": "sessions",
+        "column": "expiresAt"
+      },
+      {
+        "table": "sessions",
+        "column": "lastAccessedAt"
+      },
+      {
+        "table": "sessions",
+        "column": "isActive"
+      },
+      {
+        "table": "sessions",
+        "column": "metadata"
+      },
+      {
+        "table": "security_incidents",
+        "column": "id"
+      },
+      {
+        "table": "security_incidents",
+        "column": "title"
+      },
+      {
+        "table": "security_incidents",
+        "column": "description"
+      },
+      {
+        "table": "security_incidents",
+        "column": "userId"
+      },
+      {
+        "table": "security_incidents",
+        "column": "ipAddress"
+      },
+      {
+        "table": "security_incidents",
+        "column": "userAgent"
+      },
+      {
+        "table": "security_incidents",
+        "column": "resourceAccessed"
+      },
+      {
+        "table": "security_incidents",
+        "column": "detectedAt"
+      },
+      {
+        "table": "security_incidents",
+        "column": "detectionMethod"
+      },
+      {
+        "table": "security_incidents",
+        "column": "indicators"
+      },
+      {
+        "table": "security_incidents",
+        "column": "impact"
+      },
+      {
+        "table": "security_incidents",
+        "column": "assignedTo"
+      },
+      {
+        "table": "security_incidents",
+        "column": "resolvedAt"
+      },
+      {
+        "table": "security_incidents",
+        "column": "resolution"
+      },
+      {
+        "table": "security_incidents",
+        "column": "preventiveMeasures"
+      },
+      {
+        "table": "security_incidents",
+        "column": "metadata"
+      },
+      {
+        "table": "schools",
+        "column": "id"
+      },
+      {
+        "table": "schools",
+        "column": "address"
+      },
+      {
+        "table": "schools",
+        "column": "totalEnrollment"
+      },
+      {
+        "table": "schools",
+        "column": "isActive"
+      },
+      {
+        "table": "report_templates",
+        "column": "id"
+      },
+      {
+        "table": "report_templates",
+        "column": "description"
+      },
+      {
+        "table": "report_templates",
+        "column": "queryConfiguration"
+      },
+      {
+        "table": "report_templates",
+        "column": "formatOptions"
+      },
+      {
+        "table": "report_templates",
+        "column": "isActive"
+      },
+      {
+        "table": "report_templates",
+        "column": "createdBy"
+      },
+      {
+        "table": "report_schedules",
+        "column": "id"
+      },
+      {
+        "table": "report_schedules",
+        "column": "templateId"
+      },
+      {
+        "table": "report_schedules",
+        "column": "parameters"
+      },
+      {
+        "table": "report_schedules",
+        "column": "recipients"
+      },
+      {
+        "table": "report_schedules",
+        "column": "isActive"
+      },
+      {
+        "table": "report_schedules",
+        "column": "lastExecutedAt"
+      },
+      {
+        "table": "report_schedules",
+        "column": "nextExecutionAt"
+      },
+      {
+        "table": "report_schedules",
+        "column": "executionCount"
+      },
+      {
+        "table": "report_schedules",
+        "column": "failureCount"
+      },
+      {
+        "table": "report_schedules",
+        "column": "lastError"
+      },
+      {
+        "table": "report_schedules",
+        "column": "createdBy"
+      },
+      {
+        "table": "report_executions",
+        "column": "id"
+      },
+      {
+        "table": "report_executions",
+        "column": "scheduleId"
+      },
+      {
+        "table": "report_executions",
+        "column": "parameters"
+      },
+      {
+        "table": "report_executions",
+        "column": "fileSize"
+      },
+      {
+        "table": "report_executions",
+        "column": "recordCount"
+      },
+      {
+        "table": "report_executions",
+        "column": "executionTimeMs"
+      },
+      {
+        "table": "report_executions",
+        "column": "error"
+      },
+      {
+        "table": "report_executions",
+        "column": "executedBy"
+      },
+      {
+        "table": "report_executions",
+        "column": "startedAt"
+      },
+      {
+        "table": "report_executions",
+        "column": "completedAt"
+      },
+      {
+        "table": "report_executions",
+        "column": "expiresAt"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "id"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "violationId"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "action"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "assignedTo"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "dueDate"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "implementationNotes"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "verificationNotes"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "completedAt"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "verifiedBy"
+      },
+      {
+        "table": "remediation_actions",
+        "column": "verifiedAt"
+      },
+      {
+        "table": "push_notifications",
+        "column": "id"
+      },
+      {
+        "table": "push_notifications",
+        "column": "userIds"
+      },
+      {
+        "table": "push_notifications",
+        "column": "deviceTokens"
+      },
+      {
+        "table": "push_notifications",
+        "column": "body"
+      },
+      {
+        "table": "push_notifications",
+        "column": "data"
+      },
+      {
+        "table": "push_notifications",
+        "column": "actions"
+      },
+      {
+        "table": "push_notifications",
+        "column": "badge"
+      },
+      {
+        "table": "push_notifications",
+        "column": "ttl"
+      },
+      {
+        "table": "push_notifications",
+        "column": "requireInteraction"
+      },
+      {
+        "table": "push_notifications",
+        "column": "silent"
+      },
+      {
+        "table": "push_notifications",
+        "column": "scheduledFor"
+      },
+      {
+        "table": "push_notifications",
+        "column": "expiresAt"
+      },
+      {
+        "table": "push_notifications",
+        "column": "sentAt"
+      },
+      {
+        "table": "push_notifications",
+        "column": "deliveredAt"
+      },
+      {
+        "table": "push_notifications",
+        "column": "failedAt"
+      },
+      {
+        "table": "push_notifications",
+        "column": "deliveryResults"
+      },
+      {
+        "table": "push_notifications",
+        "column": "totalRecipients"
+      },
+      {
+        "table": "push_notifications",
+        "column": "successfulDeliveries"
+      },
+      {
+        "table": "push_notifications",
+        "column": "failedDeliveries"
+      },
+      {
+        "table": "push_notifications",
+        "column": "clickedCount"
+      },
+      {
+        "table": "push_notifications",
+        "column": "dismissedCount"
+      },
+      {
+        "table": "push_notifications",
+        "column": "retryCount"
+      },
+      {
+        "table": "push_notifications",
+        "column": "maxRetries"
+      },
+      {
+        "table": "push_notifications",
+        "column": "nextRetryAt"
+      },
+      {
+        "table": "push_notifications",
+        "column": "createdBy"
+      },
+      {
+        "table": "purchase_orders",
+        "column": "id"
+      },
+      {
+        "table": "purchase_orders",
+        "column": "vendorId"
+      },
+      {
+        "table": "purchase_orders",
+        "column": "orderDate"
+      },
+      {
+        "table": "purchase_orders",
+        "column": "expectedDate"
+      },
+      {
+        "table": "purchase_orders",
+        "column": "receivedDate"
+      },
+      {
+        "table": "purchase_orders",
+        "column": "notes"
+      },
+      {
+        "table": "purchase_order_items",
+        "column": "id"
+      },
+      {
+        "table": "purchase_order_items",
+        "column": "purchaseOrderId"
+      },
+      {
+        "table": "purchase_order_items",
+        "column": "inventoryItemId"
+      },
+      {
+        "table": "purchase_order_items",
+        "column": "quantity"
+      },
+      {
+        "table": "prescriptions",
+        "column": "id"
+      },
+      {
+        "table": "prescriptions",
+        "column": "visitId"
+      },
+      {
+        "table": "prescriptions",
+        "column": "treatmentPlanId"
+      },
+      {
+        "table": "prescriptions",
+        "column": "prescribedBy"
+      },
+      {
+        "table": "prescriptions",
+        "column": "quantity"
+      },
+      {
+        "table": "prescriptions",
+        "column": "quantityFilled"
+      },
+      {
+        "table": "prescriptions",
+        "column": "refillsAuthorized"
+      },
+      {
+        "table": "prescriptions",
+        "column": "refillsUsed"
+      },
+      {
+        "table": "prescriptions",
+        "column": "startDate"
+      },
+      {
+        "table": "prescriptions",
+        "column": "endDate"
+      },
+      {
+        "table": "prescriptions",
+        "column": "instructions"
+      },
+      {
+        "table": "prescriptions",
+        "column": "filledDate"
+      },
+      {
+        "table": "prescriptions",
+        "column": "pickedUpDate"
+      },
+      {
+        "table": "prescriptions",
+        "column": "notes"
+      },
+      {
+        "table": "policy_documents",
+        "column": "id"
+      },
+      {
+        "table": "policy_documents",
+        "column": "content"
+      },
+      {
+        "table": "policy_documents",
+        "column": "effectiveDate"
+      },
+      {
+        "table": "policy_documents",
+        "column": "reviewDate"
+      },
+      {
+        "table": "policy_documents",
+        "column": "approvedBy"
+      },
+      {
+        "table": "policy_documents",
+        "column": "approvedAt"
+      },
+      {
+        "table": "policy_acknowledgments",
+        "column": "id"
+      },
+      {
+        "table": "policy_acknowledgments",
+        "column": "policyId"
+      },
+      {
+        "table": "policy_acknowledgments",
+        "column": "userId"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "id"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "studentId"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "disclosureDate"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "informationDisclosed"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "minimumNecessary"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "recipientAddress"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "authorizationObtained"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "authorizationDate"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "authorizationExpiryDate"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "patientRequested"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "disclosedBy"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "followUpRequired"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "followUpCompleted"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "followUpDate"
+      },
+      {
+        "table": "phi_disclosures",
+        "column": "notes"
+      },
+      {
+        "table": "phi_disclosure_audits",
+        "column": "id"
+      },
+      {
+        "table": "phi_disclosure_audits",
+        "column": "disclosureId"
+      },
+      {
+        "table": "phi_disclosure_audits",
+        "column": "changes"
+      },
+      {
+        "table": "phi_disclosure_audits",
+        "column": "performedBy"
+      },
+      {
+        "table": "phi_disclosure_audits",
+        "column": "userAgent"
+      },
+      {
+        "table": "performance_metrics",
+        "column": "id"
+      },
+      {
+        "table": "performance_metrics",
+        "column": "tags"
+      },
+      {
+        "table": "messages",
+        "column": "id"
+      },
+      {
+        "table": "messages",
+        "column": "content"
+      },
+      {
+        "table": "messages",
+        "column": "encryptedContent"
+      },
+      {
+        "table": "messages",
+        "column": "encryptionMetadata"
+      },
+      {
+        "table": "messages",
+        "column": "recipientCount"
+      },
+      {
+        "table": "messages",
+        "column": "scheduledAt"
+      },
+      {
+        "table": "messages",
+        "column": "senderId"
+      },
+      {
+        "table": "messages",
+        "column": "templateId"
+      },
+      {
+        "table": "messages",
+        "column": "parentId"
+      },
+      {
+        "table": "messages",
+        "column": "threadId"
+      },
+      {
+        "table": "messages",
+        "column": "isEdited"
+      },
+      {
+        "table": "messages",
+        "column": "editedAt"
+      },
+      {
+        "table": "messages",
+        "column": "metadata"
+      },
+      {
+        "table": "messages",
+        "column": "deletedAt"
+      },
+      {
+        "table": "message_templates",
+        "column": "id"
+      },
+      {
+        "table": "message_templates",
+        "column": "content"
+      },
+      {
+        "table": "message_templates",
+        "column": "isActive"
+      },
+      {
+        "table": "message_templates",
+        "column": "createdById"
+      },
+      {
+        "table": "message_reads",
+        "column": "id"
+      },
+      {
+        "table": "message_reads",
+        "column": "messageId"
+      },
+      {
+        "table": "message_reads",
+        "column": "userId"
+      },
+      {
+        "table": "message_reads",
+        "column": "readAt"
+      },
+      {
+        "table": "message_reactions",
+        "column": "id"
+      },
+      {
+        "table": "message_reactions",
+        "column": "messageId"
+      },
+      {
+        "table": "message_reactions",
+        "column": "userId"
+      },
+      {
+        "table": "message_deliveries",
+        "column": "id"
+      },
+      {
+        "table": "message_deliveries",
+        "column": "recipientId"
+      },
+      {
+        "table": "message_deliveries",
+        "column": "sentAt"
+      },
+      {
+        "table": "message_deliveries",
+        "column": "deliveredAt"
+      },
+      {
+        "table": "message_deliveries",
+        "column": "failureReason"
+      },
+      {
+        "table": "message_deliveries",
+        "column": "messageId"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "id"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "studentId"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "recordDate"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "counselorId"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "therapistId"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "psychiatristId"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "sessionNotes"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "assessment"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "diagnosis"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "treatmentPlan"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "followUpRequired"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "followUpDate"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "followUpCompleted"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "referralReason"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "parentNotified"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "parentNotificationDate"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "attachments"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "metadata"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "createdBy"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "updatedBy"
+      },
+      {
+        "table": "mental_health_records",
+        "column": "accessLog"
+      },
+      {
+        "table": "medications",
+        "column": "id"
+      },
+      {
+        "table": "medications",
+        "column": "isControlled"
+      },
+      {
+        "table": "medications",
+        "column": "requiresWitness"
+      },
+      {
+        "table": "medications",
+        "column": "isActive"
+      },
+      {
+        "table": "medications",
+        "column": "deletedAt"
+      },
+      {
+        "table": "medications",
+        "column": "deletedBy"
+      },
+      {
+        "table": "medication_logs",
+        "column": "id"
+      },
+      {
+        "table": "medication_logs",
+        "column": "studentId"
+      },
+      {
+        "table": "medication_logs",
+        "column": "medicationId"
+      },
+      {
+        "table": "medication_logs",
+        "column": "scheduledAt"
+      },
+      {
+        "table": "medication_logs",
+        "column": "administeredAt"
+      },
+      {
+        "table": "medication_logs",
+        "column": "notes"
+      },
+      {
+        "table": "medication_logs",
+        "column": "reasonNotGiven"
+      },
+      {
+        "table": "medical_history",
+        "column": "id"
+      },
+      {
+        "table": "medical_history",
+        "column": "studentId"
+      },
+      {
+        "table": "medical_history",
+        "column": "diagnosisDate"
+      },
+      {
+        "table": "medical_history",
+        "column": "resolvedDate"
+      },
+      {
+        "table": "medical_history",
+        "column": "isActive"
+      },
+      {
+        "table": "medical_history",
+        "column": "treatment"
+      },
+      {
+        "table": "medical_history",
+        "column": "medication"
+      },
+      {
+        "table": "medical_history",
+        "column": "notes"
+      },
+      {
+        "table": "medical_history",
+        "column": "isFamilyHistory"
+      },
+      {
+        "table": "medical_history",
+        "column": "isCritical"
+      },
+      {
+        "table": "medical_history",
+        "column": "requiresMonitoring"
+      },
+      {
+        "table": "maintenance_logs",
+        "column": "id"
+      },
+      {
+        "table": "maintenance_logs",
+        "column": "inventoryItemId"
+      },
+      {
+        "table": "maintenance_logs",
+        "column": "description"
+      },
+      {
+        "table": "maintenance_logs",
+        "column": "performedById"
+      },
+      {
+        "table": "maintenance_logs",
+        "column": "nextMaintenanceDate"
+      },
+      {
+        "table": "maintenance_logs",
+        "column": "notes"
+      },
+      {
+        "table": "login_attempts",
+        "column": "id"
+      },
+      {
+        "table": "login_attempts",
+        "column": "userId"
+      },
+      {
+        "table": "login_attempts",
+        "column": "username"
+      },
+      {
+        "table": "login_attempts",
+        "column": "ipAddress"
+      },
+      {
+        "table": "login_attempts",
+        "column": "userAgent"
+      },
+      {
+        "table": "login_attempts",
+        "column": "success"
+      },
+      {
+        "table": "login_attempts",
+        "column": "failureReason"
+      },
+      {
+        "table": "login_attempts",
+        "column": "metadata"
+      },
+      {
+        "table": "licenses",
+        "column": "id"
+      },
+      {
+        "table": "licenses",
+        "column": "maxUsers"
+      },
+      {
+        "table": "licenses",
+        "column": "maxSchools"
+      },
+      {
+        "table": "licenses",
+        "column": "notes"
+      },
+      {
+        "table": "licenses",
+        "column": "issuedAt"
+      },
+      {
+        "table": "licenses",
+        "column": "activatedAt"
+      },
+      {
+        "table": "licenses",
+        "column": "expiresAt"
+      },
+      {
+        "table": "licenses",
+        "column": "deactivatedAt"
+      },
+      {
+        "table": "lab_results",
+        "column": "id"
+      },
+      {
+        "table": "lab_results",
+        "column": "studentId"
+      },
+      {
+        "table": "lab_results",
+        "column": "orderedDate"
+      },
+      {
+        "table": "lab_results",
+        "column": "collectionDate"
+      },
+      {
+        "table": "lab_results",
+        "column": "resultDate"
+      },
+      {
+        "table": "lab_results",
+        "column": "result"
+      },
+      {
+        "table": "lab_results",
+        "column": "resultValue"
+      },
+      {
+        "table": "lab_results",
+        "column": "isAbnormal"
+      },
+      {
+        "table": "lab_results",
+        "column": "abnormalFlags"
+      },
+      {
+        "table": "lab_results",
+        "column": "interpretation"
+      },
+      {
+        "table": "lab_results",
+        "column": "reviewedDate"
+      },
+      {
+        "table": "lab_results",
+        "column": "notes"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "id"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "ipAddress"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "ipRange"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "countries"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "reason"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "createdBy"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "expiresAt"
+      },
+      {
+        "table": "ip_restrictions",
+        "column": "isActive"
+      },
+      {
+        "table": "inventory_transactions",
+        "column": "id"
+      },
+      {
+        "table": "inventory_transactions",
+        "column": "inventoryItemId"
+      },
+      {
+        "table": "inventory_transactions",
+        "column": "quantity"
+      },
+      {
+        "table": "inventory_transactions",
+        "column": "expirationDate"
+      },
+      {
+        "table": "inventory_transactions",
+        "column": "performedById"
+      },
+      {
+        "table": "inventory_transactions",
+        "column": "notes"
+      },
+      {
+        "table": "inventory_items",
+        "column": "id"
+      },
+      {
+        "table": "inventory_items",
+        "column": "description"
+      },
+      {
+        "table": "inventory_items",
+        "column": "reorderLevel"
+      },
+      {
+        "table": "inventory_items",
+        "column": "reorderQuantity"
+      },
+      {
+        "table": "inventory_items",
+        "column": "notes"
+      },
+      {
+        "table": "inventory_items",
+        "column": "isActive"
+      },
+      {
+        "table": "integration_logs",
+        "column": "id"
+      },
+      {
+        "table": "integration_logs",
+        "column": "recordsProcessed"
+      },
+      {
+        "table": "integration_logs",
+        "column": "recordsSucceeded"
+      },
+      {
+        "table": "integration_logs",
+        "column": "recordsFailed"
+      },
+      {
+        "table": "integration_logs",
+        "column": "duration"
+      },
+      {
+        "table": "integration_logs",
+        "column": "errorMessage"
+      },
+      {
+        "table": "integration_logs",
+        "column": "details"
+      },
+      {
+        "table": "integration_configs",
+        "column": "id"
+      },
+      {
+        "table": "integration_configs",
+        "column": "endpoint"
+      },
+      {
+        "table": "integration_configs",
+        "column": "apiKey"
+      },
+      {
+        "table": "integration_configs",
+        "column": "password"
+      },
+      {
+        "table": "integration_configs",
+        "column": "settings"
+      },
+      {
+        "table": "integration_configs",
+        "column": "authentication"
+      },
+      {
+        "table": "integration_configs",
+        "column": "syncFrequency"
+      },
+      {
+        "table": "incident_reports",
+        "column": "id"
+      },
+      {
+        "table": "incident_reports",
+        "column": "studentId"
+      },
+      {
+        "table": "incident_reports",
+        "column": "reportedById"
+      },
+      {
+        "table": "incident_reports",
+        "column": "description"
+      },
+      {
+        "table": "incident_reports",
+        "column": "actionsTaken"
+      },
+      {
+        "table": "incident_reports",
+        "column": "parentNotified"
+      },
+      {
+        "table": "incident_reports",
+        "column": "parentNotifiedAt"
+      },
+      {
+        "table": "incident_reports",
+        "column": "parentNotifiedBy"
+      },
+      {
+        "table": "incident_reports",
+        "column": "followUpRequired"
+      },
+      {
+        "table": "incident_reports",
+        "column": "followUpNotes"
+      },
+      {
+        "table": "incident_reports",
+        "column": "occurredAt"
+      },
+      {
+        "table": "incident_reports",
+        "column": "createdBy"
+      },
+      {
+        "table": "incident_reports",
+        "column": "updatedBy"
+      },
+      {
+        "table": "immunizations",
+        "column": "id"
+      },
+      {
+        "table": "immunizations",
+        "column": "studentId"
+      },
+      {
+        "table": "immunizations",
+        "column": "administeredDate"
+      },
+      {
+        "table": "immunizations",
+        "column": "expirationDate"
+      },
+      {
+        "table": "immunizations",
+        "column": "administeredBy"
+      },
+      {
+        "table": "immunizations",
+        "column": "notes"
+      },
+      {
+        "table": "health_screenings",
+        "column": "id"
+      },
+      {
+        "table": "health_screenings",
+        "column": "studentId"
+      },
+      {
+        "table": "health_screenings",
+        "column": "screeningDate"
+      },
+      {
+        "table": "health_screenings",
+        "column": "results"
+      },
+      {
+        "table": "health_screenings",
+        "column": "passed"
+      },
+      {
+        "table": "health_screenings",
+        "column": "notes"
+      },
+      {
+        "table": "health_screenings",
+        "column": "conductedBy"
+      },
+      {
+        "table": "health_records",
+        "column": "id"
+      },
+      {
+        "table": "health_records",
+        "column": "studentId"
+      },
+      {
+        "table": "health_records",
+        "column": "description"
+      },
+      {
+        "table": "health_records",
+        "column": "recordDate"
+      },
+      {
+        "table": "health_records",
+        "column": "diagnosis"
+      },
+      {
+        "table": "health_records",
+        "column": "treatment"
+      },
+      {
+        "table": "health_records",
+        "column": "followUpRequired"
+      },
+      {
+        "table": "health_records",
+        "column": "followUpDate"
+      },
+      {
+        "table": "health_records",
+        "column": "followUpCompleted"
+      },
+      {
+        "table": "health_records",
+        "column": "attachments"
+      },
+      {
+        "table": "health_records",
+        "column": "metadata"
+      },
+      {
+        "table": "health_records",
+        "column": "isConfidential"
+      },
+      {
+        "table": "health_records",
+        "column": "notes"
+      },
+      {
+        "table": "health_records",
+        "column": "createdBy"
+      },
+      {
+        "table": "health_records",
+        "column": "updatedBy"
+      },
+      {
+        "table": "health_metric_snapshots",
+        "column": "id"
+      },
+      {
+        "table": "health_metric_snapshots",
+        "column": "schoolId"
+      },
+      {
+        "table": "health_metric_snapshots",
+        "column": "metadata"
+      },
+      {
+        "table": "health_metric_snapshots",
+        "column": "snapshotDate"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "id"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "studentId"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "measurementDate"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "height"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "weight"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "bmi"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "percentileHeight"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "percentileWeight"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "percentileBmi"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "notes"
+      },
+      {
+        "table": "growth_tracking",
+        "column": "measuredBy"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "id"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "originalVisitId"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "scheduledBy"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "durationMinutes"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "reason"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "assignedTo"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "reminderSent"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "reminderSentAt"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "confirmedAt"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "completedVisitId"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "completedAt"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "cancelledAt"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "cancellationReason"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "rescheduledFromId"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "rescheduledToId"
+      },
+      {
+        "table": "follow_up_appointments",
+        "column": "notes"
+      },
+      {
+        "table": "follow_up_actions",
+        "column": "id"
+      },
+      {
+        "table": "follow_up_actions",
+        "column": "action"
+      },
+      {
+        "table": "follow_up_actions",
+        "column": "completedAt"
+      },
+      {
+        "table": "follow_up_actions",
+        "column": "completedBy"
+      },
+      {
+        "table": "follow_up_actions",
+        "column": "notes"
+      },
+      {
+        "table": "emergency_contacts",
+        "column": "id"
+      },
+      {
+        "table": "emergency_contacts",
+        "column": "studentId"
+      },
+      {
+        "table": "emergency_contacts",
+        "column": "address"
+      },
+      {
+        "table": "emergency_contacts",
+        "column": "isActive"
+      },
+      {
+        "table": "emergency_contacts",
+        "column": "lastVerifiedAt"
+      },
+      {
+        "table": "emergency_contacts",
+        "column": "canPickupStudent"
+      },
+      {
+        "table": "emergency_contacts",
+        "column": "notes"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "id"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "message"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "audience"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "schoolId"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "classId"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "groupIds"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "channels"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "requiresAcknowledgment"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "expiresAt"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "sentBy"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "sentAt"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "totalRecipients"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "deliveredCount"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "failedCount"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "acknowledgedCount"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "followUpRequired"
+      },
+      {
+        "table": "emergency_broadcasts",
+        "column": "followUpMessage"
+      },
+      {
+        "table": "drug_interactions",
+        "column": "id"
+      },
+      {
+        "table": "drug_interactions",
+        "column": "description"
+      },
+      {
+        "table": "drug_interactions",
+        "column": "clinicalEffects"
+      },
+      {
+        "table": "drug_interactions",
+        "column": "management"
+      },
+      {
+        "table": "drug_interactions",
+        "column": "references"
+      },
+      {
+        "table": "drug_catalog",
+        "column": "id"
+      },
+      {
+        "table": "drug_catalog",
+        "column": "brandNames"
+      },
+      {
+        "table": "drug_catalog",
+        "column": "fdaApproved"
+      },
+      {
+        "table": "drug_catalog",
+        "column": "commonDoses"
+      },
+      {
+        "table": "drug_catalog",
+        "column": "sideEffects"
+      },
+      {
+        "table": "drug_catalog",
+        "column": "contraindications"
+      },
+      {
+        "table": "drug_catalog",
+        "column": "warnings"
+      },
+      {
+        "table": "documents",
+        "column": "id"
+      },
+      {
+        "table": "documents",
+        "column": "description"
+      },
+      {
+        "table": "documents",
+        "column": "fileSize"
+      },
+      {
+        "table": "documents",
+        "column": "fileUrl"
+      },
+      {
+        "table": "documents",
+        "column": "templateData"
+      },
+      {
+        "table": "documents",
+        "column": "version"
+      },
+      {
+        "table": "documents",
+        "column": "isActive"
+      },
+      {
+        "table": "documents",
+        "column": "deletedAt"
+      },
+      {
+        "table": "document_signatures",
+        "column": "id"
+      },
+      {
+        "table": "document_audit_trails",
+        "column": "id"
+      },
+      {
+        "table": "document_audit_trails",
+        "column": "changes"
+      },
+      {
+        "table": "districts",
+        "column": "id"
+      },
+      {
+        "table": "districts",
+        "column": "address"
+      },
+      {
+        "table": "districts",
+        "column": "isActive"
+      },
+      {
+        "table": "device_tokens",
+        "column": "id"
+      },
+      {
+        "table": "device_tokens",
+        "column": "token"
+      },
+      {
+        "table": "device_tokens",
+        "column": "isActive"
+      },
+      {
+        "table": "device_tokens",
+        "column": "isValid"
+      },
+      {
+        "table": "device_tokens",
+        "column": "lastValidated"
+      },
+      {
+        "table": "device_tokens",
+        "column": "allowNotifications"
+      },
+      {
+        "table": "device_tokens",
+        "column": "allowSound"
+      },
+      {
+        "table": "device_tokens",
+        "column": "allowBadge"
+      },
+      {
+        "table": "device_tokens",
+        "column": "lastUsedAt"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "id"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "alertId"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "recipientId"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "success"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "attemptCount"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "lastAttempt"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "deliveredAt"
+      },
+      {
+        "table": "delivery_logs",
+        "column": "errorMessage"
+      },
+      {
+        "table": "data_retention_policies",
+        "column": "id"
+      },
+      {
+        "table": "data_retention_policies",
+        "column": "description"
+      },
+      {
+        "table": "data_retention_policies",
+        "column": "retentionPeriodDays"
+      },
+      {
+        "table": "data_retention_policies",
+        "column": "legalBasis"
+      },
+      {
+        "table": "data_retention_policies",
+        "column": "autoDelete"
+      },
+      {
+        "table": "data_retention_policies",
+        "column": "lastReviewedAt"
+      },
+      {
+        "table": "data_retention_policies",
+        "column": "lastReviewedBy"
+      },
+      {
+        "table": "conversations",
+        "column": "id"
+      },
+      {
+        "table": "conversations",
+        "column": "description"
+      },
+      {
+        "table": "conversations",
+        "column": "tenantId"
+      },
+      {
+        "table": "conversations",
+        "column": "createdById"
+      },
+      {
+        "table": "conversations",
+        "column": "lastMessageAt"
+      },
+      {
+        "table": "conversations",
+        "column": "metadata"
+      },
+      {
+        "table": "conversations",
+        "column": "isArchived"
+      },
+      {
+        "table": "conversations",
+        "column": "deletedAt"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "id"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "conversationId"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "userId"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "joinedAt"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "lastReadAt"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "isMuted"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "isPinned"
+      },
+      {
+        "table": "conversation_participants",
+        "column": "metadata"
+      },
+      {
+        "table": "contacts",
+        "column": "id"
+      },
+      {
+        "table": "contacts",
+        "column": "relationTo"
+      },
+      {
+        "table": "contacts",
+        "column": "customFields"
+      },
+      {
+        "table": "contacts",
+        "column": "isActive"
+      },
+      {
+        "table": "contacts",
+        "column": "notes"
+      },
+      {
+        "table": "contacts",
+        "column": "createdBy"
+      },
+      {
+        "table": "contacts",
+        "column": "updatedBy"
+      },
+      {
+        "table": "contacts",
+        "column": "deletedAt"
+      },
+      {
+        "table": "consent_signatures",
+        "column": "id"
+      },
+      {
+        "table": "consent_signatures",
+        "column": "consentFormId"
+      },
+      {
+        "table": "consent_signatures",
+        "column": "studentId"
+      },
+      {
+        "table": "consent_signatures",
+        "column": "signatureData"
+      },
+      {
+        "table": "consent_signatures",
+        "column": "withdrawnAt"
+      },
+      {
+        "table": "consent_forms",
+        "column": "id"
+      },
+      {
+        "table": "consent_forms",
+        "column": "description"
+      },
+      {
+        "table": "consent_forms",
+        "column": "content"
+      },
+      {
+        "table": "consent_forms",
+        "column": "isActive"
+      },
+      {
+        "table": "consent_forms",
+        "column": "expiresAt"
+      },
+      {
+        "table": "configuration_history",
+        "column": "id"
+      },
+      {
+        "table": "configuration_history",
+        "column": "oldValue"
+      },
+      {
+        "table": "configuration_history",
+        "column": "newValue"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "id"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "description"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "reportedBy"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "discoveredAt"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "affectedStudents"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "affectedDataCategories"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "rootCause"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "assignedTo"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "resolutionNotes"
+      },
+      {
+        "table": "compliance_violations",
+        "column": "resolvedAt"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "id"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "description"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "findings"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "recommendations"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "dueDate"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "submittedAt"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "submittedBy"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "reviewedAt"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "reviewedBy"
+      },
+      {
+        "table": "compliance_reports",
+        "column": "createdById"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "id"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "description"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "evidence"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "notes"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "dueDate"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "completedAt"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "completedBy"
+      },
+      {
+        "table": "compliance_checklist_items",
+        "column": "reportId"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "id"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "description"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "indications"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "contraindications"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "steps"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "decisionPoints"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "requiredEquipment"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "medications"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "createdBy"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "approvedBy"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "approvedDate"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "effectiveDate"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "reviewDate"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "references"
+      },
+      {
+        "table": "clinical_protocols",
+        "column": "tags"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "id"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "visitId"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "content"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "subjective"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "objective"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "assessment"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "plan"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "tags"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "isConfidential"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "isSigned"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "signedAt"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "amended"
+      },
+      {
+        "table": "clinical_notes",
+        "column": "amendmentReason"
+      },
+      {
+        "table": "clinic_visits",
+        "column": "id"
+      },
+      {
+        "table": "clinic_visits",
+        "column": "reasonForVisit"
+      },
+      {
+        "table": "clinic_visits",
+        "column": "symptoms"
+      },
+      {
+        "table": "clinic_visits",
+        "column": "treatment"
+      },
+      {
+        "table": "clinic_visits",
+        "column": "classesMissed"
+      },
+      {
+        "table": "clinic_visits",
+        "column": "minutesMissed"
+      },
+      {
+        "table": "clinic_visits",
+        "column": "notes"
+      },
+      {
+        "table": "chronic_conditions",
+        "column": "id"
+      },
+      {
+        "table": "chronic_conditions",
+        "column": "healthRecordId"
+      },
+      {
+        "table": "chronic_conditions",
+        "column": "diagnosedDate"
+      },
+      {
+        "table": "chronic_conditions",
+        "column": "notes"
+      },
+      {
+        "table": "chronic_conditions",
+        "column": "carePlan"
+      },
+      {
+        "table": "chronic_conditions",
+        "column": "emergencyProtocol"
+      },
+      {
+        "table": "chronic_conditions",
+        "column": "lastReviewDate"
+      },
+      {
+        "table": "cache_entries",
+        "column": "id"
+      },
+      {
+        "table": "cache_entries",
+        "column": "data"
+      },
+      {
+        "table": "cache_entries",
+        "column": "tags"
+      },
+      {
+        "table": "cache_entries",
+        "column": "expiresAt"
+      },
+      {
+        "table": "cache_entries",
+        "column": "accessCount"
+      },
+      {
+        "table": "cache_entries",
+        "column": "lastAccessed"
+      },
+      {
+        "table": "cache_entries",
+        "column": "dataSize"
+      },
+      {
+        "table": "budget_transactions",
+        "column": "id"
+      },
+      {
+        "table": "budget_transactions",
+        "column": "categoryId"
+      },
+      {
+        "table": "budget_transactions",
+        "column": "description"
+      },
+      {
+        "table": "budget_transactions",
+        "column": "transactionDate"
+      },
+      {
+        "table": "budget_transactions",
+        "column": "notes"
+      },
+      {
+        "table": "budget_categories",
+        "column": "id"
+      },
+      {
+        "table": "budget_categories",
+        "column": "description"
+      },
+      {
+        "table": "budget_categories",
+        "column": "fiscalYear"
+      },
+      {
+        "table": "budget_categories",
+        "column": "isActive"
+      },
+      {
+        "table": "backup_logs",
+        "column": "id"
+      },
+      {
+        "table": "backup_logs",
+        "column": "fileSize"
+      },
+      {
+        "table": "backup_logs",
+        "column": "location"
+      },
+      {
+        "table": "backup_logs",
+        "column": "triggeredBy"
+      },
+      {
+        "table": "backup_logs",
+        "column": "error"
+      },
+      {
+        "table": "backup_logs",
+        "column": "completedAt"
+      },
+      {
+        "table": "audit_logs",
+        "column": "id"
+      },
+      {
+        "table": "audit_logs",
+        "column": "userAgent"
+      },
+      {
+        "table": "audit_logs",
+        "column": "sessionId"
+      },
+      {
+        "table": "audit_logs",
+        "column": "isPHI"
+      },
+      {
+        "table": "audit_logs",
+        "column": "success"
+      },
+      {
+        "table": "audit_logs",
+        "column": "errorMessage"
+      },
+      {
+        "table": "appointments",
+        "column": "id"
+      },
+      {
+        "table": "appointments",
+        "column": "studentId"
+      },
+      {
+        "table": "appointments",
+        "column": "nurseId"
+      },
+      {
+        "table": "appointments",
+        "column": "scheduledAt"
+      },
+      {
+        "table": "appointments",
+        "column": "duration"
+      },
+      {
+        "table": "appointments",
+        "column": "notes"
+      },
+      {
+        "table": "appointments",
+        "column": "recurringGroupId"
+      },
+      {
+        "table": "appointments",
+        "column": "recurringEndDate"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "id"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "studentId"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "nurseId"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "preferredDate"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "duration"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "notes"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "notifiedAt"
+      },
+      {
+        "table": "appointment_waitlist",
+        "column": "expiresAt"
+      },
+      {
+        "table": "appointment_reminders",
+        "column": "id"
+      },
+      {
+        "table": "appointment_reminders",
+        "column": "appointmentId"
+      },
+      {
+        "table": "appointment_reminders",
+        "column": "scheduledFor"
+      },
+      {
+        "table": "appointment_reminders",
+        "column": "sentAt"
+      },
+      {
+        "table": "appointment_reminders",
+        "column": "failureReason"
+      },
+      {
+        "table": "appointment_reminders",
+        "column": "message"
+      },
+      {
+        "table": "api_keys",
+        "column": "id"
+      },
+      {
+        "table": "api_keys",
+        "column": "description"
+      },
+      {
+        "table": "api_keys",
+        "column": "scopes"
+      },
+      {
+        "table": "api_keys",
+        "column": "isActive"
+      },
+      {
+        "table": "api_keys",
+        "column": "expiresAt"
+      },
+      {
+        "table": "api_keys",
+        "column": "lastUsedAt"
+      },
+      {
+        "table": "api_keys",
+        "column": "usageCount"
+      },
+      {
+        "table": "api_keys",
+        "column": "createdBy"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "id"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "description"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "periodStart"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "periodEnd"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "generatedDate"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "schoolId"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "summary"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "sections"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "findings"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "recommendations"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "fileSize"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "generatedBy"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "reviewedBy"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "reviewedAt"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "approvedBy"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "approvalDate"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "distributionList"
+      },
+      {
+        "table": "analytics_reports",
+        "column": "sentAt"
+      },
+      {
+        "table": "allergies",
+        "column": "id"
+      },
+      {
+        "table": "allergies",
+        "column": "studentId"
+      },
+      {
+        "table": "allergies",
+        "column": "symptoms"
+      },
+      {
+        "table": "allergies",
+        "column": "reactions"
+      },
+      {
+        "table": "allergies",
+        "column": "treatment"
+      },
+      {
+        "table": "allergies",
+        "column": "emergencyProtocol"
+      },
+      {
+        "table": "allergies",
+        "column": "onsetDate"
+      },
+      {
+        "table": "allergies",
+        "column": "diagnosedDate"
+      },
+      {
+        "table": "allergies",
+        "column": "verified"
+      },
+      {
+        "table": "allergies",
+        "column": "verifiedBy"
+      },
+      {
+        "table": "allergies",
+        "column": "verificationDate"
+      },
+      {
+        "table": "allergies",
+        "column": "active"
+      },
+      {
+        "table": "allergies",
+        "column": "notes"
+      },
+      {
+        "table": "allergies",
+        "column": "epiPenRequired"
+      },
+      {
+        "table": "allergies",
+        "column": "epiPenExpiration"
+      },
+      {
+        "table": "allergies",
+        "column": "healthRecordId"
+      },
+      {
+        "table": "allergies",
+        "column": "createdBy"
+      },
+      {
+        "table": "allergies",
+        "column": "updatedBy"
+      },
+      {
+        "table": "alerts",
+        "column": "id"
+      },
+      {
+        "table": "alerts",
+        "column": "definitionId"
+      },
+      {
+        "table": "alerts",
+        "column": "message"
+      },
+      {
+        "table": "alerts",
+        "column": "studentId"
+      },
+      {
+        "table": "alerts",
+        "column": "userId"
+      },
+      {
+        "table": "alerts",
+        "column": "schoolId"
+      },
+      {
+        "table": "alerts",
+        "column": "metadata"
+      },
+      {
+        "table": "alerts",
+        "column": "createdBy"
+      },
+      {
+        "table": "alerts",
+        "column": "acknowledgedAt"
+      },
+      {
+        "table": "alerts",
+        "column": "acknowledgedBy"
+      },
+      {
+        "table": "alerts",
+        "column": "resolvedAt"
+      },
+      {
+        "table": "alerts",
+        "column": "resolvedBy"
+      },
+      {
+        "table": "alerts",
+        "column": "expiresAt"
+      },
+      {
+        "table": "alerts",
+        "column": "autoEscalateAfter"
+      },
+      {
+        "table": "alerts",
+        "column": "escalationLevel"
+      },
+      {
+        "table": "alerts",
+        "column": "requiresAcknowledgment"
+      },
+      {
+        "table": "alert_rules",
+        "column": "id"
+      },
+      {
+        "table": "alert_rules",
+        "column": "description"
+      },
+      {
+        "table": "alert_rules",
+        "column": "isActive"
+      },
+      {
+        "table": "alert_rules",
+        "column": "priority"
+      },
+      {
+        "table": "alert_rules",
+        "column": "triggerConditions"
+      },
+      {
+        "table": "alert_rules",
+        "column": "notificationChannels"
+      },
+      {
+        "table": "alert_rules",
+        "column": "schoolId"
+      },
+      {
+        "table": "alert_rules",
+        "column": "districtId"
+      },
+      {
+        "table": "alert_rules",
+        "column": "autoEscalateAfter"
+      },
+      {
+        "table": "alert_rules",
+        "column": "cooldownPeriod"
+      },
+      {
+        "table": "alert_rules",
+        "column": "requiresAcknowledgment"
+      },
+      {
+        "table": "alert_rules",
+        "column": "expiresAfter"
+      },
+      {
+        "table": "alert_rules",
+        "column": "metadata"
+      },
+      {
+        "table": "alert_rules",
+        "column": "createdBy"
+      },
+      {
+        "table": "alert_rules",
+        "column": "updatedBy"
+      },
+      {
+        "table": "alert_rules",
+        "column": "lastTriggered"
+      },
+      {
+        "table": "alert_rules",
+        "column": "triggerCount"
+      },
+      {
+        "table": "alert_preferences",
+        "column": "id"
+      },
+      {
+        "table": "alert_preferences",
+        "column": "userId"
+      },
+      {
+        "table": "alert_preferences",
+        "column": "schoolId"
+      },
+      {
+        "table": "alert_preferences",
+        "column": "isActive"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "id"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "studentId"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "subjects"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "attendance"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "behavior"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "importedBy"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "importedAt"
+      },
+      {
+        "table": "academic_transcripts",
+        "column": "metadata"
+      }
+    ],
+    "extraColumns": [],
+    "typeMatches": [],
+    "missingIndexes": [],
+    "extraIndexes": []
+  },
+  "recommendations": [
+    "Create missing tables: witness_statements, webhooks, vital_signs, vendors, vaccinations, users, treatment_plans, training_modules, threat_detections, system_configurations, sync_states, sync_sessions, sync_queue_items, sync_conflicts, suppliers, students, student_medications, student_drug_allergies, sis_sync_conflicts, sessions, security_incidents, schools, report_templates, report_schedules, report_executions, remediation_actions, push_notifications, purchase_orders, purchase_order_items, prescriptions, policy_documents, policy_acknowledgments, phi_disclosures, phi_disclosure_audits, performance_metrics, messages, message_templates, message_reads, message_reactions, message_deliveries, mental_health_records, medications, medication_logs, medical_history, maintenance_logs, login_attempts, licenses, lab_results, ip_restrictions, inventory_transactions, inventory_items, integration_logs, integration_configs, incident_reports, immunizations, health_screenings, health_records, health_metric_snapshots, growth_tracking, follow_up_appointments, follow_up_actions, emergency_contacts, emergency_broadcasts, drug_interactions, drug_catalog, documents, document_signatures, document_audit_trails, districts, device_tokens, delivery_logs, data_retention_policies, conversations, conversation_participants, contacts, consent_signatures, consent_forms, configuration_history, compliance_violations, compliance_reports, compliance_checklist_items, clinical_protocols, clinical_notes, clinic_visits, chronic_conditions, cache_entries, budget_transactions, budget_categories, backup_logs, audit_logs, appointments, appointment_waitlist, appointment_reminders, api_keys, analytics_reports, allergies, alerts, alert_rules, alert_preferences, academic_transcripts",
+    "Add missing columns to database or remove from models"
+  ]
+}

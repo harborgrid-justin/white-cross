@@ -217,3 +217,6 @@ export class MedicationLog
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MedicationLog;

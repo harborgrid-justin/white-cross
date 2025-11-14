@@ -208,3 +208,6 @@ export class IntegrationConfig extends Model {
     await createModelAuditHook('IntegrationConfig', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default IntegrationConfig;

@@ -498,3 +498,6 @@ export class Alert extends Model<AlertAttributes> implements AlertAttributes {
     await createModelAuditHook('Alert', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Alert;

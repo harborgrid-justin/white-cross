@@ -201,3 +201,6 @@ export class ReportSchedule
     await createModelAuditHook('ReportSchedule', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ReportSchedule;

@@ -152,3 +152,6 @@ export class DataRetentionPolicy
     await createModelAuditHook('DataRetentionPolicy', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default DataRetentionPolicy;

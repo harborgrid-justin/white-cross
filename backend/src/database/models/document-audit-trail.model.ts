@@ -112,3 +112,6 @@ export class DocumentAuditTrail extends Model {
   @BelongsTo(() => 'Document')
   document: Document;
 }
+
+// Default export for Sequelize-TypeScript
+export default DocumentAuditTrail;

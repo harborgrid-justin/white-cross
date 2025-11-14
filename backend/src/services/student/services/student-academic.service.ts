@@ -4,12 +4,7 @@
  * @description Handles academic transcript operations and grade transitions
  */
 
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  Optional,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Student } from '@/database';
 import { AcademicTranscriptService } from '@/services/academic-transcript/academic-transcript.service';
@@ -35,7 +30,6 @@ import { PerformanceTrendsDto } from '../dto/performance-trends.dto';
  */
 @Injectable()
 export class StudentAcademicService extends BaseService {
-
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -68,10 +62,7 @@ export class StudentAcademicService extends BaseService {
       this.validateUUID(studentId, 'Student ID');
 
       // Verify student exists
-      const student = await this.studentModel.findByPk(studentId);
-      if (!student) {
-        throw new NotFoundException(`Student with ID ${studentId} not found`);
-      }
+      const student = await this.findEntityOrFail(this.studentModel, studentId, 'Student');
 
       // Validate transcript data
       if (!importTranscriptDto.grades || importTranscriptDto.grades.length === 0) {
@@ -154,10 +145,7 @@ export class StudentAcademicService extends BaseService {
       this.validateUUID(studentId, 'Student ID');
 
       // Verify student exists
-      const student = await this.studentModel.findByPk(studentId);
-      if (!student) {
-        throw new NotFoundException(`Student with ID ${studentId} not found`);
-      }
+      const student = await this.findEntityOrFail(this.studentModel, studentId, 'Student');
 
       // Get academic history from AcademicTranscriptService
       const transcripts = await this.academicTranscriptService.getAcademicHistory(studentId);
@@ -213,10 +201,7 @@ export class StudentAcademicService extends BaseService {
       this.validateUUID(studentId, 'Student ID');
 
       // Verify student exists
-      const student = await this.studentModel.findByPk(studentId);
-      if (!student) {
-        throw new NotFoundException(`Student with ID ${studentId} not found`);
-      }
+      const student = await this.findEntityOrFail(this.studentModel, studentId, 'Student');
 
       // Get performance trends from AcademicTranscriptService
       const analysis = await this.academicTranscriptService.analyzePerformanceTrends(studentId);
@@ -438,12 +423,13 @@ export class StudentAcademicService extends BaseService {
         let totalTranscripts = 0;
 
         for (const transcript of transcripts) {
-          if (transcript.gpa && transcript.gpa > 0) {
-            cumulativeGpa += transcript.gpa;
+          const transcriptData = transcript;
+          if (transcriptData.gpa && transcriptData.gpa > 0) {
+            cumulativeGpa += transcriptData.gpa;
             totalTranscripts++;
           }
-          if (transcript.subjects && Array.isArray(transcript.subjects)) {
-            totalCredits += transcript.subjects.reduce(
+          if (transcriptData.subjects && Array.isArray(transcriptData.subjects)) {
+            totalCredits += transcriptData.subjects.reduce(
               (sum: number, subject: any) => sum + (subject.credits || 0),
               0,
             );
@@ -525,14 +511,13 @@ export class StudentAcademicService extends BaseService {
       this.validateUUID(id, 'Student ID');
 
       // Verify student exists
-      const student = await this.studentModel.findByPk(id);
-      if (!student) {
-        throw new NotFoundException(`Student with ID ${id} not found`);
-      }
+      const student = await this.findEntityOrFail(this.studentModel, id, 'Student');
 
       const currentGrade = student.grade;
       const newGrade = gradeTransitionDto.newGrade;
-      const effectiveDate = gradeTransitionDto.effectiveDate ? new Date(gradeTransitionDto.effectiveDate) : new Date();
+      const effectiveDate = gradeTransitionDto.effectiveDate
+        ? new Date(gradeTransitionDto.effectiveDate)
+        : new Date();
 
       // Update student grade
       student.grade = newGrade;
@@ -567,13 +552,12 @@ export class StudentAcademicService extends BaseService {
       this.validateUUID(id, 'Student ID');
 
       // Verify student exists
-      const student = await this.studentModel.findByPk(id);
-      if (!student) {
-        throw new NotFoundException(`Student with ID ${id} not found`);
-      }
+      const student = await this.findEntityOrFail(this.studentModel, id, 'Student');
 
       const currentGrade = student.grade;
-      const effectiveDate = gradeTransitionDto.effectiveDate ? new Date(gradeTransitionDto.effectiveDate) : new Date();
+      const effectiveDate = gradeTransitionDto.effectiveDate
+        ? new Date(gradeTransitionDto.effectiveDate)
+        : new Date();
 
       // Note: Student remains in current grade, but we log the retention
       this.logInfo(
@@ -605,12 +589,11 @@ export class StudentAcademicService extends BaseService {
       this.validateUUID(id, 'Student ID');
 
       // Verify student exists
-      const student = await this.studentModel.findByPk(id);
-      if (!student) {
-        throw new NotFoundException(`Student with ID ${id} not found`);
-      }
+      const student = await this.findEntityOrFail(this.studentModel, id, 'Student');
 
-      const graduationDate = graduationDto.graduationDate ? new Date(graduationDto.graduationDate) : new Date();
+      const graduationDate = graduationDto.graduationDate
+        ? new Date(graduationDto.graduationDate)
+        : new Date();
 
       // Update student status to graduated
       student.grade = 'GRADUATED';
@@ -645,10 +628,7 @@ export class StudentAcademicService extends BaseService {
       this.validateUUID(id, 'Student ID');
 
       // Verify student exists
-      const student = await this.studentModel.findByPk(id);
-      if (!student) {
-        throw new NotFoundException(`Student with ID ${id} not found`);
-      }
+      const student = await this.findEntityOrFail(this.studentModel, id, 'Student');
 
       // For now, return basic history - in a real implementation, this would query a grade transition log
       const history = [

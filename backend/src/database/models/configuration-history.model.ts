@@ -70,10 +70,6 @@ export interface CreateConfigurationHistoryAttributes {
       fields: ['createdAt'],
       name: 'idx_configuration_history_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_configuration_history_updated_at',
-    },
   ],
 })
 export class ConfigurationHistory extends Model<
@@ -151,3 +147,6 @@ export class ConfigurationHistory extends Model<
     await createModelAuditHook('ConfigurationHistory', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ConfigurationHistory;

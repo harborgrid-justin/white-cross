@@ -126,3 +126,6 @@ export class BudgetTransaction extends Model<BudgetTransaction> {
     await createModelAuditHook('BudgetTransaction', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default BudgetTransaction;

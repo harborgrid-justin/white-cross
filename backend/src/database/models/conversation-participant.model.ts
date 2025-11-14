@@ -238,3 +238,6 @@ export class ConversationParticipant extends Model<
     await createModelAuditHook('ConversationParticipant', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ConversationParticipant;

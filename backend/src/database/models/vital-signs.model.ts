@@ -300,3 +300,6 @@ export class VitalSigns
     instance.isAbnormal = abnormalFlags.length > 0;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default VitalSigns;

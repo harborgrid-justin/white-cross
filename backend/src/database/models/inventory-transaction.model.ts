@@ -139,3 +139,6 @@ export class InventoryTransaction
     await createModelAuditHook('InventoryTransaction', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default InventoryTransaction;

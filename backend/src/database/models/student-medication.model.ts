@@ -222,3 +222,6 @@ export class StudentMedication
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default StudentMedication;

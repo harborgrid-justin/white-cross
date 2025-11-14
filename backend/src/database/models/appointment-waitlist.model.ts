@@ -186,3 +186,6 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
     await createModelAuditHook('AppointmentWaitlist', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AppointmentWaitlist;

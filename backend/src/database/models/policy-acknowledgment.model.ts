@@ -92,3 +92,6 @@ export class PolicyAcknowledgment
     await createModelAuditHook('PolicyAcknowledgment', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PolicyAcknowledgment;

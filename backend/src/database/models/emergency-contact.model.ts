@@ -355,3 +355,6 @@ export class EmergencyContact extends Model<
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default EmergencyContact;

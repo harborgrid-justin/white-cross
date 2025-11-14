@@ -99,3 +99,6 @@ export class SyncState
     await createModelAuditHook('SyncState', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SyncState;

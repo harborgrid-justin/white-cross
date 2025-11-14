@@ -207,3 +207,6 @@ export class TrainingModule extends Model<
     await createModelAuditHook('TrainingModule', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default TrainingModule;

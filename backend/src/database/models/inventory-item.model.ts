@@ -68,12 +68,6 @@ export interface InventoryItemAttributes {
       fields: ['updatedAt'],
       name: 'idx_inventory_item_updated_at',
     },
-    {
-      // Full-text search GIN index (created by migration)
-      name: 'idx_inventory_items_search_vector',
-      using: 'GIN',
-      fields: ['search_vector'] as any, // tsvector type, managed by PostgreSQL trigger
-    },
   ],
 })
 export class InventoryItem
@@ -159,3 +153,6 @@ export class InventoryItem
     await createModelAuditHook('InventoryItem', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default InventoryItem;

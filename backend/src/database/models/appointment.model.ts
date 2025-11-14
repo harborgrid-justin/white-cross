@@ -559,3 +559,6 @@ export interface PaginatedResponse<T> {
  * Type alias for paginated appointment response
  */
 export type PaginatedAppointments = PaginatedResponse<AppointmentEntity>;
+
+// Default export for Sequelize-TypeScript
+export default Appointment;

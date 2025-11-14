@@ -129,3 +129,6 @@ export class Vendor
     await createModelAuditHook('Vendor', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Vendor;

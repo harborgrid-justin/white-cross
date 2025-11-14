@@ -296,3 +296,6 @@ export interface PaginatedMedicationResponse {
     pages: number;
   };
 }
+
+// Default export for Sequelize-TypeScript
+export default Medication;

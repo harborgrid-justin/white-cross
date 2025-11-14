@@ -97,3 +97,6 @@ export class Webhook
     await createModelAuditHook('Webhook', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Webhook;

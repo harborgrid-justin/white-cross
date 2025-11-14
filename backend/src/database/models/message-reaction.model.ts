@@ -156,3 +156,6 @@ export class MessageReaction extends Model<
     await createModelAuditHook('MessageReaction', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MessageReaction;

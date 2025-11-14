@@ -16,7 +16,7 @@ import { Column, DataType, Default, Index, Model, PrimaryKey, Table } from 'sequ
 export class Session extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.STRING)
+  @Column(DataType.UUID)
   declare id: string;
 
   @Index({ unique: true })
@@ -27,7 +27,7 @@ export class Session extends Model {
   sessionToken!: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: false,
   })
   userId!: string;
@@ -81,3 +81,6 @@ export class Session extends Model {
   })
   declare updatedAt: Date;
 }
+
+// Default export for Sequelize-TypeScript
+export default Session;

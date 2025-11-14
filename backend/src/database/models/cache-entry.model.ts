@@ -275,3 +275,6 @@ export class CacheEntry extends Model<
     await createModelAuditHook('CacheEntry', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default CacheEntry;

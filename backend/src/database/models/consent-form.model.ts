@@ -134,3 +134,6 @@ export class ConsentForm
     await createModelAuditHook('ConsentForm', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ConsentForm;

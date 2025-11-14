@@ -110,3 +110,6 @@ export class PurchaseOrderItem
     await createModelAuditHook('PurchaseOrderItem', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PurchaseOrderItem;

@@ -1,17 +1,31 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Message } from '@/database/models';
-import { MessageDelivery } from '@/database/models';
+import { Message, MessageDelivery } from '@/database/models';
 import { SendMessageDto } from '../dto/send-message.dto';
-
 import { BaseService } from '@/common/base';
+import { PaginatedResponse } from '@/database/types/pagination.types';
+
+export interface MessageFilters {
+  senderId?: string;
+  category?: string;
+  priority?: string;
+}
+
 @Injectable()
 export class MessageService extends BaseService {
   constructor(
     @InjectModel(Message) private messageModel: typeof Message,
     @InjectModel(MessageDelivery) private deliveryModel: typeof MessageDelivery,
   ) {
-    super("MessageService");
+    super({
+      serviceName: 'MessageService',
+      tableName: 'messages',
+    });
   }
 
   /**
@@ -23,195 +37,202 @@ export class MessageService extends BaseService {
    * Performance improvement: ~98% query reduction
    */
   async sendMessage(data: SendMessageDto & { senderId: string }) {
-    this.logInfo(`Sending message to ${data.recipients.length} recipients`);
+    return this.executeWithLogging('sendMessage', async () => {
+      this.validateRequiredField(data.senderId, 'senderId');
+      this.validateUUID(data.senderId, 'senderId');
+      this.validateRequiredField(data.recipients, 'recipients');
 
-    // Create message record
-    const message = await this.messageModel.create({
-      subject: data.subject,
-      content: data.content,
-      priority: data.priority || 'MEDIUM',
-      category: data.category,
-      recipientCount: data.recipients.length,
-      scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
-      attachments: data.attachments || [],
-      senderId: data.senderId,
-      templateId: data.templateId,
-    });
-
-    // OPTIMIZATION: Build all delivery records first, then bulk create instead of N individual creates
-    const deliveryRecords: any[] = [];
-    const channels = data.channels || ['EMAIL'];
-    const sentAt = !data.scheduledAt ? new Date() : null;
-    const status = data.scheduledAt ? 'PENDING' : 'SENT';
-
-    for (const recipient of data.recipients) {
-      for (const channel of channels) {
-        deliveryRecords.push({
-          recipientType: recipient.type,
-          recipientId: recipient.id,
-          channel: channel,
-          status: status,
-          contactInfo:
-            channel === 'EMAIL' ? recipient.email : recipient.phoneNumber,
-          messageId: message.id,
-          sentAt: sentAt,
-        });
+      if (!Array.isArray(data.recipients) || data.recipients.length === 0) {
+        throw new BadRequestException('Recipients array cannot be empty');
       }
-    }
 
-    // Bulk create all deliveries in a single query
-    const deliveries = await this.deliveryModel.bulkCreate(deliveryRecords);
+      this.logInfo(`Sending message to ${data.recipients.length} recipients`);
 
-    // Build delivery statuses from bulk-created records
-    const deliveryStatuses = deliveries.map((delivery) => ({
-      messageId: message.id,
-      recipientId: delivery.recipientId,
-      channel: delivery.channel,
-      status: delivery.status,
-      sentAt: delivery.sentAt,
-    }));
-
-    return {
-      message: message.toJSON(),
-      deliveryStatuses,
-    };
-  }
-
-  async getMessages(page: number, limit: number, filters: any) {
-    const offset = (page - 1) * limit;
-    const where: any = {};
-
-    if (filters.senderId) where.senderId = filters.senderId;
-    if (filters.category) where.category = filters.category;
-    if (filters.priority) where.priority = filters.priority;
-
-    // Initialize searchWhere as an object, not undefined
-    const searchWhere: any = {};
-
-    const { rows: messages, count: total } =
-      await this.messageModel.findAndCountAll({
-        where,
-        offset,
-        limit,
-        order: [['createdAt', 'DESC']],
+      // Create message record
+      const message = await this.messageModel.create({
+        subject: data.subject,
+        content: data.content,
+        priority: data.priority || 'MEDIUM',
+        category: data.category,
+        recipientCount: data.recipients.length,
+        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
+        attachments: data.attachments || [],
+        senderId: data.senderId,
+        templateId: data.templateId,
       });
 
-    return {
-      messages: messages.map((m) => m.toJSON()),
-      pagination: {
+      // OPTIMIZATION: Build all delivery records first, then bulk create instead of N individual creates
+      const deliveryRecords: any[] = [];
+      const channels = data.channels || ['EMAIL'];
+      const sentAt = !data.scheduledAt ? new Date() : null;
+      const status = data.scheduledAt ? 'PENDING' : 'SENT';
+
+      for (const recipient of data.recipients) {
+        for (const channel of channels) {
+          deliveryRecords.push({
+            recipientType: recipient.type,
+            recipientId: recipient.id,
+            channel: channel,
+            status: status,
+            contactInfo: channel === 'EMAIL' ? recipient.email : recipient.phoneNumber,
+            messageId: message.id,
+            sentAt: sentAt,
+          });
+        }
+      }
+
+      // Bulk create all deliveries in a single query
+      const deliveries = await this.deliveryModel.bulkCreate(deliveryRecords);
+
+      // Build delivery statuses from bulk-created records
+      const deliveryStatuses = deliveries.map((delivery) => ({
+        messageId: message.id,
+        recipientId: delivery.recipientId,
+        channel: delivery.channel,
+        status: delivery.status,
+        sentAt: delivery.sentAt,
+      }));
+
+      return {
+        message: message.toJSON(),
+        deliveryStatuses,
+      };
+    });
+  }
+
+  async getMessages(
+    page: number = 1,
+    limit: number = 20,
+    filters: MessageFilters = {},
+  ): Promise<PaginatedResponse<Message>> {
+    return this.executeWithLogging('getMessages', async () => {
+      const whereClause: any = {};
+
+      if (filters.senderId) {
+        this.validateUUID(filters.senderId, 'senderId');
+        whereClause.senderId = filters.senderId;
+      }
+      if (filters.category) whereClause.category = filters.category;
+      if (filters.priority) whereClause.priority = filters.priority;
+
+      return this.createPaginatedQuery(this.messageModel, {
         page,
         limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    };
-  }
-
-  async getInbox(userId: string, page: number, limit: number) {
-    const offset = (page - 1) * limit;
-
-    const deliveries = await this.deliveryModel.findAll({
-      where: { recipientId: userId },
-      include: [{ model: Message, as: 'message' }],
-      offset,
-      limit,
-      order: [['createdAt', 'DESC']],
+        where: whereClause,
+        order: [['createdAt', 'DESC']],
+      });
     });
-
-    const messages = deliveries.map((d: any) => d.message);
-
-    return {
-      messages: messages.map((m: any) => m?.toJSON()).filter(Boolean),
-      total: deliveries.length,
-      page,
-      limit,
-    };
   }
 
-  async getSentMessages(userId: string, page: number, limit: number) {
-    return this.getMessages(page, limit, { senderId: userId });
-  }
+  async getInbox(
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<PaginatedResponse<MessageDelivery>> {
+    return this.executeWithLogging('getInbox', async () => {
+      this.validateUUID(userId, 'userId');
 
-  async getMessageById(id: string) {
-    const message = await this.messageModel.findByPk(id, {
-      include: [{ all: true }],
+      return this.createPaginatedQuery(this.deliveryModel, {
+        page,
+        limit,
+        where: { recipientId: userId },
+        include: [{ model: this.messageModel, as: 'message' }],
+        order: [['createdAt', 'DESC']],
+      });
     });
+  }
 
-    if (!message) {
-      throw new NotFoundException('Message not found');
-    }
+  async getSentMessages(
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<PaginatedResponse<Message>> {
+    return this.executeWithLogging('getSentMessages', async () => {
+      this.validateUUID(userId, 'userId');
+      return this.getMessages(page, limit, { senderId: userId });
+    });
+  }
 
-    return { message: message.toJSON() };
+  async getMessageById(id: string): Promise<Message> {
+    return this.executeWithLogging('getMessageById', async () => {
+      this.validateUUID(id, 'message ID');
+
+      return this.findEntityOrFail(this.messageModel, id, 'Message');
+    });
   }
 
   async getMessageDeliveryStatus(id: string) {
-    const message = await this.messageModel.findByPk(id);
+    return this.executeWithLogging('getMessageDeliveryStatus', async () => {
+      this.validateUUID(id, 'message ID');
 
-    if (!message) {
-      throw new NotFoundException('Message not found');
-    }
+      const message = await this.findEntityOrFail(this.messageModel, id, 'Message');
 
-    const deliveries = await this.deliveryModel.findAll({
-      where: { messageId: id },
+      const deliveries = await this.deliveryModel.findAll({
+        where: { messageId: id },
+      });
+
+      const summary = {
+        total: deliveries.length,
+        pending: deliveries.filter((d) => d.status === 'PENDING').length,
+        sent: deliveries.filter((d) => d.status === 'SENT').length,
+        delivered: deliveries.filter((d) => d.status === 'DELIVERED').length,
+        failed: deliveries.filter((d) => d.status === 'FAILED').length,
+        bounced: deliveries.filter((d) => d.status === 'BOUNCED').length,
+      };
+
+      return {
+        deliveries: deliveries.map((d) => d.toJSON()),
+        summary,
+      };
     });
-
-    const summary = {
-      total: deliveries.length,
-      pending: deliveries.filter((d) => d.status === 'PENDING').length,
-      sent: deliveries.filter((d) => d.status === 'SENT').length,
-      delivered: deliveries.filter((d) => d.status === 'DELIVERED').length,
-      failed: deliveries.filter((d) => d.status === 'FAILED').length,
-      bounced: deliveries.filter((d) => d.status === 'BOUNCED').length,
-    };
-
-    return {
-      deliveries: deliveries.map((d) => d.toJSON()),
-      summary,
-    };
   }
 
   async replyToMessage(originalId: string, senderId: string, replyData: any) {
-    const originalMessage = await this.messageModel.findByPk(originalId);
+    return this.executeWithLogging('replyToMessage', async () => {
+      this.validateUUID(originalId, 'original message ID');
+      this.validateUUID(senderId, 'sender ID');
 
-    if (!originalMessage) {
-      throw new NotFoundException('Original message not found');
-    }
+      const originalMessage = await this.findEntityOrFail(
+        this.messageModel,
+        originalId,
+        'Original message',
+      );
 
-    // Create reply message to original sender
-    return this.sendMessage({
-      recipients: [
-        {
-          type: 'NURSE',
-          id: originalMessage.senderId,
-          email: undefined,
-        },
-      ],
-      channels: replyData.channels || ['EMAIL'],
-      subject: `Re: ${originalMessage.subject || 'Your message'}`,
-      content: replyData.content,
-      priority: 'MEDIUM',
-      category: originalMessage.category,
-      senderId,
+      // Create reply message to original sender
+      return this.sendMessage({
+        recipients: [
+          {
+            type: 'NURSE',
+            id: originalMessage.senderId,
+            email: undefined,
+          },
+        ],
+        channels: replyData.channels || ['EMAIL'],
+        subject: `Re: ${originalMessage.subject || 'Your message'}`,
+        content: replyData.content,
+        priority: 'MEDIUM',
+        category: originalMessage.category,
+        senderId,
+      });
     });
   }
 
   async deleteScheduledMessage(id: string, userId: string) {
-    const message = await this.messageModel.findByPk(id);
+    return this.executeWithLogging('deleteScheduledMessage', async () => {
+      this.validateUUID(id, 'message ID');
+      this.validateUUID(userId, 'user ID');
 
-    if (!message) {
-      throw new NotFoundException('Message not found');
-    }
+      const message = await this.findEntityOrFail(this.messageModel, id, 'Message');
 
-    if (message.senderId !== userId) {
-      throw new ForbiddenException('Not authorized to delete this message');
-    }
+      if (message.senderId !== userId) {
+        throw new ForbiddenException('Not authorized to delete this message');
+      }
 
-    if (!message.scheduledAt || message.scheduledAt <= new Date()) {
-      throw new BadRequestException(
-        'Cannot delete messages that have already been sent',
-      );
-    }
+      if (!message.scheduledAt || message.scheduledAt <= new Date()) {
+        throw new BadRequestException('Cannot delete messages that have already been sent');
+      }
 
-    await message.destroy();
+      await message.destroy();
+    });
   }
 }

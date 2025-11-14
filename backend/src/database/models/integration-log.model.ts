@@ -179,3 +179,6 @@ export class IntegrationLog extends Model {
     await createModelAuditHook('IntegrationLog', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default IntegrationLog;

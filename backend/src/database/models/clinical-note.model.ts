@@ -360,3 +360,6 @@ export class ClinicalNote
     this.amendmentReason = reason;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ClinicalNote;

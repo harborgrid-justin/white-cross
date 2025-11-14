@@ -148,3 +148,6 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
     await createModelAuditHook('AppointmentReminder', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AppointmentReminder;

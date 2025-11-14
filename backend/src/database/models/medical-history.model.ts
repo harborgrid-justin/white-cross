@@ -226,3 +226,6 @@ export class MedicalHistory
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MedicalHistory;

@@ -417,3 +417,6 @@ export class PushNotification
     await createModelAuditHook('PushNotification', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PushNotification;

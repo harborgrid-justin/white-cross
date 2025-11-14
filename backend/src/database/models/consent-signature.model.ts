@@ -55,10 +55,6 @@ export interface ConsentSignatureAttributes {
       fields: ['createdAt'],
       name: 'idx_consent_signature_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_consent_signature_updated_at',
-    },
   ],
 })
 export class ConsentSignature
@@ -131,3 +127,6 @@ export class ConsentSignature
     await createModelAuditHook('ConsentSignature', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ConsentSignature;

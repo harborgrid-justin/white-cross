@@ -149,3 +149,6 @@ export class WitnessStatement
     await createModelAuditHook('WitnessStatement', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default WitnessStatement;

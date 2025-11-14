@@ -172,3 +172,6 @@ export class RemediationAction
     await createModelAuditHook('RemediationAction', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default RemediationAction;

@@ -20,7 +20,7 @@ import { SecurityIncidentType } from '../../services/security/enums/incident-typ
 export class SecurityIncident extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
-  @Column(DataType.STRING)
+  @Column(DataType.UUID)
   declare id: string;
 
   @Column({
@@ -79,7 +79,7 @@ export class SecurityIncident extends Model {
   description!: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
     field: 'userId',
   })
@@ -135,7 +135,7 @@ export class SecurityIncident extends Model {
   impact?: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.UUID,
     allowNull: true,
     field: 'assignedTo',
   })
@@ -183,3 +183,6 @@ export class SecurityIncident extends Model {
   })
   declare createdAt: Date;
 }
+
+// Default export for Sequelize-TypeScript
+export default SecurityIncident;

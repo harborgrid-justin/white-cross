@@ -319,3 +319,6 @@ export class AcademicTranscript
     await createModelAuditHook('AcademicTranscript', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AcademicTranscript;

@@ -436,3 +436,6 @@ export class AlertRule
     await createModelAuditHook('AlertRule', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AlertRule;

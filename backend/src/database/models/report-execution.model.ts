@@ -198,3 +198,6 @@ export class ReportExecution
     await createModelAuditHook('ReportExecution', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ReportExecution;

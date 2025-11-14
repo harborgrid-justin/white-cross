@@ -219,3 +219,6 @@ export class District extends Model<
   })
   declare licenses?: License[];
 }
+
+// Default export for Sequelize-TypeScript
+export default District;

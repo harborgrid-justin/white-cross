@@ -4,12 +4,7 @@
  * @description Handles search, filtering, and batch query operations
  */
 
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Student, User } from '@/database';
@@ -32,7 +27,6 @@ import { PaginatedResponse } from '../types';
  */
 @Injectable()
 export class StudentQueryService extends BaseService {
-
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -63,7 +57,7 @@ export class StudentQueryService extends BaseService {
     try {
       const { page = 1, limit = 20, search, grade, isActive, nurseId, gender } = filterDto;
 
-      const where: any = {};
+      const where: Record<string, any> = {};
 
       // Apply filters
       if (search) {
@@ -90,31 +84,37 @@ export class StudentQueryService extends BaseService {
         where.gender = gender;
       }
 
-      // Pagination
-      const offset = (page - 1) * limit;
+      // Include array for eager loading
+      const include = [
+        {
+          model: User,
+          as: 'nurse',
+          attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+          required: false, // LEFT JOIN - include students without assigned nurse
+        },
+      ];
 
-      // Execute query with eager loading to prevent N+1
-      const { rows: data, count: total } = await this.studentModel.findAndCountAll({
-        where,
-        offset,
+      // Use BaseService createPaginatedQuery method
+      const paginationOptions = this.createPaginatedQuery(
+        page,
         limit,
-        order: [
+        where,
+        [
           ['lastName', 'ASC'],
           ['firstName', 'ASC'],
         ],
-        include: [
-          {
-            model: User,
-            as: 'nurse',
-            attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-            required: false, // LEFT JOIN - include students without assigned nurse
+        include,
+        {
+          attributes: {
+            exclude: ['schoolId', 'districtId'],
           },
-        ],
-        attributes: {
-          exclude: ['schoolId', 'districtId'],
+          distinct: true, // Prevent duplicate counts with JOINs
         },
-        distinct: true, // Prevent duplicate counts with JOINs
-      });
+      );
+
+      // Execute query with eager loading to prevent N+1
+      const { rows: data, count: total } =
+        await this.studentModel.findAndCountAll(paginationOptions);
 
       return {
         data,
@@ -202,7 +202,7 @@ export class StudentQueryService extends BaseService {
         raw: true,
       });
 
-      return result.map((r: any) => r.grade);
+      return result.map((r: Record<string, any>) => r.grade as string);
     } catch (error) {
       this.handleError('Failed to fetch grades', error);
     }
@@ -256,8 +256,7 @@ export class StudentQueryService extends BaseService {
       // Return in same order as requested IDs, null for missing
       return ids.map((id) => studentMap.get(id) || null);
     } catch (error) {
-      this.logger.error(`Failed to batch fetch students: ${error.message}`);
-      throw new BadRequestException('Failed to batch fetch students');
+      this.handleError('Failed to batch fetch students', error);
     }
   }
 
@@ -303,8 +302,7 @@ export class StudentQueryService extends BaseService {
       // Return in same order as input, empty array for missing
       return schoolIds.map((id) => studentsBySchool.get(id) || []);
     } catch (error) {
-      this.logger.error(`Failed to batch fetch students by school IDs: ${error.message}`);
-      throw new InternalServerErrorException('Failed to batch fetch students by school IDs');
+      this.handleError('Failed to batch fetch students by school IDs', error);
     }
   }
 }

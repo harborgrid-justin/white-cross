@@ -138,3 +138,6 @@ export class StudentDrugAllergy
     await createModelAuditHook('StudentDrugAllergy', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default StudentDrugAllergy;

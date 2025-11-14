@@ -339,3 +339,6 @@ export class Message extends Model<
     await createModelAuditHook('Message', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Message;

@@ -4,11 +4,7 @@
  * @description Handles student health and mental health records access
  */
 
-import {
-  Injectable,
-  NotFoundException,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { HealthRecord, MentalHealthRecord, Student, User } from '@/database';
 import { RequestContextService } from '@/common/context/request-context.service';
@@ -25,7 +21,6 @@ import { BaseService } from '@/common/base';
  */
 @Injectable()
 export class StudentHealthRecordsService extends BaseService {
-
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -66,22 +61,26 @@ export class StudentHealthRecordsService extends BaseService {
       // Verify student exists
       await this.verifyStudentExists(studentId);
 
-      // Calculate offset for pagination
-      const offset = (page - 1) * limit;
-
-      // Query health records with pagination
-      const { rows: healthRecords, count: total } = await this.healthRecordModel.findAndCountAll({
-        where: { studentId },
-        offset,
+      // Use BaseService createPaginatedQuery method
+      const paginationOptions = this.createPaginatedQuery(
+        page,
         limit,
-        order: [
+        { studentId },
+        [
           ['recordDate', 'DESC'],
           ['createdAt', 'DESC'],
         ],
-        attributes: {
-          exclude: ['updatedBy'], // Exclude internal tracking fields
+        [],
+        {
+          attributes: {
+            exclude: ['updatedBy'], // Exclude internal tracking fields
+          },
         },
-      });
+      );
+
+      // Query health records with pagination
+      const { rows: healthRecords, count: total } =
+        await this.healthRecordModel.findAndCountAll(paginationOptions);
 
       const pages = Math.ceil(total / limit);
 
@@ -124,40 +123,42 @@ export class StudentHealthRecordsService extends BaseService {
       // Verify student exists
       await this.verifyStudentExists(studentId);
 
-      // Calculate offset for pagination
-      const offset = (page - 1) * limit;
-
       // OPTIMIZATION: Eager load counselor and createdBy user relationships
-      const { rows: mentalHealthRecords, count: total } =
-        await this.mentalHealthRecordModel.findAndCountAll({
-          where: { studentId },
-          offset,
-          limit,
-          // Use distinct: true to ensure accurate count with joins
-          distinct: true,
-          order: [
-            ['recordDate', 'DESC'],
-            ['createdAt', 'DESC'],
-          ],
+      const include = [
+        {
+          model: this.userModel,
+          as: 'counselor',
+          required: false, // LEFT JOIN to include records without counselor
+          attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+        },
+        {
+          model: this.userModel,
+          as: 'creator',
+          required: false, // LEFT JOIN to include records without creator
+          attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
+        },
+      ];
+
+      // Use BaseService createPaginatedQuery method
+      const paginationOptions = this.createPaginatedQuery(
+        page,
+        limit,
+        { studentId },
+        [
+          ['recordDate', 'DESC'],
+          ['createdAt', 'DESC'],
+        ],
+        include,
+        {
+          distinct: true, // Use distinct: true to ensure accurate count with joins
           attributes: {
             exclude: ['updatedBy', 'sessionNotes'], // Exclude highly sensitive fields unless specifically requested
           },
-          // Eager load related entities to prevent N+1 queries
-          include: [
-            {
-              model: this.userModel,
-              as: 'counselor',
-              required: false, // LEFT JOIN to include records without counselor
-              attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-            },
-            {
-              model: this.userModel,
-              as: 'creator',
-              required: false, // LEFT JOIN to include records without creator
-              attributes: ['id', 'firstName', 'lastName', 'email', 'role'],
-            },
-          ],
-        });
+        },
+      );
+
+      const { rows: mentalHealthRecords, count: total } =
+        await this.mentalHealthRecordModel.findAndCountAll(paginationOptions);
 
       const pages = Math.ceil(total / limit);
 
@@ -191,12 +192,6 @@ export class StudentHealthRecordsService extends BaseService {
    * Helper method used across health record operations
    */
   private async verifyStudentExists(studentId: string): Promise<Student> {
-    const student = await this.studentModel.findByPk(studentId);
-
-    if (!student) {
-      throw new NotFoundException(`Student with ID ${studentId} not found`);
-    }
-
-    return student;
+    return await this.findEntityOrFail(this.studentModel, studentId, 'Student');
   }
 }

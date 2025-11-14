@@ -153,3 +153,6 @@ export class MessageRead extends Model<
     await createModelAuditHook('MessageRead', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MessageRead;

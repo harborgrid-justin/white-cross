@@ -133,3 +133,6 @@ export class Immunization
     await createModelAuditHook('Immunization', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Immunization;

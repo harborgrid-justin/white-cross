@@ -104,3 +104,6 @@ export class PhiDisclosureAudit
     await createModelAuditHook('PhiDisclosureAudit', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PhiDisclosureAudit;

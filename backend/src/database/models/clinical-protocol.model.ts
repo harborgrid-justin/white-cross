@@ -271,3 +271,6 @@ export class ClinicalProtocol
     await createModelAuditHook('ClinicalProtocol', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ClinicalProtocol;

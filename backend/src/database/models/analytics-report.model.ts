@@ -258,3 +258,6 @@ export class AnalyticsReport
     await createModelAuditHook('AnalyticsReport', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AnalyticsReport;

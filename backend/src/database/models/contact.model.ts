@@ -274,3 +274,6 @@ export class Contact extends Model<Contact> {
     await createModelAuditHook('Contact', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Contact;

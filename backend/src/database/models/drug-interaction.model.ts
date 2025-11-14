@@ -155,3 +155,6 @@ export class DrugInteraction
     await createModelAuditHook('DrugInteraction', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default DrugInteraction;

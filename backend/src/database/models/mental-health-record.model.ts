@@ -521,3 +521,6 @@ export class MentalHealthRecord
     await createModelAuditHook('MentalHealthRecord', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MentalHealthRecord;

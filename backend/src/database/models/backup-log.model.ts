@@ -212,3 +212,6 @@ export class BackupLog extends Model<
     await createModelAuditHook('BackupLog', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default BackupLog;

@@ -224,3 +224,6 @@ export class Conversation extends Model<
     await createModelAuditHook('Conversation', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Conversation;
