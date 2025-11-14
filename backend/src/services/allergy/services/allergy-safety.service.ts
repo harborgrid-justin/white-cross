@@ -16,7 +16,7 @@ import { Allergy } from '../models/allergy.model';
 import { Student } from '@/database/models';
 import { AllergySeverity } from '../../../common/enums';
 import { AllergyCrudService } from './allergy-crud.service';
-import { CreateAllergyDto } from '../dto/create-allergy.dto';
+import { AllergyCreateDto } from '../dto/create-allergy.dto';
 
 import { BaseService } from '@/common/base';
 export interface DrugAllergyConflict {
@@ -178,7 +178,7 @@ export class AllergySafetyService extends BaseService {
    * @returns Array of created allergy records
    */
   async bulkCreateAllergies(
-    allergiesData: CreateAllergyDto[],
+    allergiesData: AllergyCreateDto[],
   ): Promise<Allergy[]> {
     const createdAllergies: Allergy[] = [];
 

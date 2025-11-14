@@ -12,6 +12,7 @@ import {
   Scopes,
   Table,
 } from 'sequelize-typescript';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum MessageType {
@@ -87,6 +88,8 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
     foreignKey: 'appointmentId',
     as: 'appointment',
   })
+  @ApiHideProperty()
+  declare appointment?: any;
 
   @Column({
     type: DataType.STRING(50),

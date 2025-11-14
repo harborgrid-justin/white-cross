@@ -18,10 +18,10 @@
 
 import { Injectable } from '@nestjs/common';
 import { BaseService } from '@/common/base';
-import { HealthRecord   } from '@/database/models';
-import { Allergy   } from '@/database/models';
-import { ChronicCondition   } from '@/database/models';
-import { Vaccination   } from '@/database/models';
+import { HealthRecord } from '@/database/models';
+import { Allergy } from '@/database/models';
+import { ChronicCondition } from '@/database/models';
+import { Vaccination } from '@/database/models';
 import { BulkDeleteResults } from './interfaces/health-record-types';
 import { GrowthDataPoint } from './interfaces/pagination.interface';
 import { HealthRecordStatistics } from './interfaces/health-record-types';
@@ -35,7 +35,7 @@ import { HealthRecordCreateDto } from './dto/create-health-record.dto';
 import { HealthRecordUpdateDto } from './dto/update-health-record.dto';
 import { ImportHealthRecordsDto } from './dto/import-health-records.dto';
 import { HealthRecordFilterDto } from './dto/health-record-filter.dto';
-import { CreateAllergyDto } from './allergy/dto/create-allergy.dto';
+import { HealthRecordCreateAllergyDto } from './allergy/dto/create-allergy.dto';
 import { UpdateAllergyDto } from './allergy/dto/update-allergy.dto';
 import { CreateChronicConditionDto } from './chronic-condition/dto/create-chronic-condition.dto';
 import { UpdateChronicConditionDto } from './chronic-condition/dto/update-chronic-condition.dto';
@@ -88,7 +88,7 @@ export class HealthRecordService extends BaseService {
     private readonly summaryService: HealthRecordSummaryService,
     private readonly batchService: HealthRecordBatchService,
   ) {
-    super("HealthRecordService");
+    super('HealthRecordService');
   }
 
   // ==================== Health Record Operations ====================
@@ -154,7 +154,7 @@ export class HealthRecordService extends BaseService {
    * @param data - Allergy creation data
    * @returns Created allergy record
    */
-  async addAllergy(data: CreateAllergyDto): Promise<Allergy> {
+  async addAllergy(data: HealthRecordCreateAllergyDto): Promise<Allergy> {
     return this.allergyService.addAllergy(data);
   }
 

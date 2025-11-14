@@ -8,21 +8,42 @@
  * @controller AllergyController
  * @route /allergy
  */
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseBoolPipe, ParseUUIDPipe, Patch, Post, Query, Version } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseBoolPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Version,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AllergyCrudService } from './services/allergy-crud.service';
 import { AllergyQueryService } from './services/allergy-query.service';
 import { AllergySafetyService } from './services/allergy-safety.service';
 import { AllergyFiltersDto } from './dto/allergy-filters.dto';
 import { AllergyUpdateDto } from './dto/update-allergy.dto';
-import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { AllergyCreateDto } from './dto/create-allergy.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { VerifyAllergyDto } from './dto/verify-allergy.dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Allergies')
 @ApiBearerAuth()
-
 @Controller('allergies')
 export class AllergyController extends BaseController {
   constructor(
@@ -30,7 +51,8 @@ export class AllergyController extends BaseController {
     private readonly allergyQueryService: AllergyQueryService,
     private readonly allergySafetyService: AllergySafetyService,
   ) {
-    super();}
+    super();
+  }
 
   /**
    * Create a new allergy record
@@ -46,7 +68,7 @@ export class AllergyController extends BaseController {
   @ApiResponse({
     status: 201,
     description: 'Allergy created successfully',
-    type: CreateAllergyDto,
+    type: AllergyCreateDto,
   })
   @ApiResponse({
     status: 400,
@@ -60,7 +82,7 @@ export class AllergyController extends BaseController {
     status: 500,
     description: 'Internal server error',
   })
-  async createAllergy(@Body() createAllergyDto: CreateAllergyDto) {
+  async createAllergy(@Body() createAllergyDto: AllergyCreateDto) {
     return this.allergyCrudService.createAllergy(createAllergyDto);
   }
 
@@ -158,10 +180,7 @@ export class AllergyController extends BaseController {
     @Query('includeInactive', new ParseBoolPipe({ optional: true }))
     includeInactive?: boolean,
   ) {
-    return this.allergyQueryService.getStudentAllergies(
-      studentId,
-      includeInactive || false,
-    );
+    return this.allergyQueryService.getStudentAllergies(studentId, includeInactive || false);
   }
 
   /**
@@ -192,9 +211,7 @@ export class AllergyController extends BaseController {
     status: 404,
     description: 'Student not found',
   })
-  async getCriticalAllergies(
-    @Param('studentId', ParseUUIDPipe) studentId: string,
-  ) {
+  async getCriticalAllergies(@Param('studentId', ParseUUIDPipe) studentId: string) {
     return this.allergyQueryService.getCriticalAllergies(studentId);
   }
 
@@ -245,10 +262,7 @@ export class AllergyController extends BaseController {
     status: 401,
     description: 'Unauthorized',
   })
-  async searchAllergies(
-    @Query() filters: AllergyFiltersDto,
-    @Query() pagination: PaginationDto,
-  ) {
+  async searchAllergies(@Query() filters: AllergyFiltersDto, @Query() pagination: PaginationDto) {
     return this.allergyQueryService.searchAllergies(filters, pagination);
   }
 
@@ -259,8 +273,7 @@ export class AllergyController extends BaseController {
   @Get('statistics/all')
   @ApiOperation({
     summary: 'Get allergy statistics',
-    description:
-      'Retrieves aggregated statistics about allergies (counts by severity, type, etc.)',
+    description: 'Retrieves aggregated statistics about allergies (counts by severity, type, etc.)',
   })
   @ApiResponse({
     status: 200,
@@ -378,8 +391,7 @@ export class AllergyController extends BaseController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete allergy permanently',
-    description:
-      'Permanently deletes an allergy record from the database - use with caution',
+    description: 'Permanently deletes an allergy record from the database - use with caution',
   })
   @ApiParam({
     name: 'id',
@@ -410,8 +422,7 @@ export class AllergyController extends BaseController {
   @Post(':id/verify')
   @ApiOperation({
     summary: 'Verify allergy',
-    description:
-      'Marks an allergy as clinically verified by a healthcare professional',
+    description: 'Marks an allergy as clinically verified by a healthcare professional',
   })
   @ApiParam({
     name: 'id',
@@ -435,10 +446,7 @@ export class AllergyController extends BaseController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() verifyAllergyDto: VerifyAllergyDto,
   ) {
-    return this.allergySafetyService.verifyAllergy(
-      id,
-      verifyAllergyDto.verifiedBy,
-    );
+    return this.allergySafetyService.verifyAllergy(id, verifyAllergyDto.verifiedBy);
   }
 
   /**
@@ -534,7 +542,7 @@ export class AllergyController extends BaseController {
       'Creates multiple allergy records in a single transaction - useful for data imports',
   })
   @ApiBody({
-    type: [CreateAllergyDto],
+    type: [AllergyCreateDto],
     description: 'Array of allergy records to create',
   })
   @ApiResponse({
@@ -557,7 +565,7 @@ export class AllergyController extends BaseController {
     status: 401,
     description: 'Unauthorized',
   })
-  async bulkCreateAllergies(@Body() allergiesData: CreateAllergyDto[]) {
+  async bulkCreateAllergies(@Body() allergiesData: AllergyCreateDto[]) {
     return this.allergySafetyService.bulkCreateAllergies(allergiesData);
   }
 }

@@ -14,7 +14,11 @@ import { AppConfigService } from './config';
 import { LoggerService } from './common/logging/logger.service';
 import { SentryService } from './infrastructure/monitoring/sentry.service';
 import { HipaaExceptionFilter } from './common/exceptions/filters';
-import { createSwaggerConfig, addGlobalSchemas, ERROR_RESPONSE_DTOS } from '@/common/config/swagger.config';
+import {
+  createSwaggerConfig,
+  addGlobalSchemas,
+  ERROR_RESPONSE_DTOS,
+} from '@/common/config/swagger.config';
 
 // Global logger for bootstrap errors
 const bootstrapLogger = new LoggerService();
@@ -48,13 +52,10 @@ function setupGlobalErrorHandlers(app: any, configService: AppConfigService) {
 
     // Report to Sentry if available
     if (sentryService) {
-      sentryService.captureException(
-        reason instanceof Error ? reason : new Error(String(reason)),
-        {
-          tags: { errorType: 'unhandledRejection' },
-          level: 'fatal',
-        },
-      );
+      sentryService.captureException(reason instanceof Error ? reason : new Error(String(reason)), {
+        tags: { errorType: 'unhandledRejection' },
+        level: 'fatal',
+      });
     }
 
     // In production, exit gracefully after logging
@@ -173,14 +174,8 @@ async function bootstrap() {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          styleSrc: [
-            "'self'",
-            'https://cdnjs.cloudflare.com',
-          ],
-          scriptSrc: [
-            "'self'",
-            'https://cdnjs.cloudflare.com',
-          ],
+          styleSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
+          scriptSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'"],
           fontSrc: ["'self'", 'data:', 'https://cdnjs.cloudflare.com'],
@@ -283,12 +278,7 @@ async function bootstrap() {
     origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'X-CSRF-Token',
-    ],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
     // Expose rate limiting and pagination headers to clients
     exposedHeaders: [
       'X-Total-Count',
@@ -311,11 +301,12 @@ async function bootstrap() {
       await redisIoAdapter.connectToRedis();
       app.useWebSocketAdapter(redisIoAdapter);
 
-      bootstrapLogger.log(
-        'Redis adapter enabled for WebSocket horizontal scaling',
-      );
+      bootstrapLogger.log('Redis adapter enabled for WebSocket horizontal scaling');
     } catch (error) {
-      bootstrapLogger.error('Failed to initialize Redis adapter', error instanceof Error ? error : String(error));
+      bootstrapLogger.error(
+        'Failed to initialize Redis adapter',
+        error instanceof Error ? error : String(error),
+      );
 
       if (configService.isProduction) {
         throw new Error(
@@ -332,15 +323,15 @@ async function bootstrap() {
     }
   } else {
     bootstrapLogger.warn(
-      'Redis adapter disabled. ' +
-        'WebSockets will NOT work across multiple server instances.',
+      'Redis adapter disabled. ' + 'WebSockets will NOT work across multiple server instances.',
     );
   }
 
   // Swagger API Documentation
   // SECURITY: Only enable Swagger in non-production environments by default
   const isProduction = configService.get('NODE_ENV') === 'production';
-  const swaggerEnabledInProduction = configService.get('SWAGGER_ENABLED_IN_PRODUCTION', 'false') === 'true';
+  const swaggerEnabledInProduction =
+    configService.get('SWAGGER_ENABLED_IN_PRODUCTION', 'false') === 'true';
   const enableSwagger = !isProduction || swaggerEnabledInProduction;
 
   if (enableSwagger) {
@@ -366,15 +357,16 @@ async function bootstrap() {
         showRequestHeaders: true,
         tryItOutEnabled: true,
       },
-      customSiteTitle: configService.get('SWAGGER_UI_TITLE') || 'White Cross Health API Documentation',
+      customSiteTitle: configService.get(
+        'SWAGGER_UI_TITLE',
+        'White Cross Health API Documentation',
+      ),
       customfavIcon: '/favicon.ico',
       customJs: [
         'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
         'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js',
       ],
-      customCssUrl: [
-        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-      ],
+      customCssUrl: ['https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css'],
     });
 
     // Also expose the JSON spec at /api/docs-json for automated tools
@@ -383,7 +375,9 @@ async function bootstrap() {
       res.json(document);
     });
 
-    bootstrapLogger.log(`✅ Swagger UI available at: ${configService.get('NODE_ENV') === 'development' ? 'http://localhost:' + configService.get('PORT') : ''}/api/docs`);
+    bootstrapLogger.log(
+      `✅ Swagger UI available at: ${configService.get('NODE_ENV') === 'development' ? 'http://localhost:' + configService.get('PORT') : ''}/api/docs`,
+    );
   } else {
     bootstrapLogger.warn('⚠️  Swagger API Documentation DISABLED in production for security');
     bootstrapLogger.warn('    Set SWAGGER_ENABLED_IN_PRODUCTION=true to enable (not recommended)');

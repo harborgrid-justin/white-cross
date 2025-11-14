@@ -1,11 +1,30 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Version } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Version,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { HealthDomainService } from './health-domain.service';
 import {
   AllergyFiltersDto,
   ChronicConditionFiltersDto,
   CreateImmunizationDto,
-  HealthDomainCreateAllergyDto,
+  HealthDomainAllergyCreateDto,
   HealthDomainCreateChronicConditionDto,
   HealthDomainCreateRecordDto,
   HealthDomainUpdateAllergyDto,
@@ -16,7 +35,11 @@ import {
   UpdateImmunizationDto,
   VaccinationFiltersDto,
 } from './dto';
-import { ExemptionFilterDto, HealthDomainCreateExemptionDto, UpdateExemptionDto } from './dto/exemption.dto';
+import {
+  ExemptionFilterDto,
+  HealthDomainCreateExemptionDto,
+  UpdateExemptionDto,
+} from './dto/exemption.dto';
 import { BaseController } from '@/common/base';
 import {
   CheckContraindicationsDto,
@@ -30,11 +53,11 @@ import {
 
 @ApiTags('Health Domains')
 @ApiBearerAuth()
-
 @Controller('health-domains')
 export class HealthDomainController extends BaseController {
   constructor(private readonly healthDomainService: HealthDomainService) {
-    super();}
+    super();
+  }
 
   // ============================================================================
   // HEALTH RECORDS ENDPOINTS
@@ -145,7 +168,7 @@ export class HealthDomainController extends BaseController {
     status: 201,
     description: 'Allergy record created successfully',
   })
-  async createAllergy(@Body() createDto: HealthDomainCreateAllergyDto) {
+  async createAllergy(@Body() createDto: HealthDomainAllergyCreateDto) {
     return this.healthDomainService.createAllergy(createDto);
   }
 
@@ -156,10 +179,7 @@ export class HealthDomainController extends BaseController {
     status: 200,
     description: 'Allergy record updated successfully',
   })
-  async updateAllergy(
-    @Param('id') id: string,
-    @Body() updateDto: HealthDomainUpdateAllergyDto,
-  ) {
+  async updateAllergy(@Param('id') id: string, @Body() updateDto: HealthDomainUpdateAllergyDto) {
     return this.healthDomainService.updateAllergy(id, updateDto);
   }
 
@@ -206,10 +226,7 @@ export class HealthDomainController extends BaseController {
   @ApiOperation({ summary: 'Verify an allergy' })
   @ApiParam({ name: 'id', description: 'Allergy ID' })
   @ApiResponse({ status: 200, description: 'Allergy verified successfully' })
-  async verifyAllergy(
-    @Param('id') id: string,
-    @Body('verifiedBy') verifiedBy: string,
-  ) {
+  async verifyAllergy(@Param('id') id: string, @Body('verifiedBy') verifiedBy: string) {
     return this.healthDomainService.verifyAllergy(id, verifiedBy);
   }
 
@@ -234,10 +251,7 @@ export class HealthDomainController extends BaseController {
     status: 200,
     description: 'Immunization record updated successfully',
   })
-  async updateImmunization(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateImmunizationDto,
-  ) {
+  async updateImmunization(@Param('id') id: string, @Body() updateDto: UpdateImmunizationDto) {
     return this.healthDomainService.updateImmunization(id, updateDto);
   }
 
@@ -290,9 +304,7 @@ export class HealthDomainController extends BaseController {
     status: 200,
     description: 'Overdue immunizations retrieved successfully',
   })
-  async getOverdueImmunizations(
-    @Query() queryDto: OverdueVaccinationsQueryDto,
-  ) {
+  async getOverdueImmunizations(@Query() queryDto: OverdueVaccinationsQueryDto) {
     return this.healthDomainService.getOverdueImmunizations(queryDto);
   }
 
@@ -318,15 +330,8 @@ export class HealthDomainController extends BaseController {
     status: 200,
     description: 'Exemptions retrieved successfully',
   })
-  async getExemptions(
-    @Query() filterDto: ExemptionFilterDto,
-    @Query() pagination: PaginationDto,
-  ) {
-    return this.healthDomainService.getExemptions(
-      filterDto,
-      pagination.page,
-      pagination.limit,
-    );
+  async getExemptions(@Query() filterDto: ExemptionFilterDto, @Query() pagination: PaginationDto) {
+    return this.healthDomainService.getExemptions(filterDto, pagination.page, pagination.limit);
   }
 
   @Get('immunizations/exemptions/:id')
@@ -346,10 +351,7 @@ export class HealthDomainController extends BaseController {
   @ApiParam({ name: 'id', description: 'Exemption UUID' })
   @ApiResponse({ status: 200, description: 'Exemption updated successfully' })
   @ApiResponse({ status: 404, description: 'Exemption not found' })
-  async updateExemption(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateExemptionDto,
-  ) {
+  async updateExemption(@Param('id') id: string, @Body() updateDto: UpdateExemptionDto) {
     return this.healthDomainService.updateExemption(id, updateDto);
   }
 
@@ -380,8 +382,7 @@ export class HealthDomainController extends BaseController {
   @Get('immunizations/schedules/age')
   @ApiOperation({
     summary: 'Get vaccination schedule by age',
-    description:
-      'Returns CDC-recommended vaccination schedule for specific age',
+    description: 'Returns CDC-recommended vaccination schedule for specific age',
   })
   @ApiResponse({ status: 200, description: 'Schedule retrieved successfully' })
   async getScheduleByAge(@Query() queryDto: GetScheduleByAgeDto) {
@@ -391,8 +392,7 @@ export class HealthDomainController extends BaseController {
   @Get('immunizations/schedules/catch-up')
   @ApiOperation({
     summary: 'Get catch-up vaccination schedule',
-    description:
-      'Calculates catch-up schedule for students who are behind on vaccinations',
+    description: 'Calculates catch-up schedule for students who are behind on vaccinations',
   })
   @ApiResponse({
     status: 200,
@@ -405,24 +405,20 @@ export class HealthDomainController extends BaseController {
   @Get('immunizations/schedules/school-entry')
   @ApiOperation({
     summary: 'Get school entry requirements',
-    description:
-      'Returns state-specific vaccination requirements for school entry by grade level',
+    description: 'Returns state-specific vaccination requirements for school entry by grade level',
   })
   @ApiResponse({
     status: 200,
     description: 'School entry requirements retrieved successfully',
   })
-  async getSchoolEntryRequirements(
-    @Query() queryDto: SchoolEntryRequirementsDto,
-  ) {
+  async getSchoolEntryRequirements(@Query() queryDto: SchoolEntryRequirementsDto) {
     return this.healthDomainService.getSchoolEntryRequirements(queryDto);
   }
 
   @Post('immunizations/schedules/check-contraindications')
   @ApiOperation({
     summary: 'Check contraindications for vaccine',
-    description:
-      'Checks student allergies and conditions for vaccine contraindications',
+    description: 'Checks student allergies and conditions for vaccine contraindications',
   })
   @ApiResponse({
     status: 200,
@@ -439,8 +435,7 @@ export class HealthDomainController extends BaseController {
   @Get('immunizations/reports/vaccination-rates')
   @ApiOperation({
     summary: 'Get vaccination rates report',
-    description:
-      'Generates vaccination coverage rates by school, grade, or vaccine type',
+    description: 'Generates vaccination coverage rates by school, grade, or vaccine type',
   })
   @ApiResponse({
     status: 200,
@@ -506,9 +501,7 @@ export class HealthDomainController extends BaseController {
     status: 201,
     description: 'Chronic condition record created successfully',
   })
-  async createChronicCondition(
-    @Body() createDto: HealthDomainCreateChronicConditionDto,
-  ) {
+  async createChronicCondition(@Body() createDto: HealthDomainCreateChronicConditionDto) {
     return this.healthDomainService.createChronicCondition(createDto);
   }
 

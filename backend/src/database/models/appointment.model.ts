@@ -332,7 +332,17 @@ export class Appointment extends Model<AppointmentAttributes, AppointmentCreatio
   })
   recurringEndDate?: Date;
 
-
+  // Note: reminders association commented out to prevent Swagger circular dependency
+  // The association still works via Sequelize, but Swagger won't generate schemas for it
+  // @HasMany(() => {
+  //   const { AppointmentReminder } = require('./appointment-reminder.model');
+  //   return AppointmentReminder;
+  // }, {
+  //   foreignKey: 'appointmentId',
+  //   as: 'reminders',
+  // })
+  // @ApiHideProperty()
+  // declare reminders?: any[];
 
   @Column({
     type: DataType.DATE,

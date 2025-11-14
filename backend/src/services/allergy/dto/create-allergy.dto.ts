@@ -17,7 +17,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AllergySeverity } from '../../../common/enums';
 import { AllergyType } from '@/database/models';
 
-export class CreateAllergyDto {
+export class AllergyCreateDto {
   /**
    * Student's unique identifier
    */

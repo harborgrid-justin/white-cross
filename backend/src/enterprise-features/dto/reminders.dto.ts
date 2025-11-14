@@ -43,7 +43,45 @@ export class CustomizeReminderPreferencesDto {
 }
 
 export class ReminderScheduleResponseDto {
+  @ApiProperty({
+    description: 'Appointment ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
   appointmentId: string;
+
+  @ApiProperty({
+    description: 'Scheduled reminders for the appointment',
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        timing: {
+          type: 'string',
+          enum: ['24h', '1h', '15m'],
+          description: 'When the reminder will be sent',
+        },
+        channel: {
+          type: 'string',
+          enum: ['sms', 'email', 'push'],
+          description: 'Communication channel',
+        },
+        sent: {
+          type: 'boolean',
+          description: 'Whether the reminder has been sent',
+        },
+        sentAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'When the reminder was sent',
+          nullable: true,
+        },
+      },
+    },
+    example: [
+      { timing: '24h', channel: 'email', sent: false },
+      { timing: '1h', channel: 'sms', sent: false },
+    ],
+  })
   reminders: Array<{
     timing: '24h' | '1h' | '15m';
     channel: 'sms' | 'email' | 'push';

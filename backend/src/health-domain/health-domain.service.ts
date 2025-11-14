@@ -3,7 +3,7 @@ import {
   AllergyFiltersDto,
   ChronicConditionFiltersDto,
   CreateImmunizationDto,
-  HealthDomainCreateAllergyDto,
+  HealthDomainAllergyCreateDto,
   HealthDomainCreateChronicConditionDto,
   HealthDomainCreateRecordDto,
   HealthDomainUpdateAllergyDto,
@@ -125,7 +125,7 @@ export class HealthDomainService extends BaseService {
    * Allergies Operations
    * Delegates to AllergyService from health-record module
    */
-  async createAllergy(data: HealthDomainCreateAllergyDto): Promise<any> {
+  async createAllergy(data: HealthDomainAllergyCreateDto): Promise<any> {
     // Delegate to existing AllergyService (user context would come from request)
     const mockUser = { id: 'system', role: 'admin' as any, email: 'system@whitecross.com', isActive: true };
     return this.allergyService.create(data, mockUser);

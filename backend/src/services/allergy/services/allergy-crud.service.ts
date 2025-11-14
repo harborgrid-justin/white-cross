@@ -13,7 +13,7 @@
 import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Allergy } from '../models/allergy.model';
-import { CreateAllergyDto } from '../dto/create-allergy.dto';
+import { AllergyCreateDto } from '../dto/create-allergy.dto';
 import { AllergyUpdateDto } from '../dto/update-allergy.dto';
 import { Student } from '@/database/models';
 
@@ -37,7 +37,7 @@ export class AllergyCrudService extends BaseService {
    * @throws NotFoundException if student doesn't exist
    * @throws ConflictException if duplicate allergy exists
    */
-  async createAllergy(createAllergyDto: CreateAllergyDto): Promise<Allergy> {
+  async createAllergy(createAllergyDto: AllergyCreateDto): Promise<Allergy> {
     // Validate student exists
     const student = await this.studentModel.findByPk(
       createAllergyDto.studentId,

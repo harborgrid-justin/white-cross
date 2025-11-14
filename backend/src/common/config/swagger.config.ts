@@ -22,8 +22,7 @@ import {
 } from '../../services/student/dto/student-response.dto';
 import {
   AppointmentResponseDto,
-  AppointmentDetailResponseDto,
-  PaginatedAppointmentResponseDto,
+  AppointmentListResponseDto,
 } from '../../services/appointment/dto/appointment-response.dto';
 import {
   MedicationResponseDto,
@@ -468,8 +467,7 @@ export const PHASE_2_RESPONSE_DTOS = [
 
   // Appointment Domain
   AppointmentResponseDto,
-  AppointmentDetailResponseDto,
-  PaginatedAppointmentResponseDto,
+  AppointmentListResponseDto,
 
   // Medication Domain
   MedicationResponseDto,
