@@ -10,22 +10,12 @@
  * This service manages asynchronous notification delivery to avoid
  * overwhelming external services and provides resilience through queuing.
  */
-import { Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, Optional, Inject } from '@nestjs/common';
 import { AppConfigService } from '@/common/config/app-config.service';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+
 export interface QueuedNotification {
   id: string;
   timestamp: Date;
@@ -34,11 +24,19 @@ export interface QueuedNotification {
 }
 
 @Injectable()
-export class NotificationQueueService implements OnModuleDestroy {
+export class NotificationQueueService extends BaseService implements OnModuleDestroy {
   private notificationQueue: QueuedNotification[] = [];
   private queueProcessingInterval?: NodeJS.Timeout;
 
-  constructor(@Optional() private readonly config?: AppConfigService) {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    @Optional() private readonly config?: AppConfigService
+  ) {
+    super({
+      serviceName: 'NotificationQueueService',
+      logger,
+      enableAuditLogging: false,
+    });
     // Initialize notification queue processing in production only
     if (this.config?.isProduction) {
       this.initializeQueueProcessing();

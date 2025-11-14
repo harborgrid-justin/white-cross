@@ -20,7 +20,6 @@ import { N1QueryDetectorService } from '@/infrastructure/monitoring/services/n1-
 import { PerformanceReporterService } from '@/infrastructure/monitoring/services/performance-reporter.service';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';

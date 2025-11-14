@@ -21,9 +21,7 @@ import { ExternalServiceMonitorService } from '@/infrastructure/monitoring/servi
 import { HealthAnalyzerService } from '@/infrastructure/monitoring/services/health-analyzer.service';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 @Injectable()
 export class EnhancedHealthCheckService extends HealthCheckService {
   private healthHistory: EnhancedHealthCheckResponse[] = [];

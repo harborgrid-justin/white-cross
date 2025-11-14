@@ -4,7 +4,7 @@
  * HIPAA Compliance: Only warms cache for authorized data access patterns
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Op } from 'sequelize';
@@ -15,23 +15,14 @@ import { Allergy   } from '@/database/models';
 import { ChronicCondition   } from '@/database/models';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+
 @Injectable()
-export class CacheWarmingService implements OnModuleInit {
+export class CacheWarmingService extends BaseService implements OnModuleInit {
   private isWarming = false;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly cacheService: HealthDataCacheService,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -41,7 +32,13 @@ export class CacheWarmingService implements OnModuleInit {
     private readonly allergyModel: typeof Allergy,
     @InjectModel(ChronicCondition)
     private readonly chronicConditionModel: typeof ChronicCondition,
-  ) {}
+  ) {
+    super({
+      serviceName: 'CacheWarmingService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   async onModuleInit() {
     // Enable cache warming based on environment variable

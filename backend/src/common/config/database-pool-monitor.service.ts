@@ -10,7 +10,6 @@ import { Sequelize } from 'sequelize';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 import { BaseService } from '@/common/base';
