@@ -4,23 +4,13 @@
  * HIPAA Compliance: Tracks database access patterns for audit trails
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 export interface PoolMetrics {
   activeConnections: number;
   idleConnections: number;
@@ -44,7 +34,7 @@ export interface PoolAlert {
 }
 
 @Injectable()
-export class DatabasePoolMonitorService implements OnModuleInit {
+export class DatabasePoolMonitorService extends BaseService implements OnModuleInit {
   private metrics: PoolMetrics[] = [];
   private alerts: PoolAlert[] = [];
   private readonly MAX_METRICS_HISTORY = 100;
@@ -55,7 +45,16 @@ export class DatabasePoolMonitorService implements OnModuleInit {
   private readonly CRITICAL_UTILIZATION_THRESHOLD = 0.9; // 90%
   private readonly MAX_WAITING_REQUESTS = 5;
 
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    @InjectConnection() private readonly sequelize: Sequelize
+  ) {
+    super({
+      serviceName: 'DatabasePoolMonitorService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   async onModuleInit() {
     this.logInfo('Database Pool Monitor initialized');

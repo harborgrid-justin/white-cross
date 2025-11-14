@@ -4,22 +4,12 @@
  * HIPAA Compliance: Logs query patterns without exposing PHI data
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize';
 
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 export interface QueryMetrics {
   sql: string;
   duration: number;
@@ -48,7 +38,7 @@ export interface QueryStatistics {
 }
 
 @Injectable()
-export class QueryPerformanceLoggerService implements OnModuleInit {
+export class QueryPerformanceLoggerService extends BaseService implements OnModuleInit {
   private metrics: QueryMetrics[] = [];
   private slowQueries: SlowQueryAlert[] = [];
   private queryStats = new Map<
@@ -61,7 +51,16 @@ export class QueryPerformanceLoggerService implements OnModuleInit {
   private readonly SLOW_QUERY_THRESHOLD = 1000; // 1 second
   private readonly VERY_SLOW_QUERY_THRESHOLD = 5000; // 5 seconds
 
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    @InjectConnection() private readonly sequelize: Sequelize
+  ) {
+    super({
+      serviceName: 'QueryPerformanceLoggerService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   async onModuleInit() {
     this.setupQueryLogging();

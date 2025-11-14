@@ -19,9 +19,7 @@ import { performance } from 'perf_hooks';
 import * as os from 'os';
 import * as process from 'process';
 
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+
 // Performance Metric Interfaces
 export interface PerformanceMetric {
   id: string;

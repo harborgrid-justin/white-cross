@@ -11,7 +11,7 @@
  * This service manages the core business logic for emergency contact data
  * and ensures data integrity through transactions and validation.
  */
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { EmergencyContact } from '@/database/models';
@@ -20,18 +20,24 @@ import { ContactPriority } from '../../contact/enums';
 import { EmergencyContactCreateDto } from '../dto/create-emergency-contact.dto';
 import { EmergencyContactUpdateDto } from '../dto/update-emergency-contact.dto';
 import { ContactValidationService } from './contact-validation.service';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 
 @Injectable()
-export class ContactManagementService {
-  private readonly logger = new Logger(ContactManagementService.name);
-
+export class ContactManagementService extends BaseService {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(EmergencyContact)
     private readonly emergencyContactModel: typeof EmergencyContact,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
     private readonly validationService: ContactValidationService,
   ) {
+    super({
+      serviceName: 'ContactManagementService',
+      logger,
+      enableAuditLogging: false,
+    });
   }
 
   /**

@@ -48,6 +48,13 @@ export class CacheAccessPatternTrackerService extends BaseService {
     return this.accessPatterns.get(key) || null;
   }
 
+  /**
+   * Get all access patterns
+   */
+  getAccessPatterns(): AccessPattern[] {
+    return Array.from(this.accessPatterns.values());
+  }
+
   getTopAccessedKeys(limit: number = 10): Array<{ key: string; pattern: AccessPattern }> {
     return Array.from(this.accessPatterns.entries())
       .sort(([, a], [, b]) => b.totalAccesses - a.totalAccesses)
