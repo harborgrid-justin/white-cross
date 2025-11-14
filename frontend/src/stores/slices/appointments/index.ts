@@ -13,9 +13,9 @@
 // ==========================================
 
 /**
- * Export main reducer
+ * Export main reducer and slice
  */
-export { appointmentsReducer } from './slice';
+export { appointmentsReducer, appointmentsSlice } from './slice';
 
 // ==========================================
 // ACTIONS
@@ -62,13 +62,14 @@ export {
 
 /**
  * Re-export domain types for convenience
+ * TODO: Create @/types/appointments module when types are defined
  */
-export type {
-  Appointment,
-  AppointmentFilters,
-  CreateAppointmentData,
-  UpdateAppointmentData,
-} from '@/types/appointments';
+// export type {
+//   Appointment,
+//   AppointmentFilters,
+//   CreateAppointmentData,
+//   UpdateAppointmentData,
+// } from '@/types/appointments';
 
 // ==========================================
 // USAGE DOCUMENTATION

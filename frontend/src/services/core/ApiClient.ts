@@ -18,10 +18,10 @@ import { API_CONFIG } from '../../constants/config';
 import type { ITokenManager } from './interfaces/ITokenManager';
 import { setupCsrfProtection } from '../security/CsrfProtection';
 
-// Next.js v16 imports for enhanced functionality
-import { cache } from 'react';
-import { unstable_cache } from 'next/cache';
-import { revalidateTag, revalidatePath } from 'next/cache';
+// Next.js v16 imports for enhanced functionality (removed - only available in Server Components)
+// import { cache } from 'react';
+// import { unstable_cache } from 'next/cache';
+// import { revalidateTag, revalidatePath } from 'next/cache';
 
 // Import types from extracted modules
 import type {
@@ -72,8 +72,8 @@ export { ApiClientError } from './ApiClient.errors';
 // Re-export cancellation utilities for backward compatibility
 export { createCancellableRequest } from './ApiClient.cancellation';
 
-// Re-export singleton instance for backward compatibility
-export { apiClient } from './ApiClient.instance';
+// Note: Singleton instance is available from './ApiClient.instance'
+// Import it directly: import { apiClient } from './ApiClient.instance';
 
 // ==========================================
 // API CLIENT CLASS

@@ -281,19 +281,34 @@ export async function handleErrorResponse(
     details = null;
   }
 
+  // Ensure we have a valid error object with safe defaults
+  const errorMessage =
+    (typeof details === 'object' && details !== null && 'message' in details)
+      ? String((details as { message: string }).message || 'Unknown error')
+      : String(response.statusText || `Request failed with status ${response.status || 'unknown'}`);
+
   const error: ApiErrorResponse = {
-    message:
-      typeof details === 'object' && details !== null && 'message' in details
-        ? (details as { message: string }).message
-        : response.statusText || 'Request failed',
-    status: response.status,
+    message: errorMessage || 'Request failed',
+    status: response.status || 500,
     code:
       typeof details === 'object' && details !== null && 'code' in details
         ? (details as { code: string }).code
         : undefined,
-    details,
-    traceId: response.headers.get('x-trace-id') || undefined,
+    details: details || null,
+    traceId: response.headers?.get('x-trace-id') || undefined,
   };
 
-  return new NextApiClientError(error);
+  // Create and return the error with safety checks
+  try {
+    return new NextApiClientError(error);
+  } catch (constructorError) {
+    // If error construction fails, create a fallback error
+    console.error('[Next API Client] Error constructing NextApiClientError:', constructorError);
+    return new NextApiClientError({
+      message: 'An unexpected error occurred while processing the response',
+      status: response.status,
+      details: null,
+      traceId: response.headers.get('x-trace-id') || undefined,
+    });
+  }
 }

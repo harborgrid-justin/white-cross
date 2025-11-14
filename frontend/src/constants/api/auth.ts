@@ -43,13 +43,13 @@ export const RBAC_ENDPOINTS = {
 // MULTI-FACTOR AUTHENTICATION (MFA)
 // ==========================================
 export const MFA_ENDPOINTS = {
-  SETUP: `/api/v1/mfa/setup`,
-  VERIFY: `/api/v1/mfa/verify`,
-  ENABLE: `/api/v1/mfa/enable`,
-  DISABLE: `/api/v1/mfa/disable`,
-  BACKUP_CODES: `/api/v1/mfa/backup-codes`,
-  REGENERATE_CODES: `/api/v1/mfa/backup-codes/regenerate`,
-  VERIFY_BACKUP_CODE: `/api/v1/mfa/verify-backup-code`,
-  QR_CODE: `/api/v1/mfa/qr-code`,
-  STATUS: `/api/v1/mfa/status`,
+  SETUP: `/api/v1/auth/mfa/setup`,
+  VERIFY: `/api/v1/auth/mfa/verify`,
+  ENABLE: `/api/v1/auth/mfa/enable`,
+  DISABLE: `/api/v1/auth/mfa/disable`,
+  BACKUP_CODES: `/api/v1/auth/mfa/backup-codes`,
+  REGENERATE_CODES: `/api/v1/auth/mfa/regenerate-backup-codes`,
+  VERIFY_BACKUP_CODE: `/api/v1/auth/mfa/verify-backup-code`,
+  QR_CODE: `/api/v1/auth/mfa/qr-code`,
+  STATUS: `/api/v1/auth/mfa/status`,
 } as const;

@@ -8,7 +8,7 @@
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { L1CacheService } from './l1-cache.service';
@@ -36,7 +36,7 @@ export class CacheOptimizationService extends BaseService {
     private readonly patternTracker: CacheAccessPatternTrackerService,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    super("CacheOptimizationService");
+    super('CacheOptimizationService');
     this.initializeOptimization();
   }
 
@@ -87,9 +87,7 @@ export class CacheOptimizationService extends BaseService {
     const duration = Date.now() - startTime;
 
     if (warmedCount > 0) {
-      this.logInfo(
-        `Cache warming completed: ${warmedCount} entries warmed, ${failedCount} failed`,
-      );
+      this.logInfo(`Cache warming completed: ${warmedCount} entries warmed, ${failedCount} failed`);
     }
 
     // Emit warming completion event
@@ -211,25 +209,55 @@ export class CacheOptimizationService extends BaseService {
    */
   private getTopAccessPatterns(limit: number): AccessPattern[] {
     const patterns = this.patternTracker.getAccessPatterns();
-    return patterns.sort((a, b) => b.importance - a.importance).slice(0, limit);
+
+    // Calculate importance based on access frequency and hit rate
+    const patternsWithImportance = patterns.map((pattern) => ({
+      ...pattern,
+      importance: this.calculatePatternImportance(pattern),
+    }));
+
+    return patternsWithImportance.sort((a, b) => b.importance - a.importance).slice(0, limit);
+  }
+
+  /**
+   * Calculate pattern importance score
+   */
+  private calculatePatternImportance(pattern: AccessPattern): number {
+    const hitRate = pattern.hits > 0 ? pattern.hits / pattern.totalAccesses : 0;
+    const frequencyMultiplier =
+      pattern.accessFrequency === 'very_high'
+        ? 4
+        : pattern.accessFrequency === 'high'
+          ? 3
+          : pattern.accessFrequency === 'medium'
+            ? 2
+            : 1;
+    const recencyFactor = Math.max(
+      0,
+      1 - (Date.now() - pattern.lastAccessed.getTime()) / (24 * 60 * 60 * 1000),
+    );
+
+    return pattern.totalAccesses * hitRate * frequencyMultiplier * recencyFactor;
   }
 
   /**
    * Determine if cache entry should be warmed
    */
   private shouldWarmCache(pattern: AccessPattern): boolean {
-    const now = new Date();
-    const timeSinceLastAccess = now.getTime() - pattern.lastAccess.getTime();
-    const timeUntilPredictedAccess = pattern.predictedNextAccess.getTime() - now.getTime();
+    const timeSinceLastAccess = Date.now() - pattern.lastAccessed.getTime();
+    const importance = this.calculatePatternImportance(pattern);
 
     // Warm if:
     // 1. High importance (frequent access)
-    // 2. Predicted to be accessed soon
-    // 3. Not accessed recently (cache likely expired)
+    // 2. Hasn't been accessed recently (cache likely expired)
+    // 3. Has good hit rate
+    const hitRate = pattern.hits > 0 ? pattern.hits / pattern.totalAccesses : 0;
+
     return (
-      pattern.importance > 5 &&
-      timeUntilPredictedAccess < 300000 && // Within 5 minutes
-      timeSinceLastAccess > 60000 // Not accessed in last minute
+      importance > 5 &&
+      timeSinceLastAccess > 60000 && // Not accessed in last minute
+      hitRate > 0.5 && // Decent hit rate
+      pattern.accessFrequency !== 'low'
     );
   }
 
@@ -289,7 +317,7 @@ export class CacheOptimizationService extends BaseService {
   /**
    * Optimize L1 cache by evicting least important entries
    */
-  private async optimizeL1Cache(): number {
+  private optimizeL1Cache(): number {
     try {
       const l1Stats = this.l1Cache.getStats();
       const currentSize = l1Stats.size;
@@ -301,8 +329,13 @@ export class CacheOptimizationService extends BaseService {
 
       // Get access patterns to identify least important entries
       const patterns = this.patternTracker.getAccessPatterns();
-      const leastImportant = patterns
-        .sort((a, b) => a.importance - b.importance)
+      const patternsWithImportance = patterns.map((pattern) => ({
+        ...pattern,
+        importance: this.calculatePatternImportance(pattern),
+      }));
+
+      const leastImportant = patternsWithImportance
+        .sort((a, b) => (a.importance || 0) - (b.importance || 0))
         .slice(0, currentSize - maxSize);
 
       let evicted = 0;
@@ -322,10 +355,9 @@ export class CacheOptimizationService extends BaseService {
    * Clean up stale access patterns
    */
   private cleanupAccessPatterns(): number {
-    const now = new Date();
     const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-    return this.patternTracker.cleanupStalePatterns(now, maxAge);
+    return this.patternTracker.cleanupOldPatterns(maxAge);
   }
 
   /**
@@ -334,9 +366,9 @@ export class CacheOptimizationService extends BaseService {
   private updateCacheMetrics(): void {
     // This method would typically update centralized metrics
     // For now, we'll just log the current state
-    const l1Stats = this.l1Cache.getStats();
-    const l2Stats = this.l2Cache.getStats();
-    const l3Stats = this.l3Cache.getStats();
+    const l1Stats = this.l1Cache.getStats() as any;
+    const l2Stats = this.l2Cache.getStats() as any;
+    const l3Stats = this.l3Cache.getStats() as any;
 
     this.logDebug('Cache metrics updated', {
       l1: l1Stats,

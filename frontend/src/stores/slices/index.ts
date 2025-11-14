@@ -27,7 +27,7 @@ export { healthRecordsReducer, healthRecordsSlice } from './healthRecordsSlice';
 
 export { medicationsReducer, medicationsSlice } from './medicationsSlice';
 
-export { appointmentsReducer, appointmentsSlice } from './appointmentsSlice';
+export { appointmentsReducer, appointmentsSlice } from './appointments';
 
 // ============================================================
 // STUDENT MANAGEMENT

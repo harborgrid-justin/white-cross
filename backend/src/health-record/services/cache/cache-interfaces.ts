@@ -63,12 +63,22 @@ export interface CacheMetrics {
 
 export interface AccessPattern {
   key: string;
-  frequency: number;
-  lastAccess: Date;
-  predictedNextAccess: Date;
-  importance: number;
+  totalAccesses: number;
+  hits: number;
+  misses: number;
+  averageResponseTime: number;
+  lastAccessed: Date;
+  firstAccessed: Date;
+  accessFrequency: 'low' | 'medium' | 'high' | 'very_high';
+  tier: string;
+  invalidations: number;
+  warmingAttempts: number;
+  successfulWarmings: number;
+  lastInvalidated: Date | null;
+  frequency?: number;
+  importance?: number;
   studentId?: string;
-  dataType: string;
+  dataType?: string;
 }
 
 export interface CacheOperationResult<T = any> {

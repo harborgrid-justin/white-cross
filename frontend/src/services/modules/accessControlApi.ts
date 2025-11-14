@@ -501,5 +501,5 @@ export { AccessControlApiImpl }
 export type { IAccessControlApi }
 
 // Export singleton instance
-import { apiClient } from '../core/ApiClient'
+import { apiClient } from '../core/ApiClient.instance'
 export const accessControlApi = createAccessControlApi(apiClient)

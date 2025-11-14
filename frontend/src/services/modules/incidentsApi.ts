@@ -16,7 +16,7 @@
  * @module services/modules/incidentsApi
  */
 
-import { apiClient } from '../core/ApiClient';
+import { apiClient } from '../core/ApiClient.instance';
 import { createIncidentsApi } from './incidentsApi/index';
 import type { IIncidentsApi } from './incidentsApi/types';
 
