@@ -22,7 +22,7 @@ import {
 @Injectable()
 export class ReportDataCollectorService extends BaseService {
   constructor() {
-    super('ReportDataCollector');
+    super('ReportDataCollectorService');
     // In a real implementation, Sequelize repositories would be injected here
     // Example: @Inject('StudentRepository') private readonly studentRepository: IStudentRepository
   }

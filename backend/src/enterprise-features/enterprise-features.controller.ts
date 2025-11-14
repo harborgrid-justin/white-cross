@@ -10,5 +10,6 @@ import { BaseController } from '@/common/base';
 export class EnterpriseFeaturesController extends BaseController {
   constructor(
     private readonly enterpriseFeaturesService: EnterpriseFeaturesService,
-  ) {}
+  ) {
+    super();}
 }

@@ -16,7 +16,8 @@ import { BaseController } from '@/common/base';
 export class DrugAllergyController extends BaseController {
   constructor(
     private readonly drugInteractionService: DrugInteractionService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Add student drug allergy

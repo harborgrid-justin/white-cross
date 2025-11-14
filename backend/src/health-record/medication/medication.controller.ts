@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('medications')
 export class HealthRecordMedicationController extends BaseController {
-  constructor(private readonly medicationService: MedicationService) {}
+  constructor(private readonly medicationService: MedicationService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create a new medication' })

@@ -13,7 +13,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('communication')
 export class CommunicationController extends BaseController {
-  constructor(private readonly communicationService: CommunicationService) {}
+  constructor(private readonly communicationService: CommunicationService) {
+    super();}
 
   @Post('templates')
   @ApiOperation({

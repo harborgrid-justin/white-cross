@@ -9,7 +9,8 @@ import { BaseController } from '@/common/base';
 @Controller('enterprise-features/bulk-messages')
 @ApiBearerAuth()
 export class BulkMessagingController extends BaseController {
-  constructor(private readonly bulkMessagingService: BulkMessagingService) {}
+  constructor(private readonly bulkMessagingService: BulkMessagingService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Send bulk message' })

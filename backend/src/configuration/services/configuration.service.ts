@@ -25,7 +25,7 @@ import {
   FilterConfigurationDto,
   ImportConfigurationsDto,
   UpdateConfigurationDto,
-} from './dto';
+} from '../dto';
 import { ConfigCrudService } from './config-crud.service';
 import { ConfigValidationService, ConfigurationValidationResult } from './config-validation.service';
 import { ConfigHistoryService } from './config-history.service';

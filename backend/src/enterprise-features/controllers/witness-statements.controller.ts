@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 export class WitnessStatementsController extends BaseController {
   constructor(
     private readonly witnessStatementService: WitnessStatementService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Capture witness statement' })

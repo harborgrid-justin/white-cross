@@ -32,6 +32,10 @@ import { BaseController } from '@/common/base';
 
 @Controller('prescriptions')
 export class PrescriptionAliasController extends BaseController {
+  constructor() {
+    super();
+  }
+
   /**
    * Catch-all route handler that forwards all requests to /clinical/prescriptions
    *

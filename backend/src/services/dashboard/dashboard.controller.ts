@@ -34,7 +34,7 @@ import {
 @Controller('dashboard')
 export class DashboardController extends BaseController {
   constructor(private readonly dashboardService: DashboardService) {
-    super('DashboardController');
+    super();
   }
 
   /**

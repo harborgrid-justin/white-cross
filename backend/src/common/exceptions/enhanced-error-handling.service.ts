@@ -563,6 +563,10 @@ export class ErrorAggregationService extends BaseService {
   private readonly errorCounts = new Map<string, ErrorAggregation>();
   private readonly maxSamples = 10;
 
+  constructor() {
+    super("ErrorAggregationService");
+  }
+
   /**
    * Records an error for aggregation analysis
    */

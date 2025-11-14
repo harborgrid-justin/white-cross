@@ -19,7 +19,8 @@ export class ClinicVisitController extends BaseController {
   constructor(
     private readonly clinicVisitBasicService: ClinicVisitBasicService,
     private readonly clinicVisitAnalyticsService: ClinicVisitAnalyticsService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Check in a student to the clinic

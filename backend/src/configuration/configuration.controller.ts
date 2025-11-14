@@ -26,7 +26,8 @@ import { BaseController } from '@/common/base';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class ConfigurationController extends BaseController {
-  constructor(private readonly configurationService: ConfigurationService) {}
+  constructor(private readonly configurationService: ConfigurationService) {
+    super();}
 
   /**
    * Get all configurations with optional filtering

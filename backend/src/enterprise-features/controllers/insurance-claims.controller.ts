@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 export class InsuranceClaimsController extends BaseController {
   constructor(
     private readonly insuranceClaimService: InsuranceClaimService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Generate insurance claim' })

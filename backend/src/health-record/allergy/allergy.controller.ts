@@ -23,7 +23,8 @@ import { BaseController } from '@/common/base';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class HealthRecordAllergyController extends BaseController {
-  constructor(private readonly allergyService: AllergyService) {}
+  constructor(private readonly allergyService: AllergyService) {
+    super();}
 
   /**
    * Get allergy by ID

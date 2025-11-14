@@ -19,7 +19,8 @@ export class MedicationInteractionController extends BaseController {
 
   constructor(
     private readonly medicationInteractionService: MedicationInteractionService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Check interactions in student's current medications

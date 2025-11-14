@@ -50,7 +50,8 @@ export class EnhancedMessageController extends BaseController {
     private readonly messageService: EnhancedMessageService,
     private readonly conversationService: ConversationService,
     private readonly queueService: MessageQueueService,
-  ) {}
+  ) {
+    super();}
 
   // ===== Message Endpoints =====
 

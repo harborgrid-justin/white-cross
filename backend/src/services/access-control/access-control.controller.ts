@@ -37,7 +37,8 @@ export class AccessControlController extends BaseController {
   constructor(
     private readonly accessControlService: AccessControlService,
     private readonly cacheService: PermissionCacheService,
-  ) {}
+  ) {
+    super();}
 
   // ============================================================================
   // ROLE MANAGEMENT

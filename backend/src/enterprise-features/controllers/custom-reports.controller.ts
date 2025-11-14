@@ -9,7 +9,8 @@ import { BaseController } from '@/common/base';
 @Controller('enterprise-features/custom-reports')
 @ApiBearerAuth()
 export class CustomReportsController extends BaseController {
-  constructor(private readonly reportBuilderService: CustomReportBuilderService) {}
+  constructor(private readonly reportBuilderService: CustomReportBuilderService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create custom report definition' })

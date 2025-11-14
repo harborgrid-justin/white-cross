@@ -16,7 +16,8 @@ export class IntegrationController extends BaseController {
     private readonly integrationService: IntegrationService,
     private readonly circuitBreakerService: CircuitBreakerService,
     private readonly rateLimiterService: RateLimiterService,
-  ) {}
+  ) {
+    super();}
 
   @Post('configure')
   @ApiOperation({

@@ -10,7 +10,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('templates')
 export class TemplateController extends BaseController {
-  constructor(private readonly templateService: TemplateService) {}
+  constructor(private readonly templateService: TemplateService) {
+    super();}
 
   @Post()
   @ApiOperation({

@@ -33,7 +33,8 @@ import {
 
 @Controller('health-domains')
 export class HealthDomainController extends BaseController {
-  constructor(private readonly healthDomainService: HealthDomainService) {}
+  constructor(private readonly healthDomainService: HealthDomainService) {
+    super();}
 
   // ============================================================================
   // HEALTH RECORDS ENDPOINTS

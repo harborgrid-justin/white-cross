@@ -24,7 +24,8 @@ import { BaseController } from '@/common/base';
 @Controller('audit')
 @ApiBearerAuth()
 export class AuditController extends BaseController {
-  constructor(private readonly auditService: AuditService) {}
+  constructor(private readonly auditService: AuditService) {
+    super();}
 
   // ========== AUDIT LOG CREATION ENDPOINTS ==========
 

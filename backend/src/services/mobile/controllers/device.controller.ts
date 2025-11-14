@@ -16,7 +16,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('mobile/devices')
 export class DeviceController extends BaseController {
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(private readonly notificationService: NotificationService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Register a mobile device for push notifications' })

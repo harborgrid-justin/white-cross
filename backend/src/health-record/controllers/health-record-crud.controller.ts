@@ -49,7 +49,8 @@ interface HealthRecordFilters {
 @UseGuards(JwtAuthGuard, HealthRecordRateLimitGuard)
 @UseInterceptors(HealthRecordAuditInterceptor, HealthRecordCacheInterceptor)
 export class HealthRecordCrudController extends BaseController {
-  constructor(private readonly healthRecordService: HealthRecordService) {}
+  constructor(private readonly healthRecordService: HealthRecordService) {
+    super();}
 
   /**
    * Get all health records with optional filtering and pagination

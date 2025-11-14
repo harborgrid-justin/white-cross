@@ -33,7 +33,8 @@ export class AuthController extends BaseController {
     private readonly oauthService: OAuthService,
     private readonly passwordResetService: PasswordResetService,
     private readonly emailVerificationService: EmailVerificationService,
-  ) {}
+  ) {
+    super();}
 
   @Public()
   @Post('register')

@@ -49,7 +49,7 @@ import { UpdateMedicationDto } from './dto/update-medication.dto';
 @ApiBearerAuth()
 export class MedicationController extends BaseController {
   constructor(private readonly medicationService: MedicationService) {
-    super('MedicationController');
+    super();
   }
 
   /**

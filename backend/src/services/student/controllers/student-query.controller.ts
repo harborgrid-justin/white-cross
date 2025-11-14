@@ -33,7 +33,8 @@ import { BaseController } from '@/common/base';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class StudentQueryController extends BaseController {
-  constructor(private readonly studentService: StudentService) {}
+  constructor(private readonly studentService: StudentService) {
+    super();}
 
   /**
    * Search students

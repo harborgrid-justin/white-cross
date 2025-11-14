@@ -91,12 +91,6 @@ export class ProductionSecurityHardeningService extends EventEmitter {
   constructor(
     @Inject(LoggerService) logger: LoggerService
   ) {
-    super({
-      serviceName: 'ProductionSecurityHardeningService',
-      logger,
-      enableAuditLogging: true,
-    });
-
     super();
     this.initializePIIPatterns();
     this.startSecurityMonitoring();

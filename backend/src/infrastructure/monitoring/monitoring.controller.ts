@@ -47,7 +47,8 @@ import type {
 
 @Controller('monitoring')
 export class MonitoringController extends BaseController {
-  constructor(private readonly monitoringService: MonitoringService) {}
+  constructor(private readonly monitoringService: MonitoringService) {
+    super();}
 
   /**
    * Get current system and application metrics

@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 export class EvidenceController extends BaseController {
   constructor(
     private readonly evidenceService: PhotoVideoEvidenceService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Upload evidence file' })

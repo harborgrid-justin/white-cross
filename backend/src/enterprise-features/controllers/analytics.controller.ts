@@ -9,7 +9,8 @@ import { BaseController } from '@/common/base';
 @Controller('enterprise-features/analytics')
 @ApiBearerAuth()
 export class AnalyticsController extends BaseController {
-  constructor(private readonly analyticsService: AnalyticsDashboardService) {}
+  constructor(private readonly analyticsService: AnalyticsDashboardService) {
+    super();}
 
   @Get('metrics')
   @ApiOperation({ summary: 'Get real-time dashboard metrics' })

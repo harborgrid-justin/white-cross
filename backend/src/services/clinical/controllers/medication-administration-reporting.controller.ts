@@ -13,6 +13,10 @@ import { BaseController } from '@/common/base';
 
 @Controller('medications/administrations')
 export class MedicationAdministrationReportingController extends BaseController {
+  constructor() {
+    super();
+  }
+
   /**
    * Get student administration history
    */

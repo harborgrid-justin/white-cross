@@ -27,7 +27,8 @@ export class InventoryController extends BaseController {
     private readonly purchaseOrderService: PurchaseOrderService,
     private readonly reorderAutomationService: ReorderAutomationService,
     private readonly transactionService: TransactionService,
-  ) {}
+  ) {
+    super();}
 
   // ============ Inventory CRUD Operations ============
 

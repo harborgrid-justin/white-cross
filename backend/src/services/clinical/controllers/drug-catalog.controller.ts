@@ -22,7 +22,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('clinical/drugs')
 export class DrugCatalogController extends BaseController {
-  constructor(private readonly drugInteractionService: DrugInteractionService) {}
+  constructor(private readonly drugInteractionService: DrugInteractionService) {
+    super();}
 
   /**
    * Search drugs by name or brand

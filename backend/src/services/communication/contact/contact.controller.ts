@@ -25,7 +25,8 @@ export class ContactController extends BaseController {
   constructor(
     private readonly contactService: ContactService,
     private readonly emergencyContactService: EmergencyContactService,
-  ) {}
+  ) {
+    super();}
 
   // ========== General Contact Endpoints ==========
 

@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 export class RemindersController extends BaseController {
   constructor(
     private readonly reminderService: ReminderSchedulerService,
-  ) {}
+  ) {
+    super();}
 
   @Post('schedule')
   @ApiOperation({ summary: 'Schedule reminders for appointment' })

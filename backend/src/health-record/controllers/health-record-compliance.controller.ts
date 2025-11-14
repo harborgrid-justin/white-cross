@@ -35,7 +35,8 @@ export class HealthRecordComplianceController extends BaseController {
   constructor(
     private readonly phiAccessLogger: PHIAccessLogger,
     private readonly metricsService: HealthRecordMetricsService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Get PHI access statistics for compliance monitoring

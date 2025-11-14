@@ -88,7 +88,7 @@ export class HealthRecordService extends BaseService {
     private readonly summaryService: HealthRecordSummaryService,
     private readonly batchService: HealthRecordBatchService,
   ) {
-    super(HealthRecordService.name);
+    super("HealthRecordService");
   }
 
   // ==================== Health Record Operations ====================

@@ -28,7 +28,8 @@ export class SecurityController extends BaseController {
     private readonly incidentService: SecurityIncidentService,
     private readonly sessionService: SessionManagementService,
     private readonly threatDetectionService: ThreatDetectionService,
-  ) {}
+  ) {
+    super();}
 
   // ==================== IP Restriction Endpoints ====================
 

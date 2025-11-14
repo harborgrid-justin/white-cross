@@ -14,7 +14,8 @@ import { BaseController } from '@/common/base';
 export class DrugSafetyController extends BaseController {
   constructor(
     private readonly drugInteractionService: DrugInteractionService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * GAP-MED-010: Get LASA (Look-Alike Sound-Alike) Warnings

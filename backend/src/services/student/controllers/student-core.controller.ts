@@ -40,7 +40,8 @@ import { BaseController } from '@/common/base';
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)
 export class StudentCoreController extends BaseController {
-  constructor(private readonly crudService: StudentCrudService) {}
+  constructor(private readonly crudService: StudentCrudService) {
+    super();}
 
   @Post()
   @Throttle({ default: { limit: 10, ttl: 60000 } })

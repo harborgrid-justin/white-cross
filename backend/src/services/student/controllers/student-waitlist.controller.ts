@@ -34,7 +34,8 @@ import { BaseController } from '@/common/base';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class StudentWaitlistController extends BaseController {
-  constructor(private readonly studentService: StudentService) {}
+  constructor(private readonly studentService: StudentService) {
+    super();}
 
   /**
    * Add student to waitlist

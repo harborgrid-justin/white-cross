@@ -15,7 +15,8 @@ import { BaseController } from '@/common/base';
 @Controller('features')
 // @ApiBearerAuth()
 export class FeaturesController extends BaseController {
-  constructor(private readonly featuresService: FeaturesService) {}
+  constructor(private readonly featuresService: FeaturesService) {
+    super();}
 
   @Get()
   @ApiOperation({

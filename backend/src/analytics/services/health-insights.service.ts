@@ -11,7 +11,7 @@ import { StudentHealthMetrics, RiskAssessment, HealthMetricsData } from '../anal
 @Injectable()
 export class HealthInsightsService extends BaseService {
   constructor() {
-    super(HealthInsightsService.name);
+    super("HealthInsightsService");
   }
 
   /**

@@ -13,7 +13,8 @@ export class ComplianceController extends BaseController {
   constructor(
     private readonly hipaaComplianceService: HipaaComplianceService,
     private readonly regulationTrackingService: RegulationTrackingService,
-  ) {}
+  ) {
+    super();}
 
   @Get('compliance/audit')
   @ApiOperation({ summary: 'Perform HIPAA compliance audit' })

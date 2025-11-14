@@ -45,7 +45,8 @@ import { BaseController } from '@/common/base';
   }),
 )
 export class DiscoveryController extends BaseController {
-  constructor(private readonly discoveryService: DiscoveryExampleService) {}
+  constructor(private readonly discoveryService: DiscoveryExampleService) {
+    super();}
 
   @Get('providers')
   @ApiOperation({ summary: 'Get all providers in the application' })

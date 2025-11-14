@@ -16,7 +16,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('mobile/sync')
 export class SyncController extends BaseController {
-  constructor(private readonly offlineSyncService: OfflineSyncService) {}
+  constructor(private readonly offlineSyncService: OfflineSyncService) {
+    super();}
 
   @Post('queue')
   @ApiOperation({ summary: 'Queue a sync action for offline processing' })

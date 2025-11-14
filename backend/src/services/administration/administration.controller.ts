@@ -35,7 +35,8 @@ export class AdministrationController extends BaseController {
     private readonly configurationService: ConfigurationService,
     private readonly auditService: AuditService,
     private readonly backupService: BackupService,
-  ) {}
+  ) {
+    super();}
 
   // ==================== District Endpoints ====================
 

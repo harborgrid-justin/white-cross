@@ -23,7 +23,8 @@ import { BaseController } from '@/common/base';
 @ApiBearerAuth()
 @UseInterceptors(CacheInterceptor)
 export class AnalyticsController extends BaseController {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(private readonly analyticsService: AnalyticsService) {
+    super();}
 
   /**
    * MODULE METADATA ENDPOINT

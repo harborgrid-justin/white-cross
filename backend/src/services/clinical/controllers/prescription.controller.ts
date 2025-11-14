@@ -13,7 +13,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('clinical/prescriptions')
 export class PrescriptionController extends BaseController {
-  constructor(private readonly prescriptionService: PrescriptionService) {}
+  constructor(private readonly prescriptionService: PrescriptionService) {
+    super();}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

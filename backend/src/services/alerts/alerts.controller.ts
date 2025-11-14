@@ -18,7 +18,8 @@ import { BaseController } from '@/common/base';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class AlertsController extends BaseController {
-  constructor(private readonly alertsService: AlertsService) {}
+  constructor(private readonly alertsService: AlertsService) {
+    super();}
 
   @Get()
   @ApiOperation({

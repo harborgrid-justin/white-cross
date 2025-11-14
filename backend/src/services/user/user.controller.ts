@@ -26,7 +26,8 @@ import { BaseController } from '@/common/base';
 @UseInterceptors(ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class UserController extends BaseController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) {
+    super();}
 
   /**
    * Get paginated list of users with filters

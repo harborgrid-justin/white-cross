@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 export class ConsentFormsController extends BaseController {
   constructor(
     private readonly consentFormService: ConsentFormManagementService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create consent form' })

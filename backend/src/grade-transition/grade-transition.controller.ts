@@ -18,7 +18,8 @@ import { BaseController } from '@/common/base';
 export class GradeTransitionController extends BaseController {
   constructor(
     private readonly gradeTransitionService: GradeTransitionService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Perform bulk grade transition for end of school year

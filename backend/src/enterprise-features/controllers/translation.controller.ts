@@ -9,7 +9,8 @@ import { BaseController } from '@/common/base';
 @Controller('enterprise-features/translate')
 @ApiBearerAuth()
 export class TranslationController extends BaseController {
-  constructor(private readonly translationService: LanguageTranslationService) {}
+  constructor(private readonly translationService: LanguageTranslationService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Translate message' })

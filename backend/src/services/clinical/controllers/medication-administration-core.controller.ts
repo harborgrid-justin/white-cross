@@ -22,6 +22,10 @@ import { BaseController } from '@/common/base';
 
 @Controller('medications/administrations')
 export class MedicationAdministrationCoreController extends BaseController {
+  constructor() {
+    super();
+  }
+
   /**
    * Initiate administration session
    */

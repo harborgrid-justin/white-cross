@@ -112,6 +112,10 @@ export interface CSRFToken {
  */
 @Injectable()
 export class DataSecurityService extends BaseService {
+  constructor() {
+    super("DataSecurityService");
+  }
+
   private readonly csrfTokens: Map<string, CSRFToken> = new Map();
   private readonly rateLimitStore: Map<string, number[]> = new Map();
 
@@ -1348,8 +1352,7 @@ export class DataSecurityService extends BaseService {
  */
 @Injectable()
 export class PIIRedactionInterceptor implements NestInterceptor {
-  constructor(private readonly dataSecurityService: DataSecurityService) {
-    super("DataSecurityService");}
+  constructor(private readonly dataSecurityService: DataSecurityService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(

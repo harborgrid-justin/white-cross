@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('clinical/vital-signs')
 export class VitalSignsController extends BaseController {
-  constructor(private readonly vitalsService: VitalSignsService) {}
+  constructor(private readonly vitalsService: VitalSignsService) {
+    super();}
 
   @Post()
   @ApiOperation({

@@ -29,7 +29,8 @@ export class AllergyController extends BaseController {
     private readonly allergyCrudService: AllergyCrudService,
     private readonly allergyQueryService: AllergyQueryService,
     private readonly allergySafetyService: AllergySafetyService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Create a new allergy record

@@ -30,7 +30,8 @@ export class EmergencyContactController extends BaseController {
 
   constructor(
     private readonly emergencyContactService: EmergencyContactService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Get all emergency contacts for a student

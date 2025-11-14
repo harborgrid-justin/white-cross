@@ -28,7 +28,8 @@ export class EmergencyBroadcastController extends BaseController {
 
   constructor(
     private readonly emergencyBroadcastService: EmergencyBroadcastService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Create a new emergency broadcast

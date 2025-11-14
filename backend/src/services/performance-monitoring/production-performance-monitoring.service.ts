@@ -122,12 +122,6 @@ export class ProductionPerformanceMonitoringService extends EventEmitter {
   constructor(
     @Inject(LoggerService) logger: LoggerService
   ) {
-    super({
-      serviceName: 'ProductionPerformanceMonitoringService',
-      logger,
-      enableAuditLogging: true,
-    });
-
     super();
     this.initializeAlertThresholds();
     this.startSystemMonitoring();

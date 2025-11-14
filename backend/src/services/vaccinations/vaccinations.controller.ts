@@ -15,7 +15,8 @@ import { BaseController } from '@/common/base';
 @Controller('vaccinations')
 @UseGuards(JwtAuthGuard)
 export class VaccinationsController extends BaseController {
-  constructor(private readonly vaccinationsService: VaccinationsService) {}
+  constructor(private readonly vaccinationsService: VaccinationsService) {
+    super();}
 
   @Get('due')
   @ApiOperation({

@@ -13,7 +13,8 @@ import { BaseController } from '@/common/base';
 export class HealthRecordChronicConditionController extends BaseController {
   constructor(
     private readonly chronicConditionService: ChronicConditionService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create a new chronic condition record' })

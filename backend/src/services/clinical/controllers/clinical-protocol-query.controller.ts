@@ -16,7 +16,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('clinical/protocols')
 export class ClinicalProtocolQueryController extends BaseController {
-  constructor(private readonly protocolService: ClinicalProtocolService) {}
+  constructor(private readonly protocolService: ClinicalProtocolService) {
+    super();}
 
   @Get()
   @ApiOperation({

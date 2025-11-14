@@ -60,7 +60,8 @@ export class ComplianceController extends BaseController {
     private readonly dataRetentionService: DataRetentionService,
     private readonly violationService: ViolationService,
     private readonly statisticsService: StatisticsService,
-  ) {}
+  ) {
+    super();}
 
   // ==================== AUDIT LOG ENDPOINTS ====================
 

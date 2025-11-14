@@ -16,7 +16,8 @@ import { BaseController } from '@/common/base';
 @Controller('documents')
 @ApiBearerAuth()
 export class DocumentController extends BaseController {
-  constructor(private readonly documentService: DocumentService) {}
+  constructor(private readonly documentService: DocumentService) {
+    super();}
 
   @Get()
   @ApiOperation({

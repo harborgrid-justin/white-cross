@@ -23,7 +23,8 @@ import {
 
 @Controller('pdf')
 export class PdfController extends BaseController {
-  constructor(private readonly pdfService: PdfService) {}
+  constructor(private readonly pdfService: PdfService) {
+    super();}
 
   /**
    * Generate student health summary PDF

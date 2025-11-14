@@ -24,7 +24,7 @@ import { HealthRiskScoreDto, HighRiskQueryDto, HighRiskStudentDto } from './dto'
 @Controller('health-risk-assessments')
 export class HealthRiskAssessmentController extends BaseController {
   constructor(private readonly healthRiskAssessmentService: HealthRiskAssessmentService) {
-    super('HealthRiskAssessmentController');
+    super();
   }
 
   /**

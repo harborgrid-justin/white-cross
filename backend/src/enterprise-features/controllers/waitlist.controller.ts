@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 export class WaitlistController extends BaseController {
   constructor(
     private readonly waitlistService: WaitlistManagementService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({

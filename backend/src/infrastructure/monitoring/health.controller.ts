@@ -46,7 +46,8 @@ import {
 @ApiTags('Health & Monitoring')
 @Controller({ path: 'health', version: VERSION_NEUTRAL })
 export class HealthController extends BaseController {
-  constructor(private readonly monitoringService: MonitoringService) {}
+  constructor(private readonly monitoringService: MonitoringService) {
+    super();}
 
   /**
    * Comprehensive health check endpoint

@@ -9,7 +9,8 @@ import { BaseController } from '@/common/base';
 @Controller('enterprise-features/message-templates')
 @ApiBearerAuth()
 export class MessageTemplatesController extends BaseController {
-  constructor(private readonly messageTemplateService: MessageTemplateLibraryService) {}
+  constructor(private readonly messageTemplateService: MessageTemplateLibraryService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create message template' })

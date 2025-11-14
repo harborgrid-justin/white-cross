@@ -15,7 +15,8 @@ import {
   Controller, 
   Get, 
   HttpStatus,
-  HttpException
+  HttpException,
+  Inject
 } from '@nestjs/common';
 import { 
   HealthCheck, 
@@ -25,6 +26,8 @@ import {
   MemoryHealthIndicator,
   DiskHealthIndicator
 } from '@nestjs/terminus';
+import { BaseService, BaseController } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 
 // ============================================================================
 // INTERFACES AND TYPES
@@ -556,7 +559,7 @@ export class ApplicationHealthIndicator {
  * Comprehensive health check service
  */
 @Injectable()
-export class ProductionHealthCheckService {
+export class ProductionHealthCheckService extends BaseService {
   private healthHistory: OverallHealthStatus[] = [];
   private maxHistorySize = 100;
   private isShuttingDown = false;
@@ -572,7 +575,7 @@ export class ProductionHealthCheckService {
     private readonly diskHealth: DiskHealthIndicator
   ) {
     super({
-      serviceName: 'ExternalService',
+      serviceName: 'ProductionHealthCheckService',
       logger,
       enableAuditLogging: true,
     });
@@ -920,16 +923,12 @@ export class ProductionHealthCheckService {
  * Health check endpoints controller
  */
 @Controller('health')
-export class HealthController {
+export class HealthController extends BaseController {
   constructor(
     @Inject(LoggerService) logger: LoggerService,
     private readonly healthCheckService: ProductionHealthCheckService
   ) {
-    super({
-      serviceName: 'ExternalService',
-      logger,
-      enableAuditLogging: true,
-    });
+    super();
   }
 
   /**

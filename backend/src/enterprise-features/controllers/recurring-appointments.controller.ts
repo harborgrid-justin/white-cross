@@ -11,7 +11,8 @@ import { BaseController } from '@/common/base';
 export class RecurringAppointmentsController extends BaseController {
   constructor(
     private readonly recurringAppointmentsService: RecurringAppointmentsService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create recurring appointment template' })

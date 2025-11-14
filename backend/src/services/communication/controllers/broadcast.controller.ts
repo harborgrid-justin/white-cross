@@ -10,7 +10,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('broadcasts')
 export class BroadcastController extends BaseController {
-  constructor(private readonly broadcastService: BroadcastService) {}
+  constructor(private readonly broadcastService: BroadcastService) {
+    super();}
 
   @Post()
   @ApiOperation({

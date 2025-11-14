@@ -134,12 +134,6 @@ export class ProductionSecurityService extends EventEmitter {
   constructor(
     @Inject(LoggerService) logger: LoggerService
   ) {
-    super({
-      serviceName: 'ProductionSecurityService',
-      logger,
-      enableAuditLogging: true,
-    });
-
     super();
     this.initializeHealthcarePIIPatterns();
     this.createDefaultSecurityPolicies();

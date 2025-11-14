@@ -30,7 +30,8 @@ import { BaseController } from '@/common/base';
 export class AcademicTranscriptController extends BaseController {
   constructor(
     private readonly academicTranscriptService: AcademicTranscriptService,
-  ) {}
+  ) {
+    super();}
 
   // ==================== Transcript Management ====================
 

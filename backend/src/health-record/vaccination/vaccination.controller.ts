@@ -23,7 +23,8 @@ import {
 @Controller('health-record/vaccination')
 // @ApiBearerAuth()
 export class VaccinationController extends BaseController {
-  constructor(private readonly vaccinationService: VaccinationService) {}
+  constructor(private readonly vaccinationService: VaccinationService) {
+    super();}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

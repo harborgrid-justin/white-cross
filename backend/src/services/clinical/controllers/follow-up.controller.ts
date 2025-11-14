@@ -12,7 +12,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('clinical/follow-ups')
 export class FollowUpController extends BaseController {
-  constructor(private readonly followUpService: FollowUpService) {}
+  constructor(private readonly followUpService: FollowUpService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Schedule follow-up appointment' })

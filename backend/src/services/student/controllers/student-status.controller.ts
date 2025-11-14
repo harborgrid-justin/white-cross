@@ -27,7 +27,8 @@ import { BaseController } from '@/common/base';
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(HealthRecordAuditInterceptor)
 export class StudentStatusController extends BaseController {
-  constructor(private readonly statusService: StudentStatusService) {}
+  constructor(private readonly statusService: StudentStatusService) {
+    super();}
 
   @Patch(':id/deactivate')
   @ApiOperation({ summary: 'Deactivate a student' })

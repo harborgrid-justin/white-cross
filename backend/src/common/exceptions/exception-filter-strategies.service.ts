@@ -934,12 +934,6 @@ export class BusinessLogicException extends HttpException {
     public readonly errorCode: string,
     public readonly details?: any,
   ) {
-    super({
-      serviceName: 'ExternalService',
-      logger,
-      enableAuditLogging: true,
-    });
-
     super(message, HttpStatus.UNPROCESSABLE_ENTITY);
   }
 }

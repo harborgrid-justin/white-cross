@@ -28,7 +28,8 @@ export class ReportsController extends BaseController {
     private readonly reportGenerationService: ReportGenerationService,
     private readonly reportExportService: ReportExportService,
     private readonly dashboardService: DashboardService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Generate health trends analysis report

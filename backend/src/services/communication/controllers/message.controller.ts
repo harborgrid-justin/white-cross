@@ -10,7 +10,8 @@ import { BaseController } from '@/common/base';
 
 @Controller('messages')
 export class MessageController extends BaseController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(private readonly messageService: MessageService) {
+    super();}
 
   @Post()
   @ApiOperation({
