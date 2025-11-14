@@ -37,7 +37,6 @@ export class OfflineSyncService extends BaseService {
     private readonly queueService: OfflineSyncQueueService,
     private readonly conflictService: OfflineSyncConflictService,
   ) {
-    super("OfflineSyncService");
     this.logInfo('OfflineSyncService initialized');
   }
 

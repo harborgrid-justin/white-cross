@@ -20,10 +20,6 @@ import { BaseService } from '../../../common/base';
  */
 @Injectable()
 export class OfflineSyncEntityRegistryService extends BaseService {
-  constructor() {
-    super("OfflineSyncEntityRegistryService");
-  }
-
   private readonly entityServiceRegistry: Map<
     SyncEntityType,
     IEntitySyncService

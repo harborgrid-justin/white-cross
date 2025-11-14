@@ -43,7 +43,6 @@ export class OfflineSyncConflictService extends BaseService {
     private readonly conflictModel: typeof SyncConflict,
     private readonly entityRegistry: OfflineSyncEntityRegistryService,
   ) {
-    super("OfflineSyncConflictService");
     this.logInfo('OfflineSyncConflictService initialized');
   }
 
