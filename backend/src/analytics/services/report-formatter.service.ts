@@ -82,33 +82,191 @@ export class ReportFormatterService extends BaseService {
   }
 
   /**
-   * Format content as PDF (placeholder)
+   * Format content as PDF using pdfkit
    */
   private formatAsPDF(content: any): string {
-    // In a real implementation, this would use a PDF library like pdfkit or puppeteer
-    // For now, return JSON with PDF metadata
-    const pdfContent = {
-      ...content,
-      _format: 'PDF',
-      _note: 'PDF generation would be implemented with a proper PDF library',
-      _generatedAt: new Date().toISOString(),
-    };
-    return JSON.stringify(pdfContent, null, 2);
+    try {
+      // Import PDFKit dynamically
+      const PDFDocument = require('pdfkit');
+      const chunks: Buffer[] = [];
+
+      // Create PDF document
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        margins: { top: 50, bottom: 50, left: 50, right: 50 },
+        info: {
+          Title: content.title || 'Health Report',
+          Author: 'White Cross Health Platform',
+          Subject: 'Healthcare Analytics Report',
+          Keywords: 'health, analytics, report',
+          CreationDate: new Date(),
+        },
+      });
+
+      // Collect PDF data
+      doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+
+      // Add HIPAA compliance watermark/header
+      doc.fontSize(8)
+        .fillColor('#999999')
+        .text('CONFIDENTIAL - HIPAA Protected Health Information', 50, 20, {
+          align: 'center',
+        });
+
+      // Add title
+      doc.fontSize(20)
+        .fillColor('#000000')
+        .text(content.title || 'Analytics Report', 50, 60);
+
+      // Add metadata
+      doc.fontSize(10)
+        .fillColor('#666666')
+        .text(`Generated: ${new Date().toLocaleString()}`, 50, 95)
+        .text(`Report Period: ${content.period || 'N/A'}`, 50, 110);
+
+      // Add divider
+      doc.moveTo(50, 130).lineTo(562, 130).stroke();
+
+      let yPosition = 150;
+
+      // Format content based on type
+      if (content.metrics || content.data) {
+        const dataToFormat = content.metrics || content.data;
+
+        if (Array.isArray(dataToFormat)) {
+          // Table format for arrays
+          dataToFormat.forEach((item, index) => {
+            if (yPosition > 700) {
+              doc.addPage();
+              yPosition = 50;
+            }
+
+            doc.fontSize(12).fillColor('#000000');
+            doc.text(`${index + 1}. ${this.formatObjectForPDF(item)}`, 50, yPosition);
+            yPosition += 25;
+          });
+        } else if (typeof dataToFormat === 'object') {
+          // Key-value format for objects
+          Object.entries(dataToFormat).forEach(([key, value]) => {
+            if (yPosition > 700) {
+              doc.addPage();
+              yPosition = 50;
+            }
+
+            doc.fontSize(11).fillColor('#333333');
+            const formattedKey = key.replace(/([A-Z])/g, ' $1').trim();
+            const formattedValue = this.formatValueForPDF(value);
+
+            doc.text(`${formattedKey}:`, 50, yPosition, { continued: true });
+            doc.fillColor('#000000').text(` ${formattedValue}`);
+            yPosition += 20;
+          });
+        }
+      }
+
+      // Add footer
+      const pageCount = doc.bufferedPageRange().count;
+      for (let i = 0; i < pageCount; i++) {
+        doc.switchToPage(i);
+        doc.fontSize(8)
+          .fillColor('#999999')
+          .text(
+            `Page ${i + 1} of ${pageCount} | White Cross Health Platform`,
+            50,
+            750,
+            { align: 'center' }
+          );
+      }
+
+      // Finalize PDF
+      doc.end();
+
+      // Wait for PDF to be generated and return as base64
+      return new Promise<string>((resolve) => {
+        doc.on('end', () => {
+          const pdfBuffer = Buffer.concat(chunks);
+          resolve(pdfBuffer.toString('base64'));
+        });
+      });
+    } catch (error) {
+      this.logError('Error generating PDF', error);
+      // Fallback to JSON if PDF generation fails
+      return JSON.stringify(content, null, 2);
+    }
   }
 
   /**
-   * Format content as XLSX (placeholder)
+   * Format object for PDF display
+   */
+  private formatObjectForPDF(obj: any): string {
+    if (typeof obj === 'object' && obj !== null) {
+      return Object.entries(obj)
+        .map(([k, v]) => `${k}: ${this.formatValueForPDF(v)}`)
+        .join(', ');
+    }
+    return String(obj);
+  }
+
+  /**
+   * Format value for PDF display
+   */
+  private formatValueForPDF(value: any): string {
+    if (value === null || value === undefined) return 'N/A';
+    if (typeof value === 'number') return this.formatNumber(value);
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (value instanceof Date) return value.toLocaleDateString();
+    if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  }
+
+  /**
+   * Format content as XLSX using xlsx library
    */
   private formatAsXLSX(content: any): string {
-    // In a real implementation, this would use a library like exceljs or xlsx
-    // For now, return JSON with XLSX metadata
-    const xlsxContent = {
-      ...content,
-      _format: 'XLSX',
-      _note: 'XLSX generation would be implemented with a proper Excel library',
-      _generatedAt: new Date().toISOString(),
-    };
-    return JSON.stringify(xlsxContent, null, 2);
+    try {
+      const XLSX = require('xlsx');
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+
+      // Convert content to worksheet format
+      let worksheetData: any[] = [];
+
+      if (content.data && Array.isArray(content.data)) {
+        worksheetData = content.data;
+      } else if (content.metrics) {
+        worksheetData = Array.isArray(content.metrics)
+          ? content.metrics
+          : [content.metrics];
+      } else if (typeof content === 'object') {
+        worksheetData = [content];
+      }
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Report Data');
+
+      // Add metadata sheet
+      const metadata = [
+        { Property: 'Title', Value: content.title || 'Analytics Report' },
+        { Property: 'Generated', Value: new Date().toISOString() },
+        { Property: 'Period', Value: content.period || 'N/A' },
+        { Property: 'Source', Value: 'White Cross Health Platform' },
+      ];
+      const metadataSheet = XLSX.utils.json_to_sheet(metadata);
+      XLSX.utils.book_append_sheet(workbook, metadataSheet, 'Metadata');
+
+      // Generate XLSX file as base64
+      const xlsxBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      return xlsxBuffer.toString('base64');
+    } catch (error) {
+      this.logError('Error generating XLSX', error);
+      // Fallback to JSON if XLSX generation fails
+      return JSON.stringify(content, null, 2);
+    }
   }
 
   /**

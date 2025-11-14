@@ -14,6 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface DrugCatalogAttributes {
   id: string;
@@ -198,13 +199,6 @@ export class DrugCatalog
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: DrugCatalog) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] DrugCatalog ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('DrugCatalog', instance);
   }
 }

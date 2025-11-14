@@ -155,13 +155,6 @@ export class SISSyncConflict extends Model {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: SISSyncConflict) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] SisSyncConflict ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('SISSyncConflict', instance);
   }
 }

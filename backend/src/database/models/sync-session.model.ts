@@ -205,13 +205,6 @@ export class SyncSession extends Model {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: SyncSession) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] SyncSession ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('SyncSession', instance);
   }
 }

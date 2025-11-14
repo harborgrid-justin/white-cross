@@ -140,13 +140,6 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: AppointmentReminder) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] AppointmentReminder ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('AppointmentReminder', instance);
   }
 }

@@ -13,6 +13,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { ProtocolStatus } from '../../services/clinical/enums/protocol-status.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface ClinicalProtocolAttributes {
   id: string;
@@ -267,13 +268,6 @@ export class ClinicalProtocol
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ClinicalProtocol) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ClinicalProtocol ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ClinicalProtocol', instance);
   }
 }

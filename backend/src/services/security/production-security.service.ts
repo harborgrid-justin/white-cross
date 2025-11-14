@@ -124,6 +124,7 @@ export interface HealthcareSecurityPolicy {
 
 @Injectable()
 export class ProductionSecurityService extends EventEmitter {
+  private readonly logger: LoggerService;
   private keyStore = new Map<string, HealthcareEncryptionKey>();
   private encryptedColumns = new Map<string, HealthcareEncryptedColumn>();
   private auditLogs: HealthcareAuditLog[] = [];
@@ -135,6 +136,7 @@ export class ProductionSecurityService extends EventEmitter {
     @Inject(LoggerService) logger: LoggerService
   ) {
     super();
+    this.logger = logger;
     this.initializeHealthcarePIIPatterns();
     this.createDefaultSecurityPolicies();
     this.startSecurityMonitoring();
@@ -203,8 +205,9 @@ export class ProductionSecurityService extends EventEmitter {
       });
 
       this.emit('healthcareColumnEncrypted', { table, column, keyId, phiLevel });
-    } catch (error: any) {
-      this.logError(`Failed to encrypt healthcare column ${table}.${column}:`, error);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Failed to encrypt healthcare column ${table}.${column}:`, error);
 
       await this.logHealthcareSecurityEvent({
         timestamp: new Date(),
@@ -213,7 +216,7 @@ export class ProductionSecurityService extends EventEmitter {
         action: 'PHI_ENCRYPTION_FAILED',
         resource: `${table}.${column}`,
         success: false,
-        errorMessage: error?.message || 'Unknown error',
+        errorMessage,
         ipAddress: 'localhost',
         userAgent: 'Healthcare Security Service',
         severity: 'critical',
@@ -278,7 +281,7 @@ export class ProductionSecurityService extends EventEmitter {
 
       this.emit('healthcareColumnDecrypted', { table, column, keyId, userId });
     } catch (error) {
-      this.logError(`Failed to decrypt healthcare column ${table}.${column}:`, error);
+      this.logger.error(`Failed to decrypt healthcare column ${table}.${column}:`, error);
       throw error;
     }
   }
@@ -309,7 +312,7 @@ export class ProductionSecurityService extends EventEmitter {
     };
 
     this.keyStore.set(key.id, key);
-    
+
     this.emit('healthcareKeyGenerated', { keyId: key.id, algorithm, usage, complianceLevel });
     return key;
   }
@@ -325,7 +328,7 @@ export class ProductionSecurityService extends EventEmitter {
         const newKey = this.generateHealthcareEncryptionKey(
           oldKey.algorithm,
           oldKey.usage,
-          oldKey.metadata.complianceLevel as any
+          oldKey.metadata.complianceLevel as 'standard' | 'high' | 'critical'
         );
 
         // Find columns using this key and rotate them
@@ -333,9 +336,9 @@ export class ProductionSecurityService extends EventEmitter {
           ([, col]) => col.keyId === oldKey.id,
         );
 
-        for (const [columnKey, column] of columnsToRotate) {
+        for (const [columnKey] of columnsToRotate) {
           // This would require Sequelize instance - in production, inject it
-          this.logInfo(`Key rotation needed for column: ${columnKey}`);
+          this.logger.log(`Key rotation needed for column: ${columnKey}`);
         }
 
         oldKey.status = 'rotated';
@@ -362,7 +365,7 @@ export class ProductionSecurityService extends EventEmitter {
         });
 
       } catch (error) {
-        this.logError(`Failed to rotate healthcare key ${oldKey.id}:`, error);
+        this.logger.error(`Failed to rotate healthcare key ${oldKey.id}:`, error);
       }
     }
   }
@@ -372,31 +375,31 @@ export class ProductionSecurityService extends EventEmitter {
     sequelize: Sequelize,
     table: string,
   ): Promise<
-    {
+    Array<{
       column: string;
       phiType: string;
       riskLevel: 'low' | 'medium' | 'high' | 'critical';
       hipaaRequired: boolean;
-    }[]
+    }>
   > {
     try {
       const columnsQuery = `
-        SELECT COLUMN_NAME, DATA_TYPE, COLUMN_COMMENT 
-        FROM INFORMATION_SCHEMA.COLUMNS 
+        SELECT COLUMN_NAME, DATA_TYPE, COLUMN_COMMENT
+        FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_NAME = '${table}'
       `;
 
       const columns = await sequelize.query(columnsQuery, { type: QueryTypes.SELECT });
-      const phiColumns: {
+      const phiColumns: Array<{
         column: string;
         phiType: string;
         riskLevel: 'low' | 'medium' | 'high' | 'critical';
         hipaaRequired: boolean;
-      }[] = [];
+      }> = [];
 
-      for (const column of columns as any[]) {
-        const columnName = (column.COLUMN_NAME as string).toLowerCase();
-        const dataType = (column.DATA_TYPE as string).toLowerCase();
+      for (const column of columns as Array<{ COLUMN_NAME: string; DATA_TYPE: string; COLUMN_COMMENT?: string }>) {
+        const columnName = column.COLUMN_NAME.toLowerCase();
+        const dataType = column.DATA_TYPE.toLowerCase();
 
         // Check against healthcare-specific PHI patterns
         for (const [phiType, pattern] of this.healthcarePiiPatterns) {
@@ -405,7 +408,7 @@ export class ProductionSecurityService extends EventEmitter {
             (column.COLUMN_COMMENT && pattern.test(column.COLUMN_COMMENT))
           ) {
             phiColumns.push({
-              column: column.COLUMN_NAME as string,
+              column: column.COLUMN_NAME,
               phiType,
               riskLevel: this.getHealthcareRiskLevel(phiType),
               hipaaRequired: this.isHIPAARequired(phiType),
@@ -420,12 +423,12 @@ export class ProductionSecurityService extends EventEmitter {
           try {
             const samples = await sequelize.query(sampleQuery, { type: QueryTypes.SELECT });
 
-            for (const sample of samples as any[]) {
-              const value = sample[column.COLUMN_NAME as string];
+            for (const sample of samples as Array<Record<string, unknown>>) {
+              const value = sample[column.COLUMN_NAME];
               const phiType = this.detectHealthcarePHIType(value);
               if (phiType) {
                 phiColumns.push({
-                  column: column.COLUMN_NAME as string,
+                  column: column.COLUMN_NAME,
                   phiType,
                   riskLevel: this.getHealthcareRiskLevel(phiType),
                   hipaaRequired: this.isHIPAARequired(phiType),
@@ -443,17 +446,17 @@ export class ProductionSecurityService extends EventEmitter {
         (item, index, self) => index === self.findIndex((t) => t.column === item.column),
       );
     } catch (error) {
-      this.logError(`Healthcare PHI detection failed for table ${table}:`, error);
+      this.logger.error(`Healthcare PHI detection failed for table ${table}:`, error);
       return [];
     }
   }
 
-  async maskHealthcarePHI(data: any, fields: string[], patientId?: string): Promise<any> {
+  async maskHealthcarePHI(data: Record<string, unknown>, fields: string[], patientId?: string): Promise<Record<string, unknown>> {
     const maskedData = { ...data };
 
     for (const field of fields) {
       if (maskedData[field]) {
-        const value = (maskedData[field] as any).toString();
+        const value = String(maskedData[field]);
         const phiType = this.detectHealthcarePHIType(value);
 
         maskedData[field] = this.applyHealthcareMasking(value, phiType || 'generic');
@@ -510,7 +513,7 @@ export class ProductionSecurityService extends EventEmitter {
     this.emit('healthcareSecurityEvent', auditLog);
 
     // Analyze for healthcare-specific threats
-    await this.analyzeForHealthcareThreats(auditLog);
+    this.analyzeForHealthcareThreats(auditLog);
 
     // Check for HIPAA reportable events
     if (auditLog.hipaaRelevant && auditLog.severity === 'critical') {
@@ -521,10 +524,12 @@ export class ProductionSecurityService extends EventEmitter {
   // Healthcare Threat Detection
   private analyzeForHealthcareThreats(auditLog: HealthcareAuditLog): void {
     // PHI Exfiltration Detection
+    const metadata = auditLog.metadata as { recordCount?: number };
     if (
       auditLog.action.includes('EXPORT') &&
       auditLog.phiAccessed &&
-      auditLog.metadata?.recordCount > 1000
+      metadata?.recordCount &&
+      metadata.recordCount > 1000
     ) {
       const threat: HealthcareThreatDetection = {
         id: crypto.randomUUID(),
@@ -537,12 +542,12 @@ export class ProductionSecurityService extends EventEmitter {
         patientImpact: 'high',
         hipaaReportable: true,
         metadata: {
-          recordCount: auditLog.metadata.recordCount as number,
+          recordCount: metadata.recordCount,
           clinicalImpact: 'potential_breach',
           affectedPatients: auditLog.patientId ? [auditLog.patientId] : [],
         },
       };
-      
+
       this.threats.push(threat);
       this.emit('healthcareThreatDetected', threat);
     }
@@ -580,7 +585,8 @@ export class ProductionSecurityService extends EventEmitter {
     }
 
     // Clinical Workflow Violations
-    if (auditLog.metadata?.clinicalContext && auditLog.severity === 'critical') {
+    const metadata2 = auditLog.metadata as { clinicalContext?: string; patientImpact?: string };
+    if (metadata2?.clinicalContext && auditLog.severity === 'critical') {
       const threat: HealthcareThreatDetection = {
         id: crypto.randomUUID(),
         type: 'clinical_breach',
@@ -589,14 +595,14 @@ export class ProductionSecurityService extends EventEmitter {
         timestamp: new Date(),
         source: auditLog.userId,
         mitigated: false,
-        patientImpact: auditLog.metadata.patientImpact || 'medium',
+        patientImpact: (metadata2.patientImpact as 'none' | 'low' | 'medium' | 'high' | 'critical') || 'medium',
         hipaaReportable: true,
-          metadata: {
-            clinicalContext: auditLog.metadata.clinicalContext,
-            clinicalImpact: 'workflow_violation',
-          },
-        };
-      
+        metadata: {
+          clinicalContext: metadata2.clinicalContext,
+          clinicalImpact: 'workflow_violation',
+        },
+      };
+
       this.threats.push(threat);
       this.emit('healthcareThreatDetected', threat);
     }
@@ -625,7 +631,7 @@ export class ProductionSecurityService extends EventEmitter {
     this.healthcarePiiPatterns.set('emergency_contact', /emergency|next_of_kin|contact_person/i);
   }
 
-  private detectHealthcarePHIType(value: string): string | null {
+  private detectHealthcarePHIType(value: unknown): string | null {
     if (!value || typeof value !== 'string') return null;
 
     // Medical Record Number pattern
@@ -741,7 +747,7 @@ export class ProductionSecurityService extends EventEmitter {
             await this.rotateHealthcareKeys();
             this.cleanupExpiredThreats();
           } catch (error) {
-            this.logError('Healthcare security monitoring error:', error);
+            this.logger.error('Healthcare security monitoring error:', error);
           }
         })();
       },
@@ -804,7 +810,7 @@ export class ProductionSecurityService extends EventEmitter {
         hipaaCompliance: this.validateHIPAACompliance(),
       };
     } catch (error) {
-      this.logError('Healthcare security health check failed:', error);
+      this.logger.error('Healthcare security health check failed:', error);
       return {
         keyManagement: false,
         encryption: false,

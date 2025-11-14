@@ -14,6 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { AlertCategory, AlertSeverity } from './alert.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * Delivery Channel Types
@@ -263,13 +264,6 @@ export class AlertPreferences
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: AlertPreferences) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] AlertPreferences ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('AlertPreferences', instance);
   }
 }

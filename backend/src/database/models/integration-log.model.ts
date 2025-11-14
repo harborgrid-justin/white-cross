@@ -176,13 +176,6 @@ export class IntegrationLog extends Model {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: IntegrationLog) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] IntegrationLog ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('IntegrationLog', instance);
   }
 }

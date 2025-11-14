@@ -132,13 +132,6 @@ export class BudgetCategory extends Model<BudgetCategory> {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: BudgetCategory) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] BudgetCategory ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('BudgetCategory', instance);
   }
 }

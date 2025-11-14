@@ -10,6 +10,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * Alert Severity Levels
@@ -432,13 +433,6 @@ export class AlertRule
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: AlertRule) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] AlertRule ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('AlertRule', instance);
   }
 }

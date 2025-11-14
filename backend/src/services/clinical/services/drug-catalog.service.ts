@@ -67,7 +67,25 @@ export class DrugCatalogService extends BaseService {
   async addDrug(data: AddDrugDto): Promise<DrugCatalog> {
     this.logInfo(`Adding new drug: ${data.genericName}`);
 
-    return this.drugCatalogModel.create({ ...data, isActive: true } as any);
+    try {
+      return await this.drugCatalogModel.create({
+        genericName: data.genericName,
+        brandNames: data.brandNames || [],
+        rxnormCode: data.rxnormCode,
+        drugClass: data.drugClass,
+        routeOfAdministration: data.routeOfAdministration,
+        dosageForms: data.dosageForms || [],
+        strengthsAvailable: data.strengthsAvailable || [],
+        isControlledSubstance: data.isControlledSubstance || false,
+        deaSchedule: data.deaSchedule,
+        blackBoxWarnings: data.blackBoxWarnings || [],
+        commonSideEffects: data.commonSideEffects || [],
+        isActive: true,
+      });
+    } catch (error) {
+      this.logError(`Failed to add drug: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
+    }
   }
 
   /**

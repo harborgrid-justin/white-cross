@@ -11,6 +11,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum ConsentType {
   MEDICATION_ADMINISTRATION = 'MEDICATION_ADMINISTRATION',
@@ -130,13 +131,6 @@ export class ConsentForm
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ConsentForm) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ConsentForm ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ConsentForm', instance);
   }
 }

@@ -14,6 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import type { Message } from './message.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum RecipientType {
   NURSE = 'NURSE',
@@ -215,13 +216,6 @@ export class MessageDelivery extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: MessageDelivery) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] MessageDelivery ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('MessageDelivery', instance);
   }
 }

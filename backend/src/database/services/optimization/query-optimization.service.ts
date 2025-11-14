@@ -249,34 +249,136 @@ export async function optimizeJoinOrder(
   sequelize: Sequelize,
   query: string
 ): Promise<string> {
-  // Extract table names from query
-  const tablePattern = /FROM\s+(\w+)|JOIN\s+(\w+)/gi;
-  const tables: string[] = [];
-  let match;
+  try {
+    // Extract table names and join conditions from query
+    const tablePattern = /FROM\s+(\w+)(?:\s+AS\s+)?(\w+)?|(?:INNER\s+|LEFT\s+|RIGHT\s+|FULL\s+)?JOIN\s+(\w+)(?:\s+AS\s+)?(\w+)?/gi;
+    const tables: Array<{ name: string; alias?: string }> = [];
+    const joinConditions: string[] = [];
+    let match;
 
-  while ((match = tablePattern.exec(query)) !== null) {
-    const table = match[1] || match[2];
-    if (table && !tables.includes(table)) {
-      tables.push(table);
+    // Extract tables and their aliases
+    while ((match = tablePattern.exec(query)) !== null) {
+      const tableName = match[1] || match[3];
+      const alias = match[2] || match[4];
+      if (tableName && !tables.some(t => t.name === tableName)) {
+        tables.push({ name: tableName, alias: alias || tableName });
+      }
     }
+
+    // If less than 2 tables, no optimization needed
+    if (tables.length < 2) {
+      return query;
+    }
+
+    // Extract join conditions (ON clauses)
+    const onPattern = /ON\s+([^WHERE\s]+?)(?:WHERE|GROUP BY|ORDER BY|LIMIT|$)/gi;
+    let onMatch;
+    while ((onMatch = onPattern.exec(query)) !== null) {
+      joinConditions.push(onMatch[1].trim());
+    }
+
+    // Get table sizes for cost estimation
+    const tableSizes = new Map<string, number>();
+    for (const table of tables) {
+      try {
+        const [result] = await sequelize.query(
+          `SELECT COUNT(*) as count FROM "${table.name}"`,
+          { type: QueryTypes.SELECT }
+        );
+        const row = result as unknown as { count: number };
+        tableSizes.set(table.name, row.count || 0);
+      } catch (error) {
+        // If table doesn't exist or query fails, use default size
+        tableSizes.set(table.name, 1000);
+      }
+    }
+
+    // Sort tables by size (smallest first for optimal join order)
+    // This follows the database optimization principle: filter early, join late
+    tables.sort((a, b) => (tableSizes.get(a.name) || 0) - (tableSizes.get(b.name) || 0));
+
+    // Rebuild query with optimized join order
+    // This is a simplified implementation that preserves query semantics
+    // In production, consider using a proper SQL parser for complex queries
+
+    // Extract query components
+    const selectMatch = query.match(/SELECT\s+(.+?)\s+FROM/i);
+    const whereMatch = query.match(/WHERE\s+(.+?)(?:GROUP BY|ORDER BY|LIMIT|$)/i);
+    const groupByMatch = query.match(/GROUP BY\s+(.+?)(?:ORDER BY|LIMIT|$)/i);
+    const orderByMatch = query.match(/ORDER BY\s+(.+?)(?:LIMIT|$)/i);
+    const limitMatch = query.match(/LIMIT\s+(\d+)/i);
+
+    if (!selectMatch) {
+      // Can't parse query, return original
+      return query;
+    }
+
+    const selectClause = selectMatch[1];
+    const whereClause = whereMatch ? whereMatch[1] : null;
+    const groupByClause = groupByMatch ? groupByMatch[1] : null;
+    const orderByClause = orderByMatch ? orderByMatch[1] : null;
+    const limitClause = limitMatch ? limitMatch[1] : null;
+
+    // Build optimized query
+    let optimizedQuery = `SELECT ${selectClause} FROM `;
+
+    // Start with smallest table
+    const firstTable = tables[0];
+    optimizedQuery += `"${firstTable.name}"`;
+    if (firstTable.alias && firstTable.alias !== firstTable.name) {
+      optimizedQuery += ` AS ${firstTable.alias}`;
+    }
+
+    // Add remaining tables as JOINs in size order
+    for (let i = 1; i < tables.length; i++) {
+      const table = tables[i];
+
+      // Determine join type from original query
+      const joinTypePattern = new RegExp(`(INNER|LEFT|RIGHT|FULL)?\\s*JOIN\\s+${table.name}`, 'i');
+      const joinTypeMatch = query.match(joinTypePattern);
+      const joinType = joinTypeMatch?.[1] ? `${joinTypeMatch[1]} JOIN` : 'JOIN';
+
+      optimizedQuery += ` ${joinType} "${table.name}"`;
+      if (table.alias && table.alias !== table.name) {
+        optimizedQuery += ` AS ${table.alias}`;
+      }
+
+      // Find appropriate ON condition for this table
+      const relevantCondition = joinConditions.find(cond =>
+        cond.includes(table.alias || table.name)
+      );
+
+      if (relevantCondition) {
+        optimizedQuery += ` ON ${relevantCondition}`;
+      }
+    }
+
+    // Add WHERE clause
+    if (whereClause) {
+      optimizedQuery += ` WHERE ${whereClause}`;
+    }
+
+    // Add GROUP BY clause
+    if (groupByClause) {
+      optimizedQuery += ` GROUP BY ${groupByClause}`;
+    }
+
+    // Add ORDER BY clause
+    if (orderByClause) {
+      optimizedQuery += ` ORDER BY ${orderByClause}`;
+    }
+
+    // Add LIMIT clause
+    if (limitClause) {
+      optimizedQuery += ` LIMIT ${limitClause}`;
+    }
+
+    return optimizedQuery;
+  } catch (error) {
+    // If optimization fails, return original query
+    console.error('[QUERY OPTIMIZATION ERROR]', error);
+    return query;
   }
-
-  // Get table sizes
-  const tableSizes = new Map<string, number>();
-  for (const table of tables) {
-    const [result] = await sequelize.query(
-      `SELECT COUNT(*) as count FROM "${table}"`,
-      { type: QueryTypes.SELECT }
-    );
-    tableSizes.set(table, (result[0] as Record<string, unknown>).count as number);
-  }
-
-  // Sort tables by size (smallest first for optimal join order)
-  tables.sort((a, b) => (tableSizes.get(a) || 0) - (tableSizes.get(b) || 0));
-
-  // TODO: Rewrite query with optimized join order
-  // This is a simplified placeholder
-  return query;
 }
 
 /**

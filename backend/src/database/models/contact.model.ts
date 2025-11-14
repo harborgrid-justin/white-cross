@@ -15,6 +15,7 @@ import {
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
 import { ContactType } from '../../services/communication/contact/enums/contact-type.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * Contact Model
@@ -270,13 +271,6 @@ export class Contact extends Model<Contact> {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Contact) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Contact ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('Contact', instance);
   }
 }

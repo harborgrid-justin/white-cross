@@ -181,14 +181,72 @@ export class MonitoringService extends BaseService {
   }
 
   /**
-   * Get system health status
+   * Get system health status with real health indicators
    */
   async getHealthStatus(): Promise<HealthIndicatorResult> {
-    return this.healthCheckService.check([
-      // Add health indicators here
-      // Example: () => this.databaseHealthCheck(),
-      // Example: () => this.cacheHealthCheck(),
-    ]);
+    try {
+      const healthChecks: Array<() => Promise<HealthIndicatorResult>> = [];
+
+      // Add available health indicators
+      healthChecks.push(async () => {
+        // Memory health check
+        const memUsage = process.memoryUsage();
+        const heapUsagePercent = (memUsage.heapUsed / memUsage.heapTotal) * 100;
+
+        return {
+          memory: {
+            status: heapUsagePercent < 90 ? 'up' : 'down',
+            heapUsed: memUsage.heapUsed,
+            heapTotal: memUsage.heapTotal,
+            percentage: Math.round(heapUsagePercent * 100) / 100,
+          },
+        };
+      });
+
+      healthChecks.push(async () => {
+        // Process health check
+        const uptime = process.uptime();
+
+        return {
+          process: {
+            status: uptime > 0 ? 'up' : 'down',
+            uptime,
+            pid: process.pid,
+            nodeVersion: process.version,
+          },
+        };
+      });
+
+      // Execute all health checks
+      if (healthChecks.length > 0) {
+        return await this.healthCheckService.check(healthChecks);
+      } else {
+        // Return basic health status if no checks configured
+        return {
+          status: 'ok',
+          info: {
+            uptime: process.uptime(),
+            timestamp: new Date().toISOString(),
+          },
+          error: {},
+          details: {},
+        };
+      }
+    } catch (error) {
+      this.logError('Health status check failed', error);
+
+      return {
+        status: 'error',
+        info: {},
+        error: {
+          healthCheck: {
+            status: 'down',
+            message: (error as Error).message,
+          },
+        },
+        details: {},
+      };
+    }
   }
 
   /**
