@@ -4,16 +4,7 @@
  * @module student/controllers/student-management.controller
  */
 
-import {
-  Body,
-  Controller,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -37,6 +28,8 @@ import { BaseController } from '@/common/base';
  * - Bulk update operations
  */
 @ApiTags('students')
+
+@Version('1')
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

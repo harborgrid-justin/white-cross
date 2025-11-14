@@ -3,15 +3,7 @@
  * Provides REST API endpoints for dashboard statistics, analytics, and real-time data
  */
 
-import {
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Query,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, HttpStatus, Query, ValidationPipe, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseController } from '@/common/base';
 import { DashboardService } from './dashboard.service';
@@ -38,6 +30,8 @@ import {
  */
 @ApiTags('dashboard')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('dashboard')
 export class DashboardController extends BaseController {
   constructor(private readonly dashboardService: DashboardService) {

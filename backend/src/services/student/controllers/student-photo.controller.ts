@@ -4,15 +4,7 @@
  * @module student/controllers/student-photo.controller
  */
 
-import {
-  Body,
-  Controller,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Post, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '@/services/auth';
@@ -32,6 +24,8 @@ import { BaseController } from '@/common/base';
  * All operations are audited due to PHI sensitivity.
  */
 @ApiTags('students')
+
+@Version('1')
 @Controller('students')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

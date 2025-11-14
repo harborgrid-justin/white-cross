@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IntegrationService } from './services/integration.service';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
@@ -9,6 +9,8 @@ import { UpdateIntegrationDto } from './dto/update-integration.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Integrations')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('integrations')
 export class IntegrationController extends BaseController {
   constructor(

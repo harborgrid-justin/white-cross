@@ -4,14 +4,7 @@
  * @description HTTP endpoints for HIPAA compliance, monitoring, and audit operations
  */
 
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../../services/auth';
@@ -32,8 +25,10 @@ import { BaseController } from '@/common/base';
  * - Performance metrics
  * - System health monitoring
  */
-@ApiTags('health-record-compliance')
-@Controller('health-record')
+@ApiTags('Health Records - Compliance')
+
+@Version('1')
+@Controller('health-records')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, HealthRecordRateLimitGuard)
 @UseInterceptors(HealthRecordAuditInterceptor, HealthRecordCacheInterceptor)

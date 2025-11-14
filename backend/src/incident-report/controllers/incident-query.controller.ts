@@ -4,7 +4,7 @@
  * @description HTTP endpoints for incident report queries
  */
 
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -30,6 +30,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('incident-reports-query')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('incident-reports')
 export class IncidentQueryController extends BaseController {
   constructor(

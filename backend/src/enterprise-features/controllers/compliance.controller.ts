@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HipaaComplianceService } from '../hipaa-compliance.service';
 import { RegulationTrackingService } from '../regulation-tracking.service';
@@ -6,6 +6,8 @@ import { GenerateComplianceReportDto, HIPAAComplianceCheckResponseDto, Regulatio
 
 import { BaseController } from '@/common/base';
 @ApiTags('Compliance & Regulations')
+
+@Version('1')
 @Controller('enterprise-features')
 @ApiBearerAuth()
 export class ComplianceController extends BaseController {

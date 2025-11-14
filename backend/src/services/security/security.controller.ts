@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   IpRestrictionService,
@@ -19,6 +19,8 @@ import { BaseController } from '@/common/base';
  * Manages security features including IP restrictions, incidents, and sessions
  */
 @ApiTags('Security')
+
+@Version('1')
 @Controller('security')
 @ApiBearerAuth()
 export class SecurityController extends BaseController {

@@ -1,10 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LanguageTranslationService } from '../language-translation.service';
 import { DetectLanguageDto, TranslateBulkMessagesDto, TranslateMessageDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Language Translation')
+
+@Version('1')
 @Controller('enterprise-features/translate')
 @ApiBearerAuth()
 export class TranslationController extends BaseController {

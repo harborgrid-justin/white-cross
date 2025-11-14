@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards, ValidationPipe, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -23,6 +23,8 @@ import { TokenBlacklistService } from './services/token-blacklist.service';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Authentication')
+
+@Version('1')
 @Controller('auth')
 export class AuthController extends BaseController {
   constructor(
@@ -165,17 +167,17 @@ export class AuthController extends BaseController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('change-password')
+  @Patch('me/password')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Change user password',
-    description: "Change the authenticated user's password",
+    summary: 'Update user password',
+    description: "Update the authenticated user's password",
   })
   @ApiBody({ type: AuthChangePasswordDto })
   @ApiResponse({
     status: 200,
-    description: 'Password changed successfully',
+    description: 'Password updated successfully',
   })
   @ApiResponse({
     status: 400,

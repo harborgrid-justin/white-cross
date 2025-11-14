@@ -25,6 +25,8 @@ import { PaginationDto } from './dto/pagination.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Discovery')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('discovery')
 @UseFilters(DiscoveryExceptionFilter)
 @UseGuards(AdminDiscoveryGuard, DiscoveryRateLimitGuard)

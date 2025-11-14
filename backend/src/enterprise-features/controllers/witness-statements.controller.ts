@@ -1,10 +1,12 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WitnessStatementService } from '../witness-statement.service';
 import { CaptureStatementDto, TranscribeVoiceStatementDto, VerifyStatementDto, WitnessStatementResponseDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Witness Statements')
+
+@Version('1')
 @Controller('enterprise-features/witness-statements')
 @ApiBearerAuth()
 export class WitnessStatementsController extends BaseController {

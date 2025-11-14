@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiKeyAuthService } from './api-key-auth.service';
 import { ApiKeyResponseDto } from './dto/api-key-response.dto';
@@ -27,7 +27,9 @@ interface AuthenticatedRequest extends ExpressRequest {
  * @controller ApiKeyAuthController
  */
 @ApiTags('API Key Management')
-@Controller('api/v1/api-keys')
+
+@Version('1')
+@Controller('api-keys')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class ApiKeyAuthController extends BaseController {

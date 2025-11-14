@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/services/auth/guards/jwt-auth.guard';
 import { GradeTransitionService } from './grade-transition.service';
@@ -11,6 +11,8 @@ import { BaseController } from '@/common/base';
  * Handles API endpoints for automated grade transitions
  */
 @ApiTags('Grade Transition')
+
+@Version('1')
 @Controller('student-management/grade-transitions')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

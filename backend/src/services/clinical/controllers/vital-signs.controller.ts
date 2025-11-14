@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VitalSignsService } from '../services/vital-signs.service';
 import { RecordVitalsDto } from '../dto/vitals/record-vitals.dto';
@@ -8,6 +8,8 @@ import { VitalsFiltersDto } from '../dto/vitals/vitals-filters.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Vital Signs')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/vital-signs')
 export class VitalSignsController extends BaseController {
   constructor(private readonly vitalsService: VitalSignsService) {}

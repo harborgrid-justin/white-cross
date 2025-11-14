@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 // Import services
@@ -25,6 +25,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Administration')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('administration')
 export class AdministrationController extends BaseController {
   constructor(

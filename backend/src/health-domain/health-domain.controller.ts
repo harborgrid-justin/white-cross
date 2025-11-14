@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { HealthDomainService } from './health-domain.service';
 import {
@@ -28,9 +28,11 @@ import {
   VaccinationRatesQueryDto,
 } from './dto/schedule.dto';
 
-@ApiTags('health-domain')
+@ApiTags('Health Domains')
 @ApiBearerAuth()
-@Controller('health-domain')
+
+@Version('1')
+@Controller('health-domains')
 export class HealthDomainController extends BaseController {
   constructor(private readonly healthDomainService: HealthDomainService) {}
 

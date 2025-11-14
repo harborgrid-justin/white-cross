@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -19,6 +19,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Clinical - Drug Catalog')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/drugs')
 export class DrugCatalogController extends BaseController {
   constructor(private readonly drugInteractionService: DrugInteractionService) {}

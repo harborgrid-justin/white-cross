@@ -4,7 +4,7 @@
  * @description HTTP endpoints for appointment queries and availability
  */
 
-import { Controller, Get, Logger, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Param, ParseUUIDPipe, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -28,6 +28,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('appointments-query')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('appointments')
 export class AppointmentQueryController extends BaseController {
   private readonly logger = new Logger(AppointmentQueryController.name);

@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConsentFormManagementService } from '../consent-form-management.service';
 import { ConsentFormResponseDto, CreateConsentFormDto, RenewConsentFormDto, RevokeConsentDto, SignFormDto, VerifySignatureDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Consent Forms')
+
+@Version('1')
 @Controller('enterprise-features/consent-forms')
 @ApiBearerAuth()
 export class ConsentFormsController extends BaseController {

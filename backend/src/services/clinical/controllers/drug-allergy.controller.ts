@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DrugInteractionService } from '../services/drug-interaction.service';
 import { AddAllergyDto } from '../dto/drug/add-allergy.dto';
@@ -11,6 +11,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Clinical - Drug Allergies')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/drugs')
 export class DrugAllergyController extends BaseController {
   constructor(

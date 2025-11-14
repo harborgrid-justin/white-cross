@@ -4,21 +4,7 @@
  * @description HTTP endpoints for basic CRUD operations on health records
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -56,8 +42,10 @@ interface HealthRecordFilters {
  * - Student-specific health record retrieval
  * - Health summaries and filtering
  */
-@ApiTags('health-record-crud')
-@Controller('health-record')
+@ApiTags('Health Records')
+
+@Version('1')
+@Controller('health-records')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, HealthRecordRateLimitGuard)
 @UseInterceptors(HealthRecordAuditInterceptor, HealthRecordCacheInterceptor)

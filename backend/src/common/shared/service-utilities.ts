@@ -1,6 +1,26 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
-import { Repository, FindManyOptions, FindOneOptions, DeepPartial } from 'typeorm';
+// TypeORM removed - using generic types for database-agnostic service utilities
 import { EventEmitter2 } from '@nestjs/event-emitter';
+
+/**
+ * Generic repository interface for database-agnostic operations
+ */
+interface GenericRepository<T> {
+  find(options?: any): Promise<T[]>;
+  findOne(options?: any): Promise<T | null>;
+  findOneBy(criteria: any): Promise<T | null>;
+  findByIds?(ids: any[]): Promise<T[]>;
+  findAndCount(options?: any): Promise<[T[], number]>;
+  create(entity: any): T;
+  save(entity: T | T[]): Promise<T | T[]>;
+  update(criteria: any, partialEntity: any): Promise<any>;
+  delete(criteria: any): Promise<any>;
+  softDelete?(criteria: any): Promise<any>;
+  restore?(criteria: any): Promise<any>;
+  createQueryBuilder?(alias?: string): any;
+  count(options?: any): Promise<number>;
+  manager?: any;
+}
 
 /**
  * Service Utilities for NestJS Applications
@@ -63,7 +83,7 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
   protected readonly options: ServiceOptions;
 
   constructor(
-    protected readonly repository: Repository<TEntity>,
+    protected readonly repository: GenericRepository<TEntity>,
     protected readonly eventEmitter?: EventEmitter2,
     options: ServiceOptions = {}
   ) {
@@ -163,7 +183,7 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
       const entityData = {
         ...createDto,
         ...(userId && { createdBy: userId }),
-      } as DeepPartial<TEntity>;
+      } as any;
 
       const entity = this.repository.create(entityData);
       const savedEntity = await this.repository.save(entity);
@@ -194,7 +214,7 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
         ...updateDto,
         ...(userId && { updatedBy: userId }),
         updatedAt: new Date(),
-      } as DeepPartial<TEntity>;
+      } as any;
 
       Object.assign(existingEntity, updateData);
       const savedEntity = await this.repository.save(existingEntity);
@@ -279,7 +299,7 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
       const entityData = createDtos.map(dto => ({
         ...dto,
         ...(userId && { createdBy: userId }),
-      })) as DeepPartial<TEntity>[];
+      })) as any[];
 
       const entities = this.repository.create(entityData);
       const savedEntities = await this.repository.save(entities);
@@ -333,8 +353,10 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
     try {
       if (ids.length === 0) return [];
 
-      const entities = await this.repository.findByIds(ids);
-      
+      const entities = this.repository.findByIds
+        ? await this.repository.findByIds(ids)
+        : await this.repository.find({ where: { id: { $in: ids } } as any });
+
       // Return entities in the same order as requested IDs
       return ids.map(id => entities.find((entity: any) => entity.id === id)).filter(Boolean) as TEntity[];
     } catch (error) {
@@ -344,13 +366,13 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
   }
 
   /**
-   * Build TypeORM find options from filters
+   * Build generic find options from filters
    */
   protected buildFindOptions(
     filters: FilterOptions,
     orderBy?: string,
     orderDirection?: 'ASC' | 'DESC'
-  ): FindManyOptions<TEntity> {
+  ): any {
     const where: any = {};
     const relations: string[] = [];
 
@@ -373,7 +395,7 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
     // Apply custom filters (override in subclasses)
     this.applyCustomFilters(where, filters);
 
-    const findOptions: FindManyOptions<TEntity> = { where };
+    const findOptions: any = { where };
 
     if (orderBy && orderDirection) {
       findOptions.order = { [orderBy]: orderDirection } as any;
@@ -443,7 +465,7 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
   /**
    * Get repository for custom queries
    */
-  getRepository(): Repository<TEntity> {
+  getRepository(): GenericRepository<TEntity> {
     return this.repository;
   }
 
@@ -461,7 +483,7 @@ export abstract class BaseService<TEntity, TCreateDto, TUpdateDto> {
 @Injectable()
 export abstract class HealthcareBaseService<TEntity, TCreateDto, TUpdateDto> extends BaseService<TEntity, TCreateDto, TUpdateDto> {
   constructor(
-    repository: Repository<TEntity>,
+    repository: GenericRepository<TEntity>,
     eventEmitter?: EventEmitter2,
     options: ServiceOptions = {}
   ) {

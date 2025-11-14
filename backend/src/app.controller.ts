@@ -1,10 +1,12 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppService } from './app.service';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Application')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller()
 export class AppController extends BaseController {
   constructor(private readonly appService: AppService) {}

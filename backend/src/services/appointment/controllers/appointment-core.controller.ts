@@ -4,18 +4,7 @@
  * @description HTTP endpoints for core appointment CRUD operations
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Logger,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, ParseUUIDPipe, Patch, Post, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -44,6 +33,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('appointments-core')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('appointments')
 export class AppointmentCoreController extends BaseController {
   private readonly logger = new Logger(AppointmentCoreController.name);

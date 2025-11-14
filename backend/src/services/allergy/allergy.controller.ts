@@ -8,20 +8,7 @@
  * @controller AllergyController
  * @route /allergy
  */
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseBoolPipe,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseBoolPipe, ParseUUIDPipe, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AllergyCrudService } from './services/allergy-crud.service';
 import { AllergyQueryService } from './services/allergy-query.service';
@@ -35,7 +22,9 @@ import { VerifyAllergyDto } from './dto/verify-allergy.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Allergies')
 @ApiBearerAuth()
-@Controller('allergy')
+
+@Version('1')
+@Controller('allergies')
 export class AllergyController extends BaseController {
   constructor(
     private readonly allergyCrudService: AllergyCrudService,

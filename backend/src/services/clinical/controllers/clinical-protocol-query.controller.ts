@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -13,6 +13,8 @@ import { ProtocolFiltersDto } from '../dto/protocol/protocol-filters.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Protocols')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/protocols')
 export class ClinicalProtocolQueryController extends BaseController {
   constructor(private readonly protocolService: ClinicalProtocolService) {}

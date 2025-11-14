@@ -1,10 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnalyticsDashboardService } from '../analytics-dashboard.service';
 import { DashboardMetricResponseDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Analytics Dashboard')
+
+@Version('1')
 @Controller('enterprise-features/analytics')
 @ApiBearerAuth()
 export class AnalyticsController extends BaseController {

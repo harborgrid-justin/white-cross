@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  Put,
-  Query,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Put, Query, UseInterceptors, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -56,6 +44,8 @@ import { UpdateMedicationDto } from './dto/update-medication.dto';
  * - Student medication access restricted by role and assignment
  */
 @ApiTags('medications')
+
+@Version('1')
 @Controller('medications')
 @ApiBearerAuth()
 export class MedicationController extends BaseController {

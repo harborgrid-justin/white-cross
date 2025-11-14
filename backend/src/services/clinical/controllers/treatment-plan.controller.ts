@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TreatmentPlanService } from '../services/treatment-plan.service';
 import { CreateTreatmentPlanDto } from '../dto/treatment/create-treatment-plan.dto';
@@ -12,6 +12,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Clinical - Treatment Plans')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/treatment-plans')
 export class TreatmentPlanController extends BaseController {
   constructor(private readonly treatmentPlanService: TreatmentPlanService) {}

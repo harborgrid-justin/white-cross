@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -18,9 +18,11 @@ import { HealthRiskScoreDto, HighRiskQueryDto, HighRiskStudentDto } from './dto'
  * Risk scores are calculated based on allergies, chronic conditions, medications,
  * and recent incident history.
  */
-@ApiTags('Health Risk Assessment')
+@ApiTags('Health Risk Assessments')
 @ApiBearerAuth()
-@Controller('health-risk-assessment')
+
+@Version('1')
+@Controller('health-risk-assessments')
 export class HealthRiskAssessmentController extends BaseController {
   constructor(private readonly healthRiskAssessmentService: HealthRiskAssessmentService) {
     super('HealthRiskAssessmentController');

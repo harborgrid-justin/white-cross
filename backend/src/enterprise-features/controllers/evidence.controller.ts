@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PhotoVideoEvidenceService } from '../photo-video-evidence.service';
 import { DeleteEvidenceDto, EvidenceFileResponseDto, UploadEvidenceDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Evidence Management')
+
+@Version('1')
 @Controller('enterprise-features/evidence')
 @ApiBearerAuth()
 export class EvidenceController extends BaseController {

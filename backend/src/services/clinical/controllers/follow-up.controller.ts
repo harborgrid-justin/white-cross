@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FollowUpService } from '../services/follow-up.service';
 import { ScheduleFollowUpDto } from '../dto/follow-up/schedule-follow-up.dto';
@@ -9,6 +9,8 @@ import { FollowUpFiltersDto } from '../dto/follow-up/follow-up-filters.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Clinical - Follow-up Appointments')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('clinical/follow-ups')
 export class FollowUpController extends BaseController {
   constructor(private readonly followUpService: FollowUpService) {}

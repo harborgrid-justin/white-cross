@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConfigurationService } from './services/configuration.service';
 import {
@@ -21,6 +21,8 @@ import { BaseController } from '@/common/base';
  * All endpoints require authentication. Administrative endpoints require admin role.
  */
 @ApiTags('Configuration')
+
+@Version('1')
 @Controller('configurations')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

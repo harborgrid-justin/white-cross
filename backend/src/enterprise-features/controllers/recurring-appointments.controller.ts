@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RecurringAppointmentsService } from '../recurring-appointments.service';
 import { CreateRecurringTemplateDto, RecurringTemplateResponseDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Recurring Appointments')
+
+@Version('1')
 @Controller('enterprise-features/recurring-appointments')
 @ApiBearerAuth()
 export class RecurringAppointmentsController extends BaseController {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
 import { AuditLogFilterDto } from './dto/audit-log-filter.dto';
@@ -20,6 +20,8 @@ import { BaseController } from '@/common/base';
  * Access to audit logs should be restricted to administrators and compliance officers.
  */
 @ApiTags('Audit')
+
+@Version('1')
 @Controller('audit')
 @ApiBearerAuth()
 export class AuditController extends BaseController {

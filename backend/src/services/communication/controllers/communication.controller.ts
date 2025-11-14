@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CommunicationService } from '../services/communication.service';
 import { BroadcastMessageDto } from '../dto/broadcast-message.dto';
@@ -10,6 +10,8 @@ import { UpdateMessageTemplateDto } from '../dto/update-message-template.dto';
 import { BaseController } from '@/common/base';
 @ApiTags('Communication')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('communication')
 export class CommunicationController extends BaseController {
   constructor(private readonly communicationService: CommunicationService) {}

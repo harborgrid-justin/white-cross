@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WaitlistManagementService } from '../waitlist-management.service';
 import { AddToWaitlistDto, AutoFillFromWaitlistDto, WaitlistEntryResponseDto } from '../dto';
 
 import { BaseController } from '@/common/base';
 @ApiTags('Waitlist Management')
+
+@Version('1')
 @Controller('enterprise-features/waitlist')
 @ApiBearerAuth()
 export class WaitlistController extends BaseController {

@@ -1,10 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Repository } from 'typeorm';
-import { getRepositoryToken } from '@nestjs/typeorm';
+// TypeORM removed - using generic types for test utilities
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from '@nestjs/common';
+
+/**
+ * Generic repository interface for testing
+ */
+interface GenericRepository<T = any> {
+  find?: jest.Mock;
+  findOne?: jest.Mock;
+  findOneBy?: jest.Mock;
+  findAndCount?: jest.Mock;
+  create?: jest.Mock;
+  save?: jest.Mock;
+  update?: jest.Mock;
+  delete?: jest.Mock;
+  softDelete?: jest.Mock;
+  restore?: jest.Mock;
+  createQueryBuilder?: jest.Mock;
+  manager?: any;
+  count?: jest.Mock;
+  findByIds?: jest.Mock;
+}
 
 /**
  * Test Utilities for NestJS Applications
@@ -16,7 +35,7 @@ import { Logger } from '@nestjs/common';
 /**
  * Standard mock implementations
  */
-export const createMockRepository = <T = any>(): Partial<Repository<T>> => ({
+export const createMockRepository = <T = any>(): GenericRepository<T> => ({
   find: jest.fn(),
   findOne: jest.fn(),
   findOneBy: jest.fn(),
@@ -257,7 +276,7 @@ export const createMockExecutionContext = (overrides: Partial<any> = {}) => ({
  */
 export interface ServiceTestModuleOptions<T> {
   serviceClass: new (...args: any[]) => T;
-  repositories?: Array<{ entity: any; mock?: Partial<Repository<any>> }>;
+  repositories?: Array<{ entity: any; token?: any; mock?: GenericRepository<any> }>;
   providers?: any[];
   imports?: any[];
 }
@@ -267,8 +286,9 @@ export async function createServiceTestModule<T>(
 ): Promise<{ module: TestingModule; service: T }> {
   const { serviceClass, repositories = [], providers = [], imports = [] } = options;
 
-  const repositoryProviders = repositories.map(({ entity, mock }) => ({
-    provide: getRepositoryToken(entity),
+  // Map repositories to providers - use custom token if provided, otherwise use entity name
+  const repositoryProviders = repositories.map(({ entity, token, mock }) => ({
+    provide: token || (typeof entity === 'string' ? entity : entity.name),
     useValue: mock || createMockRepository(),
   }));
 

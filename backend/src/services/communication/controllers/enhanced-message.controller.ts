@@ -1,18 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-  Req,
-  UploadedFiles,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req, UploadedFiles, UseInterceptors, Version } from '@nestjs/common';
 import { AuthenticatedRequest } from '../types/index';
 import {
   ApiBearerAuth,
@@ -57,6 +43,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('Enhanced Messaging')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('enhanced-messages')
 export class EnhancedMessageController extends BaseController {
   constructor(

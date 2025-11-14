@@ -4,13 +4,15 @@
  * @description Root-level vaccinations endpoints for frontend compatibility
  */
 
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Version } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { VaccinationsService } from './vaccinations.service';
 
 import { BaseController } from '@/common/base';
 @ApiTags('vaccinations')
+
+@Version('1')
 @Controller('vaccinations')
 @UseGuards(JwtAuthGuard)
 export class VaccinationsController extends BaseController {

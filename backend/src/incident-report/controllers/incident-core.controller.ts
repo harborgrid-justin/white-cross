@@ -4,7 +4,7 @@
  * @description HTTP endpoints for core incident report CRUD operations
  */
 
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -32,6 +32,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('incident-reports-core')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('incident-reports')
 export class IncidentCoreController extends BaseController {
   constructor(

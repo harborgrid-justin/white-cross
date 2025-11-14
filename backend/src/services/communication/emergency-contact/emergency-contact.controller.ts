@@ -7,20 +7,7 @@
  * @controller EmergencyContactController
  * @route /emergency-contact
  */
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Req,
-  Logger,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Req, Logger, Version } from '@nestjs/common';
 import { Request } from 'express';
 import { EmergencyContactService } from './emergency-contact.service';
 import { EmergencyContactCreateDto } from './dto/create-emergency-contact.dto';
@@ -36,7 +23,9 @@ import {
 } from '@/common/shared/controller-utilities';
 
 @ApiTagsAndAuth(['Emergency Contacts'])
-@Controller('emergency-contact')
+
+@Version('1')
+@Controller('emergency-contacts')
 export class EmergencyContactController extends BaseController {
   private readonly logger = ControllerUtilities.createControllerLogger('EmergencyContactController');
 

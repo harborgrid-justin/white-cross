@@ -4,7 +4,7 @@
  * @description HTTP endpoints for appointment statistics, analytics, and reporting
  */
 
-import { Controller, Get, Logger, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -30,6 +30,8 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('appointments-statistics')
 @ApiBearerAuth()
+
+@Version('1')
 @Controller('appointments')
 export class AppointmentStatisticsController extends BaseController {
   private readonly logger = new Logger(AppointmentStatisticsController.name);
