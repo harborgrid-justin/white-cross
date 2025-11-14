@@ -23,3 +23,16 @@ export type {
   ReportCategory,
   ReportFrequency
 } from './ReportCard';
+
+// Re-export types from ReportAnalytics for external use
+export type {
+  TimePeriod,
+  TrendType,
+  ChartType,
+  AnalyticsMetric,
+  ChartData,
+  ReportUsage,
+  UserEngagement,
+  SystemMetrics,
+  ReportAnalyticsProps
+} from './ReportAnalytics.types';

@@ -9,6 +9,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { LogEntry, LogQueryParams } from './interfaces/metrics.interface';
 
+import { BaseService } from '@/common/base';
 /**
  * LogAggregationService
  *
@@ -28,8 +29,10 @@ import { LogEntry, LogQueryParams } from './interfaces/metrics.interface';
  * ```
  */
 @Injectable()
-export class LogAggregationService {
-  private readonly logger = new Logger(LogAggregationService.name);
+export class LogAggregationService extends BaseService {
+  constructor() {
+    super("LogAggregationService");
+  }
 
   // Log storage
   private logBuffer: LogEntry[] = [];
@@ -39,7 +42,7 @@ export class LogAggregationService {
    * Initialize log aggregation
    */
   async initialize(): Promise<void> {
-    this.logger.log('Log aggregation service initialized');
+    this.logInfo('Log aggregation service initialized');
   }
 
   /**
@@ -200,7 +203,7 @@ export class LogAggregationService {
    */
   clearLogs(): void {
     this.logBuffer = [];
-    this.logger.log('All logs cleared');
+    this.logInfo('All logs cleared');
   }
 
   /**
@@ -218,7 +221,7 @@ export class LogAggregationService {
     });
 
     const removedCount = initialLength - this.logBuffer.length;
-    this.logger.log(`Cleared ${removedCount} old log entries`);
+    this.logInfo(`Cleared ${removedCount} old log entries`);
   }
 
   /**

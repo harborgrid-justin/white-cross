@@ -12,6 +12,8 @@ import {
   Scopes,
   Table,
 } from 'sequelize-typescript';
+import { ApiHideProperty } from '@nestjs/swagger';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum MessageType {
   EMAIL = 'EMAIL',
@@ -69,15 +71,25 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   declare id?: string;
 
   @Index
-  @ForeignKey(() => require('./appointment.model').Appointment)
+  @ForeignKey(() => {
+    const { Appointment } = require('./appointment.model');
+    return Appointment;
+  })
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   appointmentId: string;
 
-  @BelongsTo(() => require('./appointment.model').Appointment)
-  declare appointment: any;
+  @BelongsTo(() => {
+    const { Appointment } = require('./appointment.model');
+    return Appointment;
+  }, {
+    foreignKey: 'appointmentId',
+    as: 'appointment',
+  })
+  @ApiHideProperty()
+  declare appointment?: any;
 
   @Column({
     type: DataType.STRING(50),
@@ -140,13 +152,9 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: AppointmentReminder) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] AppointmentReminder ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('AppointmentReminder', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AppointmentReminder;

@@ -1,0 +1,53 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserRole = exports.AllergySeverity = exports.HealthRecordType = void 0;
+var HealthRecordType;
+(function (HealthRecordType) {
+    HealthRecordType["CHECKUP"] = "CHECKUP";
+    HealthRecordType["VACCINATION"] = "VACCINATION";
+    HealthRecordType["ILLNESS"] = "ILLNESS";
+    HealthRecordType["INJURY"] = "INJURY";
+    HealthRecordType["SCREENING"] = "SCREENING";
+    HealthRecordType["PHYSICAL_EXAM"] = "PHYSICAL_EXAM";
+    HealthRecordType["MENTAL_HEALTH"] = "MENTAL_HEALTH";
+    HealthRecordType["DENTAL"] = "DENTAL";
+    HealthRecordType["VISION"] = "VISION";
+    HealthRecordType["HEARING"] = "HEARING";
+    HealthRecordType["EXAMINATION"] = "EXAMINATION";
+    HealthRecordType["ALLERGY_DOCUMENTATION"] = "ALLERGY_DOCUMENTATION";
+    HealthRecordType["CHRONIC_CONDITION_REVIEW"] = "CHRONIC_CONDITION_REVIEW";
+    HealthRecordType["GROWTH_ASSESSMENT"] = "GROWTH_ASSESSMENT";
+    HealthRecordType["VITAL_SIGNS_CHECK"] = "VITAL_SIGNS_CHECK";
+    HealthRecordType["EMERGENCY_VISIT"] = "EMERGENCY_VISIT";
+    HealthRecordType["FOLLOW_UP"] = "FOLLOW_UP";
+    HealthRecordType["CONSULTATION"] = "CONSULTATION";
+    HealthRecordType["DIAGNOSTIC_TEST"] = "DIAGNOSTIC_TEST";
+    HealthRecordType["PROCEDURE"] = "PROCEDURE";
+    HealthRecordType["HOSPITALIZATION"] = "HOSPITALIZATION";
+    HealthRecordType["SURGERY"] = "SURGERY";
+    HealthRecordType["COUNSELING"] = "COUNSELING";
+    HealthRecordType["THERAPY"] = "THERAPY";
+    HealthRecordType["NUTRITION"] = "NUTRITION";
+    HealthRecordType["MEDICATION_REVIEW"] = "MEDICATION_REVIEW";
+    HealthRecordType["IMMUNIZATION"] = "IMMUNIZATION";
+    HealthRecordType["LAB_RESULT"] = "LAB_RESULT";
+    HealthRecordType["RADIOLOGY"] = "RADIOLOGY";
+    HealthRecordType["OTHER"] = "OTHER";
+})(HealthRecordType || (exports.HealthRecordType = HealthRecordType = {}));
+var AllergySeverity;
+(function (AllergySeverity) {
+    AllergySeverity["MILD"] = "MILD";
+    AllergySeverity["MODERATE"] = "MODERATE";
+    AllergySeverity["SEVERE"] = "SEVERE";
+    AllergySeverity["LIFE_THREATENING"] = "LIFE_THREATENING";
+})(AllergySeverity || (exports.AllergySeverity = AllergySeverity = {}));
+var UserRole;
+(function (UserRole) {
+    UserRole["ADMIN"] = "ADMIN";
+    UserRole["NURSE"] = "NURSE";
+    UserRole["SCHOOL_ADMIN"] = "SCHOOL_ADMIN";
+    UserRole["DISTRICT_ADMIN"] = "DISTRICT_ADMIN";
+    UserRole["COUNSELOR"] = "COUNSELOR";
+    UserRole["VIEWER"] = "VIEWER";
+})(UserRole || (exports.UserRole = UserRole = {}));
+//# sourceMappingURL=enums.js.map

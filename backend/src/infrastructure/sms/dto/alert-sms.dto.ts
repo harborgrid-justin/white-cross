@@ -6,7 +6,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsString, MaxLength } from 'class-validator';
-import { AlertSeverity } from '../../../alerts/dto/create-alert.dto';
+import { AlertSeverity } from '@/services/alerts/dto/create-alert.dto';
 
 /**
  * DTO for alert SMS data

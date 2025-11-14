@@ -12,9 +12,10 @@
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { Student } from '../../database/models/student.model';
+import { ChronicCondition   } from '@/database/models';
+import { Student   } from '@/database/models';
 
+import { BaseService } from '@/common/base';
 /**
  * HealthRecordChronicConditionService
  *
@@ -28,17 +29,15 @@ import { Student } from '../../database/models/student.model';
  * - Provide ordered condition lists
  */
 @Injectable()
-export class HealthRecordChronicConditionService {
-  private readonly logger = new Logger(
-    HealthRecordChronicConditionService.name,
-  );
-
+export class HealthRecordChronicConditionService extends BaseService {
   constructor(
     @InjectModel(ChronicCondition)
     private readonly chronicConditionModel: typeof ChronicCondition,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordChronicConditionService");
+  }
 
   /**
    * Add chronic condition to student with validation and audit logging
@@ -74,7 +73,7 @@ export class HealthRecordChronicConditionService {
     }
 
     // PHI Creation Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Chronic condition ${data.condition} for student ${student.firstName} ${student.lastName}`,
     );
 
@@ -97,7 +96,7 @@ export class HealthRecordChronicConditionService {
     });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Chronic conditions retrieved for student ${studentId}, count: ${conditions.length}`,
     );
 
@@ -139,7 +138,7 @@ export class HealthRecordChronicConditionService {
     }
 
     // PHI Modification Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Modified: Chronic condition ${conditionWithRelations.condition} updated for student ${conditionWithRelations.studentId}`,
     );
 
@@ -165,7 +164,7 @@ export class HealthRecordChronicConditionService {
     await this.chronicConditionModel.destroy({ where: { id } });
 
     // PHI Deletion Audit Log
-    this.logger.warn(
+    this.logWarning(
       `Chronic condition deleted: ${condition.condition} for student ${condition.studentId}`,
     );
 

@@ -5,13 +5,15 @@ import {
   OnApplicationShutdown,
   OnModuleDestroy,
   OnModuleInit,
+  Inject,
 } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { ExperimentalFeature } from './decorators/metadata.decorator';
 import { DiscoveryMetricsService } from './services/discovery-metrics.service';
 import { DiscoveryCacheService } from './services/discovery-cache.service';
-
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 export interface ProviderInfo {
   name: string;
   instance: any;
@@ -26,29 +28,35 @@ export interface ControllerInfo {
 }
 
 @Injectable()
-export class DiscoveryExampleService
+export class DiscoveryExampleService extends BaseService
   implements
     OnModuleInit,
     OnApplicationBootstrap,
     OnApplicationShutdown,
     OnModuleDestroy
 {
-  private readonly logger = new Logger(DiscoveryExampleService.name);
   private scanInterval: NodeJS.Timeout | null = null;
   private metricsInterval: NodeJS.Timeout | null = null;
   private isShuttingDown = false;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly discoveryService: DiscoveryService,
     private readonly metadataScanner: MetadataScanner,
     private readonly reflector: Reflector,
     private readonly metricsService: DiscoveryMetricsService,
     private readonly cacheService: DiscoveryCacheService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'DiscoveryExampleService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async onModuleInit() {
     // Automatically scan and log providers/controllers on module initialization
-    this.logger.log(
+    this.logInfo(
       'Discovery module initialized - preparing for application bootstrap...',
     );
     await this.initializeDiscoveryState();
@@ -56,7 +64,7 @@ export class DiscoveryExampleService
 
   async onApplicationBootstrap() {
     // Set up periodic scanning and metrics collection after application is fully bootstrapped
-    this.logger.log(
+    this.logInfo(
       'Application bootstrapped - starting discovery services...',
     );
 
@@ -81,10 +89,10 @@ export class DiscoveryExampleService
         }
       }, 30 * 1000);
 
-      this.logger.log('Discovery services started successfully');
+      this.logInfo('Discovery services started successfully');
       this.metricsService.incrementCounter('discovery_service_starts');
     } catch (error) {
-      this.logger.error('Failed to start discovery services', error);
+      this.logError('Failed to start discovery services', error);
       this.metricsService.incrementCounter('discovery_service_start_errors');
       throw error;
     }
@@ -92,7 +100,7 @@ export class DiscoveryExampleService
 
   async onApplicationShutdown(signal?: string) {
     // Graceful shutdown
-    this.logger.log(
+    this.logInfo(
       `Application shutting down with signal: ${signal || 'unknown'}`,
     );
     this.isShuttingDown = true;
@@ -102,29 +110,29 @@ export class DiscoveryExampleService
       if (this.scanInterval) {
         clearInterval(this.scanInterval);
         this.scanInterval = null;
-        this.logger.log('Stopped periodic scanning');
+        this.logInfo('Stopped periodic scanning');
       }
 
       if (this.metricsInterval) {
         clearInterval(this.metricsInterval);
         this.metricsInterval = null;
-        this.logger.log('Stopped metrics collection');
+        this.logInfo('Stopped metrics collection');
       }
 
       // Flush final metrics
       await this.flushFinalMetrics();
 
-      this.logger.log('Discovery service shutdown completed');
+      this.logInfo('Discovery service shutdown completed');
       this.metricsService.incrementCounter('discovery_service_shutdowns');
     } catch (error) {
-      this.logger.error('Error during discovery service shutdown', error);
+      this.logError('Error during discovery service shutdown', error);
       this.metricsService.incrementCounter('discovery_service_shutdown_errors');
     }
   }
 
   async onModuleDestroy() {
     // Final cleanup - ensure all resources are released
-    this.logger.log(
+    this.logInfo(
       'Discovery module being destroyed - performing final cleanup...',
     );
 
@@ -145,16 +153,16 @@ export class DiscoveryExampleService
 
       // Log final state
       const finalMetrics = this.metricsService.getMetrics();
-      this.logger.log('Final discovery metrics:', {
+      this.logInfo('Final discovery metrics:', {
         totalRequests: finalMetrics.counters?.discovery_requests?.value || 0,
         totalErrors: finalMetrics.counters?.discovery_errors?.value || 0,
         cacheHits: finalMetrics.counters?.cache_hits?.value || 0,
         cacheMisses: finalMetrics.counters?.cache_misses?.value || 0,
       });
 
-      this.logger.log('Discovery module cleanup completed');
+      this.logInfo('Discovery module cleanup completed');
     } catch (error) {
-      this.logger.error('Error during discovery module destruction', error);
+      this.logError('Error during discovery module destruction', error);
     }
   }
 
@@ -163,7 +171,7 @@ export class DiscoveryExampleService
    */
   getAllProviders(): InstanceWrapper[] {
     const providers = this.discoveryService.getProviders();
-    this.logger.log(`Found ${providers.length} providers`);
+    this.logInfo(`Found ${providers.length} providers`);
     return providers;
   }
 
@@ -172,7 +180,7 @@ export class DiscoveryExampleService
    */
   getAllControllers(): InstanceWrapper[] {
     const controllers = this.discoveryService.getControllers();
-    this.logger.log(`Found ${controllers.length} controllers`);
+    this.logInfo(`Found ${controllers.length} controllers`);
     return controllers;
   }
 
@@ -341,9 +349,9 @@ export class DiscoveryExampleService
       await this.cacheService.set('provider_count', providers.length, 300); // 5 min TTL
       await this.cacheService.set('controller_count', controllers.length, 300);
 
-      this.logger.log('Discovery state initialized successfully');
+      this.logInfo('Discovery state initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize discovery state', error);
+      this.logError('Failed to initialize discovery state', error);
       this.metricsService.incrementCounter('discovery_initialization_errors');
       throw error;
     }
@@ -395,28 +403,28 @@ export class DiscoveryExampleService
 
       // Log findings
       if (experimentalProviders.length > 0) {
-        this.logger.log(
+        this.logInfo(
           `Found ${experimentalProviders.length} experimental providers:`,
           experimentalProviders.map((p) => p.name),
         );
       }
 
       if (analyticsProviders.length > 0) {
-        this.logger.log(
+        this.logInfo(
           `Found ${analyticsProviders.length} analytics-enabled providers:`,
           analyticsProviders.map((p) => p.name),
         );
       }
 
       if (cacheableProviders.length > 0) {
-        this.logger.log(
+        this.logInfo(
           `Found ${cacheableProviders.length} cacheable providers:`,
           cacheableProviders.map((p) => p.name),
         );
       }
 
       if (monitoredProviders.length > 0) {
-        this.logger.log(
+        this.logInfo(
           `Found ${monitoredProviders.length} monitored providers:`,
           monitoredProviders.map((p) => p.name),
         );
@@ -431,12 +439,12 @@ export class DiscoveryExampleService
       this.metricsService.recordHistogram('scan_duration_ms', scanDuration);
       this.metricsService.incrementCounter('successful_scans');
 
-      this.logger.log(
+      this.logInfo(
         `Application scan complete: ${providers.length} providers, ${controllers.length} controllers (${scanDuration}ms)`,
       );
     } catch (error) {
       this.metricsService.incrementCounter('failed_scans');
-      this.logger.error('Application scan failed', error);
+      this.logError('Application scan failed', error);
       throw error;
     }
   }
@@ -448,7 +456,7 @@ export class DiscoveryExampleService
     const startTime = Date.now();
 
     try {
-      this.logger.debug('Performing periodic discovery scan...');
+      this.logDebug('Performing periodic discovery scan...');
 
       // Quick count check to detect changes
       const providers = this.getAllProviders();
@@ -464,7 +472,7 @@ export class DiscoveryExampleService
       const controllersChanged = cachedControllerCount !== controllers.length;
 
       if (providersChanged || controllersChanged) {
-        this.logger.log('Changes detected - performing full scan...');
+        this.logInfo('Changes detected - performing full scan...');
         await this.scanApplication();
         this.metricsService.incrementCounter('change_detected_scans');
       } else {
@@ -484,10 +492,10 @@ export class DiscoveryExampleService
       );
       this.metricsService.incrementCounter('periodic_scans');
 
-      this.logger.debug(`Periodic scan completed (${scanDuration}ms)`);
+      this.logDebug(`Periodic scan completed (${scanDuration}ms)`);
     } catch (error) {
       this.metricsService.incrementCounter('periodic_scan_errors');
-      this.logger.error('Periodic scan failed', error);
+      this.logError('Periodic scan failed', error);
     }
   }
 
@@ -525,7 +533,7 @@ export class DiscoveryExampleService
       this.metricsService.incrementCounter('system_metrics_collections');
     } catch (error) {
       this.metricsService.incrementCounter('system_metrics_errors');
-      this.logger.error('Failed to collect system metrics', error);
+      this.logError('Failed to collect system metrics', error);
     }
   }
 
@@ -556,9 +564,9 @@ export class DiscoveryExampleService
       // Store final scan timestamp
       await this.cacheService.set('final_scan_time', Date.now(), 3600); // Keep for 1 hour
 
-      this.logger.log('Final metrics flushed successfully');
+      this.logInfo('Final metrics flushed successfully');
     } catch (error) {
-      this.logger.error('Failed to flush final metrics', error);
+      this.logError('Failed to flush final metrics', error);
     }
   }
 
@@ -597,7 +605,7 @@ export class DiscoveryExampleService
         cache: this.cacheService.getStats(),
       };
     } catch (error) {
-      this.logger.error('Failed to get health status', error);
+      this.logError('Failed to get health status', error);
       return {
         status: 'unhealthy',
         uptime: Math.round(process.uptime()),

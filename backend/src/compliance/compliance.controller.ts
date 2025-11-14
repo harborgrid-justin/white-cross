@@ -4,29 +4,16 @@
  * compliance reporting, checklists, PHI disclosures, data retention, and violations
  */
 
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Logger,
-  Param,
-  ParseIntPipe,
-  ParseUUIDPipe,
-  Post,
-  Put,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, ParseIntPipe, ParseUUIDPipe, Post, Put, Query, Req, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
 // Execution Context
 import { createExecutionContext } from '../database/types/execution-context.interface';
-import { UserRole } from '../database/models/user.model';
+import { UserRole } from '@/database/models';
 
 // Services
-import { AuditService } from './services/audit.service';
+import { AuditService } from '../services/audit/audit.service';
 import { ConsentService } from './services/consent.service';
 import { ComplianceReportService } from './services/compliance-report.service';
 import { ChecklistService } from './services/checklist.service';
@@ -56,10 +43,12 @@ import {
 } from './dto/violation.dto';
 import { QueryStatisticsDto } from './dto/statistics.dto';
 
+import { BaseController } from '@/common/base';
 @ApiTags('compliance')
 @ApiBearerAuth()
+
 @Controller('compliance')
-export class ComplianceController {
+export class ComplianceController extends BaseController {
   private readonly logger = new Logger(ComplianceController.name);
 
   constructor(
@@ -71,7 +60,8 @@ export class ComplianceController {
     private readonly dataRetentionService: DataRetentionService,
     private readonly violationService: ViolationService,
     private readonly statisticsService: StatisticsService,
-  ) {}
+  ) {
+    super();}
 
   // ==================== AUDIT LOG ENDPOINTS ====================
 

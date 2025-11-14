@@ -1,0 +1,37 @@
+# Core async and concurrency
+asyncio-throttle>=1.0.2
+asyncio-mqtt>=0.13.0
+aiofiles>=23.2.1
+aiohttp>=3.9.1
+
+# Token and resource management
+tiktoken>=0.5.2
+anthropic>=0.7.8
+openai>=1.3.7
+tenacity>=8.2.3
+circuitbreaker>=1.4.0
+
+# Monitoring and observability
+prometheus-client>=0.19.0
+structlog>=23.2.0
+rich>=13.7.0
+psutil>=5.9.6
+
+# Configuration and validation
+pydantic>=2.5.1
+pydantic-settings>=2.1.0
+typer>=0.9.0
+click>=8.1.7
+
+# Data processing and caching
+redis>=5.0.1
+msgpack>=1.0.7
+orjson>=3.9.10
+cachetools>=5.3.2
+langcache>=0.0.1
+
+# Utilities
+python-dotenv>=1.0.0
+pathspec>=0.11.2
+watchdog>=3.0.0
+humanize>=4.8.0

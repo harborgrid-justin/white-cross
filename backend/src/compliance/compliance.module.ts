@@ -9,9 +9,10 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { ComplianceController } from './compliance.controller';
 import { ComplianceService } from './compliance.service';
 import { DatabaseModule } from '../database/database.module';
+import { AuditModule } from '../services/audit/audit.module';
 
 // Services
-import { AuditService } from './services/audit.service';
+import { AuditService } from '../services/audit/audit.service';
 import { ConsentService } from './services/consent.service';
 import { ComplianceReportService } from './services/compliance-report.service';
 import { ChecklistService } from './services/checklist.service';
@@ -28,16 +29,16 @@ import { DataRetentionRepository } from './repositories/data-retention.repositor
 import { ViolationRepository } from './repositories/violation.repository';
 
 // Models needed for @InjectModel in services
-import { AuditLog } from '../database/models/audit-log.model';
-import { ConsentForm } from '../database/models/consent-form.model';
-import { ConsentSignature } from '../database/models/consent-signature.model';
-import { ComplianceReport } from '../database/models/compliance-report.model';
-import { ComplianceChecklistItem } from '../database/models/compliance-checklist-item.model';
-import { PolicyDocument } from '../database/models/policy-document.model';
-import { PolicyAcknowledgment } from '../database/models/policy-acknowledgment.model';
-import { DataRetentionPolicy } from '../database/models/data-retention-policy.model';
-import { ComplianceViolation } from '../database/models/compliance-violation.model';
-import { RemediationAction } from '../database/models/remediation-action.model';
+import { AuditLog } from '@/database/models';
+import { ConsentForm } from '@/database/models';
+import { ConsentSignature } from '@/database/models';
+import { ComplianceReport } from '@/database/models';
+import { ComplianceChecklistItem } from '@/database/models';
+import { PolicyDocument } from '@/database/models';
+import { PolicyAcknowledgment } from '@/database/models';
+import { DataRetentionPolicy } from '@/database/models';
+import { ComplianceViolation } from '@/database/models';
+import { RemediationAction } from '@/database/models';
 
 /**
  * ComplianceModule provides comprehensive HIPAA/FERPA-compliant features:
@@ -65,6 +66,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
 @Module({
   imports: [
     DatabaseModule,
+    AuditModule, // Import AuditModule to get AuditService and its dependencies
     // Re-register models needed for @InjectModel() in this module's services
     SequelizeModule.forFeature([
       AuditLog,
@@ -84,8 +86,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
     // Main service
     ComplianceService,
 
-    // Domain services
-    AuditService,
+    // Domain services (AuditService now comes from AuditModule)
     ConsentService,
     ComplianceReportService,
     ChecklistService,
@@ -111,7 +112,7 @@ import { RemediationAction } from '../database/models/remediation-action.model';
   exports: [
     // Export services for use in other modules
     ComplianceService,
-    AuditService,
+    // AuditService is exported by AuditModule
     ConsentService,
     ComplianceReportService,
     ChecklistService,

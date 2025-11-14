@@ -1,0 +1,65 @@
+{
+  "node": {
+    "00da42840b6558cd8727b1a7caece5af0489c124d2": {
+      "workers": {
+        "app/(dashboard)/admin/settings/schools/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/schools/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.schools.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getDistrictsForSchoolFilter",
+          "filename": "src/lib/actions/admin.schools.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/schools/page": "rsc"
+      },
+      "exportedName": "getDistrictsForSchoolFilter",
+      "filename": "src/lib/actions/admin.schools.ts"
+    },
+    "00e3c5399f70a5154eca466f1c0a24605b6f2b6268": {
+      "workers": {
+        "app/(dashboard)/admin/settings/schools/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/schools/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.schools.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "revalidateSchoolsCache",
+          "filename": "src/lib/actions/admin.schools.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/schools/page": "rsc"
+      },
+      "exportedName": "revalidateSchoolsCache",
+      "filename": "src/lib/actions/admin.schools.ts"
+    },
+    "4005f304d9c9e2a102962f07a42bfe1b13ad58cb78": {
+      "workers": {
+        "app/(dashboard)/admin/settings/schools/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/schools/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.schools.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAdminSchoolById",
+          "filename": "src/lib/actions/admin.schools.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/schools/page": "rsc"
+      },
+      "exportedName": "getAdminSchoolById",
+      "filename": "src/lib/actions/admin.schools.ts"
+    },
+    "40a56f04584de97e44324992bc32c9f767d0aad305": {
+      "workers": {
+        "app/(dashboard)/admin/settings/schools/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/schools/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.schools.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAdminSchools",
+          "filename": "src/lib/actions/admin.schools.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/schools/page": "rsc"
+      },
+      "exportedName": "getAdminSchools",
+      "filename": "src/lib/actions/admin.schools.ts"
+    }
+  },
+  "edge": {}
+}

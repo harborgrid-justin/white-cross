@@ -1,467 +1,232 @@
 /**
- * Audit Service - HIPAA-compliant audit logging
- * Required by 45 CFR 164.312(b) - Audit Controls
- *
- * Maintains complete audit trails of electronic PHI access and modifications
+ * Audit Service - Compliance audit logging and management
+ * HIPAA Compliance: 45 CFR 164.312(b) - Information access management
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
-import { AuditLog, AuditSeverity, ComplianceType } from '../../database/models/audit-log.model';
-import { CreateAuditLogDto } from '../dto/create-audit-log.dto';
-import { AuditAction } from '../../database/types/database.enums';
+import { AuditLog } from '@/database/models';
+import { BaseService } from '@/common/base';
 
 export interface AuditLogFilters {
   userId?: string;
   entityType?: string;
-  action?: AuditAction;
+  entityId?: string;
+  action?: string;
   startDate?: Date;
   endDate?: Date;
+  page?: number;
+  limit?: number;
 }
 
-export interface PaginationResult {
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
+export interface AuditLogEntry {
+  userId?: string;
+  userName?: string;
+  action: string;
+  entityType: string;
+  entityId?: string;
+  description: string;
+  metadata?: Record<string, any>;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 @Injectable()
-export class AuditService {
-  private readonly logger = new Logger(AuditService.name);
-
+export class AuditService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
-
-  /**
-   * Determine compliance type based on entity type
-   * Maps entities to appropriate compliance frameworks
-   */
-  private determineComplianceType(entityType: string): ComplianceType {
-    const lowerEntityType = entityType.toLowerCase();
-
-    // HIPAA: Health-related entities
-    if (
-      lowerEntityType.includes('health') ||
-      lowerEntityType.includes('medical') ||
-      lowerEntityType.includes('medication') ||
-      lowerEntityType.includes('immunization') ||
-      lowerEntityType.includes('allergy') ||
-      lowerEntityType.includes('diagnosis')
-    ) {
-      return ComplianceType.HIPAA;
-    }
-
-    // FERPA: Education-related entities
-    if (
-      lowerEntityType.includes('student') ||
-      lowerEntityType.includes('enrollment') ||
-      lowerEntityType.includes('grade') ||
-      lowerEntityType.includes('academic')
-    ) {
-      return ComplianceType.FERPA;
-    }
-
-    // Default to GENERAL for system entities
-    return ComplianceType.GENERAL;
+  ) {
+    super();
   }
 
   /**
-   * Determine if entity type contains PHI
+   * Create audit log entry
    */
-  private isPHIEntity(entityType: string): boolean {
-    const lowerEntityType = entityType.toLowerCase();
-    return (
-      lowerEntityType.includes('health') ||
-      lowerEntityType.includes('medical') ||
-      lowerEntityType.includes('medication') ||
-      lowerEntityType.includes('immunization') ||
-      lowerEntityType.includes('allergy') ||
-      lowerEntityType.includes('diagnosis')
-    );
-  }
-
-  /**
-   * Determine severity based on action type
-   */
-  private determineSeverity(action: AuditAction): AuditSeverity {
-    switch (action) {
-      case AuditAction.DELETE:
-      case AuditAction.BULK_DELETE:
-        return AuditSeverity.HIGH;
-
-      case AuditAction.UPDATE:
-      case AuditAction.BULK_UPDATE:
-      case AuditAction.TRANSACTION_ROLLBACK:
-        return AuditSeverity.MEDIUM;
-
-      case AuditAction.CREATE:
-      case AuditAction.READ:
-      case AuditAction.VIEW:
-      case AuditAction.EXPORT:
-      case AuditAction.PRINT:
-      case AuditAction.LOGIN:
-      case AuditAction.LOGOUT:
-      case AuditAction.IMPORT:
-      case AuditAction.TRANSACTION_COMMIT:
-      case AuditAction.CACHE_READ:
-      case AuditAction.CACHE_WRITE:
-      case AuditAction.CACHE_DELETE:
-        return AuditSeverity.LOW;
-
-      default:
-        return AuditSeverity.LOW;
-    }
-  }
-
-  /**
-   * Generate tags based on entity type and action
-   */
-  private generateTags(entityType: string, action: AuditAction): string[] {
-    const tags: string[] = [];
-
-    // Add entity type tag
-    tags.push(entityType.toLowerCase());
-
-    // Add action tag
-    tags.push(action.toLowerCase());
-
-    // Add compliance tags
-    const complianceType = this.determineComplianceType(entityType);
-    tags.push(complianceType.toLowerCase());
-
-    // Add PHI tag if applicable
-    if (this.isPHIEntity(entityType)) {
-      tags.push('phi');
-    }
-
-    return tags;
-  }
-
-  /**
-   * Retrieve paginated audit logs with filtering
-   * HIPAA Compliance: Essential for demonstrating compliance with audit logging requirements
-   */
-  async getAuditLogs(
-    page: number = 1,
-    limit: number = 50,
-    filters: AuditLogFilters = {},
-  ): Promise<{ logs: AuditLog[]; pagination: PaginationResult }> {
+  async createAuditLog(entry: AuditLogEntry): Promise<AuditLog> {
     try {
-      const offset = (page - 1) * limit;
+      const auditLog = await this.auditLogModel.create({
+        userId: entry.userId,
+        userName: entry.userName,
+        action: entry.action,
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        description: entry.description,
+        metadata: entry.metadata,
+        ipAddress: entry.ipAddress,
+        userAgent: entry.userAgent,
+        timestamp: new Date(),
+      });
+
+      this.logInfo(`Audit log created: ${entry.action} on ${entry.entityType}`);
+      return auditLog;
+    } catch (error) {
+      this.logError('Error creating audit log:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get audit logs with filtering and pagination
+   */
+  async getAuditLogs(filters: AuditLogFilters = {}): Promise<{
+    logs: AuditLog[];
+    total: number;
+    page: number;
+    pages: number;
+  }> {
+    try {
+      const {
+        userId,
+        entityType,
+        entityId,
+        action,
+        startDate,
+        endDate,
+        page = 1,
+        limit = 50,
+      } = filters;
+
       const whereClause: any = {};
 
-      if (filters.userId) {
-        whereClause.userId = filters.userId;
-      }
-      if (filters.entityType) {
-        whereClause.entityType = filters.entityType;
-      }
-      if (filters.action) {
-        whereClause.action = filters.action;
-      }
-      if (filters.startDate && filters.endDate) {
-        whereClause.createdAt = {
-          [Op.between]: [filters.startDate, filters.endDate],
-        };
-      } else if (filters.startDate) {
-        whereClause.createdAt = {
-          [Op.gte]: filters.startDate,
-        };
-      } else if (filters.endDate) {
-        whereClause.createdAt = {
-          [Op.lte]: filters.endDate,
-        };
+      if (userId) whereClause.userId = userId;
+      if (entityType) whereClause.entityType = entityType;
+      if (entityId) whereClause.entityId = entityId;
+      if (action) whereClause.action = action;
+
+      if (startDate || endDate) {
+        whereClause.timestamp = {};
+        if (startDate) whereClause.timestamp.$gte = startDate;
+        if (endDate) whereClause.timestamp.$lte = endDate;
       }
 
-      const { rows: logs, count: total } =
-        await this.auditLogModel.findAndCountAll({
-          where: whereClause,
-          offset,
-          limit,
-          order: [['createdAt', 'DESC']],
-        });
+      const offset = (page - 1) * limit;
 
-      this.logger.log(`Retrieved ${logs.length} audit logs`);
+      const { rows: logs, count: total } = await this.auditLogModel.findAndCountAll({
+        where: whereClause,
+        order: [['timestamp', 'DESC']],
+        limit,
+        offset,
+      });
+
+      const pages = Math.ceil(total / limit);
+
+      this.logInfo(`Retrieved ${logs.length} audit logs (page ${page}/${pages})`);
 
       return {
         logs,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
+        total,
+        page,
+        pages,
       };
     } catch (error) {
-      this.logger.error('Error getting audit logs:', error);
+      this.logError('Error getting audit logs:', error);
       throw error;
     }
   }
 
   /**
-   * Get specific audit log by ID
-   */
-  async getAuditLogById(id: string): Promise<AuditLog> {
-    try {
-      const log = await this.auditLogModel.findByPk(id);
-
-      if (!log) {
-        throw new NotFoundException('Audit log not found');
-      }
-
-      this.logger.log(`Retrieved audit log: ${id}`);
-      return log;
-    } catch (error) {
-      this.logger.error(`Error getting audit log ${id}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create audit log entry - CRITICAL for HIPAA compliance
-   * Every PHI access must be logged through this method
-   */
-  async createAuditLog(data: CreateAuditLogDto): Promise<AuditLog> {
-    try {
-      // Determine intelligent defaults for required fields
-      const complianceType = this.determineComplianceType(data.entityType);
-      const isPHI = this.isPHIEntity(data.entityType);
-      const severity = this.determineSeverity(data.action);
-      const tags = this.generateTags(data.entityType, data.action);
-
-      const auditLog = await this.auditLogModel.create({
-        // Basic audit info
-        userId: data.userId || null,
-        action: data.action,
-        entityType: data.entityType,
-        entityId: data.entityId || null,
-        changes: data.changes || null,
-        ipAddress: data.ipAddress || null,
-        userAgent: data.userAgent || null,
-
-        // Required fields with intelligent defaults
-        complianceType,
-        isPHI,
-        severity,
-        success: true, // Default to success (failed operations may not reach this point)
-        tags,
-
-        // Optional fields with sensible defaults
-        userName: null,
-        previousValues: null,
-        newValues: null,
-        requestId: null,
-        sessionId: null,
-        errorMessage: null,
-        metadata: null,
-      });
-
-      this.logger.log(
-        `Audit log created: ${data.action} on ${data.entityType}${data.entityId ? ` (${data.entityId})` : ''} by user ${data.userId || 'system'} [${complianceType}${isPHI ? ', PHI' : ''}, ${severity}]`,
-      );
-
-      return auditLog;
-    } catch (error) {
-      this.logger.error('Error creating audit log:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get complete audit history for a specific entity
+   * Get audit logs for a specific entity
    */
   async getEntityAuditLogs(
     entityType: string,
     entityId: string,
     page: number = 1,
     limit: number = 20,
-  ): Promise<{ logs: AuditLog[]; pagination: PaginationResult }> {
+  ): Promise<AuditLog[]> {
     try {
       const offset = (page - 1) * limit;
 
-      const { rows: logs, count: total } =
-        await this.auditLogModel.findAndCountAll({
-          where: { entityType, entityId },
-          offset,
-          limit,
-          order: [['createdAt', 'DESC']],
-        });
-
-      this.logger.log(
-        `Retrieved ${logs.length} audit logs for ${entityType} ${entityId}`,
-      );
-
-      return {
-        logs,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
+      const logs = await this.auditLogModel.findAll({
+        where: {
+          entityType,
+          entityId,
         },
-      };
+        order: [['timestamp', 'DESC']],
+        limit,
+        offset,
+      });
+
+      this.logInfo(`Retrieved ${logs.length} audit logs for ${entityType}:${entityId}`);
+      return logs;
     } catch (error) {
-      this.logger.error(
-        `Error getting audit logs for ${entityType} ${entityId}:`,
-        error,
-      );
+      this.logError(`Error getting entity audit logs for ${entityType}:${entityId}:`, error);
       throw error;
     }
   }
 
   /**
-   * Get complete audit history for a specific user
+   * Get audit logs for a specific user
    */
   async getUserAuditLogs(
     userId: string,
     page: number = 1,
     limit: number = 20,
-  ): Promise<{ logs: AuditLog[]; pagination: PaginationResult }> {
+  ): Promise<AuditLog[]> {
     try {
       const offset = (page - 1) * limit;
 
-      const { rows: logs, count: total } =
-        await this.auditLogModel.findAndCountAll({
-          where: { userId },
-          offset,
-          limit,
-          order: [['createdAt', 'DESC']],
-        });
-
-      this.logger.log(`Retrieved ${logs.length} audit logs for user ${userId}`);
-
-      return {
-        logs,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      };
-    } catch (error) {
-      this.logger.error(`Error getting audit logs for user ${userId}:`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get audit logs within date range for compliance reporting
-   */
-  async getAuditLogsByDateRange(
-    startDate: Date,
-    endDate: Date,
-    page: number = 1,
-    limit: number = 50,
-  ): Promise<{ logs: AuditLog[]; pagination: PaginationResult }> {
-    try {
-      const offset = (page - 1) * limit;
-
-      const { rows: logs, count: total } =
-        await this.auditLogModel.findAndCountAll({
-          where: {
-            createdAt: {
-              [Op.between]: [startDate, endDate],
-            },
-          },
-          offset,
-          limit,
-          order: [['createdAt', 'DESC']],
-        });
-
-      this.logger.log(
-        `Retrieved ${logs.length} audit logs between ${startDate.toISOString()} and ${endDate.toISOString()}`,
-      );
-
-      return {
-        logs,
-        pagination: {
-          page,
-          limit,
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      };
-    } catch (error) {
-      this.logger.error('Error getting audit logs by date range:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate audit statistics for compliance reporting
-   */
-  async getAuditStatistics(
-    startDate?: Date,
-    endDate?: Date,
-  ): Promise<{
-    totalLogs: number;
-    actionBreakdown: { [key: string]: number };
-    entityTypeBreakdown: { [key: string]: number };
-    dailyActivity: { date: string; count: number }[];
-  }> {
-    try {
-      const whereClause: any = {};
-
-      if (startDate && endDate) {
-        whereClause.createdAt = {
-          [Op.between]: [startDate, endDate],
-        };
-      } else if (startDate) {
-        whereClause.createdAt = {
-          [Op.gte]: startDate,
-        };
-      } else if (endDate) {
-        whereClause.createdAt = {
-          [Op.lte]: endDate,
-        };
-      }
-
-      const totalLogs = await this.auditLogModel.count({ where: whereClause });
       const logs = await this.auditLogModel.findAll({
-        where: whereClause,
-        attributes: ['action', 'entityType', 'createdAt'],
-        order: [['createdAt', 'DESC']],
+        where: { userId },
+        order: [['timestamp', 'DESC']],
+        limit,
+        offset,
       });
 
-      // Calculate breakdowns
-      const actionBreakdown: { [key: string]: number } = {};
-      const entityTypeBreakdown: { [key: string]: number } = {};
-      const dailyActivity: { [key: string]: number } = {};
-
-      logs.forEach((log) => {
-        // Action breakdown
-        actionBreakdown[log.action] = (actionBreakdown[log.action] || 0) + 1;
-
-        // Entity type breakdown
-        entityTypeBreakdown[log.entityType] =
-          (entityTypeBreakdown[log.entityType] || 0) + 1;
-
-        // Daily activity
-        const date = log.createdAt!.toISOString().split('T')[0];
-        dailyActivity[date] = (dailyActivity[date] || 0) + 1;
-      });
-
-      // Convert daily activity to array format
-      const dailyActivityArray = Object.entries(dailyActivity)
-        .map(([date, count]) => ({ date, count }))
-        .sort((a, b) => a.date.localeCompare(b.date));
-
-      this.logger.log(`Retrieved audit statistics: ${totalLogs} total logs`);
-
-      return {
-        totalLogs,
-        actionBreakdown,
-        entityTypeBreakdown,
-        dailyActivity: dailyActivityArray,
-      };
+      this.logInfo(`Retrieved ${logs.length} audit logs for user ${userId}`);
+      return logs;
     } catch (error) {
-      this.logger.error('Error getting audit statistics:', error);
+      this.logError(`Error getting user audit logs for ${userId}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Log compliance event
+   */
+  async logComplianceEvent(
+    action: string,
+    entityType: string,
+    entityId: string,
+    userId: string,
+    description: string,
+    metadata?: Record<string, any>,
+  ): Promise<AuditLog> {
+    return this.createAuditLog({
+      userId,
+      action,
+      entityType,
+      entityId,
+      description,
+      metadata: {
+        ...metadata,
+        complianceEvent: true,
+      },
+    });
+  }
+
+  /**
+   * Log PHI access for HIPAA compliance
+   */
+  async logPHIAccess(
+    entityType: string,
+    entityId: string,
+    userId: string,
+    action: string,
+    description: string,
+    metadata?: Record<string, any>,
+  ): Promise<AuditLog> {
+    return this.createAuditLog({
+      userId,
+      action,
+      entityType,
+      entityId,
+      description,
+      metadata: {
+        ...metadata,
+        PHIAccess: true,
+        complianceEvent: true,
+      },
+    });
   }
 }

@@ -7,7 +7,7 @@
 
 import { Column, DataType, Default, Model, PrimaryKey, Scopes, Table } from 'sequelize-typescript';
 import { AuditAction } from '../types/database.enums';
-import { LoggerService } from '../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 
 /**
  * Compliance regulation types for audit tracking
@@ -223,7 +223,7 @@ export class AuditLog extends Model<AuditLogAttributes> {
   requestId!: string | null;
 
   @Column({
-    type: DataType.STRING(100),
+    type: DataType.UUID,
     allowNull: true,
     comment: 'Session ID for grouping operations by user session',
   })
@@ -358,3 +358,6 @@ export class AuditLog extends Model<AuditLogAttributes> {
     return `${user} performed ${this.action} on ${entity}`;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default AuditLog;

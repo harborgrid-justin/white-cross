@@ -10,6 +10,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface WebhookAttributes {
   id?: string;
@@ -93,13 +94,9 @@ export class Webhook
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Webhook) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Webhook ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('Webhook', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Webhook;

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Req, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConfigurationService } from './services/configuration.service';
 import {
@@ -8,8 +8,10 @@ import {
   ImportConfigurationsDto,
   UpdateConfigurationDto,
 } from './dto';
-import { ConfigCategory } from '../administration/enums/administration.enums';
+import { ConfigCategory } from '../services/administration/enums/administration.enums';
+import { JwtAuthGuard } from '@/services/auth/guards/jwt-auth.guard';
 
+import { BaseController } from '@/common/base';
 /**
  * Configuration Controller
  *
@@ -19,11 +21,13 @@ import { ConfigCategory } from '../administration/enums/administration.enums';
  * All endpoints require authentication. Administrative endpoints require admin role.
  */
 @ApiTags('Configuration')
+
 @Controller('configurations')
-// @UseGuards(JwtAuthGuard) // Uncomment when auth is configured
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-export class ConfigurationController {
-  constructor(private readonly configurationService: ConfigurationService) {}
+export class ConfigurationController extends BaseController {
+  constructor(private readonly configurationService: ConfigurationService) {
+    super();}
 
   /**
    * Get all configurations with optional filtering

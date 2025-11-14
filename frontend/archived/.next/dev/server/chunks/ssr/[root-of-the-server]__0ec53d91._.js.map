@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 98, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/settings/page.tsx"],"sourcesContent":["/**\r\n * @fileoverview Settings Landing Page - Redirects to Profile\r\n * @module app/(dashboard)/settings/page\r\n * @category Settings\r\n *\r\n * Landing page for settings that redirects to profile settings.\r\n */\r\n\r\nimport { redirect } from 'next/navigation';\r\n\r\nexport default function SettingsPage() {\r\n  redirect('/settings/profile');\r\n}\r\n"],"names":[],"mappings":"AAAA;;;;;;CAMC;;;;AAED;AAAA;;AAEe,SAAS;IACtB,IAAA,iMAAQ,EAAC;AACX","debugId":null}}]
+}

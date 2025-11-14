@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { GradeTransitionController } from './grade-transition.controller';
 import { GradeTransitionService } from './grade-transition.service';
-import { Student } from '../database/models/student.model';
+import { Student } from '@/database/models';
 
 /**
  * Grade Transition Module

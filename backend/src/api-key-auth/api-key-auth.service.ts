@@ -1,11 +1,32 @@
 import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ApiKeyEntity } from './entities/api-key.entity';
+import { ApiKey } from '@/database/models';
 import { ApiKeyResponseDto } from './dto/api-key-response.dto';
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
 import * as crypto from 'crypto';
-import { AppConfigService } from '../config/app-config.service';
+import { AppConfigService } from '@/common/config/app-config.service';
 
+import { BaseService } from '@/common/base';
+
+interface ApiKeyEntity {
+  id: string;
+  name: string;
+  keyPrefix: string;
+  description?: string;
+  scopes: string[];
+  isActive: boolean;
+  expiresAt: Date;
+  lastUsedAt?: Date;
+  usageCount: number;
+  createdAt: Date;
+  createdBy: string;
+  ipRestriction?: string[];
+  rateLimit: number;
+  keyHash: string;
+  isExpired(): boolean;
+  update(values: any): Promise<ApiKeyEntity>;
+  toJSON(): any;
+}
 /**
  * API Key Authentication Service
  *
@@ -15,14 +36,14 @@ import { AppConfigService } from '../config/app-config.service';
  * @service ApiKeyAuthService
  */
 @Injectable()
-export class ApiKeyAuthService {
-  private readonly logger = new Logger(ApiKeyAuthService.name);
-
+export class ApiKeyAuthService extends BaseService {
   constructor(
-    @InjectModel(ApiKeyEntity)
-    private readonly apiKeyModel: typeof ApiKeyEntity,
+    @InjectModel(ApiKey)
+    private readonly apiKeyModel: typeof ApiKey,
     private readonly configService: AppConfigService,
-  ) {}
+  ) {
+    super('ApiKeyAuthService');
+  }
 
   /**
    * Generate a new API key
@@ -33,10 +54,7 @@ export class ApiKeyAuthService {
    * @param userId - User creating the key
    * @returns API key (plaintext, only shown once) and metadata
    */
-  async generateApiKey(
-    createDto: CreateApiKeyDto,
-    userId: string,
-  ): Promise<ApiKeyResponseDto> {
+  async generateApiKey(createDto: CreateApiKeyDto, userId: string): Promise<ApiKeyResponseDto> {
     try {
       // Generate secure random API key
       const randomBytes = crypto.randomBytes(32).toString('hex');
@@ -67,9 +85,9 @@ export class ApiKeyAuthService {
         ipRestriction: createDto.ipRestriction,
         rateLimit: createDto.rateLimit || 1000, // Default 1000 req/min
         usageCount: 0,
-      });
+      }) as ApiKeyEntity;
 
-      this.logger.log(`API key created: ${keyPrefix}... for user ${userId}`);
+      this.logInfo(`API key created: ${keyPrefix}... for user ${userId}`);
 
       return {
         apiKey, // Plaintext key (only returned once)
@@ -81,7 +99,7 @@ export class ApiKeyAuthService {
         createdAt: apiKeyRecord.createdAt,
       };
     } catch (error) {
-      this.logger.error('Error generating API key', { error, userId });
+      this.logError('Error generating API key', { error, userId });
       throw new BadRequestException('Failed to generate API key');
     }
   }
@@ -104,7 +122,7 @@ export class ApiKeyAuthService {
       });
 
       if (!apiKeyRecord) {
-        this.logger.warn('Invalid API key attempted', {
+        this.logWarning('Invalid API key attempted', {
           keyPrefix: apiKey.substring(0, 12),
         });
         throw new UnauthorizedException('Invalid API key');
@@ -112,7 +130,7 @@ export class ApiKeyAuthService {
 
       // Check if key is active
       if (!apiKeyRecord.isActive) {
-        this.logger.warn('Inactive API key attempted', {
+        this.logWarning('Inactive API key attempted', {
           keyPrefix: apiKeyRecord.keyPrefix,
           id: apiKeyRecord.id,
         });
@@ -121,7 +139,7 @@ export class ApiKeyAuthService {
 
       // Check if key is expired
       if (apiKeyRecord.isExpired()) {
-        this.logger.warn('Expired API key attempted', {
+        this.logWarning('Expired API key attempted', {
           keyPrefix: apiKeyRecord.keyPrefix,
           id: apiKeyRecord.id,
           expiresAt: apiKeyRecord.expiresAt,
@@ -135,7 +153,7 @@ export class ApiKeyAuthService {
         usageCount: apiKeyRecord.usageCount + 1,
       });
 
-      this.logger.log('API key validated successfully', {
+      this.logInfo('API key validated successfully', {
         keyPrefix: apiKeyRecord.keyPrefix,
         id: apiKeyRecord.id,
       });
@@ -146,7 +164,7 @@ export class ApiKeyAuthService {
         throw error;
       }
 
-      this.logger.error('Error validating API key', { error });
+      this.logError('Error validating API key', { error });
       throw new UnauthorizedException('Invalid API key');
     }
   }
@@ -155,28 +173,31 @@ export class ApiKeyAuthService {
    * Revoke an API key
    *
    * @param apiKeyId - API key ID to revoke
-   * @param userId - User revoking the key
-   */
-  async revokeApiKey(apiKeyId: string, userId: string): Promise<void> {
-    const apiKeyRecord = await this.apiKeyModel.findByPk(apiKeyId);
+  async listApiKeys(userId: string): Promise<Partial<ApiKeyEntity>[]> {
+    try {
+      const apiKeys = await this.apiKeyModel.findAll({
+        where: { createdBy: userId },
+        attributes: [
+          'id',
+          'name',
+          'keyPrefix',
+          'description',
+          'scopes',
+          'isActive',
+          'expiresAt',
+          'lastUsedAt',
+          'usageCount',
+          'createdAt',
+        ],
+        order: [['createdAt', 'DESC']],
+      });
 
-    if (!apiKeyRecord) {
-      throw new BadRequestException('API key not found');
+      return apiKeys.map((key) => key.toJSON());
+    } catch (error) {
+      this.logError('Error listing API keys', { error, userId });
+      throw new BadRequestException('Failed to retrieve API keys');
     }
-
-    await apiKeyRecord.update({ isActive: false });
-
-    this.logger.log(
-      `API key revoked: ${apiKeyRecord.keyPrefix}... by user ${userId}`,
-    );
   }
-
-  /**
-   * List all API keys for a user
-   *
-   * @param userId - User ID
-   * @returns List of API keys (without plaintext keys)
-   */
   async listApiKeys(userId: string): Promise<Partial<ApiKeyEntity>[]> {
     const apiKeys = await this.apiKeyModel.findAll({
       where: { createdBy: userId },
@@ -205,40 +226,39 @@ export class ApiKeyAuthService {
    * @param userId - User rotating the key
    * @returns New API key
    */
-  async rotateApiKey(
-    apiKeyId: string,
-    userId: string,
-  ): Promise<ApiKeyResponseDto> {
-    const oldKey = await this.apiKeyModel.findByPk(apiKeyId);
+  async rotateApiKey(apiKeyId: string, userId: string): Promise<ApiKeyResponseDto> {
+    try {
+      const oldKey = await this.apiKeyModel.findByPk(apiKeyId) as ApiKeyEntity | null;
+      if (!oldKey) {
+        throw new BadRequestException('API key not found');
+      }
 
-    if (!oldKey) {
-      throw new BadRequestException('API key not found');
+      if (oldKey.createdBy !== userId) {
+        throw new BadRequestException('Not authorized to rotate this API key');
+      }
+
+      // Create new key with same properties
+      const newKey = await this.generateApiKey(
+        {
+          name: oldKey.name,
+          description: oldKey.description,
+          scopes: oldKey.scopes as string[],
+          ipRestriction: oldKey.ipRestriction as string[],
+          rateLimit: oldKey.rateLimit,
+        },
+        userId,
+      );
+
+      // Revoke old key
+      await oldKey.update({ isActive: false });
+
+      this.logInfo(`API key rotated: ${oldKey.keyPrefix}... -> ${newKey.keyPrefix}...`);
+
+      return newKey;
+    } catch (error) {
+      this.logError('Error rotating API key', { error, apiKeyId, userId });
+      throw new BadRequestException('Failed to rotate API key');
     }
-
-    if (oldKey.createdBy !== userId) {
-      throw new BadRequestException('Not authorized to rotate this API key');
-    }
-
-    // Create new key with same properties
-    const newKey = await this.generateApiKey(
-      {
-        name: oldKey.name,
-        description: oldKey.description,
-        scopes: oldKey.scopes,
-        ipRestriction: oldKey.ipRestriction,
-        rateLimit: oldKey.rateLimit,
-      },
-      userId,
-    );
-
-    // Revoke old key
-    await oldKey.update({ isActive: false });
-
-    this.logger.log(
-      `API key rotated: ${oldKey.keyPrefix}... -> ${newKey.keyPrefix}...`,
-    );
-
-    return newKey;
   }
 
   /**

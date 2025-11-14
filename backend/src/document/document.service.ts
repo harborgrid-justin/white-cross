@@ -1,20 +1,19 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Document } from './entities/document.entity';
-import { DocumentAuditTrail } from './entities/document-audit-trail.entity';
-import { DocumentSignature } from './entities/document-signature.entity';
+import { Document, DocumentAuditTrail, DocumentSignature } from '@/database/models';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { SignDocumentDto } from './dto/sign-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { Op, Transaction } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
+import { BaseService } from '@/common/base';
 /**
  * Document Service - Main orchestrator for all document operations
  * Implements HIPAA-compliant document management with comprehensive audit trails
  */
 @Injectable()
-export class DocumentService {
+export class DocumentService extends BaseService {
   constructor(
     @InjectModel(Document)
     private documentModel: typeof Document,
@@ -23,7 +22,9 @@ export class DocumentService {
     @InjectModel(DocumentAuditTrail)
     private auditModel: typeof DocumentAuditTrail,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("DocumentService");
+  }
 
   /**
    * Get all documents with pagination and filters

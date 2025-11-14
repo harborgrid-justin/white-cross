@@ -10,6 +10,6 @@ export * from './api-key-auth.service';
 
 // Submodules
 export * from './dto';
-export * from './entities';
+export { ApiKey } from '@/database/models';
 export * from './guards';
 

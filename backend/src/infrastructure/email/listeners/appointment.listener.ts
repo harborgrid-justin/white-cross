@@ -33,7 +33,7 @@ import {
   AppointmentRescheduledEvent,
   WaitlistEntryAddedEvent,
   WaitlistSlotAvailableEvent,
-} from '@/appointment/events';
+} from '../../../services/appointment/events';
 
 /**
  * Appointment Email Listener

@@ -13,6 +13,8 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../common/logging/logger.service';
 export interface QueryMetrics {
   count: number;
   totalDuration: number;
@@ -31,9 +33,7 @@ export interface SlowQuery {
 }
 
 @Injectable()
-export class QueryLoggerService implements OnModuleInit {
-  private readonly logger = new Logger(QueryLoggerService.name);
-
+export class QueryLoggerService extends BaseService implements OnModuleInit {
   // Configuration
   private readonly SLOW_QUERY_THRESHOLD = 500; // 500ms
   private readonly N_PLUS_ONE_THRESHOLD = 10; // Number of similar queries in short time
@@ -50,10 +50,12 @@ export class QueryLoggerService implements OnModuleInit {
     { startTime: number; options: any }
   >();
 
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(@InjectConnection() private readonly sequelize: Sequelize) {
+    super();
+  }
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Initializing Query Logger Service');
+    this.logInfo('Initializing Query Logger Service');
     this.setupQueryHooks();
   }
 
@@ -99,7 +101,7 @@ export class QueryLoggerService implements OnModuleInit {
       }
     });
 
-    this.logger.log('Query hooks configured successfully');
+    this.logInfo('Query hooks configured successfully');
   }
 
   /**
@@ -154,7 +156,7 @@ export class QueryLoggerService implements OnModuleInit {
     }
 
     // Log slow query warning
-    this.logger.warn(`Slow query detected (${duration}ms)`, {
+    this.logWarning(`Slow query detected (${duration}ms)`, {
       sql: slowQuery.sql,
       model: slowQuery.model,
       duration,
@@ -180,7 +182,7 @@ export class QueryLoggerService implements OnModuleInit {
     );
 
     if (similarQueries.length >= this.N_PLUS_ONE_THRESHOLD) {
-      this.logger.warn(`Possible N+1 query pattern detected`, {
+      this.logWarning(`Possible N+1 query pattern detected`, {
         count: similarQueries.length,
         window: `${this.N_PLUS_ONE_WINDOW}ms`,
         sql: options.sql?.substring(0, 200),
@@ -324,7 +326,7 @@ export class QueryLoggerService implements OnModuleInit {
     this.queryStats.clear();
     this.slowQueries = [];
     this.recentQueries = [];
-    this.logger.log('Query statistics reset');
+    this.logInfo('Query statistics reset');
   }
 
   /**

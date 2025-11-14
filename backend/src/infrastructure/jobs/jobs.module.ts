@@ -15,9 +15,12 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JobType } from './enums/job-type.enum';
 import { QueueManagerService } from '@/infrastructure/jobs/services';
+import { ReminderGeneratorService } from '@/infrastructure/jobs/services/reminder-generator.service';
+import { ReminderCacheService } from '@/infrastructure/jobs/services/reminder-cache.service';
+import { ReminderNotificationService } from '@/infrastructure/jobs/services/reminder-notification.service';
 import { InventoryMaintenanceProcessor, MedicationReminderProcessor } from './processors';
 import { EmailModule } from '../email/email.module';
-import { InventoryModule } from '../../inventory/inventory.module';
+import { InventoryModule } from '@/services/inventory/inventory.module';
 
 @Module({
   imports: [
@@ -66,6 +69,9 @@ import { InventoryModule } from '../../inventory/inventory.module';
   ],
   providers: [
     QueueManagerService,
+    ReminderGeneratorService,
+    ReminderCacheService,
+    ReminderNotificationService,
     MedicationReminderProcessor,
     InventoryMaintenanceProcessor,
   ],

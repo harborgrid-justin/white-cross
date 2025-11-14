@@ -12,9 +12,10 @@
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Allergy } from '../../database/models/allergy.model';
-import { Student } from '../../database/models/student.model';
+import { Allergy   } from '@/database/models';
+import { Student   } from '@/database/models';
 
+import { BaseService } from '@/common/base';
 /**
  * HealthRecordAllergyService
  *
@@ -29,15 +30,15 @@ import { Student } from '../../database/models/student.model';
  * - Critical allergy alerting
  */
 @Injectable()
-export class HealthRecordAllergyService {
-  private readonly logger = new Logger(HealthRecordAllergyService.name);
-
+export class HealthRecordAllergyService extends BaseService {
   constructor(
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordAllergyService");
+  }
 
   /**
    * Add allergy to student with validation
@@ -87,11 +88,11 @@ export class HealthRecordAllergyService {
 
     // PHI Creation Audit Log - WARNING for critical allergies
     if (data.severity === 'LIFE_THREATENING' || data.severity === 'SEVERE') {
-      this.logger.warn(
+      this.logWarning(
         `CRITICAL ALLERGY ADDED: ${data.allergen} (${data.severity}) for student ${student.firstName} ${student.lastName}`,
       );
     } else {
-      this.logger.log(
+      this.logInfo(
         `Allergy added: ${data.allergen} (${data.severity}) for ${student.firstName} ${student.lastName}`,
       );
     }
@@ -134,7 +135,7 @@ export class HealthRecordAllergyService {
     }
 
     // PHI Modification Audit Log
-    this.logger.log(
+    this.logInfo(
       `Allergy updated: ${allergyWithRelations.allergen} for ${allergyWithRelations.student!.firstName} ${allergyWithRelations.student!.lastName}`,
     );
 
@@ -157,7 +158,7 @@ export class HealthRecordAllergyService {
     });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Allergies retrieved for student ${studentId}, count: ${allergies.length}`,
     );
 
@@ -183,7 +184,7 @@ export class HealthRecordAllergyService {
     await this.allergyModel.destroy({ where: { id } });
 
     // PHI Deletion Audit Log
-    this.logger.warn(
+    this.logWarning(
       `Allergy deleted: ${allergy.allergen} for ${allergy.student?.firstName} ${allergy.student?.lastName}`,
     );
 

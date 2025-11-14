@@ -2,15 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 
+import { BaseService } from '@/common/base';
 @Injectable()
-export class IntegrationEncryptionService {
-  private readonly logger = new Logger(IntegrationEncryptionService.name);
+export class IntegrationEncryptionService extends BaseService {
   private readonly ALGORITHM = 'aes-256-gcm';
   private readonly KEY_LENGTH = 32; // 256 bits
   private readonly IV_LENGTH = 16; // 128 bits
   private readonly SALT_LENGTH = 32;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) {
+    super("IntegrationEncryptionService");}
 
   /**
    * Get encryption key from environment variables
@@ -20,7 +21,7 @@ export class IntegrationEncryptionService {
     const salt = this.configService.get<string>('ENCRYPTION_SALT');
 
     if (!secret || !salt) {
-      this.logger.error(
+      this.logError(
         'CRITICAL: ENCRYPTION_SECRET and ENCRYPTION_SALT must be set',
       );
       throw new Error(
@@ -29,13 +30,13 @@ export class IntegrationEncryptionService {
     }
 
     if (secret.length < 32) {
-      this.logger.warn(
+      this.logWarning(
         'SECURITY WARNING: ENCRYPTION_SECRET should be at least 32 characters',
       );
     }
 
     if (salt.length < 16) {
-      this.logger.warn(
+      this.logWarning(
         'SECURITY WARNING: ENCRYPTION_SALT should be at least 16 characters',
       );
     }
@@ -74,10 +75,10 @@ export class IntegrationEncryptionService {
       const authTag = cipher.getAuthTag();
       const combined = `${iv.toString('base64')}:${salt.toString('base64')}:${authTag.toString('base64')}:${encrypted}`;
 
-      this.logger.debug('Credential encrypted successfully');
+      this.logDebug('Credential encrypted successfully');
       return combined;
     } catch (error) {
-      this.logger.error('Failed to encrypt credential', error);
+      this.logError('Failed to encrypt credential', error);
       throw new Error('Encryption failed');
     }
   }
@@ -104,10 +105,10 @@ export class IntegrationEncryptionService {
       let decrypted = decipher.update(encrypted, 'base64', 'utf8');
       decrypted += decipher.final('utf8');
 
-      this.logger.debug('Credential decrypted successfully');
+      this.logDebug('Credential decrypted successfully');
       return decrypted;
     } catch (error) {
-      this.logger.error('Failed to decrypt credential', error);
+      this.logError('Failed to decrypt credential', error);
       throw new Error('Decryption failed');
     }
   }

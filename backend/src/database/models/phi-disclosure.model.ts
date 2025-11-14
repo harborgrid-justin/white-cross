@@ -11,6 +11,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum DisclosureType {
   TREATMENT = 'TREATMENT',
@@ -268,13 +269,9 @@ export class PhiDisclosure
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PhiDisclosure) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] PhiDisclosure ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('PhiDisclosure', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PhiDisclosure;

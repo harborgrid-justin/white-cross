@@ -1,42 +1,48 @@
 /**
- * @fileoverview Profile header component with avatar and quick info
+ * @fileoverview Profile Header Component - Profile avatar, basic info, quick actions
  * @module app/(dashboard)/profile/_components/ProfileHeader
  * @category Profile - Components
  */
 
 'use client';
 
-import { Camera, Briefcase, Award, Calendar, Clock, Edit3, Download } from 'lucide-react';
-import type { UserProfile } from '@/lib/actions/profile.actions';
+import { 
+  Camera, 
+  Edit3, 
+  Download, 
+  Briefcase, 
+  Award, 
+  Calendar, 
+  Clock 
+} from 'lucide-react';
+
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  title: string;
+  department: string;
+  employeeId: string;
+  hireDate: string;
+  lastLogin: string;
+  profileImage?: string;
+}
 
 interface ProfileHeaderProps {
   profile: UserProfile;
-  onAvatarUpload?: () => void;
-  onEditProfile?: () => void;
-  onExportData?: () => void;
+  onEditProfile: () => void;
+  onUploadAvatar: (file: File) => Promise<void>;
+  onExportData: () => Promise<void>;
+  isUploading?: boolean;
 }
 
-/**
- * Profile header component
- * Displays user avatar, basic info, and quick action buttons
- *
- * @component
- * @example
- * ```tsx
- * <ProfileHeader
- *   profile={userProfile}
- *   onAvatarUpload={handleAvatarUpload}
- *   onEditProfile={handleEdit}
- *   onExportData={handleExport}
- * />
- * ```
- */
 export function ProfileHeader({
   profile,
-  onAvatarUpload,
   onEditProfile,
-  onExportData
+  onUploadAvatar,
+  onExportData,
+  isUploading = false
 }: ProfileHeaderProps) {
+  
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -55,6 +61,18 @@ export function ProfileHeader({
     });
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        await onUploadAvatar(file);
+      } catch (error) {
+        console.error('Failed to upload avatar:', error);
+        // Error handling is managed by parent component
+      }
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg border p-6">
       <div className="flex items-start justify-between">
@@ -64,7 +82,7 @@ export function ProfileHeader({
             {profile.profileImage ? (
               <img
                 src={profile.profileImage}
-                alt={`${profile.firstName} ${profile.lastName}`}
+                alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
               />
             ) : (
@@ -72,16 +90,23 @@ export function ProfileHeader({
                 {profile.firstName.charAt(0)}{profile.lastName.charAt(0)}
               </div>
             )}
-            {onAvatarUpload && (
-              <button
-                onClick={onAvatarUpload}
-                title="Upload profile picture"
-                className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md border hover:bg-gray-50 transition-colors"
-                aria-label="Upload profile picture"
-              >
+            <label 
+              className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md border hover:bg-gray-50 transition-colors cursor-pointer"
+              title="Upload profile picture"
+            >
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                disabled={isUploading}
+              />
+              {isUploading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+              ) : (
                 <Camera className="h-4 w-4 text-gray-600" />
-              </button>
-            )}
+              )}
+            </label>
           </div>
 
           {/* Profile Info */}
@@ -113,24 +138,20 @@ export function ProfileHeader({
 
         {/* Quick Actions */}
         <div className="flex gap-3">
-          {onEditProfile && (
-            <button
-              onClick={onEditProfile}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Edit3 className="h-4 w-4 mr-2 inline" />
-              Edit Profile
-            </button>
-          )}
-          {onExportData && (
-            <button
-              onClick={onExportData}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Download className="h-4 w-4 mr-2 inline" />
-              Export Data
-            </button>
-          )}
+          <button 
+            onClick={onEditProfile}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          >
+            <Edit3 className="h-4 w-4" />
+            Edit Profile
+          </button>
+          <button 
+            onClick={onExportData}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Export Data
+          </button>
         </div>
       </div>
     </div>

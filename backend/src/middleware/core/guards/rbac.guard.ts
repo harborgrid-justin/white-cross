@@ -10,21 +10,17 @@
 
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger, Optional } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import {
-  Permission,
-  type RbacConfig,
-  ROLE_HIERARCHY,
-  ROLE_PERMISSIONS,
-  type UserProfile,
-  UserRole,
-} from '../types/rbac.types';
-import { ROLES_KEY } from '../../../auth/decorators/roles.decorator';
-import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../decorators/permissions.decorator';
+import { Permission, type RbacConfig, type UserProfile, UserRole } from '../types/rbac.types';
+import { ROLES_KEY } from '../../../services/auth/decorators/roles.decorator';
+import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
+import { RbacPermissionService } from '../services/rbac-permission.service';
+import { BaseAuthorizationGuard } from './base-authorization.guard';
 
 /**
  * RBAC Guard - Combined role and permission authorization
  *
  * @class RbacGuard
+ * @extends BaseAuthorizationGuard
  * @implements {CanActivate}
  *
  * @description Enforces both role-based and permission-based access control.
@@ -42,20 +38,13 @@ import { PERMISSIONS_KEY, PERMISSIONS_MODE_KEY, type PermissionsMode } from '../
  * app.useGlobalGuards(new RbacGuard(reflector));
  */
 @Injectable()
-export class RbacGuard implements CanActivate {
-  private readonly logger = new Logger(RbacGuard.name);
-  private readonly config: Required<RbacConfig>;
-
+export class RbacGuard extends BaseAuthorizationGuard {
   constructor(
-    private readonly reflector: Reflector,
+    reflector: Reflector,
+    rbacPermissionService: RbacPermissionService,
     @Optional() config?: RbacConfig,
   ) {
-    this.config = {
-      enableHierarchy: true,
-      enableAuditLogging: true,
-      customPermissions: {},
-      ...config,
-    };
+    super(reflector, rbacPermissionService, config);
   }
 
   /**
@@ -66,15 +55,8 @@ export class RbacGuard implements CanActivate {
    * @throws {ForbiddenException} When user lacks required role or permissions
    */
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
-
-    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
-      PERMISSIONS_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.getRequiredRoles(context);
+    const requiredPermissions = this.getRequiredPermissions(context);
 
     // No authorization requirements - allow access
     if (
@@ -84,23 +66,19 @@ export class RbacGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const user: UserProfile = request.user;
-
-    if (!user) {
-      throw new ForbiddenException('User not authenticated');
-    }
+    const user = this.getUserFromContext(context);
 
     // Check role requirements
     if (requiredRoles && requiredRoles.length > 0) {
-      const hasRole = this.hasAnyRole(user, requiredRoles);
+      const hasRole = this.rbacPermissionService.hasAnyRole(user, requiredRoles, this.config);
       if (!hasRole) {
         if (this.config.enableAuditLogging) {
-          this.logger.warn('Role authorization failed', {
-            userId: user.userId,
-            userRole: user.role,
+          this.rbacPermissionService.logAuthorizationAttempt(
+            'role',
+            false,
+            user,
             requiredRoles,
-          });
+          );
         }
 
         throw new ForbiddenException(
@@ -109,159 +87,30 @@ export class RbacGuard implements CanActivate {
       }
     }
 
-    // Check permission requirements
+    // Check permission requirements using base class method
     if (requiredPermissions && requiredPermissions.length > 0) {
-      const permissionsMode =
-        this.reflector.getAllAndOverride<PermissionsMode>(
-          PERMISSIONS_MODE_KEY,
-          [context.getHandler(), context.getClass()],
-        ) || 'all';
-
-      const hasPermission =
-        permissionsMode === 'all'
-          ? this.hasAllPermissions(user, requiredPermissions)
-          : this.hasAnyPermission(user, requiredPermissions);
-
-      if (!hasPermission) {
-        const missingPermissions = requiredPermissions.filter(
-          (permission) => !this.hasPermission(user, permission),
-        );
-
-        if (this.config.enableAuditLogging) {
-          this.logger.warn('Permission authorization failed', {
-            userId: user.userId,
-            userRole: user.role,
-            requiredPermissions,
-            missingPermissions,
-            mode: permissionsMode,
-          });
-        }
-
-        throw new ForbiddenException(
-          `Insufficient permissions. Required (${permissionsMode}): ${requiredPermissions.join(', ')}`,
-        );
-      }
+      this.checkPermissions(user, requiredPermissions, context, 'rbac');
     }
 
     if (this.config.enableAuditLogging) {
-      this.logger.debug('RBAC authorization successful', {
-        userId: user.userId,
-        userRole: user.role,
-        requiredRoles,
-        requiredPermissions,
-      });
+      this.rbacPermissionService.logAuthorizationAttempt(
+        'rbac',
+        true,
+        user,
+        [...(requiredRoles || []), ...(requiredPermissions || [])],
+      );
     }
 
     return true;
   }
 
   /**
-   * Check if user has any of the required roles
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {UserRole[]} requiredRoles - Required roles
-   * @returns {boolean} True if user has at least one required role
+   * Get required roles from metadata
    */
-  private hasAnyRole(user: UserProfile, requiredRoles: UserRole[]): boolean {
-    return requiredRoles.some((role) => this.hasRole(user, role));
-  }
-
-  /**
-   * Check if user has required role (with hierarchy support)
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {UserRole} requiredRole - Required role
-   * @returns {boolean} True if user has role
-   */
-  private hasRole(user: UserProfile, requiredRole: UserRole): boolean {
-    const userRole = user.role as UserRole;
-
-    if (!this.config.enableHierarchy) {
-      return userRole === requiredRole;
-    }
-
-    // With hierarchy, check if user role is equal or higher
-    const userLevel = ROLE_HIERARCHY[userRole];
-    const requiredLevel = ROLE_HIERARCHY[requiredRole];
-
-    return userLevel >= requiredLevel;
-  }
-
-  /**
-   * Check if user has specific permission
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {Permission} requiredPermission - Required permission
-   * @returns {boolean} True if user has permission
-   */
-  private hasPermission(
-    user: UserProfile,
-    requiredPermission: Permission,
-  ): boolean {
-    const userRole = user.role as UserRole;
-
-    // Check explicit user permissions first
-    if (user.permissions && user.permissions.includes(requiredPermission)) {
-      return true;
-    }
-
-    // Check role-based permissions
-    const rolePermissions = ROLE_PERMISSIONS[userRole] || [];
-    if (rolePermissions.includes(requiredPermission)) {
-      return true;
-    }
-
-    // Check inherited permissions from lower roles (if hierarchy enabled)
-    if (this.config.enableHierarchy) {
-      const userLevel = ROLE_HIERARCHY[userRole];
-
-      for (const [role, level] of Object.entries(ROLE_HIERARCHY)) {
-        if (level < userLevel) {
-          const inheritedPermissions = ROLE_PERMISSIONS[role as UserRole] || [];
-          if (inheritedPermissions.includes(requiredPermission)) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /**
-   * Check if user has ANY of the required permissions (OR logic)
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {Permission[]} requiredPermissions - Required permissions
-   * @returns {boolean} True if user has at least one permission
-   */
-  private hasAnyPermission(
-    user: UserProfile,
-    requiredPermissions: Permission[],
-  ): boolean {
-    return requiredPermissions.some((permission) =>
-      this.hasPermission(user, permission),
-    );
-  }
-
-  /**
-   * Check if user has ALL required permissions (AND logic)
-   *
-   * @private
-   * @param {UserProfile} user - User profile
-   * @param {Permission[]} requiredPermissions - Required permissions
-   * @returns {boolean} True if user has all permissions
-   */
-  private hasAllPermissions(
-    user: UserProfile,
-    requiredPermissions: Permission[],
-  ): boolean {
-    return requiredPermissions.every((permission) =>
-      this.hasPermission(user, permission),
+  private getRequiredRoles(context: ExecutionContext): UserRole[] | undefined {
+    return this.reflector.getAllAndOverride<UserRole[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
     );
   }
 }

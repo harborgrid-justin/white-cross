@@ -1,61 +1,46 @@
 /**
- * @fileoverview Students API Service
- *
- * Provides comprehensive frontend access to student management endpoints including
- * student CRUD operations, enrollment, transfers, nurse assignments, and PHI-protected
- * data access. All operations include HIPAA-compliant audit logging and comprehensive
- * validation aligned with backend Sequelize model constraints.
- *
- * **Key Features:**
- * - Student CRUD operations with comprehensive validation
- * - Student search and filtering with pagination
- * - Nurse assignment and transfer management
- * - Student enrollment and reactivation workflows
- * - Grade-level and assigned student queries
- * - Bulk update operations for efficiency
- * - PHI-compliant data export with audit logging
- * - Health and mental health record access
- * - Soft delete with reactivation support
- *
- * **HIPAA Compliance:**
- * - All student operations trigger PHI access audit logs via auditService
- * - Student demographic data treated as Protected Health Information (PHI)
- * - Success and failure logging for all PHI access operations
- * - Audit context includes user identity, timestamp, and operation details
- * - Export operations require explicit audit trail for compliance
- * - Mental health records have additional access restrictions
- *
- * **Validation and Data Integrity:**
- * - Frontend validation mirrors backend Sequelize model constraints
- * - Zod schemas enforce data integrity before API calls
- * - Student number format: Alphanumeric 4-20 chars (e.g., "STU-2025-001")
- * - Medical record number format: Alphanumeric 5-20 chars (e.g., "MRN-12345")
- * - Phone number validation: US formats supported
- * - Date of birth validation: 3-100 years ago
- * - Grade validation: K-12, Pre-K, TK, or custom formats
- *
- * **TanStack Query Integration:**
- * - Student list queries: 5-minute cache, invalidate on create/update/delete
- * - Individual student: 2-minute cache, invalidate on update
- * - Assigned students: 5-minute cache, nurse-specific queries
- * - Statistics: 10-minute cache, invalidate on data changes
- * - Search results: No cache (dynamic queries)
- * - Exports: No cache (one-time operations with audit)
- *
+ * @fileoverview Students API Legacy Compatibility Layer
+ * 
+ * NOTICE: This file serves as a backward compatibility layer for the refactored
+ * Students API. The implementation has been moved to a modular structure under
+ * the ./studentsApi/ directory for better maintainability and organization.
+ * 
+ * **Migration Notice:**
+ * This file will be maintained for backward compatibility during the transition
+ * period. New code should import from the modular structure:
+ * 
+ * ```typescript
+ * // New (recommended)
+ * import { studentsApi } from '@/services/modules/studentsApi';
+ * 
+ * // Legacy (deprecated but supported)
+ * import { studentsApi } from '@/services/modules/studentsApi.ts';
+ * ```
+ * 
+ * **What Changed:**
+ * - Implementation moved to modular structure for maintainability
+ * - All functionality remains identical
+ * - Performance and features are unchanged
+ * - Type definitions are shared between old and new interfaces
+ * 
+ * **Deprecation Timeline:**
+ * - Phase 1: Dual support (current) - both imports work
+ * - Phase 2: Deprecation warnings added to this file
+ * - Phase 3: This file removed, only modular imports supported
+ * 
  * @module services/modules/studentsApi
- * @see {@link studentManagementApi} for photo, barcode, transcript management
- * @see {@link emergencyContactsApi} for student emergency contact operations
- * @see {@link healthRecordsApi} for comprehensive health record access
+ * @deprecated Use modular imports from '@/services/modules/studentsApi' instead
  */
 
-import type { ApiClient } from '@/services/core/ApiClient';
-import { apiClient } from '../core/ApiClient';
-import { API_ENDPOINTS } from '@/constants/api';
-import { ApiResponse, PaginatedResponse, buildPaginationParams, buildUrlParams } from '../utils/apiUtils';
-import { z } from 'zod';
-import { auditService, AuditAction, AuditResourceType, AuditStatus } from '../audit';
-import { createApiError, createValidationError } from '../core/errors';
-import {
+// Re-export everything from the new modular structure
+export {
+  StudentsApi,
+  studentsApi,
+  createStudentsApi,
+} from './studentsApi/index';
+
+// Re-export types for compatibility
+export type {
   Student,
   CreateStudentData,
   UpdateStudentData,
@@ -66,815 +51,52 @@ import {
   BulkUpdateStudentsRequest,
   ExportStudentDataResponse,
   Gender,
-} from '../../types/domain/student.types';
+  BackendApiResponse,
+  StudentApiResult,
+  StudentSearchParams,
+  BulkOperationResponse,
+  StudentValidationError,
+  StudentAssignmentRequest,
+  StudentEnrollmentData,
+  StudentHealthSummary,
+  StudentAcademicSummary,
+  StudentExportOptions,
+  StudentQueryBuilder,
+} from './studentsApi/types';
+
+// Re-export validation schemas and constants
+export {
+  VALID_GRADES,
+  PHONE_REGEX,
+  EMAIL_REGEX,
+  MEDICAL_RECORD_REGEX,
+  STUDENT_NUMBER_REGEX,
+  createStudentSchema,
+  updateStudentSchema,
+  studentFiltersSchema,
+} from './studentsApi/validation';
 
 /**
- * API response wrapper matching backend response structure
- *
- * Standardizes all student API responses for consistent error handling
- * and data extraction across the frontend.
- *
- * @interface BackendApiResponse
- * @template T - The type of data returned in the response
- *
- * @property {boolean} success - Indicates if the operation succeeded
- * @property {T} [data] - Response data if successful
- * @property {Object} [error] - Error object if operation failed
- * @property {string} [error.message] - Human-readable error message
- * @property {string} [message] - Optional success/info message
- *
- * @example
- * ```typescript
- * const response: BackendApiResponse<{ student: Student }> = {
- *   success: true,
- *   data: { student: studentData },
- *   message: 'Student created successfully'
- * };
- * ```
+ * Legacy default export for maximum compatibility
+ * @deprecated Use named export `studentsApi` instead
  */
-interface BackendApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: {
-    message: string;
-  };
-  message?: string;
-}
+export { studentsApi as default } from './studentsApi/index';
 
-/**
- * Validation constants and schemas matching backend Sequelize model constraints
- *
- * All validation rules mirror the backend Student model to ensure data integrity
- * before API calls, reducing unnecessary network requests and providing immediate
- * feedback to users.
+/* 
+ * Migration guide for common patterns:
+ * 
+ * // Before (still works):
+ * import { studentsApi } from '@/services/modules/studentsApi.ts';
+ * import type { Student } from '../../types/domain/student.types';
+ * 
+ * // After (recommended):
+ * import { studentsApi } from '@/services/modules/studentsApi';
+ * import type { Student } from '@/services/modules/studentsApi';
+ * 
+ * // Advanced usage with modular operations:
+ * import { StudentsApi, StudentCoreOperations } from '@/services/modules/studentsApi';
+ * 
+ * // Validation schemas:
+ * import { createStudentSchema } from '@/services/modules/studentsApi';
+ * const validated = createStudentSchema.parse(data);
  */
-
-/**
- * Valid grade values for K-12 education system
- *
- * Supports standard K-12 grades plus common variations and pre-kindergarten formats.
- * Custom grade formats are also validated via regex pattern matching.
- *
- * @constant {readonly string[]}
- *
- * @example
- * ```typescript
- * VALID_GRADES.includes('K'); // true
- * VALID_GRADES.includes('5'); // true
- * VALID_GRADES.includes('Pre-K'); // true
- * ```
- */
-const VALID_GRADES = [
-  'K', 'K-1', 'K-2', 'K-3', 'K-4', 'K-5', // Kindergarten variations
-  '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
-  'Pre-K', 'PK', 'TK', // Pre-kindergarten variations
-] as const;
-
-/**
- * Phone number validation regex for US formats
- *
- * Supports:
- * - (123) 456-7890
- * - 123-456-7890
- * - 1234567890
- * - +1-123-456-7890
- *
- * @constant {RegExp}
- */
-const PHONE_REGEX = /^(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
-
-/**
- * Email validation regex (basic format check)
- *
- * Validates standard email format: user@domain.tld
- *
- * @constant {RegExp}
- */
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/**
- * Medical record number format validation
- *
- * Format: Alphanumeric with hyphens, 5-20 characters, uppercase
- * Examples: MRN-12345, MEDICAL-001, A1B2C3D4E5
- *
- * @constant {RegExp}
- */
-const MEDICAL_RECORD_REGEX = /^[A-Z0-9-]{5,20}$/;
-
-/**
- * Student number format validation
- *
- * Format: Alphanumeric with hyphens, 4-20 characters, uppercase
- * Examples: STU-2025-001, STUDENT-123, A1B2C3
- *
- * @constant {RegExp}
- */
-const STUDENT_NUMBER_REGEX = /^[A-Z0-9-]{4,20}$/;
-
-/**
- * Create student schema with comprehensive validation
- * Matches backend Student model field constraints
- */
-const createStudentSchema = z.object({
-  studentNumber: z
-    .string()
-    .min(4, 'Student number must be at least 4 characters')
-    .max(20, 'Student number cannot exceed 20 characters')
-    .regex(STUDENT_NUMBER_REGEX, 'Student number must be alphanumeric with optional hyphens')
-    .transform(val => val.toUpperCase()),
-
-  firstName: z
-    .string()
-    .min(1, 'First name is required')
-    .max(100, 'First name cannot exceed 100 characters')
-    .regex(/^[a-zA-Z\s'-]+$/, 'First name can only contain letters, spaces, hyphens, and apostrophes')
-    .trim(),
-
-  lastName: z
-    .string()
-    .min(1, 'Last name is required')
-    .max(100, 'Last name cannot exceed 100 characters')
-    .regex(/^[a-zA-Z\s'-]+$/, 'Last name can only contain letters, spaces, hyphens, and apostrophes')
-    .trim(),
-
-  dateOfBirth: z
-    .string()
-    .min(1, 'Date of birth is required')
-    .refine((date) => {
-      const dob = new Date(date);
-      const today = new Date();
-      const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
-      const maxDate = new Date(today.getFullYear() - 3, today.getMonth(), today.getDate());
-
-      return dob >= minDate && dob <= maxDate;
-    }, {
-      message: 'Date of birth must be between 3 and 100 years ago'
-    })
-    .refine((date) => {
-      const dob = new Date(date);
-      return dob < new Date();
-    }, {
-      message: 'Date of birth must be in the past'
-    }),
-
-  grade: z
-    .string()
-    .min(1, 'Grade is required')
-    .max(10, 'Grade cannot exceed 10 characters')
-    .refine((grade) => {
-      // Allow custom grade formats or standard K-12
-      const normalized = grade.toUpperCase().trim();
-      return VALID_GRADES.some(g => g.toUpperCase() === normalized) || /^\d{1,2}$/.test(grade);
-    }, {
-      message: 'Grade must be K-12, Pre-K, TK, or a valid custom grade format'
-    }),
-
-  gender: z.enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'], {
-    errorMap: () => ({ message: 'Gender must be MALE, FEMALE, OTHER, or PREFER_NOT_TO_SAY' })
-  }),
-
-  photo: z
-    .string()
-    .url('Photo must be a valid URL')
-    .max(500, 'Photo URL cannot exceed 500 characters')
-    .optional()
-    .or(z.literal('')),
-
-  medicalRecordNum: z
-    .string()
-    .min(5, 'Medical record number must be at least 5 characters')
-    .max(20, 'Medical record number cannot exceed 20 characters')
-    .regex(MEDICAL_RECORD_REGEX, 'Medical record number must be alphanumeric with optional hyphens')
-    .transform(val => val.toUpperCase())
-    .optional()
-    .or(z.literal('')),
-
-  nurseId: z
-    .string()
-    .uuid('Nurse ID must be a valid UUID')
-    .optional()
-    .or(z.literal('')),
-
-  enrollmentDate: z
-    .string()
-    .refine((date) => {
-      if (!date) return true;
-      const enrollDate = new Date(date);
-      const minDate = new Date(2000, 0, 1); // Min: Year 2000
-      const maxDate = new Date();
-      maxDate.setFullYear(maxDate.getFullYear() + 1); // Allow up to 1 year in future
-
-      return enrollDate >= minDate && enrollDate <= maxDate;
-    }, {
-      message: 'Enrollment date must be between 2000 and one year from today'
-    })
-    .optional()
-    .or(z.literal('')),
-
-  createdBy: z
-    .string()
-    .uuid('Created by must be a valid user UUID')
-    .optional(),
-});
-
-/**
- * Update student schema - all fields optional except validations still apply
- */
-const updateStudentSchema = createStudentSchema.partial().extend({
-  isActive: z.boolean({
-    error: 'Active status must be a boolean'
-  }).optional(),
-
-  updatedBy: z
-    .string()
-    .uuid('Updated by must be a valid user UUID')
-    .optional(),
-});
-
-/**
- * Student filters schema for search/filtering queries
- */
-const studentFiltersSchema = z.object({
-  search: z
-    .string()
-    .max(200, 'Search query cannot exceed 200 characters')
-    .optional(),
-
-  grade: z
-    .string()
-    .max(10, 'Grade filter cannot exceed 10 characters')
-    .optional(),
-
-  isActive: z
-    .boolean({
-      error: 'Active filter must be a boolean'
-    })
-    .optional(),
-
-  nurseId: z
-    .string()
-    .uuid('Nurse ID must be a valid UUID')
-    .optional(),
-
-  hasAllergies: z
-    .boolean({
-      error: 'Has allergies filter must be a boolean'
-    })
-    .optional(),
-
-  hasMedications: z
-    .boolean({
-      error: 'Has medications filter must be a boolean'
-    })
-    .optional(),
-
-  gender: z
-    .enum(['MALE', 'FEMALE', 'OTHER', 'PREFER_NOT_TO_SAY'], {
-      errorMap: () => ({ message: 'Gender filter must be MALE, FEMALE, OTHER, or PREFER_NOT_TO_SAY' })
-    })
-    .optional(),
-
-  page: z
-    .number({
-      error: 'Page must be a number'
-    })
-    .int('Page must be an integer')
-    .min(1, 'Page must be at least 1')
-    .optional(),
-
-  limit: z
-    .number({
-      error: 'Limit must be a number'
-    })
-    .int('Limit must be an integer')
-    .min(1, 'Limit must be at least 1')
-    .max(100, 'Limit cannot exceed 100')
-    .optional(),
-});
-
-// Students API class matching backend StudentService
-export class StudentsApi {
-  private client: ApiClient;
-
-  constructor(client: ApiClient) {
-    this.client = client;
-  }
-
-  /**
-   * Helper method to handle errors consistently
-   */
-  private handleError(error: unknown, defaultMessage: string): never {
-    if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
-      const zodError = error as unknown as { errors: Array<{ message: string }> };
-      throw new Error(`Validation error: ${zodError.errors[0].message}`);
-    }
-    const apiError = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
-    throw new Error(apiError.response?.data?.error?.message || apiError.message || defaultMessage);
-  }
-
-  /**
-   * Get all students with optional filtering and pagination
-   * Matches backend: StudentService.getStudents()
-   */
-  async getAll(filters: StudentFilters = {}): Promise<PaginatedStudentsResponse> {
-    try {
-      studentFiltersSchema.parse(filters);
-
-      const queryString = new URLSearchParams();
-
-      // Pagination
-      if (filters.page) queryString.append('page', String(filters.page));
-      if (filters.limit) queryString.append('limit', String(filters.limit));
-
-      // Filters
-      if (filters.search) queryString.append('search', filters.search);
-      if (filters.grade) queryString.append('grade', filters.grade);
-      if (filters.isActive !== undefined) queryString.append('isActive', String(filters.isActive));
-      if (filters.nurseId) queryString.append('nurseId', filters.nurseId);
-      if (filters.hasAllergies !== undefined) queryString.append('hasAllergies', String(filters.hasAllergies));
-      if (filters.hasMedications !== undefined) queryString.append('hasMedications', String(filters.hasMedications));
-      if (filters.gender) queryString.append('gender', filters.gender);
-
-      // ApiClient wraps the backend response: backend returns { data: [...], meta: {...} }
-      // ApiClient wraps it as { success: true, data: { data: [...], meta: {...} } }
-      const response = await this.client.get<PaginatedStudentsResponse>(
-        `${API_ENDPOINTS.STUDENTS.BASE}?${queryString.toString()}`
-      );
-
-      // Extract the actual data from the ApiClient wrapper
-      return response.data;
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'name' in error && error.name === 'ZodError') {
-        const zodError = error as unknown as { errors: Array<{ message: string }> };
-        throw new Error(`Validation error: ${zodError.errors[0].message}`);
-      }
-      const apiError = error as { response?: { data?: { error?: { message?: string } } }; message?: string };
-      throw new Error(apiError.response?.data?.error?.message || apiError.message || 'Failed to fetch students');
-    }
-  }
-
-  /**
-   * Get student by ID with complete profile
-   * Matches backend: StudentService.getStudentById()
-   */
-  async getById(id: string): Promise<Student> {
-    try {
-      if (!id) throw new Error('Student ID is required');
-
-      const response = await this.client.get<BackendApiResponse<{ student: Student }>>(
-        API_ENDPOINTS.STUDENTS.BY_ID(id)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Student not found');
-      }
-
-      const student = response.data.data.student;
-
-      // Audit log for viewing student PHI
-      await auditService.logPHIAccess(
-        AuditAction.VIEW_STUDENT,
-        id,
-        AuditResourceType.STUDENT,
-        id
-      );
-
-      return student;
-    } catch (error: unknown) {
-      const apiError = error as { message?: string };
-      await auditService.log({
-        action: AuditAction.VIEW_STUDENT,
-        resourceType: AuditResourceType.STUDENT,
-        resourceId: id,
-        status: AuditStatus.FAILURE,
-        context: { error: apiError.message || 'Unknown error' },
-      });
-      this.handleError(error, 'Failed to fetch student');
-    }
-  }
-
-  /**
-   * Create new student
-   * Matches backend: StudentService.createStudent()
-   */
-  async create(studentData: CreateStudentData): Promise<Student> {
-    try {
-      createStudentSchema.parse(studentData);
-
-      const response = await this.client.post<BackendApiResponse<{ student: Student }>>(
-        API_ENDPOINTS.STUDENTS.BASE,
-        studentData
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to create student');
-      }
-
-      const student = response.data.data.student;
-
-      // Audit log for creating student
-      await auditService.log({
-        action: AuditAction.CREATE_STUDENT,
-        resourceType: AuditResourceType.STUDENT,
-        resourceId: student.id,
-        studentId: student.id,
-        resourceIdentifier: `${student.firstName} ${student.lastName}`,
-        status: AuditStatus.SUCCESS,
-        isPHI: true,
-        metadata: {
-          studentNumber: student.studentNumber,
-          grade: student.grade,
-        },
-      });
-
-      return student;
-    } catch (error: unknown) {
-      const apiError = error as { message?: string };
-      await auditService.log({
-        action: AuditAction.CREATE_STUDENT,
-        resourceType: AuditResourceType.STUDENT,
-        status: AuditStatus.FAILURE,
-        context: { error: apiError.message || 'Unknown error' },
-      });
-      this.handleError(error, 'Failed to create student');
-    }
-  }
-
-  /**
-   * Update student information
-   * Matches backend: StudentService.updateStudent()
-   */
-  async update(id: string, studentData: UpdateStudentData): Promise<Student> {
-    try {
-      if (!id) throw new Error('Student ID is required');
-
-      updateStudentSchema.parse(studentData);
-
-      const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
-        API_ENDPOINTS.STUDENTS.BY_ID(id),
-        studentData
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to update student');
-      }
-
-      const student = response.data.data.student;
-
-      // Audit log for updating student with change tracking
-      await auditService.log({
-        action: AuditAction.UPDATE_STUDENT,
-        resourceType: AuditResourceType.STUDENT,
-        resourceId: id,
-        studentId: id,
-        resourceIdentifier: `${student.firstName} ${student.lastName}`,
-        status: AuditStatus.SUCCESS,
-        isPHI: true,
-        afterState: studentData as Record<string, unknown>,
-        metadata: {
-          fieldsUpdated: Object.keys(studentData),
-        },
-      });
-
-      return student;
-    } catch (error: unknown) {
-      const apiError = error as { message?: string };
-      await auditService.log({
-        action: AuditAction.UPDATE_STUDENT,
-        resourceType: AuditResourceType.STUDENT,
-        resourceId: id,
-        studentId: id,
-        status: AuditStatus.FAILURE,
-        context: { error: apiError.message || 'Unknown error' },
-      });
-      this.handleError(error, 'Failed to update student');
-    }
-  }
-
-  /**
-   * Deactivate student (soft delete)
-   * Matches backend: StudentService.deactivateStudent()
-   */
-  async deactivate(id: string): Promise<{ success: boolean; message: string }> {
-    try {
-      if (!id) throw new Error('Student ID is required');
-
-      const response = await this.client.delete<BackendApiResponse<{ message: string }>>(
-        API_ENDPOINTS.STUDENTS.BY_ID(id)
-      );
-
-      if (!response.data.success) {
-        throw new Error(response.data.error?.message || 'Failed to deactivate student');
-      }
-
-      return {
-        success: true,
-        message: response.data.message || 'Student deactivated successfully'
-      };
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to deactivate student');
-    }
-  }
-
-  /**
-   * Reactivate a previously deactivated student
-   * Matches backend: StudentService.reactivateStudent()
-   */
-  async reactivate(id: string): Promise<Student> {
-    try {
-      if (!id) throw new Error('Student ID is required');
-
-      const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
-        API_ENDPOINTS.STUDENTS.REACTIVATE(id)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to reactivate student');
-      }
-
-      return response.data.data.student;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to reactivate student');
-    }
-  }
-
-  /**
-   * Transfer student to a different nurse
-   * Matches backend: StudentService.transferStudent()
-   */
-  async transfer(id: string, transferData: TransferStudentRequest): Promise<Student> {
-    try {
-      if (!id) throw new Error('Student ID is required');
-      if (!transferData.nurseId) throw new Error('Nurse ID is required');
-
-      const response = await this.client.put<BackendApiResponse<{ student: Student }>>(
-        API_ENDPOINTS.STUDENTS.TRANSFER(id),
-        transferData
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to transfer student');
-      }
-
-      return response.data.data.student;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to transfer student');
-    }
-  }
-
-  /**
-   * Get students by grade level
-   * Matches backend: StudentService.getStudentsByGrade()
-   */
-  async getByGrade(grade: string): Promise<Student[]> {
-    try {
-      if (!grade) throw new Error('Grade is required');
-
-      const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
-        API_ENDPOINTS.STUDENTS.BY_GRADE(grade)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to fetch students by grade');
-      }
-
-      return response.data.data.students;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to fetch students by grade');
-    }
-  }
-
-  /**
-   * Search students by query string
-   * Matches backend: StudentService.searchStudents()
-   */
-  async search(query: string, limit?: number): Promise<Student[]> {
-    try {
-      if (!query.trim()) return [];
-
-      const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
-        API_ENDPOINTS.STUDENTS.SEARCH_BY_QUERY(query)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to search students');
-      }
-
-      return response.data.data.students;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to search students');
-    }
-  }
-
-  /**
-   * Get students assigned to current user (for nurses)
-   * Matches backend: StudentService.getAssignedStudents()
-   */
-  async getAssignedStudents(): Promise<Student[]> {
-    try {
-      const response = await this.client.get<BackendApiResponse<{ students: Student[] }>>(
-        API_ENDPOINTS.STUDENTS.ASSIGNED
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to fetch assigned students');
-      }
-
-      return response.data.data.students;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to fetch assigned students');
-    }
-  }
-
-  /**
-   * Get student statistics and counts
-   * Matches backend: StudentService.getStudentStatistics()
-   */
-  async getStatistics(studentId: string): Promise<StudentStatistics> {
-    try {
-      if (!studentId) throw new Error('Student ID is required');
-
-      const response = await this.client.get<BackendApiResponse<StudentStatistics>>(
-        API_ENDPOINTS.STUDENTS.STATISTICS(studentId)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to fetch student statistics');
-      }
-
-      return response.data.data;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to fetch student statistics');
-    }
-  }
-
-  /**
-   * Bulk update students
-   * Matches backend: StudentService.bulkUpdateStudents()
-   */
-  async bulkUpdate(bulkData: BulkUpdateStudentsRequest): Promise<{ updatedCount: number }> {
-    try {
-      if (!bulkData.studentIds || bulkData.studentIds.length === 0) {
-        throw new Error('Student IDs are required');
-      }
-
-      const response = await this.client.put<BackendApiResponse<{ updatedCount: number }>>(
-        API_ENDPOINTS.STUDENTS.BULK_UPDATE,
-        bulkData
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to bulk update students');
-      }
-
-      return response.data.data;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to bulk update students');
-    }
-  }
-
-  /**
-   * Permanently delete student (use with caution - HIPAA compliance)
-   * Matches backend: StudentService.deleteStudent()
-   */
-  async permanentDelete(id: string): Promise<{ success: boolean; message: string }> {
-    try {
-      if (!id) throw new Error('Student ID is required');
-
-      const response = await this.client.delete<BackendApiResponse<{ success: boolean; message: string }>>(
-        API_ENDPOINTS.STUDENTS.PERMANENT_DELETE(id)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to delete student');
-      }
-
-      return response.data.data;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to delete student');
-    }
-  }
-
-  /**
-   * Get all unique grades in the system
-   * Matches backend: StudentService.getAllGrades()
-   */
-  async getAllGrades(): Promise<string[]> {
-    try {
-      const response = await this.client.get<BackendApiResponse<string[]>>(
-        API_ENDPOINTS.STUDENTS.GRADES
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to fetch grades');
-      }
-
-      return response.data.data;
-    } catch (error: unknown) {
-      this.handleError(error, 'Failed to fetch grades');
-    }
-  }
-
-  /**
-   * Export student data for reporting or compliance
-   * Matches backend: StudentService.exportStudentData()
-   * CRITICAL: Exports contain PHI and must be audited immediately
-   */
-  async exportStudentData(studentId: string): Promise<ExportStudentDataResponse> {
-    try {
-      if (!studentId) throw new Error('Student ID is required');
-
-      const response = await this.client.get<BackendApiResponse<ExportStudentDataResponse>>(
-        API_ENDPOINTS.STUDENTS.EXPORT(studentId)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to export student data');
-      }
-
-      // CRITICAL: Audit log for exporting student data
-      await auditService.log({
-        action: AuditAction.EXPORT_STUDENT_DATA,
-        resourceType: AuditResourceType.STUDENT,
-        resourceId: studentId,
-        studentId,
-        status: AuditStatus.SUCCESS,
-        isPHI: true,
-      });
-
-      return response.data.data;
-    } catch (error: unknown) {
-      const apiError = error as { message?: string };
-      await auditService.log({
-        action: AuditAction.EXPORT_STUDENT_DATA,
-        resourceType: AuditResourceType.STUDENT,
-        resourceId: studentId,
-        studentId,
-        status: AuditStatus.FAILURE,
-        context: { error: apiError.message || 'Unknown error' },
-      });
-      this.handleError(error, 'Failed to export student data');
-    }
-  }
-
-  /**
-   * Get student health records (including sensitive records if authorized)
-   */
-  async getHealthRecords(studentId: string, sensitive: boolean = false): Promise<any> {
-    try {
-      if (!studentId) throw new Error('Student ID is required');
-
-      const response = await this.client.get<BackendApiResponse<any>>(
-        `${API_ENDPOINTS.STUDENTS.HEALTH_RECORDS(studentId)}?sensitive=${sensitive}`
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to fetch health records');
-      }
-
-      return response.data.data;
-    } catch (error: unknown) {
-      const apiError = error as any;
-      throw new Error(apiError.response?.data?.error?.message || apiError.message || 'Failed to fetch health records');
-    }
-  }
-
-  /**
-   * Get student mental health records (requires special permissions)
-   */
-  async getMentalHealthRecords(studentId: string): Promise<any> {
-    try {
-      if (!studentId) throw new Error('Student ID is required');
-
-      const response = await this.client.get<BackendApiResponse<any>>(
-        API_ENDPOINTS.STUDENTS.MENTAL_HEALTH_RECORDS(studentId)
-      );
-
-      if (!response.data.success || !response.data.data) {
-        throw new Error(response.data.error?.message || 'Failed to fetch mental health records');
-      }
-
-      return response.data.data;
-    } catch (error: unknown) {
-      const apiError = error as any;
-      throw new Error(apiError.response?.data?.error?.message || apiError.message || 'Failed to fetch mental health records');
-    }
-  }
-
-  /**
-   * Legacy method for backward compatibility
-   * @deprecated Use deactivate() instead
-   */
-  async delete(id: string): Promise<{ success: boolean; message: string }> {
-    return this.deactivate(id);
-  }
-}
-
-// Factory function for creating StudentsApi instances
-export function createStudentsApi(client: ApiClient): StudentsApi {
-  return new StudentsApi(client);
-}
-
-// Export singleton instance
-export const studentsApi = createStudentsApi(apiClient);

@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Student } from '../../student/entities/student.entity';
-import { HealthRecord } from '../../health-record/entities/health-record.entity';
-
+import { Student, HealthRecord } from '@/database/models';
+import { BaseService } from '@/common/base';
 /**
  * Compliance Data Collector Service
  *
@@ -17,15 +16,19 @@ import { HealthRecord } from '../../health-record/entities/health-record.entity'
  * - Return structured data for metric calculation
  */
 @Injectable()
-export class ComplianceDataCollectorService {
-  private readonly logger = new Logger(ComplianceDataCollectorService.name);
-
+export class ComplianceDataCollectorService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
-  ) {}
+  ) {
+    super({
+      serviceName: 'ComplianceDataCollectorService',
+      logger: new Logger(ComplianceDataCollectorService.name),
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Get active students for a school
@@ -39,7 +42,7 @@ export class ComplianceDataCollectorService {
         },
       });
     } catch (error) {
-      this.logger.error(`Error fetching students for school ${schoolId}`, error.stack);
+      this.logError(`Error fetching students for school ${schoolId}`, error.stack);
       throw error;
     }
   }
@@ -56,7 +59,7 @@ export class ComplianceDataCollectorService {
         },
       });
     } catch (error) {
-      this.logger.error(`Error counting students for school ${schoolId}`, error.stack);
+      this.logError(`Error counting students for school ${schoolId}`, error.stack);
       throw error;
     }
   }
@@ -86,7 +89,7 @@ export class ComplianceDataCollectorService {
         ],
       });
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error fetching immunization records for school ${schoolId}`,
         error.stack,
       );
@@ -119,7 +122,7 @@ export class ComplianceDataCollectorService {
         ],
       });
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error fetching medication records for school ${schoolId}`,
         error.stack,
       );
@@ -152,7 +155,7 @@ export class ComplianceDataCollectorService {
         ],
       });
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error fetching screening records for school ${schoolId}`,
         error.stack,
       );
@@ -184,7 +187,7 @@ export class ComplianceDataCollectorService {
         immunizationRecords,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error collecting immunization data for school ${schoolId}`,
         error.stack,
       );
@@ -218,7 +221,7 @@ export class ComplianceDataCollectorService {
         totalRecords,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error collecting controlled substance data for school ${schoolId}`,
         error.stack,
       );
@@ -248,7 +251,7 @@ export class ComplianceDataCollectorService {
         screeningRecords,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error collecting screening data for school ${schoolId}`,
         error.stack,
       );

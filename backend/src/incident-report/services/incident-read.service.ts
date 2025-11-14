@@ -1,6 +1,6 @@
 /**
  * @fileoverview Incident Read Service
- * @module incident-report/services/incident-read.service
+ * @module incident-repo@/services/incident-read.service
  * @description Business logic for reading incident report data
  */
 
@@ -10,6 +10,7 @@ import { Op } from 'sequelize';
 import { IncidentReport } from '@/database';
 import { IncidentFiltersDto } from '../dto/incident-filters.dto';
 
+import { BaseService } from '@/common/base';
 /**
  * Incident Read Service
  *
@@ -20,13 +21,13 @@ import { IncidentFiltersDto } from '../dto/incident-filters.dto';
  * - Get student recent incidents
  */
 @Injectable()
-export class IncidentReadService {
-  private readonly logger = new Logger(IncidentReadService.name);
-
+export class IncidentReadService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
-  ) {}
+  ) {
+    super('IncidentReadService');
+  }
 
   /**
    * Get incident reports with pagination and filters
@@ -97,7 +98,7 @@ export class IncidentReadService {
    * Get incident report by ID
    */
   async getIncidentReportById(id: string): Promise<IncidentReport> {
-    this.logger.log(`Getting incident report by ID: ${id}`);
+    this.logInfo(`Getting incident report by ID: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id, {
       include: [
@@ -125,7 +126,7 @@ export class IncidentReadService {
    * Get incidents requiring follow-up
    */
   async getIncidentsRequiringFollowUp(): Promise<IncidentReport[]> {
-    this.logger.log('Getting incidents requiring follow-up');
+    this.logInfo('Getting incidents requiring follow-up');
 
     return this.incidentReportModel.findAll({
       where: {
@@ -149,7 +150,7 @@ export class IncidentReadService {
     studentId: string,
     limit: number = 10,
   ): Promise<IncidentReport[]> {
-    this.logger.log(`Getting recent incidents for student: ${studentId}`);
+    this.logInfo(`Getting recent incidents for student: ${studentId}`);
 
     return this.incidentReportModel.findAll({
       where: { studentId },

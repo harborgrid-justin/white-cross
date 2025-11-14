@@ -13,10 +13,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthRecord } from '../../database/models/health-record.model';
+import { HealthRecord } from '@/database/models';
 import { GrowthDataPoint } from '../interfaces/pagination.interface';
 import { VitalSigns } from '../interfaces/vital-signs.interface';
 
+import { BaseService } from '@/common/base';
 /**
  * HealthRecordVitalsService
  *
@@ -30,13 +31,13 @@ import { VitalSigns } from '../interfaces/vital-signs.interface';
  * - Extract vital signs from health record metadata
  */
 @Injectable()
-export class HealthRecordVitalsService {
-  private readonly logger = new Logger(HealthRecordVitalsService.name);
-
+export class HealthRecordVitalsService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
-  ) {}
+  ) {
+    super("HealthRecordVitalsService");
+  }
 
   /**
    * Get growth chart data for student (height/weight over time)
@@ -59,21 +60,15 @@ export class HealthRecordVitalsService {
     // Extract growth data points
     const growthData: GrowthDataPoint[] = records
       .map((record) => {
-        const height = record.metadata?.height
-          ? parseFloat(record.metadata.height)
-          : undefined;
-        const weight = record.metadata?.weight
-          ? parseFloat(record.metadata.weight)
-          : undefined;
+        const height = record.metadata?.height ? parseFloat(record.metadata.height) : undefined;
+        const weight = record.metadata?.weight ? parseFloat(record.metadata.weight) : undefined;
 
         // Calculate BMI if both height and weight available
         let bmi: number | undefined;
         if (height && weight) {
           // BMI = weight (kg) / (height (m))^2
           const heightInMeters = height / 100;
-          bmi = parseFloat(
-            (weight / (heightInMeters * heightInMeters)).toFixed(1),
-          );
+          bmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
         }
 
         return {
@@ -84,12 +79,10 @@ export class HealthRecordVitalsService {
           recordType: record.recordType,
         };
       })
-      .filter(
-        (point) => point.height !== undefined || point.weight !== undefined,
-      );
+      .filter((point) => point.height !== undefined || point.weight !== undefined);
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Growth chart data retrieved for student ${studentId}, data points: ${growthData.length}`,
     );
 
@@ -102,10 +95,7 @@ export class HealthRecordVitalsService {
    * @param limit - Number of records to retrieve
    * @returns Array of recent vital signs
    */
-  async getRecentVitals(
-    studentId: string,
-    limit: number = 10,
-  ): Promise<VitalSigns[]> {
+  async getRecentVitals(studentId: string, limit: number = 10): Promise<VitalSigns[]> {
     const records = await this.healthRecordModel.findAll({
       where: {
         studentId,
@@ -136,7 +126,7 @@ export class HealthRecordVitalsService {
       .filter((vital) => Object.values(vital).some((v) => v !== undefined));
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Recent vitals retrieved for student ${studentId}, count: ${vitals.length}`,
     );
 

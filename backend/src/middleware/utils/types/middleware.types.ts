@@ -8,7 +8,7 @@
  */
 
 import type { Request, Response } from 'express';
-import type { SafeUser } from '../../../auth/types/auth.types';
+import type { SafeUser } from '../../../services/auth/types/auth.types';
 
 /**
  * Framework-agnostic request interface

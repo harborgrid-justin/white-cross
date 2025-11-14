@@ -11,11 +11,12 @@
  * - Comprehensive job monitoring
  * - Horizontal scalability
  */
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job, Queue } from 'bullmq';
-import { JobType } from '@/infrastructure/jobs';
-
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
+import { JobType } from '@/infrastructure/jobs/enums/job-type.enum';
 export interface JobOptions {
   delay?: number;
   priority?: number;
@@ -35,11 +36,19 @@ export interface QueueStats {
 }
 
 @Injectable()
-export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(QueueManagerService.name);
+export class QueueManagerService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private queues: Map<JobType, Queue> = new Map();
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly configService: ConfigService,
+  ) {
+    super({
+      serviceName: 'QueueManagerService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async onModuleInit() {
     try {
@@ -50,14 +59,14 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
       const redisPort = this.configService.get<number>('REDIS_PORT', 6379);
       const redisPassword = this.configService.get<string>('REDIS_PASSWORD');
 
-      this.logger.log(
+      this.logInfo(
         `Queue manager initialized with Redis at ${redisHost}:${redisPort}`,
       );
 
       // Initialize scheduled jobs
       await this.initializeScheduledJobs();
     } catch (error) {
-      this.logger.error('Failed to initialize queue manager', error);
+      this.logError('Failed to initialize queue manager', error);
       throw error;
     }
   }
@@ -74,7 +83,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
         '0 0,6 * * *',
         'medication-reminder-scheduled',
       );
-      this.logger.log('Medication reminders job scheduled (0 0,6 * * *)');
+      this.logInfo('Medication reminders job scheduled (0 0,6 * * *)');
 
       // Schedule inventory maintenance job (every 15 minutes)
       await this.scheduleJob(
@@ -83,11 +92,11 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
         '*/15 * * * *',
         'inventory-maintenance-scheduled',
       );
-      this.logger.log('Inventory maintenance job scheduled (*/15 * * * *)');
+      this.logInfo('Inventory maintenance job scheduled (*/15 * * * *)');
 
-      this.logger.log('All scheduled jobs initialized successfully');
+      this.logInfo('All scheduled jobs initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize scheduled jobs', error);
+      this.logError('Failed to initialize scheduled jobs', error);
     }
   }
 
@@ -130,7 +139,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.queues.set(jobType, queue);
-    this.logger.log(`Queue created: ${jobType}`);
+    this.logInfo(`Queue created: ${jobType}`);
 
     return queue;
   }
@@ -152,7 +161,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
       jobId: options?.jobId,
     });
 
-    this.logger.log(`Job added to ${jobType} queue`, {
+    this.logInfo(`Job added to ${jobType} queue`, {
       jobId: job.id,
       options,
     });
@@ -242,7 +251,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
     const queue = this.queues.get(jobType);
     if (queue) {
       await queue.pause();
-      this.logger.log(`Queue ${jobType} paused`);
+      this.logInfo(`Queue ${jobType} paused`);
     }
   }
 
@@ -253,7 +262,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
     const queue = this.queues.get(jobType);
     if (queue) {
       await queue.resume();
-      this.logger.log(`Queue ${jobType} resumed`);
+      this.logInfo(`Queue ${jobType} resumed`);
     }
   }
 
@@ -268,7 +277,7 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
     if (queue) {
       await queue.clean(grace, 100, 'completed');
       await queue.clean(grace * 7, 100, 'failed'); // Keep failed jobs longer
-      this.logger.log(`Queue ${jobType} cleaned`);
+      this.logInfo(`Queue ${jobType} cleaned`);
     }
   }
 
@@ -276,15 +285,15 @@ export class QueueManagerService implements OnModuleInit, OnModuleDestroy {
    * Gracefully shutdown queue manager
    */
   async shutdown(): Promise<void> {
-    this.logger.log('Shutting down queue manager...');
+    this.logInfo('Shutting down queue manager...');
 
     // Close all queues
     for (const [jobType, queue] of this.queues.entries()) {
       await queue.close();
-      this.logger.log(`Queue closed: ${jobType}`);
+      this.logInfo(`Queue closed: ${jobType}`);
     }
 
     this.queues.clear();
-    this.logger.log('Queue manager shutdown complete');
+    this.logInfo('Queue manager shutdown complete');
   }
 }

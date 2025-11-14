@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Request, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Request, UseInterceptors, Version } from '@nestjs/common';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
@@ -11,17 +11,20 @@ import { GetIncidentsByLocationQueryDto, GetIncidentTrendsQueryDto } from './dto
 import { GetMedicationAdherenceQueryDto, GetMedicationUsageQueryDto } from './dto/medication-analytics.dto';
 import { GetReportParamDto, GetReportQueryDto } from './dto/report-generation.dto';
 
+import { BaseController } from '@/common/base';
 /**
  * Analytics Controller
  * Comprehensive health metrics, analytics, and reporting endpoints
  * HIPAA Compliance: Aggregated health data analysis while protecting PHI
  */
 @ApiTags('Analytics')
+
 @Controller('analytics')
 @ApiBearerAuth()
 @UseInterceptors(CacheInterceptor)
-export class AnalyticsController {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+export class AnalyticsController extends BaseController {
+  constructor(private readonly analyticsService: AnalyticsService) {
+    super();}
 
   /**
    * MODULE METADATA ENDPOINT

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/reports/layout.tsx"],"sourcesContent":["/**\r\n * @fileoverview Reports Feature Layout\r\n */\r\n\r\nimport { Metadata } from 'next';\r\nimport { ReactNode } from 'react';\r\n\r\nexport const metadata: Metadata = {\r\n  title: {\r\n    template: '%s | Reports | White Cross',\r\n    default: 'Reports | White Cross'\r\n  },\r\n  description: 'Healthcare reports and analytics'\r\n};\r\n\r\ninterface ReportsLayoutProps {\r\n  children: ReactNode;\r\n  modal: ReactNode;\r\n  sidebar: ReactNode;\r\n}\r\n\r\nexport default function ReportsLayout({ children, modal, sidebar }: ReportsLayoutProps) {\r\n  return (\r\n    <>\r\n      <div className=\"p-6\">\r\n        {children}\r\n      </div>\r\n      {/* Parallel Route Slots */}\r\n      {modal}\r\n      {sidebar}\r\n    </>\r\n  );\r\n}"],"names":[],"mappings":"AAAA;;CAEC;;;;;;;;AAKM,MAAM,WAAqB;IAChC,OAAO;QACL,UAAU;QACV,SAAS;IACX;IACA,aAAa;AACf;AAQe,SAAS,cAAc,EAAE,QAAQ,EAAE,KAAK,EAAE,OAAO,EAAsB;IACpF,qBACE;;0BACE,8OAAC;gBAAI,WAAU;0BACZ;;;;;;YAGF;YACA;;;AAGP","debugId":null}}]
+}

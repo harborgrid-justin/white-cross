@@ -9,11 +9,12 @@
  * @compliance 45 CFR 164.308(a)(1)(ii)(D) - Information access management
  */
 
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 import { PHIAccessLogger } from '../services/phi-access-logger.service';
 import { HealthRecordRequest } from '../interfaces/health-record-types';
 
@@ -47,28 +48,31 @@ export interface AuditTrailEntry {
  * with HIPAA compliance and correlation ID tracking
  */
 @Injectable()
-export class HealthRecordAuditInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(HealthRecordAuditInterceptor.name);
-
-  constructor(private readonly phiAccessLogger: PHIAccessLogger) {}
+export class HealthRecordAuditInterceptor extends BaseInterceptor implements NestInterceptor {
+  constructor(private readonly phiAccessLogger: PHIAccessLogger) {
+    super();
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<HealthRecordRequest>();
     const response = context.switchToHttp().getResponse<Response>();
     const startTime = Date.now();
 
-    // Generate correlation ID for request tracking
-    const correlationId = uuidv4();
+    // Generate correlation ID for request tracking using base class
+    const correlationId = this.getOrGenerateRequestId(request);
     request.headers['x-correlation-id'] = correlationId;
-    response.setHeader('X-Correlation-ID', correlationId);
+    this.setRequestIdHeader(response, correlationId);
 
     // Extract audit context
     const auditContext = this.extractAuditContext(request, correlationId);
 
-    // Log request start
-    this.logger.log(
-      `[${correlationId}] PHI Operation Started: ${auditContext.method} ${auditContext.endpoint}`,
-    );
+    // Log request start using base class
+    this.logRequest('info', `PHI Operation Started: ${auditContext.method} ${auditContext.endpoint}`, {
+      correlationId,
+      operation: auditContext.operation,
+      phiAccessed: auditContext.phiAccessed,
+      complianceLevel: auditContext.complianceLevel,
+    });
 
     return next.handle().pipe(
       tap((responseData) => {
@@ -93,6 +97,20 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
 
         this.logAuditEntry(auditEntry);
         this.logSecurityIncident(auditEntry, error);
+
+        // Report to Sentry for PHI-related errors using base class
+        if (auditContext.phiAccessed) {
+          this.reportToSentry(error, {
+            correlationId,
+            operation: auditContext.operation,
+            complianceLevel: auditContext.complianceLevel,
+            tags: {
+              operation: auditContext.operation,
+              complianceLevel: auditContext.complianceLevel,
+            },
+          });
+        }
+
         throw error;
       }),
     );
@@ -115,7 +133,7 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
       timestamp: new Date(),
       userId: request.user?.id, // Assumes authentication middleware sets user
       userRole: request.user?.role,
-      ipAddress: this.getClientIP(request),
+      ipAddress: this.getClientIp(request),
       userAgent: request.get('user-agent') || 'Unknown',
       endpoint: request.originalUrl,
       method: request.method,
@@ -399,41 +417,6 @@ export class HealthRecordAuditInterceptor implements NestInterceptor {
       hasConditions = true;
 
     return { recordCount, hasAllergies, hasVaccinations, hasConditions };
-  }
-
-  /**
-   * Get client IP address with proxy support
-   */
-  private getClientIP(request: HealthRecordRequest): string {
-    return (
-      (request.headers['x-forwarded-for'] as string) ||
-      (request.headers['x-real-ip'] as string) ||
-      request.socket.remoteAddress ||
-      'Unknown'
-    );
-  }
-
-  /**
-   * Calculate request size
-   */
-  private calculateRequestSize(request: HealthRecordRequest): number {
-    const contentLength = request.headers['content-length'];
-    if (contentLength) return parseInt(contentLength, 10);
-
-    // Estimate size if not provided
-    if (request.body) {
-      return JSON.stringify(request.body).length;
-    }
-
-    return 0;
-  }
-
-  /**
-   * Calculate response size
-   */
-  private calculateResponseSize(responseData: any): number {
-    if (!responseData) return 0;
-    return JSON.stringify(responseData).length;
   }
 
   /**

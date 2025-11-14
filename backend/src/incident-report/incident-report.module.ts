@@ -13,10 +13,10 @@ import { IncidentWitnessService } from './services/incident-witness.service';
 import { IncidentReadService } from './services/incident-read.service';
 import { IncidentWriteService } from './services/incident-write.service';
 import { IncidentStatusService } from './services/incident-status.service';
-import { IncidentReport } from '../database/models/incident-report.model';
-import { FollowUpAction } from '../database/models/follow-up-action.model';
-import { WitnessStatement } from '../database/models/witness-statement.model';
-import { EmergencyContact } from '../database/models/emergency-contact.model';
+import { IncidentReport } from '@/database/models';
+import { FollowUpAction } from '@/database/models';
+import { WitnessStatement } from '@/database/models';
+import { EmergencyContact } from '@/database/models';
 
 @Module({
   imports: [

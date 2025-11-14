@@ -68,12 +68,12 @@ export function SocketProvider({
     });
 
     // Setup connection state listener
-    client.on('connect' as any, () => {
+    client.on('connect', () => {
       setIsConnected(true);
       setConnectionState('connected');
     });
 
-    client.on('disconnect' as any, () => {
+    client.on('disconnect', () => {
       setIsConnected(false);
       setConnectionState('disconnected');
     });
@@ -84,7 +84,7 @@ export function SocketProvider({
       setIsConnected(state === 'connected');
     };
 
-    client.on('connection:state' as any, handleConnectionState);
+    client.on('connection:state', handleConnectionState);
 
     // Auto-connect if enabled
     if (autoConnect) {
@@ -93,7 +93,7 @@ export function SocketProvider({
 
     // Cleanup on unmount
     return () => {
-      client.off('connection:state' as any, handleConnectionState);
+      client.off('connection:state', handleConnectionState);
       client.disconnect();
     };
   }, [token, url, autoConnect]);
@@ -209,7 +209,7 @@ export function useSocket(): SocketContextValue {
 /**
  * useSocketEvent hook - Subscribe to socket events
  */
-export function useSocketEvent<T = any>(
+export function useSocketEvent<T = unknown>(
   event: string,
   handler: (data: T) => void
 ): void {
@@ -217,10 +217,10 @@ export function useSocketEvent<T = any>(
 
   useEffect(() => {
     const client = socketClient.current;
-    client.on(event as any, handler);
+    client.on(event, handler);
 
     return () => {
-      client.off(event as any, handler);
+      client.off(event, handler);
     };
   }, [event, handler]);
 }

@@ -4,13 +4,14 @@
  * @description Handles email template loading, rendering, and caching using Handlebars
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 import * as Handlebars from 'handlebars';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { EmailTemplate } from './dto/email.dto';
-
 /**
  * Rendered email content with both HTML and text versions
  */
@@ -33,13 +34,21 @@ interface TemplateCacheEntry {
  * Provides template loading, rendering, and caching functionality
  */
 @Injectable()
-export class EmailTemplateService implements OnModuleInit {
-  private readonly logger = new Logger(EmailTemplateService.name);
+export class EmailTemplateService extends BaseService implements OnModuleInit {
   private readonly templateCache = new Map<EmailTemplate, TemplateCacheEntry>();
   private readonly cacheEnabled: boolean;
   private readonly templateDirectory: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly configService: ConfigService,
+  ) {
+    super({
+      serviceName: 'EmailTemplateService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.cacheEnabled = this.configService.get<boolean>('EMAIL_TEMPLATE_CACHE_ENABLED', true);
     this.templateDirectory = path.join(
       __dirname,
@@ -55,7 +64,7 @@ export class EmailTemplateService implements OnModuleInit {
     if (this.cacheEnabled) {
       await this.preloadTemplates();
     }
-    this.logger.log('EmailTemplateService initialized');
+    this.logInfo('EmailTemplateService initialized');
   }
 
   /**
@@ -92,7 +101,7 @@ export class EmailTemplateService implements OnModuleInit {
       return JSON.stringify(obj, null, 2);
     });
 
-    this.logger.debug('Handlebars helpers registered');
+    this.logDebug('Handlebars helpers registered');
   }
 
   /**
@@ -104,14 +113,14 @@ export class EmailTemplateService implements OnModuleInit {
     const loadPromises = templates.map(async (template) => {
       try {
         await this.loadTemplate(template);
-        this.logger.debug(`Preloaded template: ${template}`);
+        this.logDebug(`Preloaded template: ${template}`);
       } catch (error) {
-        this.logger.warn(`Failed to preload template ${template}: ${error.message}`);
+        this.logWarning(`Failed to preload template ${template}: ${error.message}`);
       }
     });
 
     await Promise.allSettled(loadPromises);
-    this.logger.log(`Preloaded ${this.templateCache.size} templates`);
+    this.logInfo(`Preloaded ${this.templateCache.size} templates`);
   }
 
   /**
@@ -144,7 +153,7 @@ export class EmailTemplateService implements OnModuleInit {
 
       return entry;
     } catch (error) {
-      this.logger.error(`Failed to load template ${templateName}: ${error.message}`);
+      this.logError(`Failed to load template ${templateName}: ${error.message}`);
       throw new Error(`Template ${template} not found or cannot be read`);
     }
   }
@@ -179,11 +188,11 @@ export class EmailTemplateService implements OnModuleInit {
       const html = templateEntry.html(data);
       const text = templateEntry.text(data);
 
-      this.logger.debug(`Rendered template: ${template}`);
+      this.logDebug(`Rendered template: ${template}`);
 
       return { html, text };
     } catch (error) {
-      this.logger.error(`Failed to render template ${template}: ${error.message}`);
+      this.logError(`Failed to render template ${template}: ${error.message}`);
       throw new Error(`Failed to render email template: ${error.message}`);
     }
   }
@@ -193,7 +202,7 @@ export class EmailTemplateService implements OnModuleInit {
    */
   clearCache(): void {
     this.templateCache.clear();
-    this.logger.debug('Template cache cleared');
+    this.logDebug('Template cache cleared');
   }
 
   /**

@@ -8,15 +8,16 @@
  * @compliance HIPAA Privacy Rule §164.308, HIPAA Security Rule §164.312
  */
 
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-import { EnterpriseMetricsService } from '../../shared/enterprise/services/enterprise-metrics.service';
+import { EnterpriseMetricsService } from '@/common/enterprise/services/enterprise-metrics.service';
 import { ComplianceLevel, HealthRecordOperation } from '../interfaces/health-record-types';
-import { HealthMetricSnapshot } from '../../database/models/health-metric-snapshot.model';
-
+import { HealthMetricSnapshot } from '@/database/models';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 export interface HealthRecordMetricSnapshot {
   timestamp: Date;
   phiOperations: {
@@ -58,16 +59,22 @@ export interface HealthRecordMetricSnapshot {
  * with HIPAA compliance tracking and persistent database storage
  */
 @Injectable()
-export class HealthRecordMetricsService implements OnModuleDestroy {
-  private readonly logger = new Logger(HealthRecordMetricsService.name);
+export class HealthRecordMetricsService extends BaseService implements OnModuleDestroy {
   private readonly enterpriseMetrics: EnterpriseMetricsService;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(HealthMetricSnapshot)
     private readonly healthMetricSnapshotModel: typeof HealthMetricSnapshot,
   ) {
+    super({
+      serviceName: 'HealthRecordMetricsService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.enterpriseMetrics = new EnterpriseMetricsService('health-record');
-    this.logger.log(
+    this.logInfo(
       'Health Record Metrics Service initialized with database persistence',
     );
   }
@@ -128,7 +135,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
 
     // Log high-volume access for monitoring
     if (recordCount > 50) {
-      this.logger.warn(
+      this.logWarning(
         `High-volume PHI access detected: ${recordCount} records, operation: ${operation}, compliance: ${complianceLevel}`,
       );
       this.recordSecurityMetric('bulk_phi_access', 1);
@@ -214,7 +221,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
 
     // Track large result sets for performance monitoring
     if (resultsCount > 100) {
-      this.logger.debug(
+      this.logDebug(
         `Large search result set: ${resultsCount} records, type: ${searchType}`,
       );
     }
@@ -439,11 +446,11 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
 
       await this.healthMetricSnapshotModel.bulkCreate(snapshotRecords);
 
-      this.logger.log(
+      this.logInfo(
         `Stored ${snapshotRecords.length} health metrics snapshots for ${snapshot.timestamp.toISOString()}`,
       );
     } catch (error) {
-      this.logger.error('Failed to store health metrics snapshot:', error);
+      this.logError('Failed to store health metrics snapshot:', error);
     }
   }
 
@@ -480,7 +487,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
 
       return snapshots;
     } catch (error) {
-      this.logger.error('Failed to retrieve historical metrics:', error);
+      this.logError('Failed to retrieve historical metrics:', error);
       return [];
     }
   }
@@ -649,7 +656,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
    */
   resetMetrics(): void {
     this.enterpriseMetrics.reset();
-    this.logger.warn('Health record metrics have been reset');
+    this.logWarning('Health record metrics have been reset');
   }
 
   /**
@@ -693,7 +700,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
    * Cleanup resources when service is destroyed
    */
   onModuleDestroy(): void {
-    this.logger.log('Health Record Metrics Service destroyed');
+    this.logInfo('Health Record Metrics Service destroyed');
   }
 
   /**
@@ -718,7 +725,7 @@ export class HealthRecordMetricsService implements OnModuleDestroy {
       },
     );
 
-    this.logger.debug(
+    this.logDebug(
       `Cache ${operation.toLowerCase()} recorded for type: ${cacheType}, response time: ${responseTime}ms`,
     );
   }

@@ -342,13 +342,9 @@ export class SystemConfig extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: SystemConfig) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] SystemConfig ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('SystemConfig', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SystemConfig;

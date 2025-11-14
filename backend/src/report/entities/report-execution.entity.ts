@@ -4,4 +4,4 @@
  */
 
 // Re-export the Sequelize model
-export { ReportExecution } from '../../database/models/report-execution.model';
+export { } from '@/database/models';

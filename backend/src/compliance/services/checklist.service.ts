@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChecklistRepository } from '../repositories/checklist.repository';
 import { CreateChecklistDto, QueryChecklistDto, UpdateChecklistDto } from '../dto/checklist.dto';
-import { ChecklistItemStatus } from '../../database/models/compliance-checklist-item.model';
+import { ChecklistItemStatus } from '@/database/models';
 
+import { BaseService } from '@/common/base';
 @Injectable()
-export class ChecklistService {
-  constructor(private readonly checklistRepository: ChecklistRepository) {}
+export class ChecklistService extends BaseService {
+  constructor(private readonly checklistRepository: ChecklistRepository) {
+    super("ChecklistService");}
 
   async listChecklists(query: QueryChecklistDto) {
     const { page = 1, limit = 20, ...filters } = query;

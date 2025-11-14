@@ -12,6 +12,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum NotificationPlatform {
   FCM = 'FCM', // Firebase Cloud Messaging (Android)
@@ -224,13 +225,9 @@ export class DeviceToken
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: DeviceToken) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] DeviceToken ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('DeviceToken', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default DeviceToken;

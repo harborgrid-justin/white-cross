@@ -1,34 +1,23 @@
 /**
- * Configuration Module Index
- * Central export point for all configuration
+ * Configuration exports
+ * Re-exports all configuration related modules and services
  */
 
-export { default as appConfig } from './app.config';
-export { default as databaseConfig } from './database.config';
-export { default as authConfig } from './auth.config';
-export { default as securityConfig } from './security.config';
-export { default as redisConfig } from './redis.config';
-export { default as awsConfig } from './aws.config';
-export { default as cacheConfig } from './cache.config';
-export { default as queueConfig } from './queue.config';
+// Config functions
+export { default as appConfig } from '../common/config/app.config';
+export { default as authConfig } from '../common/config/auth.config';
+export { default as awsConfig } from '../common/config/aws.config';
+export { default as cacheConfig } from '../common/config/cache.config';
+export { default as databaseConfig } from '../common/config/database.config';
+export { default as queueConfig } from '../common/config/queue.config';
+export { default as redisConfig } from '../common/config/redis.config';
+export { default as securityConfig } from '../common/config/security.config';
 
-export { validationSchema, validateEnvironment } from './validation.schema';
+// Services
+export { AppConfigService } from '../common/config/app-config.service';
 
-export type { AppConfig } from './app.config';
-export type { DatabaseConfig } from './database.config';
-export type { AuthConfig } from './auth.config';
-export type { SecurityConfig } from './security.config';
-export type { RedisConfig } from './redis.config';
-export type { AwsConfig } from './aws.config';
-export type { CacheConfig } from './cache.config';
-export type { QueueConfig } from './queue.config';
+// Helpers
+export { FeatureFlags, loadConditionalModules } from '../common/config/module-loader.helper';
 
-// Export centralized configuration service
-export { AppConfigService } from './app-config.service';
-
-// Export module loader helpers for conditional module loading
-export { loadConditionalModules, FeatureFlags } from './module-loader.helper';
-export type { ConditionalModuleConfig } from './module-loader.helper';
-
-export * from './database-pool-monitor.service';
-export * from './query-performance-logger.service';
+// Validation
+export { validationSchema } from '../common/config/validation.schema';

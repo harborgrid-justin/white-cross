@@ -70,10 +70,6 @@ export interface CreateConfigurationHistoryAttributes {
       fields: ['createdAt'],
       name: 'idx_configuration_history_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_configuration_history_updated_at',
-    },
   ],
 })
 export class ConfigurationHistory extends Model<
@@ -148,13 +144,9 @@ export class ConfigurationHistory extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ConfigurationHistory) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ConfigurationHistory ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ConfigurationHistory', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ConfigurationHistory;

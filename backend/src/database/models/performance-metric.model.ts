@@ -81,10 +81,6 @@ export interface CreatePerformanceMetricAttributes {
       fields: ['createdAt'],
       name: 'idx_performance_metric_created_at',
     },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_performance_metric_updated_at',
-    },
   ],
 })
 export class PerformanceMetric extends Model<
@@ -153,13 +149,9 @@ export class PerformanceMetric extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PerformanceMetric) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] PerformanceMetric ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('PerformanceMetric', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PerformanceMetric;

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/immunizations/compliance/loading.tsx"],"sourcesContent":["export default function ComplianceDashboardLoading() {\r\n  return (\r\n    <div className=\"min-h-screen bg-gray-50\">\r\n      <div className=\"p-6\">\r\n        <div className=\"animate-pulse space-y-6\">\r\n          <div className=\"h-8 w-64 bg-gray-200 rounded\" />\r\n          <div className=\"grid grid-cols-1 md:grid-cols-4 gap-4\">\r\n            {Array.from({ length: 4 }).map((_, i) => (\r\n              <div key={i} className=\"h-24 bg-gray-200 rounded\" />\r\n            ))}\r\n          </div>\r\n          <div className=\"h-64 bg-gray-200 rounded\" />\r\n        </div>\r\n      </div>\r\n    </div>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;QAAI,WAAU;kBACb,cAAA,8OAAC;YAAI,WAAU;sBACb,cAAA,8OAAC;gBAAI,WAAU;;kCACb,8OAAC;wBAAI,WAAU;;;;;;kCACf,8OAAC;wBAAI,WAAU;kCACZ,MAAM,IAAI,CAAC;4BAAE,QAAQ;wBAAE,GAAG,GAAG,CAAC,CAAC,GAAG,kBACjC,8OAAC;gCAAY,WAAU;+BAAb;;;;;;;;;;kCAGd,8OAAC;wBAAI,WAAU;;;;;;;;;;;;;;;;;;;;;;AAKzB","debugId":null}}]
+}

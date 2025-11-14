@@ -10,7 +10,17 @@ export * from './integration.module';
 // Submodules
 export * from './api-clients';
 export * from './dto';
-export * from './entities';
+export {
+  IntegrationConfig,
+  IntegrationType,
+  IntegrationStatus,
+  IntegrationLog,
+  SyncSession,
+  SyncStatus,
+  SyncDirection,
+  SyncConflict,
+} from '@/database/models';
+export type { ConflictVersion } from '@/database/models';
 export * from './interfaces';
 export * from './services';
 export * from './webhooks';

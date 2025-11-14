@@ -5,5 +5,5 @@
  * modular structure in the CommunicationHistory/ subdirectory.
  */
 
-export { CommunicationHistory, default } from './CommunicationHistory';
+export { CommunicationHistory, default } from './CommunicationHistory/index';
 export type { CommunicationHistoryProps, CommunicationRecord, HistoryFilters } from './CommunicationHistory/types';

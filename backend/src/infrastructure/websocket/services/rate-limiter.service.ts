@@ -29,6 +29,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '@/common/base';
 /**
  * Rate limit configuration for a specific event type
  */
@@ -70,9 +71,7 @@ interface TokenBucket {
 }
 
 @Injectable()
-export class RateLimiterService {
-  private readonly logger = new Logger(RateLimiterService.name);
-
+export class RateLimiterService extends BaseService {
   /**
    * Storage for token buckets
    * Key format: `${userId}:${eventType}`
@@ -95,6 +94,7 @@ export class RateLimiterService {
   private readonly ENTRY_TTL = 30 * 60 * 1000;
 
   constructor() {
+    super('RateLimiterService');
     // Initialize default rate limit configurations
     this.initializeConfigs();
 
@@ -116,7 +116,7 @@ export class RateLimiterService {
 
     if (!config) {
       // No rate limit configured for this event type
-      this.logger.warn(`No rate limit config for event type: ${eventType}`);
+      this.logWarning(`No rate limit config for event type: ${eventType}`);
       return true;
     }
 
@@ -146,7 +146,7 @@ export class RateLimiterService {
       return true;
     } else {
       // Rate limited
-      this.logger.warn(
+      this.logWarning(
         `Rate limit exceeded for user ${userId} on event ${eventType}`,
       );
       return false;
@@ -194,7 +194,7 @@ export class RateLimiterService {
 
     keysToDelete.forEach((key) => this.buckets.delete(key));
 
-    this.logger.log(`Rate limits reset for user ${userId}`);
+    this.logInfo(`Rate limits reset for user ${userId}`);
   }
 
   /**
@@ -280,7 +280,7 @@ export class RateLimiterService {
       refillInterval: 3000, // 3 seconds
     });
 
-    this.logger.log('Rate limit configurations initialized');
+    this.logInfo('Rate limit configurations initialized');
   }
 
   /**
@@ -292,7 +292,7 @@ export class RateLimiterService {
       this.cleanup();
     }, this.CLEANUP_INTERVAL);
 
-    this.logger.log('Rate limiter cleanup scheduler started');
+    this.logInfo('Rate limiter cleanup scheduler started');
   }
 
   /**
@@ -312,7 +312,7 @@ export class RateLimiterService {
     keysToDelete.forEach((key) => this.buckets.delete(key));
 
     if (keysToDelete.length > 0) {
-      this.logger.debug(
+      this.logDebug(
         `Cleaned up ${keysToDelete.length} stale rate limit entries`,
       );
     }

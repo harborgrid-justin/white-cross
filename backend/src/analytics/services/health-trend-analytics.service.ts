@@ -12,8 +12,8 @@ import {
   PredictiveInsight,
   TimeSeriesDataPoint,
 } from '../interfaces/health-analytics.interfaces';
-import { Student } from '../../database/models/student.model';
-import { HealthRecord } from '../../database/models/health-record.model';
+import { Student } from '@/database/models';
+import { HealthRecord } from '@/database/models';
 import { DateRangeService } from './date-range.service';
 import { TrendCalculationService } from './trend-calculation.service';
 import { ConditionAnalyticsService } from './condition-analytics.service';
@@ -21,6 +21,7 @@ import { HealthMetricsAnalyzerService } from './health-metrics-analyzer.service'
 import { IncidentAnalyticsService } from './incident-analytics.service';
 import { PredictiveInsightsService } from './predictive-insights.service';
 
+import { BaseService } from '@/common/base';
 /**
  * Health Trend Analytics Service
  * Main orchestration service for population health analytics and trend analysis
@@ -42,9 +43,7 @@ import { PredictiveInsightsService } from './predictive-insights.service';
  * - Comprehensive error handling and logging
  */
 @Injectable()
-export class HealthTrendAnalyticsService {
-  private readonly logger = new Logger(HealthTrendAnalyticsService.name);
-
+export class HealthTrendAnalyticsService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -58,7 +57,9 @@ export class HealthTrendAnalyticsService {
     private readonly healthMetricsAnalyzerService: HealthMetricsAnalyzerService,
     private readonly incidentAnalyticsService: IncidentAnalyticsService,
     private readonly predictiveInsightsService: PredictiveInsightsService,
-  ) {}
+  ) {
+    super("HealthTrendAnalyticsService");
+  }
 
   /**
    * Get population health summary for a time period
@@ -158,7 +159,7 @@ export class HealthTrendAnalyticsService {
         datasets,
       };
     } catch (error) {
-      this.logger.error('Error getting condition trends', error.stack);
+      this.logError('Error getting condition trends', error.stack);
       throw error;
     }
   }
@@ -192,7 +193,7 @@ export class HealthTrendAnalyticsService {
         ],
       };
     } catch (error) {
-      this.logger.error('Error getting medication trends', error.stack);
+      this.logError('Error getting medication trends', error.stack);
       throw error;
     }
   }
@@ -251,7 +252,7 @@ export class HealthTrendAnalyticsService {
         overdue: 20,
       };
     } catch (error) {
-      this.logger.error('Error getting immunization dashboard', error.stack);
+      this.logError('Error getting immunization dashboard', error.stack);
       throw error;
     }
   }
@@ -295,7 +296,7 @@ export class HealthTrendAnalyticsService {
         datasets: [{ label: 'Absence Rate', data, color: '#EF4444' }],
       };
     } catch (error) {
-      this.logger.error('Error getting absence correlation', error.stack);
+      this.logError('Error getting absence correlation', error.stack);
       throw error;
     }
   }
@@ -353,7 +354,7 @@ export class HealthTrendAnalyticsService {
 
       return { cohorts };
     } catch (error) {
-      this.logger.error('Error comparing cohorts', error.stack);
+      this.logError('Error comparing cohorts', error.stack);
       throw error;
     }
   }

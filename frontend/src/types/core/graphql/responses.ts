@@ -59,7 +59,7 @@ export type {
   FollowUpActionListResponse,
   InsuranceSubmissionResponse,
   InsuranceSubmissionsResponse,
-} from '../incidents';
+} from '../domain/incidents';
 
 // ==========================================
 // GENERIC GRAPHQL RESPONSE TYPES
@@ -325,7 +325,7 @@ export type {
   WitnessStatementResponse as UpdateWitnessStatementResponse,
   FollowUpActionResponse as CreateFollowUpActionResponse,
   FollowUpActionResponse as UpdateFollowUpActionResponse,
-} from '../incidents';
+} from '../domain/incidents';
 
 /**
  * Delete incident report response
@@ -355,14 +355,14 @@ export interface DeleteFollowUpActionResponse {
  * Complete follow-up action response
  */
 export interface CompleteFollowUpActionResponse {
-  action: import('../incidents').FollowUpAction;
+  action: import('../domain/incidents').FollowUpAction;
 }
 
 /**
  * Verify witness statement response
  */
 export interface VerifyWitnessStatementResponse {
-  statement: import('../incidents').WitnessStatement;
+  statement: import('../domain/incidents').WitnessStatement;
 }
 
 /**
@@ -432,7 +432,7 @@ export interface NurseAvailabilityQueryResponse {
  * Incident reports query responses
  */
 export interface IncidentsQueryResponse {
-  reports: import('../incidents').IncidentReport[];
+  reports: import('../domain/incidents').IncidentReport[];
   pagination: {
     page: number;
     limit: number;
@@ -442,15 +442,15 @@ export interface IncidentsQueryResponse {
 }
 
 export interface IncidentQueryResponse {
-  report: import('../incidents').IncidentReport;
+  report: import('../domain/incidents').IncidentReport;
 }
 
 export interface WitnessStatementsQueryResponse {
-  statements: import('../incidents').WitnessStatement[];
+  statements: import('../domain/incidents').WitnessStatement[];
 }
 
 export interface FollowUpActionsQueryResponse {
-  actions: import('../incidents').FollowUpAction[];
+  actions: import('../domain/incidents').FollowUpAction[];
 }
 
 /**

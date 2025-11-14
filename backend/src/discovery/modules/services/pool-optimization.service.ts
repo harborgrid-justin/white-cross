@@ -3,6 +3,7 @@ import { DiscoveryService, Reflector } from '@nestjs/core';
 import { DynamicResourcePoolService, PoolStats } from './dynamic-resource-pool.service';
 import { ResourceMonitorService } from './resource-monitor.service';
 
+import { BaseService } from '@/common/base';
 export interface OptimizationStrategy {
   name: string;
   priority: number;
@@ -35,8 +36,7 @@ export interface OptimizationResult {
  * Optimizes resource pool sizes based on usage patterns and Discovery Service metadata
  */
 @Injectable()
-export class PoolOptimizationService {
-  private readonly logger = new Logger(PoolOptimizationService.name);
+export class PoolOptimizationService extends BaseService {
   private strategies: OptimizationStrategy[] = [];
   private optimizationHistory: Array<{
     timestamp: number;
@@ -51,6 +51,7 @@ export class PoolOptimizationService {
     private readonly poolService: DynamicResourcePoolService,
     private readonly monitorService: ResourceMonitorService,
   ) {
+    super("PoolOptimizationService");
     this.initializeStrategies();
   }
 
@@ -58,7 +59,7 @@ export class PoolOptimizationService {
    * Optimize all resource pools
    */
   async optimizePools(): Promise<void> {
-    this.logger.log('Starting pool optimization cycle');
+    this.logInfo('Starting pool optimization cycle');
 
     try {
       const poolStats = this.poolService.getPoolStats();
@@ -88,11 +89,11 @@ export class PoolOptimizationService {
         this.optimizationHistory = this.optimizationHistory.slice(-1000);
       }
 
-      this.logger.log(
+      this.logInfo(
         `Pool optimization complete: ${optimizationsApplied} pools optimized`,
       );
     } catch (error) {
-      this.logger.error('Pool optimization failed:', error);
+      this.logError('Pool optimization failed:', error);
     }
   }
 
@@ -121,7 +122,7 @@ export class PoolOptimizationService {
           bestResult = result;
         }
       } catch (error) {
-        this.logger.error(
+        this.logError(
           `Strategy ${strategy.name} failed for pool ${poolName}:`,
           error,
         );
@@ -429,7 +430,7 @@ export class PoolOptimizationService {
     poolName: string,
     result: OptimizationResult,
   ): Promise<void> {
-    this.logger.log(`Applying optimization to ${poolName}:`, {
+    this.logInfo(`Applying optimization to ${poolName}:`, {
       action: result.action,
       reason: result.reason,
       suggestedSize: result.suggestedSize,
@@ -442,13 +443,13 @@ export class PoolOptimizationService {
         break;
       case 'scale_up':
         // Note: Actual scale-up implementation would need to be added to the pool service
-        this.logger.log(
+        this.logInfo(
           `Would scale up ${poolName} to ${result.suggestedSize} resources`,
         );
         break;
       case 'rebalance':
         // Note: Rebalance implementation would redistribute resources between pools
-        this.logger.log(`Would rebalance resources for ${poolName}`);
+        this.logInfo(`Would rebalance resources for ${poolName}`);
         break;
     }
   }

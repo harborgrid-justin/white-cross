@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IntegrationLog } from '../../database/models/integration-log.model';
-import { IntegrationConfig } from '../../database/models/integration-config.model';
+import { IntegrationLog } from '@/database/models';
+import { IntegrationConfig } from '@/database/models';
 import type { PaginationMeta } from '../types/pagination.types';
 
+import { BaseService } from '@/common/base';
 /**
  * Error detail for integration log
  */
@@ -32,13 +33,13 @@ export interface CreateIntegrationLogDto {
  * Manages integration operation logs for audit and monitoring
  */
 @Injectable()
-export class IntegrationLogService {
-  private readonly logger = new Logger(IntegrationLogService.name);
-
+export class IntegrationLogService extends BaseService {
   constructor(
     @InjectModel(IntegrationLog)
     private readonly logModel: typeof IntegrationLog,
-  ) {}
+  ) {
+    super("IntegrationLogService");
+  }
 
   /**
    * Create integration log entry
@@ -54,7 +55,7 @@ export class IntegrationLogService {
             : undefined,
       });
     } catch (error) {
-      this.logger.error('Error creating integration log', error);
+      this.logError('Error creating integration log', error);
       throw error;
     }
   }
@@ -101,7 +102,7 @@ export class IntegrationLogService {
         },
       };
     } catch (error) {
-      this.logger.error('Error fetching integration logs', error);
+      this.logError('Error fetching integration logs', error);
       throw error;
     }
   }

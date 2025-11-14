@@ -10,13 +10,14 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 import {
   BroadcastAudience,
   BroadcastStatus,
   CommunicationChannel,
   EmergencyPriority,
   EmergencyType,
-} from '../../emergency-broadcast/emergency-broadcast.enums';
+} from '../../services/communication/emergency-broadcast/emergency-broadcast.enums';
 
 export interface EmergencyBroadcastAttributes {
   id: string;
@@ -225,13 +226,9 @@ export class EmergencyBroadcast
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: EmergencyBroadcast) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] EmergencyBroadcast ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('EmergencyBroadcast', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default EmergencyBroadcast;

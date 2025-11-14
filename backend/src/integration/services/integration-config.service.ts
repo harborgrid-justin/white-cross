@@ -1,28 +1,29 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
-import { IntegrationLog } from '../../database/models/integration-log.model';
+import { IntegrationConfig, IntegrationStatus } from '@/database/models';
+import { IntegrationLog } from '@/database/models';
 import { CreateIntegrationDto } from '../dto/create-integration.dto';
 import { UpdateIntegrationDto } from '../dto/update-integration.dto';
 import { IntegrationValidationService } from './integration-validation.service';
 import { IntegrationEncryptionService } from './integration-encryption.service';
 import { IntegrationLogService } from './integration-log.service';
 
+import { BaseService } from '@/common/base';
 /**
  * Integration Configuration Service
  * Handles CRUD operations for integration configurations
  */
 @Injectable()
-export class IntegrationConfigService {
-  private readonly logger = new Logger(IntegrationConfigService.name);
-
+export class IntegrationConfigService extends BaseService {
   constructor(
     @InjectModel(IntegrationConfig)
     private readonly configModel: typeof IntegrationConfig,
     private readonly validationService: IntegrationValidationService,
     private readonly encryptionService: IntegrationEncryptionService,
     private readonly logService: IntegrationLogService,
-  ) {}
+  ) {
+    super("IntegrationConfigService");
+  }
 
   /**
    * Get all integration configurations with optional type filtering
@@ -55,7 +56,7 @@ export class IntegrationConfigService {
         this.maskSensitiveData(integration),
       );
     } catch (error) {
-      this.logger.error('Error fetching integrations', error);
+      this.logError('Error fetching integrations', error);
       throw error;
     }
   }
@@ -87,7 +88,7 @@ export class IntegrationConfigService {
 
       return integration;
     } catch (error) {
-      this.logger.error(`Error fetching integration ${id}`, error);
+      this.logError(`Error fetching integration ${id}`, error);
       throw error;
     }
   }
@@ -142,7 +143,7 @@ export class IntegrationConfigService {
         isActive: true,
       });
 
-      this.logger.log(`Integration created: ${data.name} (${data.type})`);
+      this.logInfo(`Integration created: ${data.name} (${data.type})`);
 
       // Log the creation
       await this.logService.create({
@@ -157,7 +158,7 @@ export class IntegrationConfigService {
 
       return this.maskSensitiveData(integration);
     } catch (error) {
-      this.logger.error('Error creating integration', error);
+      this.logError('Error creating integration', error);
       throw error;
     }
   }
@@ -228,7 +229,7 @@ export class IntegrationConfigService {
       await this.configModel.update(updateData, { where: { id } });
       const updated = await this.findById(id, false);
 
-      this.logger.log(`Integration updated: ${updated.name} (${updated.type})`);
+      this.logInfo(`Integration updated: ${updated.name} (${updated.type})`);
 
       // Log the update
       await this.logService.create({
@@ -244,7 +245,7 @@ export class IntegrationConfigService {
 
       return updated;
     } catch (error) {
-      this.logger.error(`Error updating integration ${id}`, error);
+      this.logError(`Error updating integration ${id}`, error);
       throw error;
     }
   }
@@ -258,11 +259,11 @@ export class IntegrationConfigService {
 
       await this.configModel.destroy({ where: { id } });
 
-      this.logger.log(
+      this.logInfo(
         `Integration deleted: ${integration.name} (${integration.type})`,
       );
     } catch (error) {
-      this.logger.error(`Error deleting integration ${id}`, error);
+      this.logError(`Error deleting integration ${id}`, error);
       throw error;
     }
   }

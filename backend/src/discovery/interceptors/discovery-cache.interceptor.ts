@@ -7,9 +7,10 @@ import { DiscoveryCacheService } from '../services/discovery-cache.service';
 import { CacheConfig } from '../interfaces/cache-config.interface';
 import { CACHE_CONFIG_KEY } from '../decorators/cache-config.decorator';
 import * as crypto from 'crypto';
+import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 
 @Injectable()
-export class DiscoveryCacheInterceptor implements NestInterceptor {
+export class DiscoveryCacheInterceptor extends BaseInterceptor implements NestInterceptor {
   constructor(
     private readonly cacheService: DiscoveryCacheService,
     private readonly reflector: Reflector,
@@ -32,22 +33,43 @@ export class DiscoveryCacheInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<Request>();
     const cacheKey = this.generateCacheKey(request, cacheConfig);
 
-    // Try to get from cache
-    const cachedResult = await this.cacheService.get(cacheKey);
-    if (cachedResult !== null) {
-      // Return cached result as observable
-      return of(cachedResult);
-    }
+    try {
+      // Try to get from cache
+      const cachedResult = await this.cacheService.get(cacheKey);
+      if (cachedResult !== null) {
+        // Log cache hit using base class
+        this.logRequest('debug', `Cache HIT: ${cacheKey}`, {
+          operation: 'CACHE_HIT',
+          cacheKey: cacheKey.substring(0, 50),
+        });
+        // Return cached result as observable
+        return of(cachedResult);
+      }
 
-    // Execute the handler and cache the result
-    return next.handle().pipe(
-      tap(async (response) => {
-        // Only cache successful responses
-        if (response !== null && response !== undefined) {
-          await this.cacheService.set(cacheKey, response, cacheConfig.ttl);
-        }
-      }),
-    );
+      // Execute the handler and cache the result
+      return next.handle().pipe(
+        tap(async (response) => {
+          // Only cache successful responses
+          if (response !== null && response !== undefined) {
+            await this.cacheService.set(cacheKey, response, cacheConfig.ttl);
+            // Log cache set using base class
+            this.logRequest('debug', `Cache SET: ${cacheKey}`, {
+              operation: 'CACHE_SET',
+              cacheKey: cacheKey.substring(0, 50),
+              ttl: cacheConfig.ttl,
+            });
+          }
+        }),
+      );
+    } catch (error) {
+      // Log cache operation error using base class
+      this.logError(`Cache operation failed for key ${cacheKey}`, error, {
+        operation: 'CACHE_OPERATION',
+        cacheKey: cacheKey.substring(0, 50),
+      });
+      // Continue with normal execution on cache failure
+      return next.handle();
+    }
   }
 
   private generateCacheKey(request: Request, config: CacheConfig): string {

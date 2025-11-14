@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/immunizations/%40modal/default.tsx"],"sourcesContent":["/**\r\n * @fileoverview Default Modal Slot\r\n * @module app/(dashboard)/immunizations/@modal/default\r\n *\r\n * Default empty state for modal parallel route.\r\n *\r\n * @since 1.0.0\r\n */\r\n\r\nexport default function Default() {\r\n  return null;\r\n}\r\n"],"names":[],"mappings":"AAAA;;;;;;;CAOC;;;;AAEc,SAAS;IACtB,OAAO;AACT","debugId":null}}]
+}

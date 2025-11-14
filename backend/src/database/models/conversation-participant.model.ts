@@ -14,6 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Conversation } from './conversation.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * Participant role enumeration
@@ -234,13 +235,9 @@ export class ConversationParticipant extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ConversationParticipant) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ConversationParticipant ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ConversationParticipant', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ConversationParticipant;

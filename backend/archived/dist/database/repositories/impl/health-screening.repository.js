@@ -1,0 +1,90 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HealthScreeningRepository = void 0;
+const common_1 = require("@nestjs/common");
+const sequelize_1 = require("@nestjs/sequelize");
+const base_repository_1 = require("../base/base.repository");
+const audit_logger_interface_1 = require("../../interfaces/audit/audit-logger.interface");
+const health_screening_model_1 = require("../../models/health-screening.model");
+let HealthScreeningRepository = class HealthScreeningRepository extends base_repository_1.BaseRepository {
+    constructor(model, auditLogger, cacheManager) {
+        super(model, auditLogger, cacheManager, 'HealthScreening');
+    }
+    async findByStudent(studentId) {
+        try {
+            const screenings = await this.model.findAll({
+                where: { studentId },
+                order: [['screeningDate', 'DESC']],
+            });
+            return screenings.map((s) => this.mapToEntity(s));
+        }
+        catch (error) {
+            this.logger.error('Error finding health screenings by student:', error);
+            throw new base_repository_1.RepositoryError('Failed to find health screenings by student', 'FIND_BY_STUDENT_ERROR', 500, { studentId, error: error.message });
+        }
+    }
+    async findByType(screeningType) {
+        try {
+            const screenings = await this.model.findAll({
+                where: { screeningType },
+                order: [['screeningDate', 'DESC']],
+            });
+            return screenings.map((s) => this.mapToEntity(s));
+        }
+        catch (error) {
+            this.logger.error('Error finding health screenings by type:', error);
+            throw new base_repository_1.RepositoryError('Failed to find health screenings by type', 'FIND_BY_TYPE_ERROR', 500, { screeningType, error: error.message });
+        }
+    }
+    async findRequiringFollowUp() {
+        try {
+            const screenings = await this.model.findAll({
+                where: { followUpRequired: true },
+                order: [['screeningDate', 'ASC']],
+            });
+            return screenings.map((s) => this.mapToEntity(s));
+        }
+        catch (error) {
+            this.logger.error('Error finding screenings requiring follow-up:', error);
+            throw new base_repository_1.RepositoryError('Failed to find screenings requiring follow-up', 'FIND_FOLLOW_UP_REQUIRED_ERROR', 500, { error: error.message });
+        }
+    }
+    async validateCreate(data) {
+    }
+    async validateUpdate(id, data) {
+    }
+    async invalidateCaches(screening) {
+        try {
+            const screeningData = screening.get();
+            await this.cacheManager.delete(this.cacheKeyBuilder.entity(this.entityName, screeningData.id));
+            await this.cacheManager.deletePattern(`white-cross:health-screening:student:${screeningData.studentId}:*`);
+        }
+        catch (error) {
+            this.logger.warn('Error invalidating health screening caches:', error);
+        }
+    }
+    sanitizeForAudit(data) {
+        return (0, audit_logger_interface_1.sanitizeSensitiveData)({ ...data });
+    }
+};
+exports.HealthScreeningRepository = HealthScreeningRepository;
+exports.HealthScreeningRepository = HealthScreeningRepository = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, sequelize_1.InjectModel)(health_screening_model_1.HealthScreening)),
+    __param(1, (0, common_1.Inject)('IAuditLogger')),
+    __param(2, (0, common_1.Inject)('ICacheManager')),
+    __metadata("design:paramtypes", [Object, Object, Object])
+], HealthScreeningRepository);
+//# sourceMappingURL=health-screening.repository.js.map

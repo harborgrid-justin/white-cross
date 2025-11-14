@@ -570,3 +570,6 @@ export class Student
     return this.isActive;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Student;

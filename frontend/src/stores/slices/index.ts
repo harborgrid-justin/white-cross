@@ -27,19 +27,19 @@ export { healthRecordsReducer, healthRecordsSlice } from './healthRecordsSlice';
 
 export { medicationsReducer, medicationsSlice } from './medicationsSlice';
 
-export { appointmentsReducer, appointmentsSlice } from './appointmentsSlice';
+export { appointmentsReducer, appointmentsSlice } from './appointments';
 
 // ============================================================
 // STUDENT MANAGEMENT
 // ============================================================
-export { studentsReducer, studentsSlice } from './studentsSlice';
+export { studentsReducer, studentsSlice } from './students';
 
 export { emergencyContactsReducer, emergencyContactsSlice } from './emergencyContactsSlice';
 
 // ============================================================
 // INCIDENT MANAGEMENT
 // ============================================================
-export { default as incidentReportsReducer } from './incidentReportsSlice';
+export { incidentReportsReducer } from './incidentReports';
 
 // ============================================================
 // ADMINISTRATION
@@ -48,7 +48,7 @@ export { default as incidentReportsReducer } from './incidentReportsSlice';
 // REMOVED: schoolsReducer - Unused, legacy pages-old only
 export { settingsReducer } from './settingsSlice';
 // REMOVED: adminReducer - Unused, 43KB removed
-export { default as configurationReducer } from './configurationSlice';
+export { default as configurationReducer } from './configuration';
 
 // ============================================================
 // COMMUNICATION & DOCUMENTATION

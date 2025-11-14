@@ -13,11 +13,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { HealthRecord } from '../../database/models/health-record.model';
-import { Student } from '../../database/models/student.model';
+import { HealthRecord   } from '@/database/models';
+import { Student   } from '@/database/models';
 import { PaginatedHealthRecords } from '../interfaces/pagination.interface';
 import { BulkDeleteResults } from '../interfaces/health-record-types';
 
+import { BaseService } from '@/common/base';
 /**
  * HealthRecordCrudService
  *
@@ -31,15 +32,15 @@ import { BulkDeleteResults } from '../interfaces/health-record-types';
  * - Vaccination record filtering
  */
 @Injectable()
-export class HealthRecordCrudService {
-  private readonly logger = new Logger(HealthRecordCrudService.name);
-
+export class HealthRecordCrudService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("HealthRecordCrudService");
+  }
 
   /**
    * Get paginated health records for a student with filtering
@@ -60,8 +61,6 @@ export class HealthRecordCrudService {
       provider?: string;
     } = {},
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
-    const offset = (page - 1) * limit;
-
     const whereClause: any = { studentId };
 
     // Apply filters
@@ -69,41 +68,29 @@ export class HealthRecordCrudService {
       whereClause.recordType = filters.type;
     }
     if (filters.dateFrom || filters.dateTo) {
-      whereClause.recordDate = {};
-      if (filters.dateFrom) {
-        whereClause.recordDate[Op.gte] = filters.dateFrom;
-      }
-      if (filters.dateTo) {
-        whereClause.recordDate[Op.lte] = filters.dateTo;
-      }
+      whereClause.recordDate = this.buildDateRangeClause('recordDate', filters.dateFrom, filters.dateTo);
     }
     if (filters.provider) {
       whereClause.provider = { [Op.iLike]: `%${filters.provider}%` };
     }
 
-    // Execute query with pagination
-    const { rows: records, count: total } =
-      await this.healthRecordModel.findAndCountAll({
-        where: whereClause,
-        include: [{ model: this.studentModel, as: 'student' }],
-        order: [['recordDate', 'DESC']],
-        limit,
-        offset,
-      });
+    // Execute query with pagination using BaseService method
+    const result = await this.createPaginatedQuery(this.healthRecordModel, {
+      page,
+      limit,
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+    });
 
     // PHI Access Audit Log
-    this.logger.log(
-      `PHI Access: Health records retrieved for student ${studentId}, count: ${records.length}`,
+    this.logInfo(
+      `PHI Access: Health records retrieved for student ${studentId}, count: ${result.data.length}`,
     );
 
     return {
-      records,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      records: result.data,
+      pagination: result.pagination,
     };
   }
 
@@ -133,7 +120,7 @@ export class HealthRecordCrudService {
     }
 
     // PHI Creation Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Health record ${record.recordType} for student ${record.student!.firstName} ${record.student!.lastName}`,
     );
 
@@ -172,7 +159,7 @@ export class HealthRecordCrudService {
     }
 
     // PHI Modification Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Modified: Health record ${record.recordType} updated for student ${record.student!.firstName} ${record.student!.lastName}`,
     );
 
@@ -195,7 +182,7 @@ export class HealthRecordCrudService {
     });
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Vaccination records retrieved for student ${studentId}, count: ${records.length}`,
     );
 
@@ -230,7 +217,7 @@ export class HealthRecordCrudService {
     const notFoundCount = recordIds.length - deletedCount;
 
     // PHI Deletion Audit Log
-    this.logger.warn(
+    this.logWarning(
       `PHI Deletion: Bulk delete completed - ${deletedCount} records deleted, ${notFoundCount} not found`,
     );
 
@@ -242,7 +229,7 @@ export class HealthRecordCrudService {
           ),
         ),
       ];
-      this.logger.warn(
+      this.logWarning(
         `PHI Deletion: Records deleted for students: ${studentNames.join(', ')}`,
       );
     }
@@ -272,8 +259,6 @@ export class HealthRecordCrudService {
       studentId?: string;
     } = {},
   ): Promise<PaginatedHealthRecords<HealthRecord>> {
-    const offset = (page - 1) * limit;
-
     const whereClause: any = {};
 
     // Apply filters
@@ -284,41 +269,29 @@ export class HealthRecordCrudService {
       whereClause.studentId = filters.studentId;
     }
     if (filters.dateFrom || filters.dateTo) {
-      whereClause.recordDate = {};
-      if (filters.dateFrom) {
-        whereClause.recordDate[Op.gte] = filters.dateFrom;
-      }
-      if (filters.dateTo) {
-        whereClause.recordDate[Op.lte] = filters.dateTo;
-      }
+      whereClause.recordDate = this.buildDateRangeClause('recordDate', filters.dateFrom, filters.dateTo);
     }
     if (filters.provider) {
       whereClause.provider = { [Op.iLike]: `%${filters.provider}%` };
     }
 
-    // Execute query with pagination
-    const { rows: records, count: total } =
-      await this.healthRecordModel.findAndCountAll({
-        where: whereClause,
-        include: [{ model: this.studentModel, as: 'student' }],
-        order: [['recordDate', 'DESC']],
-        limit,
-        offset,
-      });
+    // Execute query with pagination using BaseService method
+    const result = await this.createPaginatedQuery(this.healthRecordModel, {
+      page,
+      limit,
+      where: whereClause,
+      include: [{ model: this.studentModel, as: 'student' }],
+      order: [['recordDate', 'DESC']],
+    });
 
     // PHI Access Audit Log
-    this.logger.log(
-      `PHI Access: All health records retrieved, count: ${records.length}, filters: ${JSON.stringify(filters)}`,
+    this.logInfo(
+      `PHI Access: All health records retrieved, count: ${result.data.length}, filters: ${JSON.stringify(filters)}`,
     );
 
     return {
-      records,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      records: result.data,
+      pagination: result.pagination,
     };
   }
 
@@ -349,7 +322,7 @@ export class HealthRecordCrudService {
     }
 
     // PHI Access Audit Log
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Health record ${id} retrieved for student ${record.student?.firstName} ${record.student?.lastName}`,
     );
 

@@ -4,11 +4,12 @@
  * HIPAA Compliance: Implements secure caching with automatic PHI data encryption
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, RedisClientType } from 'redis';
-import { RedisConfig } from '../../config/redis.config';
-
+import { RedisConfig } from '@/common/config/redis.config';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 export interface CacheOptions {
   ttl?: number;
   tags?: string[];
@@ -25,8 +26,7 @@ export interface CacheStats {
 }
 
 @Injectable()
-export class HealthDataCacheService implements OnModuleInit {
-  private readonly logger = new Logger(HealthDataCacheService.name);
+export class HealthDataCacheService extends BaseService implements OnModuleInit {
   private redisClient: RedisClientType;
   private isConnected = false;
 
@@ -43,7 +43,16 @@ export class HealthDataCacheService implements OnModuleInit {
     deletes: 0,
   };
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly configService: ConfigService
+  ) {
+    super({
+      serviceName: 'HealthDataCacheService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   async onModuleInit() {
     await this.connect();
@@ -68,22 +77,22 @@ export class HealthDataCacheService implements OnModuleInit {
       });
 
       this.redisClient.on('error', (err) => {
-        this.logger.error('Redis Client Error:', err);
+        this.logError('Redis Client Error:', err);
         this.isConnected = false;
       });
 
       this.redisClient.on('connect', () => {
-        this.logger.log('Redis client connected');
+        this.logInfo('Redis client connected');
         this.isConnected = true;
       });
 
       this.redisClient.on('ready', () => {
-        this.logger.log('Redis client ready');
+        this.logInfo('Redis client ready');
       });
 
       await this.redisClient.connect();
     } catch (error) {
-      this.logger.error('Failed to connect to Redis:', error);
+      this.logError('Failed to connect to Redis:', error);
       this.isConnected = false;
     }
   }
@@ -98,7 +107,7 @@ export class HealthDataCacheService implements OnModuleInit {
     const l1Data = this.getFromL1(fullKey);
     if (l1Data !== null) {
       this.stats.hits++;
-      this.logger.debug(`L1 Cache HIT: ${key}`);
+      this.logDebug(`L1 Cache HIT: ${key}`);
       return l1Data as T;
     }
 
@@ -118,15 +127,15 @@ export class HealthDataCacheService implements OnModuleInit {
         // Store in L1 cache for faster subsequent access
         this.setInL1(fullKey, parsed);
 
-        this.logger.debug(`L2 Cache HIT: ${key}`);
+        this.logDebug(`L2 Cache HIT: ${key}`);
         return parsed as T;
       }
 
       this.stats.misses++;
-      this.logger.debug(`Cache MISS: ${key}`);
+      this.logDebug(`Cache MISS: ${key}`);
       return null;
     } catch (error) {
-      this.logger.error(`Cache GET error for key ${key}:`, error);
+      this.logError(`Cache GET error for key ${key}:`, error);
       this.stats.misses++;
       return null;
     }
@@ -161,10 +170,10 @@ export class HealthDataCacheService implements OnModuleInit {
       }
 
       this.stats.sets++;
-      this.logger.debug(`Cache SET: ${key} (TTL: ${ttl}s)`);
+      this.logDebug(`Cache SET: ${key} (TTL: ${ttl}s)`);
       return true;
     } catch (error) {
-      this.logger.error(`Cache SET error for key ${key}:`, error);
+      this.logError(`Cache SET error for key ${key}:`, error);
       return false;
     }
   }
@@ -185,10 +194,10 @@ export class HealthDataCacheService implements OnModuleInit {
       }
 
       this.stats.deletes++;
-      this.logger.debug(`Cache DELETE: ${key}`);
+      this.logDebug(`Cache DELETE: ${key}`);
       return true;
     } catch (error) {
-      this.logger.error(`Cache DELETE error for key ${key}:`, error);
+      this.logError(`Cache DELETE error for key ${key}:`, error);
       return false;
     }
   }
@@ -219,12 +228,12 @@ export class HealthDataCacheService implements OnModuleInit {
 
       await pipeline.exec();
 
-      this.logger.log(
+      this.logInfo(
         `Invalidated ${keys.length} cache entries for tag: ${tag}`,
       );
       return keys.length;
     } catch (error) {
-      this.logger.error(`Error invalidating tag ${tag}:`, error);
+      this.logError(`Error invalidating tag ${tag}:`, error);
       return 0;
     }
   }
@@ -240,9 +249,9 @@ export class HealthDataCacheService implements OnModuleInit {
         await this.redisClient.flushDb();
       }
 
-      this.logger.log('All cache cleared');
+      this.logInfo('All cache cleared');
     } catch (error) {
-      this.logger.error('Error clearing cache:', error);
+      this.logError('Error clearing cache:', error);
     }
   }
 
@@ -270,7 +279,7 @@ export class HealthDataCacheService implements OnModuleInit {
       sets: 0,
       deletes: 0,
     };
-    this.logger.log('Cache statistics reset');
+    this.logInfo('Cache statistics reset');
   }
 
   /**
@@ -436,7 +445,7 @@ export class HealthDataCacheService implements OnModuleInit {
   async onModuleDestroy() {
     if (this.redisClient && this.isConnected) {
       await this.redisClient.quit();
-      this.logger.log('Redis connection closed');
+      this.logInfo('Redis connection closed');
     }
   }
 }

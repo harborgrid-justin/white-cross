@@ -1,7 +1,8 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res, Version } from '@nestjs/common';
 import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PdfService } from './pdf.service';
+import { BaseController } from '@/common/base';
 import {
   GenerateImmunizationReportDto,
   GenerateIncidentReportDto,
@@ -11,7 +12,7 @@ import {
   PdfGenerateCustomReportDto,
   SignPdfDto,
   WatermarkPdfDto,
-} from '@/pdf/dto';
+} from './dto';
 
 /**
  * PDF Controller
@@ -19,9 +20,11 @@ import {
  */
 @ApiTags('PDF')
 @ApiBearerAuth()
+
 @Controller('pdf')
-export class PdfController {
-  constructor(private readonly pdfService: PdfService) {}
+export class PdfController extends BaseController {
+  constructor(private readonly pdfService: PdfService) {
+    super();}
 
   /**
    * Generate student health summary PDF

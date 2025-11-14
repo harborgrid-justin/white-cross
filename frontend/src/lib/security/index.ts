@@ -1,44 +1,54 @@
 /**
- * Security Library - Barrel Export
+ * Security Library - Consolidated Barrel Export
  *
  * Centralized export point for all security utilities.
- * This module provides comprehensive security features for the White Cross
- * healthcare platform, including CSRF protection, input sanitization,
- * encryption, and security configuration.
+ * This module now re-exports from the consolidated services/security/
+ * for unified security management while maintaining backward compatibility.
  *
  * @module lib/security
  * @since 2025-10-26
+ * @updated 2025-11-12 - Consolidated with services/security/
  *
  * @example
  * ```typescript
- * // Import specific utilities
+ * // Import consolidated security service (recommended)
+ * import { securityService } from '@/services/security';
+ *
+ * // Legacy imports still work (backward compatibility)
  * import { generateCSRFToken, sanitizeHTML, encryptData } from '@/lib/security';
- *
- * // Import configuration
- * import { SECURITY_HEADERS, SESSION_CONFIG } from '@/lib/security';
- *
- * // Import encryption utilities
- * import { encryptFormData, decryptFormData } from '@/lib/security';
  * ```
  */
 
 // ============================================================================
-// CSRF Protection Utilities
+// CONSOLIDATED SECURITY SERVICE (RECOMMENDED)
 // ============================================================================
 
+/**
+ * Consolidated Security Service - All-in-one security solution
+ * Recommended for new code - provides unified security API
+ */
+export {
+  SecurityService,
+  securityService,
+} from '@/services/security';
+
+// ============================================================================
+// BACKWARD COMPATIBILITY EXPORTS
+// ============================================================================
+
+/**
+ * Legacy CSRF utilities - now powered by enterprise-grade CsrfProtection
+ */
 export {
   generateCSRFToken,
   getCSRFToken,
   validateCSRFToken,
   clearCSRFToken,
-  addCSRFHeader,
-  getCSRFHeaderName,
-} from './csrf';
+} from '@/services/security';
 
-// ============================================================================
-// Input Sanitization Utilities
-// ============================================================================
-
+/**
+ * Legacy input sanitization utilities
+ */
 export {
   sanitizeHTML,
   sanitizeSQL,
@@ -48,83 +58,46 @@ export {
   sanitizePhone,
   stripHTMLTags,
   sanitizeObject,
-} from './sanitization';
+} from '@/services/security';
 
-// ============================================================================
-// Basic Encryption Utilities
-// ============================================================================
-
+/**
+ * Legacy encryption utilities
+ */
 export {
   encryptData,
   decryptData,
   hashData,
   generateEncryptionKey,
-} from './encryption';
+} from '@/services/security';
 
-// ============================================================================
-// Security Configuration
-// ============================================================================
-
+/**
+ * Security configuration (unchanged)
+ */
 export {
-  // CSP Configuration
   CSP_DIRECTIVES,
   generateCSPHeader,
-
-  // Security Headers
   SECURITY_HEADERS,
-
-  // CORS Configuration
   CORS_CONFIG,
-
-  // Rate Limiting Configuration
   RATE_LIMIT_CONFIG,
-
-  // Session Configuration (HIPAA Compliant)
   SESSION_CONFIG,
-
-  // Password Policy
   PASSWORD_POLICY,
-
-  // Audit Configuration
   AUDIT_CONFIG,
-
-  // File Upload Configuration
   UPLOAD_CONFIG,
-
-  // PHI Detection & Redaction
   PHI_PATTERNS,
   containsPHI,
   redactPHI,
-} from './config';
+} from '@/services/security';
 
-// ============================================================================
-// Advanced Encryption for Forms and Documents
-// ============================================================================
-
+/**
+ * Individual service access (for advanced use cases)
+ */
 export {
-  // Type definitions
-  type EncryptedData,
-  type EncryptionOptions,
-
-  // Key generation
-  generateFormKey,
-  generateUserKey,
-
-  // Form data encryption
-  encryptFormData,
-  decryptFormData,
-
-  // Document encryption
-  encryptDocument,
-  decryptDocument,
-
-  // Field-level encryption
-  encryptFieldValue,
-  decryptFieldValue,
-
-  // Utilities
-  verifyEncryptedData,
-} from './encryption-forms';
+  CsrfProtection,
+  csrfProtection,
+  setupCsrfProtection,
+  SecureTokenManager,
+  secureTokenManager,
+} from '@/services/security';
 
 /**
  * Security Module Overview
@@ -133,21 +106,32 @@ export {
  * healthcare platform, designed with HIPAA compliance and PHI protection
  * as core requirements.
  *
+ * **NEW: Consolidated Architecture**
+ * - All security functionality now unified in services/security/
+ * - Enterprise-grade implementations with backward compatibility
+ * - Single source of truth for security features
+ *
  * Key Features:
  *
- * 1. CSRF Protection
+ * 1. **Consolidated Security Service**
+ *    - Unified API for all security operations
+ *    - Enterprise-grade CSRF protection
+ *    - HIPAA-compliant token management
+ *    - Comprehensive encryption and sanitization
+ *
+ * 2. **CSRF Protection**
  *    - Token generation and validation
  *    - Automatic header injection
  *    - Session-based token management
  *
- * 2. Input Sanitization
+ * 3. **Input Sanitization**
  *    - XSS prevention through HTML sanitization
  *    - SQL injection prevention
  *    - Path traversal protection
  *    - URL validation and protocol filtering
  *    - Recursive object sanitization
  *
- * 3. Encryption
+ * 4. **Encryption**
  *    - AES-GCM encryption for sensitive data
  *    - SHA-256 hashing for one-way operations
  *    - Form data encryption (with IV and auth tags)
@@ -155,7 +139,7 @@ export {
  *    - User-specific key derivation
  *    - Field-level encryption utilities
  *
- * 4. Security Configuration
+ * 5. **Security Configuration**
  *    - Content Security Policy (CSP) directives
  *    - Security headers (HSTS, X-Frame-Options, etc.)
  *    - CORS configuration
@@ -174,6 +158,11 @@ export {
  * - Secure token management
  * - Access control and authentication
  *
+ * Migration Guide:
+ * - **New Code**: Use `securityService` from `@/services/security`
+ * - **Existing Code**: Continue using `@/lib/security` imports (backward compatible)
+ * - **Advanced Use Cases**: Access individual services when needed
+ *
  * Security Best Practices:
  * - Always sanitize user input before processing or display
  * - Use CSRF tokens for all state-changing operations
@@ -190,7 +179,7 @@ export {
  * - TypeScript strict mode compliant
  *
  * Related Modules:
- * - @/services/security - Security services (token management, etc.)
+ * - @/services/security - Consolidated security services (primary)
  * - @/middleware/security - Security middleware for Next.js
  * - @/middleware/rateLimit - Rate limiting middleware
  * - @/middleware/audit - Audit logging middleware

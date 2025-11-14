@@ -7,6 +7,7 @@
 import { CallHandler, ExecutionContext, HttpStatus, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { BaseInterceptor } from './base.interceptor';
 import type { Response } from 'express';
 
 /**
@@ -54,9 +55,10 @@ export interface ApiResponse<T = any> {
  * // After:  return { success: true, data: { id: 1, name: "John" }, meta: {...} }
  */
 @Injectable()
-export class TransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T>>
-{
+export class TransformInterceptor<T> extends BaseInterceptor implements NestInterceptor<T, ApiResponse<T>> {
+  constructor() {
+    super();
+  }
   intercept(
     context: ExecutionContext,
     next: CallHandler,
@@ -64,6 +66,7 @@ export class TransformInterceptor<T>
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
     const response = ctx.getResponse<Response>();
+    const { handler, controller } = this.getHandlerInfo(context);
 
     return next.handle().pipe(
       map((data) => {
@@ -103,6 +106,14 @@ export class TransformInterceptor<T>
           data,
           meta,
         };
+
+        // Log response transformation using base class
+        this.logResponse('debug', `Response transformed in ${controller}.${handler}`, {
+          statusCode,
+          hasData: !!data,
+          controller,
+          handler,
+        });
 
         return standardResponse;
       }),

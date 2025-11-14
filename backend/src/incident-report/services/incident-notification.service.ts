@@ -1,22 +1,30 @@
-import { Injectable, Logger, NotFoundException, OnModuleDestroy, Optional } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, OnModuleDestroy, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { EmergencyContact, IncidentReport } from '@/database';
-import { ContactPriority } from '@/contact';
-import { AppConfigService } from '@/config';
+import { ContactPriority } from '@/services/communication/contact/enums';
+import { AppConfigService } from '@/common/config';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 
 @Injectable()
-export class IncidentNotificationService implements OnModuleDestroy {
-  private readonly logger = new Logger(IncidentNotificationService.name);
+export class IncidentNotificationService extends BaseService implements OnModuleDestroy {
   private notificationListeners: Set<string> = new Set();
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
     @InjectModel(EmergencyContact)
     private emergencyContactModel: typeof EmergencyContact,
     @Optional() private readonly config?: AppConfigService,
   ) {
-    this.logger.log('IncidentNotificationService initialized');
+    super({
+      serviceName: 'IncidentNotificationService',
+      logger,
+      enableAuditLogging: true,
+    });
+
+    this.logInfo('IncidentNotificationService initialized');
   }
 
   /**
@@ -24,15 +32,15 @@ export class IncidentNotificationService implements OnModuleDestroy {
    * Implements graceful shutdown for notification listeners
    */
   onModuleDestroy() {
-    this.logger.log('IncidentNotificationService shutting down - cleaning up resources');
+    this.logInfo('IncidentNotificationService shutting down - cleaning up resources');
 
     // Clear notification listeners
     if (this.notificationListeners.size > 0) {
-      this.logger.log(`Clearing ${this.notificationListeners.size} notification listeners`);
+      this.logInfo(`Clearing ${this.notificationListeners.size} notification listeners`);
       this.notificationListeners.clear();
     }
 
-    this.logger.log('IncidentNotificationService destroyed, resources cleaned up');
+    this.logInfo('IncidentNotificationService destroyed, resources cleaned up');
   }
 
   /**
@@ -60,7 +68,7 @@ export class IncidentNotificationService implements OnModuleDestroy {
       });
 
       if (!emergencyContacts || emergencyContacts.length === 0) {
-        this.logger.warn(
+        this.logWarning(
           `No emergency contacts found for incident ${incidentId} (Student: ${report.studentId})`,
         );
         return false;
@@ -94,7 +102,7 @@ export class IncidentNotificationService implements OnModuleDestroy {
         // - SMS: await this.smsService.send(contact.phoneNumber, message)
         // - Voice: await this.voiceService.call(contact.phoneNumber, message)
 
-        this.logger.log(
+        this.logInfo(
           `Notification sent to ${contact.fullName} (${contact.relationship}) via ${notificationMethod}: ${contact.phoneNumber || contact.email}`,
         );
 
@@ -122,13 +130,13 @@ export class IncidentNotificationService implements OnModuleDestroy {
         `system (${notificationResults.length} contacts notified)`,
       );
 
-      this.logger.log(
+      this.logInfo(
         `Emergency contacts notified for incident ${incidentId}: ${notificationResults.length} notifications sent`,
       );
 
       return true;
     } catch (error) {
-      this.logger.error('Error notifying emergency contacts:', error);
+      this.logError('Error notifying emergency contacts:', error);
       throw error;
     }
   }
@@ -151,7 +159,7 @@ export class IncidentNotificationService implements OnModuleDestroy {
       // Send notification based on method (email, SMS, voice)
       const message = `Incident Alert: Student was involved in a ${report.type} incident (${report.severity} severity) on ${report.occurredAt.toLocaleString()}. Please contact the school for more information.`;
 
-      this.logger.log(
+      this.logInfo(
         `Parent notification sent for incident ${incidentReportId} via ${method}: ${message}`,
       );
 
@@ -163,7 +171,7 @@ export class IncidentNotificationService implements OnModuleDestroy {
 
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error notifying parent:', error);
+      this.logError('Error notifying parent:', error);
       throw error;
     }
   }
@@ -197,10 +205,10 @@ export class IncidentNotificationService implements OnModuleDestroy {
 
       const updatedReport = await report.save();
 
-      this.logger.log(`Parent notification marked for incident ${id}`);
+      this.logInfo(`Parent notification marked for incident ${id}`);
       return updatedReport;
     } catch (error) {
-      this.logger.error('Error marking parent as notified:', error);
+      this.logError('Error marking parent as notified:', error);
       throw error;
     }
   }

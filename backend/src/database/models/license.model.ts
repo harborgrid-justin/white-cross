@@ -262,13 +262,9 @@ export class License extends Model<LicenseAttributes, CreateLicenseAttributes> {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: License) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] License ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('License', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default License;

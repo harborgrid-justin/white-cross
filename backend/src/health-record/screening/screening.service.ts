@@ -6,15 +6,19 @@
  * HIPAA Compliance: All screening data is PHI and requires audit logging
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { HealthScreeningAttributes } from '../../database/models/health-screening.model';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
+import { HealthScreeningAttributes   } from '@/database/models';
 
 @Injectable()
-export class ScreeningService {
-  private readonly logger = new Logger(ScreeningService.name);
-
+export class ScreeningService extends BaseService {
   // Mock data store (in production, use actual Sequelize models)
   private screenings: Map<string, HealthScreeningAttributes> = new Map();
+
+  constructor() {
+    super('ScreeningService');
+  }
 
   /**
    * GAP-SCREEN-001: Get all screenings for a student
@@ -22,13 +26,13 @@ export class ScreeningService {
   async getStudentScreenings(
     studentId: string,
   ): Promise<HealthScreeningAttributes[]> {
-    this.logger.log(`Getting screenings for student ${studentId}`);
+    this.logInfo(`Getting screenings for student ${studentId}`);
 
     const studentScreenings = Array.from(this.screenings.values()).filter(
       (s) => s.studentId === studentId,
     );
 
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Retrieved ${studentScreenings.length} screenings for student ${studentId}`,
     );
 
@@ -43,7 +47,7 @@ export class ScreeningService {
    * GAP-SCREEN-002: Batch create screenings
    */
   async batchCreate(screenings: any[]): Promise<any> {
-    this.logger.log(`Batch creating ${screenings.length} screenings`);
+    this.logInfo(`Batch creating ${screenings.length} screenings`);
 
     const results = {
       successCount: 0,
@@ -64,11 +68,11 @@ export class ScreeningService {
         results.errors.push(
           `Failed to create screening for student ${screeningData.studentId}: ${errorMessage}`,
         );
-        this.logger.error(`Batch create error: ${errorMessage}`);
+        this.logError(`Batch create error: ${errorMessage}`);
       }
     }
 
-    this.logger.log(
+    this.logInfo(
       `Batch create completed: ${results.successCount} successful, ${results.errorCount} failed`,
     );
 
@@ -79,7 +83,7 @@ export class ScreeningService {
    * GAP-SCREEN-003: Get overdue screenings
    */
   async getOverdueScreenings(query: any): Promise<any[]> {
-    this.logger.log('Getting overdue screenings');
+    this.logInfo('Getting overdue screenings');
 
     // In production, this would query the database for students who haven't had required screenings
     // For now, return mock data structure
@@ -95,7 +99,7 @@ export class ScreeningService {
       },
     ];
 
-    this.logger.log(
+    this.logInfo(
       `PHI Access: Retrieved ${overdueScreenings.length} overdue screenings`,
     );
 
@@ -165,7 +169,7 @@ export class ScreeningService {
    * GAP-SCREEN-005: Create screening referral
    */
   async createReferral(screeningId: string, referralData: any): Promise<any> {
-    this.logger.log(`Creating referral for screening ${screeningId}`);
+    this.logInfo(`Creating referral for screening ${screeningId}`);
 
     const screening = this.screenings.get(screeningId);
     if (!screening) {
@@ -186,7 +190,7 @@ export class ScreeningService {
       createdAt: new Date(),
     };
 
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Referral created for screening ${screeningId}, student ${screening.studentId}`,
     );
 
@@ -199,7 +203,7 @@ export class ScreeningService {
   async getScreeningStatistics(query: any): Promise<any> {
     const { schoolId, startDate, endDate, screeningType } = query;
 
-    this.logger.log('Generating screening statistics');
+    this.logInfo('Generating screening statistics');
 
     // In production, this would aggregate from database
     const statistics = {
@@ -242,7 +246,7 @@ export class ScreeningService {
       },
     };
 
-    this.logger.log('Screening statistics generated');
+    this.logInfo('Screening statistics generated');
 
     return statistics;
   }
@@ -267,7 +271,7 @@ export class ScreeningService {
 
     this.screenings.set(id, screening);
 
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Screening ${screening.screeningType} created for student ${screening.studentId}`,
     );
 

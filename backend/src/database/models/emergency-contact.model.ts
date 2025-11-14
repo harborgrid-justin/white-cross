@@ -16,10 +16,10 @@ import {
 import { Op, Optional } from 'sequelize';
 import type { Student } from './student.model';
 
-import { ContactPriority } from '../../contact/enums/contact-priority.enum';
-import { VerificationStatus } from '../../contact/enums/verification-status.enum';
-import { PreferredContactMethod } from '../../contact/enums/preferred-contact-method.enum';
-import { NotificationChannel } from '../../contact/enums/notification-channel.enum';
+import { ContactPriority } from '../../services/communication/contact/enums/contact-priority.enum';
+import { VerificationStatus } from '../../services/communication/contact/enums/verification-status.enum';
+import { PreferredContactMethod } from '../../services/communication/contact/enums/preferred-contact-method.enum';
+import { NotificationChannel } from '../../services/communication/contact/enums/notification-channel.enum';
 
 /**
  * Emergency Contact Attributes
@@ -339,7 +339,7 @@ export class EmergencyContact extends Model<
 
       // Import the helper function dynamically to avoid circular dependencies
       const { logModelPHIFieldChanges } = await import(
-        '../services/model-audit-helper.service.js'
+        '@/database/services/model-audit-helper.service.js'
       );
 
       // Get the transaction if available
@@ -355,3 +355,6 @@ export class EmergencyContact extends Model<
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default EmergencyContact;

@@ -22,8 +22,10 @@ import { RateLimit, RateLimitLenient, RateLimitModerate } from './decorators/rat
 import { CacheMedium, CacheShort } from './decorators/cache-config.decorator';
 import { PaginationDto } from './dto/pagination.dto';
 
+import { BaseController } from '@/common/base';
 @ApiTags('Discovery')
 @ApiBearerAuth()
+
 @Controller('discovery')
 @UseFilters(DiscoveryExceptionFilter)
 @UseGuards(AdminDiscoveryGuard, DiscoveryRateLimitGuard)
@@ -42,8 +44,9 @@ import { PaginationDto } from './dto/pagination.dto';
     },
   }),
 )
-export class DiscoveryController {
-  constructor(private readonly discoveryService: DiscoveryExampleService) {}
+export class DiscoveryController extends BaseController {
+  constructor(private readonly discoveryService: DiscoveryExampleService) {
+    super();}
 
   @Get('providers')
   @ApiOperation({ summary: 'Get all providers in the application' })

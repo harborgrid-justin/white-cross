@@ -10,6 +10,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface LabResultsAttributes {
   id?: string;
@@ -187,14 +188,7 @@ export class LabResults
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: LabResults) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] LabResults ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('LabResults', instance);
   }
 
   @BeforeCreate
@@ -245,3 +239,6 @@ export class LabResults
     instance.isAbnormal = abnormalFlags.length > 0;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default LabResults;

@@ -9,10 +9,11 @@
  * - Metrics export for monitoring systems
  */
 
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 export interface ConnectionPoolMetrics {
   active: number;
   idle: number;
@@ -31,8 +32,7 @@ export interface ConnectionHealthStatus {
 }
 
 @Injectable()
-export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
-  private readonly logger = new Logger(ConnectionMonitorService.name);
+export class ConnectionMonitorService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private monitoringInterval: NodeJS.Timeout | null = null;
   private healthCheckInterval: NodeJS.Timeout | null = null;
 
@@ -52,15 +52,24 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
     issues: [],
   };
 
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    @InjectConnection() private readonly sequelize: Sequelize,
+  ) {
+    super({
+      serviceName: 'ConnectionMonitorService',
+      logger,
+      enableAuditLogging: false,
+    });
+  }
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Initializing Connection Pool Monitor');
+    this.logInfo('Initializing Connection Pool Monitor');
     await this.startMonitoring();
   }
 
   async onModuleDestroy(): Promise<void> {
-    this.logger.log('Stopping Connection Pool Monitor');
+    this.logInfo('Stopping Connection Pool Monitor');
     await this.stopMonitoring();
   }
 
@@ -82,7 +91,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       await this.performHealthCheck();
     }, this.HEALTH_CHECK_INTERVAL);
 
-    this.logger.log('Connection pool monitoring started');
+    this.logInfo('Connection pool monitoring started');
   }
 
   /**
@@ -99,7 +108,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       this.healthCheckInterval = null;
     }
 
-    this.logger.log('Connection pool monitoring stopped');
+    this.logInfo('Connection pool monitoring stopped');
   }
 
   /**
@@ -110,7 +119,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       const pool = (this.sequelize as any).connectionManager?.pool;
 
       if (!pool) {
-        this.logger.warn('Connection pool not available');
+        this.logWarning('Connection pool not available');
         return this.getEmptyMetrics();
       }
 
@@ -133,7 +142,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
 
       return this.currentMetrics;
     } catch (error) {
-      this.logger.error('Failed to collect connection pool metrics', error);
+      this.logError('Failed to collect connection pool metrics', error);
       return this.getEmptyMetrics();
     }
   }
@@ -150,14 +159,14 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
 
     // Check for high utilization
     if (utilizationPercent >= this.CRITICAL_UTILIZATION_THRESHOLD * 100) {
-      this.logger.error(
+      this.logError(
         `CRITICAL: Connection pool utilization at ${utilizationPercent.toFixed(1)}% (${active}/${max} connections)`,
         {
           metrics: this.currentMetrics,
         },
       );
     } else if (utilizationPercent >= this.HIGH_UTILIZATION_THRESHOLD * 100) {
-      this.logger.warn(
+      this.logWarning(
         `HIGH: Connection pool utilization at ${utilizationPercent.toFixed(1)}% (${active}/${max} connections)`,
         {
           metrics: this.currentMetrics,
@@ -167,7 +176,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
 
     // Check for high wait queue
     if (waiting > this.HIGH_WAIT_THRESHOLD) {
-      this.logger.warn(
+      this.logWarning(
         `Connection pool wait queue is high: ${waiting} requests waiting`,
         {
           metrics: this.currentMetrics,
@@ -176,7 +185,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
     }
 
     // Log metrics periodically for monitoring systems
-    this.logger.debug('Connection Pool Metrics', {
+    this.logDebug('Connection Pool Metrics', {
       active,
       idle: this.currentMetrics.idle,
       waiting,
@@ -199,12 +208,12 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       this.healthStatus.isHealthy = true;
       this.healthStatus.issues = [];
 
-      this.logger.debug('Database health check passed');
+      this.logDebug('Database health check passed');
     } catch (error) {
       this.healthStatus.consecutiveFailures++;
       issues.push(`Database authentication failed: ${error.message}`);
 
-      this.logger.error(
+      this.logError(
         `Database health check failed (${this.healthStatus.consecutiveFailures} consecutive failures)`,
         error,
       );
@@ -212,7 +221,7 @@ export class ConnectionMonitorService implements OnModuleInit, OnModuleDestroy {
       // Mark as unhealthy after 3 consecutive failures
       if (this.healthStatus.consecutiveFailures >= 3) {
         this.healthStatus.isHealthy = false;
-        this.logger.error(
+        this.logError(
           'Database marked as UNHEALTHY after 3 consecutive failures',
         );
       }

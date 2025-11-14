@@ -13,15 +13,14 @@ import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
 import { AttendanceCorrelationDto } from '../dto/attendance-correlation.dto';
 import { BaseReportDto } from '../dto/base-report.dto';
 
+import { BaseService } from '@/common/base';
 /**
  * Report Generation Service
  * Main orchestrator for report generation across all report types
  * Implements factory pattern for report type selection
  */
 @Injectable()
-export class ReportGenerationService {
-  private readonly logger = new Logger(ReportGenerationService.name);
-
+export class ReportGenerationService extends BaseService {
   constructor(
     private readonly healthReportsService: HealthReportsService,
     private readonly medicationReportsService: MedicationReportsService,
@@ -29,7 +28,8 @@ export class ReportGenerationService {
     private readonly attendanceReportsService: AttendanceReportsService,
     private readonly complianceReportsService: ComplianceReportsService,
     private readonly dashboardService: DashboardService,
-  ) {}
+  ) {
+    super("ReportGenerationService");}
 
   /**
    * Generate report by type
@@ -80,7 +80,7 @@ export class ReportGenerationService {
       const executionTime = Date.now() - startTime;
       const recordCount = this.getRecordCount(data);
 
-      this.logger.log(
+      this.logInfo(
         `Report generated: ${reportType}, records: ${recordCount}, time: ${executionTime}ms`,
       );
 
@@ -95,7 +95,7 @@ export class ReportGenerationService {
         },
       };
     } catch (error) {
-      this.logger.error(`Error generating ${reportType} report:`, error);
+      this.logError(`Error generating ${reportType} report:`, error);
       throw error;
     }
   }

@@ -204,13 +204,9 @@ export class TrainingModule extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: TrainingModule) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] TrainingModule ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('TrainingModule', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default TrainingModule;

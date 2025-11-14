@@ -7,12 +7,14 @@ import {
   UpdateRemediationDto,
   UpdateViolationDto,
 } from '../dto/violation.dto';
-import { ViolationStatus } from '../../database/models/compliance-violation.model';
-import { RemediationStatus } from '../../database/models/remediation-action.model';
+import { ViolationStatus } from '@/database/models';
+import { RemediationStatus } from '@/database/models';
 
+import { BaseService } from '@/common/base';
 @Injectable()
-export class ViolationService {
-  constructor(private readonly violationRepository: ViolationRepository) {}
+export class ViolationService extends BaseService {
+  constructor(private readonly violationRepository: ViolationRepository) {
+    super("ViolationService");}
 
   async listViolations(query: QueryViolationDto) {
     const { page = 1, limit = 20, ...filters } = query;

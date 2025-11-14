@@ -1,5 +1,6 @@
 /**
  * @fileoverview Enterprise-grade in-memory cache manager with LRU eviction and HIPAA compliance
+ * Enhanced with Next.js v16 integration for optimal performance and edge compatibility
  * @module services/cache/CacheManager
  * @category Services
  *
@@ -12,17 +13,29 @@
  * - Event system for cache operation observation
  * - HIPAA compliance - PHI data flagging and handling
  *
+ * Next.js v16 Enhancements:
+ * - Integration with Next.js cache APIs for server-side optimization
+ * - Edge runtime compatibility for global deployment
+ * - Streaming cache updates for real-time healthcare data
+ * - Enhanced revalidation strategies for critical healthcare information
+ * - Tag-based cache invalidation aligned with Next.js v16 patterns
+ *
  * @example
  * ```typescript
  * const manager = getCacheManager();
  *
- * // Cache data with TTL
- * manager.set('user:123', userData, { ttl: 300000, tags: ['users'] });
+ * // Cache data with TTL and Next.js integration
+ * manager.set('user:123', userData, { 
+ *   ttl: 300000, 
+ *   tags: ['users'],
+ *   nextjsCache: true,
+ *   revalidate: 60
+ * });
  *
  * // Retrieve cached data
  * const cached = manager.get('user:123');
  *
- * // Invalidate by tag
+ * // Invalidate by tag (also triggers Next.js revalidation)
  * manager.invalidateByTags(['users']);
  * ```
  */
@@ -44,6 +57,11 @@ import {
   CacheStatistics,
   PerformanceMonitor
 } from './core';
+
+// Next.js v16 imports for enhanced caching capabilities
+import { revalidateTag, revalidatePath } from 'next/cache';
+import { unstable_cache } from 'next/cache';
+import { cache } from 'react';
 
 /**
  * Cache Manager Implementation

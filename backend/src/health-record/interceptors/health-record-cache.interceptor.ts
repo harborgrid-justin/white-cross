@@ -9,14 +9,15 @@
  * @compliance 45 CFR 164.312(a)(2)(iv) - Automatic logoff
  */
 
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
-import { EnterpriseCacheService } from '../../shared/enterprise/services/enterprise-cache.service';
+import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
+import { EnterpriseCacheService } from '@/common/enterprise/services/enterprise-cache.service';
 import { HealthRecordMetricsService } from '../services/health-record-metrics.service';
 import { ComplianceLevel, HealthRecordRequest } from '../interfaces/health-record-types';
-import { ENTERPRISE_CACHE_KEY } from '../../shared/enterprise/decorators/enterprise-decorators';
+import { ENTERPRISE_CACHE_KEY } from '@/common/enterprise/decorators/enterprise-decorators';
 
 /**
  * Health Record Cache Interceptor
@@ -28,14 +29,14 @@ import { ENTERPRISE_CACHE_KEY } from '../../shared/enterprise/decorators/enterpr
  * - Encrypted cache keys for sensitive data
  */
 @Injectable()
-export class HealthRecordCacheInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(HealthRecordCacheInterceptor.name);
+export class HealthRecordCacheInterceptor extends BaseInterceptor implements NestInterceptor {
   private readonly enterpriseCache: EnterpriseCacheService;
 
   constructor(
     private readonly reflector: Reflector,
     private readonly metricsService: HealthRecordMetricsService,
   ) {
+    super();
     this.enterpriseCache = new EnterpriseCacheService('health-record');
   }
 
@@ -103,7 +104,11 @@ export class HealthRecordCacheInterceptor implements NestInterceptor {
         }),
       );
     } catch (error) {
-      this.logger.error(`Cache operation failed for key ${cacheKey}:`, error);
+      // Log cache operation failure using base class
+      this.logError(`Cache operation failed for key ${cacheKey}`, error, {
+        complianceLevel,
+        cacheKey: cacheKey.substring(0, 50),
+      });
 
       // Record cache error but continue with normal execution
       this.metricsService.recordCacheMetrics(
@@ -212,7 +217,12 @@ export class HealthRecordCacheInterceptor implements NestInterceptor {
 
       this.logCacheSet(cacheKey, complianceLevel, ttl, this.getDataSize(data));
     } catch (error) {
-      this.logger.error(`Failed to cache response for key ${cacheKey}:`, error);
+      // Log cache set failure using base class
+      this.logError(`Failed to cache response for key ${cacheKey}`, error, {
+        complianceLevel,
+        cacheKey: cacheKey.substring(0, 50),
+        ttl,
+      });
     }
   }
 
@@ -433,11 +443,14 @@ export class HealthRecordCacheInterceptor implements NestInterceptor {
   ): void {
     const isPHI =
       complianceLevel === 'PHI' || complianceLevel === 'SENSITIVE_PHI';
-    const logLevel = isPHI ? 'log' : 'debug';
+    const logLevel = isPHI ? 'info' : 'debug';
 
-    this.logger[logLevel](
-      `Cache HIT: ${cacheKey} | Compliance: ${complianceLevel} | Response: ${responseTime}ms`,
-    );
+    this.logRequest(logLevel, `Cache HIT: ${cacheKey}`, {
+      complianceLevel,
+      responseTime,
+      cacheKey: cacheKey.substring(0, 50),
+      operation: 'CACHE_HIT',
+    });
   }
 
   /**
@@ -451,17 +464,24 @@ export class HealthRecordCacheInterceptor implements NestInterceptor {
   ): void {
     const isPHI =
       complianceLevel === 'PHI' || complianceLevel === 'SENSITIVE_PHI';
-    const logLevel = isPHI ? 'log' : 'debug';
+    const logLevel = isPHI ? 'info' : 'debug';
 
-    this.logger[logLevel](
-      `Cache SET: ${cacheKey} | Compliance: ${complianceLevel} | TTL: ${ttl}s | Size: ${dataSize} bytes`,
-    );
+    this.logResponse(logLevel, `Cache SET: ${cacheKey}`, {
+      complianceLevel,
+      ttl,
+      dataSize,
+      cacheKey: cacheKey.substring(0, 50),
+      operation: 'CACHE_SET',
+    });
 
     // Log PHI caching for compliance audit
     if (isPHI) {
-      this.logger.log(
-        `PHI_CACHE: Data cached with ${ttl}s TTL - Key: ${cacheKey.substring(0, 50)}... | Level: ${complianceLevel}`,
-      );
+      this.logRequest('info', `PHI_CACHE: Data cached with ${ttl}s TTL`, {
+        cacheKey: cacheKey.substring(0, 50),
+        complianceLevel,
+        ttl,
+        operation: 'PHI_CACHE_SET',
+      });
     }
   }
 
@@ -470,6 +490,8 @@ export class HealthRecordCacheInterceptor implements NestInterceptor {
    */
   onModuleDestroy(): void {
     this.enterpriseCache.stopCleanupInterval();
-    this.logger.log('Health Record Cache Interceptor destroyed');
+    this.logRequest('info', 'Health Record Cache Interceptor destroyed', {
+      operation: 'MODULE_DESTROY',
+    });
   }
 }

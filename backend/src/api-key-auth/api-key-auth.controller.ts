@@ -1,14 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiKeyAuthService } from './api-key-auth.service';
 import { ApiKeyResponseDto } from './dto/api-key-response.dto';
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { UserRole } from '../database/models/user.model';
+import { JwtAuthGuard } from '../services/auth/guards/jwt-auth.guard';
+import { Roles } from '../services/auth/decorators/roles.decorator';
+import { RolesGuard } from '../services/auth/guards/roles.guard';
+import { UserRole } from '@/database/models';
 import type { Request as ExpressRequest } from 'express';
 
+import { BaseController } from '@/common/base';
 interface AuthenticatedRequest extends ExpressRequest {
   user: {
     id: string;
@@ -26,11 +27,14 @@ interface AuthenticatedRequest extends ExpressRequest {
  * @controller ApiKeyAuthController
  */
 @ApiTags('API Key Management')
-@Controller('api/v1/api-keys')
+
+@Controller('api-keys')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
-export class ApiKeyAuthController {
-  constructor(private readonly apiKeyAuthService: ApiKeyAuthService) {}
+export class ApiKeyAuthController extends BaseController {
+  constructor(private readonly apiKeyAuthService: ApiKeyAuthService) {
+    super();
+  }
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.DISTRICT_ADMIN)

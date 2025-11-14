@@ -1,0 +1,1 @@
+{"version":3,"file":"workers.module.js","sourceRoot":"","sources":["../../../src/services/workers/workers.module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,2CAAwC;AACxC,+EAA0E;AAMnE,IAAM,aAAa,GAAnB,MAAM,aAAa;CAAG,CAAA;AAAhB,sCAAa;wBAAb,aAAa;IAJzB,IAAA,eAAM,EAAC;QACN,SAAS,EAAE,CAAC,uDAAyB,CAAC;QACtC,OAAO,EAAE,CAAC,uDAAyB,CAAC;KACrC,CAAC;GACW,aAAa,CAAG"}

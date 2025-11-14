@@ -1,21 +1,25 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards, Version } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/services/auth/guards/jwt-auth.guard';
 import { GradeTransitionService } from './grade-transition.service';
 import { BulkTransitionDto, BulkTransitionResultDto, TransitionStudentDto } from './dto';
-import { Student } from '../student/entities/student.entity';
+import { Student } from '@/database/models';
 
+import { BaseController } from '@/common/base';
 /**
  * Grade Transition Controller
  * Handles API endpoints for automated grade transitions
  */
 @ApiTags('Grade Transition')
+
 @Controller('student-management/grade-transitions')
-// @UseGuards(JwtAuthGuard) // Uncomment when auth is set up
-// @ApiBearerAuth()
-export class GradeTransitionController {
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+export class GradeTransitionController extends BaseController {
   constructor(
     private readonly gradeTransitionService: GradeTransitionService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Perform bulk grade transition for end of school year

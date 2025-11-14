@@ -58,10 +58,19 @@ import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WsJwtAuthGuard } from './guards';
 import { AdminMetricsService, RateLimiterService } from './services';
+import { ConnectionManagerService } from './services/connection-manager.service';
+import { MessageHandlerService } from './services/message-handler.service';
+import { ConversationHandlerService } from './services/conversation-handler.service';
+import { PresenceManagerService } from './services/presence-manager.service';
+import { BroadcastService } from './services/broadcast.service';
+import { AlertService } from './services/alert.service';
+import { MessageService } from './services/message.service';
+import { PresenceService } from './services/presence.service';
 import { AdminWebSocketGateway } from './gateways';
-import { AuthModule } from '@/auth';
+import { AuthModule } from '../../services/auth';
 import { AppointmentWebSocketListener } from './listeners/appointment.listener';
-import { AppConfigService } from '../../config/app-config.service';
+import { AppConfigService } from '@/common/config/app-config.service';
+import { LoggerService } from '@/common/logging/logger.service';
 
 /**
  * WebSocket Module
@@ -104,6 +113,15 @@ import { AppConfigService } from '../../config/app-config.service';
     AdminMetricsService,
     AdminWebSocketGateway,
     AppConfigService,
+    LoggerService,
+    ConnectionManagerService,
+    MessageHandlerService,
+    ConversationHandlerService,
+    PresenceManagerService,
+    BroadcastService,
+    AlertService,
+    MessageService,
+    PresenceService,
     // Event-driven architecture listeners
     AppointmentWebSocketListener,
   ],

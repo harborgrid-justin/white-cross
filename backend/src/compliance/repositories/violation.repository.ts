@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { ComplianceViolation, ComplianceViolationAttributes } from '../../database/models/compliance-violation.model';
-import { RemediationAction, RemediationActionAttributes } from '../../database/models/remediation-action.model';
+import { ComplianceViolation, ComplianceViolationAttributes } from '@/database/models';
+import { RemediationAction, RemediationActionAttributes } from '@/database/models';
 
 @Injectable()
 export class ViolationRepository {
@@ -12,11 +12,7 @@ export class ViolationRepository {
     private readonly remediationModel: typeof RemediationAction,
   ) {}
 
-  async findAllViolations(
-    filters: any = {},
-    page: number = 1,
-    limit: number = 20,
-  ) {
+  async findAllViolations(filters: any = {}, page: number = 1, limit: number = 20) {
     const whereClause: any = {};
 
     if (filters.violationType) {
@@ -29,13 +25,12 @@ export class ViolationRepository {
       whereClause.status = filters.status;
     }
 
-    const { rows: data, count: total } =
-      await this.violationModel.findAndCountAll({
-        where: whereClause,
-        order: [['discoveredAt', 'DESC']],
-        limit,
-        offset: (page - 1) * limit,
-      });
+    const { rows: data, count: total } = await this.violationModel.findAndCountAll({
+      where: whereClause,
+      order: [['discoveredAt', 'DESC']],
+      limit,
+      offset: (page - 1) * limit,
+    });
 
     return { data, total };
   }
@@ -50,10 +45,7 @@ export class ViolationRepository {
     return this.violationModel.create(data);
   }
 
-  async updateViolation(
-    id: string,
-    data: Partial<ComplianceViolationAttributes>,
-  ) {
+  async updateViolation(id: string, data: Partial<ComplianceViolationAttributes>) {
     const [affectedCount] = await this.violationModel.update(data, {
       where: { id },
     });
@@ -73,10 +65,7 @@ export class ViolationRepository {
     return this.remediationModel.findByPk(id);
   }
 
-  async updateRemediation(
-    id: string,
-    data: Partial<RemediationActionAttributes>,
-  ) {
+  async updateRemediation(id: string, data: Partial<RemediationActionAttributes>) {
     const [affectedCount] = await this.remediationModel.update(data, {
       where: { id },
     });

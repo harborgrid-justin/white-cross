@@ -1,0 +1,971 @@
+# Database Schema Comparison Report
+
+**Generated:** 2025-11-14T18:48:44.245Z
+
+## Summary
+
+- **Total Issues:** 947
+- **Missing Tables:** 100
+- **Extra Tables:** 0
+- **Missing Columns:** 847
+- **Extra Columns:** 0
+- **Type Mismatches:** 0
+
+## Missing Tables
+
+- witness_statements
+- webhooks
+- vital_signs
+- vendors
+- vaccinations
+- users
+- treatment_plans
+- training_modules
+- threat_detections
+- system_configurations
+- sync_states
+- sync_sessions
+- sync_queue_items
+- sync_conflicts
+- suppliers
+- students
+- student_medications
+- student_drug_allergies
+- sis_sync_conflicts
+- sessions
+- security_incidents
+- schools
+- report_templates
+- report_schedules
+- report_executions
+- remediation_actions
+- push_notifications
+- purchase_orders
+- purchase_order_items
+- prescriptions
+- policy_documents
+- policy_acknowledgments
+- phi_disclosures
+- phi_disclosure_audits
+- performance_metrics
+- messages
+- message_templates
+- message_reads
+- message_reactions
+- message_deliveries
+- mental_health_records
+- medications
+- medication_logs
+- medical_history
+- maintenance_logs
+- login_attempts
+- licenses
+- lab_results
+- ip_restrictions
+- inventory_transactions
+- inventory_items
+- integration_logs
+- integration_configs
+- incident_reports
+- immunizations
+- health_screenings
+- health_records
+- health_metric_snapshots
+- growth_tracking
+- follow_up_appointments
+- follow_up_actions
+- emergency_contacts
+- emergency_broadcasts
+- drug_interactions
+- drug_catalog
+- documents
+- document_signatures
+- document_audit_trails
+- districts
+- device_tokens
+- delivery_logs
+- data_retention_policies
+- conversations
+- conversation_participants
+- contacts
+- consent_signatures
+- consent_forms
+- configuration_history
+- compliance_violations
+- compliance_reports
+- compliance_checklist_items
+- clinical_protocols
+- clinical_notes
+- clinic_visits
+- chronic_conditions
+- cache_entries
+- budget_transactions
+- budget_categories
+- backup_logs
+- audit_logs
+- appointments
+- appointment_waitlist
+- appointment_reminders
+- api_keys
+- analytics_reports
+- allergies
+- alerts
+- alert_rules
+- alert_preferences
+- academic_transcripts
+
+## Missing Columns
+
+- **witness_statements:** id
+- **witness_statements:** statement
+- **witness_statements:** verifiedBy
+- **witness_statements:** verifiedAt
+- **webhooks:** id
+- **webhooks:** events
+- **webhooks:** isActive
+- **webhooks:** headers
+- **webhooks:** createdBy
+- **vital_signs:** id
+- **vital_signs:** studentId
+- **vital_signs:** measurementDate
+- **vital_signs:** temperature
+- **vital_signs:** heartRate
+- **vital_signs:** respiratoryRate
+- **vital_signs:** bloodPressureSystolic
+- **vital_signs:** bloodPressureDiastolic
+- **vital_signs:** oxygenSaturation
+- **vital_signs:** weight
+- **vital_signs:** height
+- **vital_signs:** bmi
+- **vital_signs:** pain
+- **vital_signs:** isAbnormal
+- **vital_signs:** abnormalFlags
+- **vital_signs:** notes
+- **vendors:** id
+- **vendors:** address
+- **vendors:** paymentTerms
+- **vendors:** notes
+- **vendors:** isActive
+- **vaccinations:** id
+- **vaccinations:** healthRecordId
+- **vaccinations:** doseNumber
+- **vaccinations:** totalDoses
+- **vaccinations:** seriesComplete
+- **vaccinations:** reactions
+- **vaccinations:** adverseEvents
+- **vaccinations:** exemptionStatus
+- **vaccinations:** exemptionReason
+- **vaccinations:** vfcEligibility
+- **vaccinations:** visProvided
+- **vaccinations:** visDate
+- **vaccinations:** consentObtained
+- **vaccinations:** notes
+- **vaccinations:** createdBy
+- **vaccinations:** updatedBy
+- **vaccinations:** deletedAt
+- **users:** id
+- **users:** email
+- **users:** password
+- **users:** firstName
+- **users:** lastName
+- **users:** isActive
+- **users:** lastLogin
+- **users:** schoolId
+- **users:** districtId
+- **users:** emailVerified
+- **users:** emailVerificationToken
+- **users:** emailVerificationExpires
+- **users:** passwordResetToken
+- **users:** passwordResetExpires
+- **users:** passwordChangedAt
+- **users:** twoFactorEnabled
+- **users:** twoFactorSecret
+- **users:** failedLoginAttempts
+- **users:** lockoutUntil
+- **users:** lastPasswordChange
+- **users:** mustChangePassword
+- **users:** mfaEnabled
+- **users:** mfaBackupCodes
+- **users:** mfaEnabledAt
+- **users:** oauthProviderId
+- **users:** profilePictureUrl
+- **users:** isEmailVerified
+- **users:** emailVerifiedAt
+- **users:** deletedAt
+- **treatment_plans:** id
+- **treatment_plans:** studentId
+- **treatment_plans:** diagnosis
+- **treatment_plans:** planDetails
+- **treatment_plans:** startDate
+- **treatment_plans:** endDate
+- **treatment_plans:** prescribedBy
+- **training_modules:** id
+- **training_modules:** description
+- **training_modules:** content
+- **training_modules:** duration
+- **training_modules:** completionCount
+- **threat_detections:** id
+- **threat_detections:** details
+- **threat_detections:** isResolved
+- **threat_detections:** resolvedAt
+- **threat_detections:** resolvedBy
+- **system_configurations:** id
+- **system_configurations:** value
+- **system_configurations:** description
+- **system_configurations:** defaultValue
+- **system_configurations:** isPublic
+- **system_configurations:** isEditable
+- **system_configurations:** requiresRestart
+- **system_configurations:** sortOrder
+- **sync_states:** id
+- **sync_states:** entityId
+- **sync_states:** lastSyncAt
+- **sync_states:** errorMessage
+- **sync_sessions:** id
+- **sync_sessions:** configId
+- **sync_sessions:** stats
+- **sync_sessions:** recordsProcessed
+- **sync_sessions:** recordsSuccessful
+- **sync_sessions:** recordsFailed
+- **sync_sessions:** completionMessage
+- **sync_queue_items:** id
+- **sync_queue_items:** data
+- **sync_queue_items:** timestamp
+- **sync_queue_items:** syncedAt
+- **sync_queue_items:** attempts
+- **sync_queue_items:** maxAttempts
+- **sync_queue_items:** lastError
+- **sync_queue_items:** conflictDetected
+- **sync_queue_items:** requiresOnline
+- **sync_conflicts:** id
+- **sync_conflicts:** clientVersion
+- **sync_conflicts:** serverVersion
+- **sync_conflicts:** resolvedAt
+- **sync_conflicts:** resolvedBy
+- **sync_conflicts:** mergedData
+- **suppliers:** id
+- **suppliers:** address
+- **suppliers:** isActive
+- **students:** id
+- **students:** isActive
+- **students:** enrollmentDate
+- **students:** nurseId
+- **students:** schoolId
+- **students:** districtId
+- **students:** createdBy
+- **students:** updatedBy
+- **students:** deletedAt
+- **student_medications:** id
+- **student_medications:** studentId
+- **student_medications:** medicationId
+- **student_medications:** instructions
+- **student_medications:** startDate
+- **student_medications:** endDate
+- **student_medications:** isActive
+- **student_medications:** refillsRemaining
+- **student_medications:** createdBy
+- **student_medications:** updatedBy
+- **student_drug_allergies:** id
+- **student_drug_allergies:** studentId
+- **student_drug_allergies:** drugId
+- **student_drug_allergies:** reaction
+- **student_drug_allergies:** notes
+- **student_drug_allergies:** diagnosedDate
+- **sis_sync_conflicts:** id
+- **sis_sync_conflicts:** localValue
+- **sis_sync_conflicts:** sisValue
+- **sis_sync_conflicts:** resolvedBy
+- **sessions:** id
+- **sessions:** sessionToken
+- **sessions:** userId
+- **sessions:** ipAddress
+- **sessions:** userAgent
+- **sessions:** expiresAt
+- **sessions:** lastAccessedAt
+- **sessions:** isActive
+- **sessions:** metadata
+- **security_incidents:** id
+- **security_incidents:** title
+- **security_incidents:** description
+- **security_incidents:** userId
+- **security_incidents:** ipAddress
+- **security_incidents:** userAgent
+- **security_incidents:** resourceAccessed
+- **security_incidents:** detectedAt
+- **security_incidents:** detectionMethod
+- **security_incidents:** indicators
+- **security_incidents:** impact
+- **security_incidents:** assignedTo
+- **security_incidents:** resolvedAt
+- **security_incidents:** resolution
+- **security_incidents:** preventiveMeasures
+- **security_incidents:** metadata
+- **schools:** id
+- **schools:** address
+- **schools:** totalEnrollment
+- **schools:** isActive
+- **report_templates:** id
+- **report_templates:** description
+- **report_templates:** queryConfiguration
+- **report_templates:** formatOptions
+- **report_templates:** isActive
+- **report_templates:** createdBy
+- **report_schedules:** id
+- **report_schedules:** templateId
+- **report_schedules:** parameters
+- **report_schedules:** recipients
+- **report_schedules:** isActive
+- **report_schedules:** lastExecutedAt
+- **report_schedules:** nextExecutionAt
+- **report_schedules:** executionCount
+- **report_schedules:** failureCount
+- **report_schedules:** lastError
+- **report_schedules:** createdBy
+- **report_executions:** id
+- **report_executions:** scheduleId
+- **report_executions:** parameters
+- **report_executions:** fileSize
+- **report_executions:** recordCount
+- **report_executions:** executionTimeMs
+- **report_executions:** error
+- **report_executions:** executedBy
+- **report_executions:** startedAt
+- **report_executions:** completedAt
+- **report_executions:** expiresAt
+- **remediation_actions:** id
+- **remediation_actions:** violationId
+- **remediation_actions:** action
+- **remediation_actions:** assignedTo
+- **remediation_actions:** dueDate
+- **remediation_actions:** implementationNotes
+- **remediation_actions:** verificationNotes
+- **remediation_actions:** completedAt
+- **remediation_actions:** verifiedBy
+- **remediation_actions:** verifiedAt
+- **push_notifications:** id
+- **push_notifications:** userIds
+- **push_notifications:** deviceTokens
+- **push_notifications:** body
+- **push_notifications:** data
+- **push_notifications:** actions
+- **push_notifications:** badge
+- **push_notifications:** ttl
+- **push_notifications:** requireInteraction
+- **push_notifications:** silent
+- **push_notifications:** scheduledFor
+- **push_notifications:** expiresAt
+- **push_notifications:** sentAt
+- **push_notifications:** deliveredAt
+- **push_notifications:** failedAt
+- **push_notifications:** deliveryResults
+- **push_notifications:** totalRecipients
+- **push_notifications:** successfulDeliveries
+- **push_notifications:** failedDeliveries
+- **push_notifications:** clickedCount
+- **push_notifications:** dismissedCount
+- **push_notifications:** retryCount
+- **push_notifications:** maxRetries
+- **push_notifications:** nextRetryAt
+- **push_notifications:** createdBy
+- **purchase_orders:** id
+- **purchase_orders:** vendorId
+- **purchase_orders:** orderDate
+- **purchase_orders:** expectedDate
+- **purchase_orders:** receivedDate
+- **purchase_orders:** notes
+- **purchase_order_items:** id
+- **purchase_order_items:** purchaseOrderId
+- **purchase_order_items:** inventoryItemId
+- **purchase_order_items:** quantity
+- **prescriptions:** id
+- **prescriptions:** visitId
+- **prescriptions:** treatmentPlanId
+- **prescriptions:** prescribedBy
+- **prescriptions:** quantity
+- **prescriptions:** quantityFilled
+- **prescriptions:** refillsAuthorized
+- **prescriptions:** refillsUsed
+- **prescriptions:** startDate
+- **prescriptions:** endDate
+- **prescriptions:** instructions
+- **prescriptions:** filledDate
+- **prescriptions:** pickedUpDate
+- **prescriptions:** notes
+- **policy_documents:** id
+- **policy_documents:** content
+- **policy_documents:** effectiveDate
+- **policy_documents:** reviewDate
+- **policy_documents:** approvedBy
+- **policy_documents:** approvedAt
+- **policy_acknowledgments:** id
+- **policy_acknowledgments:** policyId
+- **policy_acknowledgments:** userId
+- **phi_disclosures:** id
+- **phi_disclosures:** studentId
+- **phi_disclosures:** disclosureDate
+- **phi_disclosures:** informationDisclosed
+- **phi_disclosures:** minimumNecessary
+- **phi_disclosures:** recipientAddress
+- **phi_disclosures:** authorizationObtained
+- **phi_disclosures:** authorizationDate
+- **phi_disclosures:** authorizationExpiryDate
+- **phi_disclosures:** patientRequested
+- **phi_disclosures:** disclosedBy
+- **phi_disclosures:** followUpRequired
+- **phi_disclosures:** followUpCompleted
+- **phi_disclosures:** followUpDate
+- **phi_disclosures:** notes
+- **phi_disclosure_audits:** id
+- **phi_disclosure_audits:** disclosureId
+- **phi_disclosure_audits:** changes
+- **phi_disclosure_audits:** performedBy
+- **phi_disclosure_audits:** userAgent
+- **performance_metrics:** id
+- **performance_metrics:** tags
+- **messages:** id
+- **messages:** content
+- **messages:** encryptedContent
+- **messages:** encryptionMetadata
+- **messages:** recipientCount
+- **messages:** scheduledAt
+- **messages:** senderId
+- **messages:** templateId
+- **messages:** parentId
+- **messages:** threadId
+- **messages:** isEdited
+- **messages:** editedAt
+- **messages:** metadata
+- **messages:** deletedAt
+- **message_templates:** id
+- **message_templates:** content
+- **message_templates:** isActive
+- **message_templates:** createdById
+- **message_reads:** id
+- **message_reads:** messageId
+- **message_reads:** userId
+- **message_reads:** readAt
+- **message_reactions:** id
+- **message_reactions:** messageId
+- **message_reactions:** userId
+- **message_deliveries:** id
+- **message_deliveries:** recipientId
+- **message_deliveries:** sentAt
+- **message_deliveries:** deliveredAt
+- **message_deliveries:** failureReason
+- **message_deliveries:** messageId
+- **mental_health_records:** id
+- **mental_health_records:** studentId
+- **mental_health_records:** recordDate
+- **mental_health_records:** counselorId
+- **mental_health_records:** therapistId
+- **mental_health_records:** psychiatristId
+- **mental_health_records:** sessionNotes
+- **mental_health_records:** assessment
+- **mental_health_records:** diagnosis
+- **mental_health_records:** treatmentPlan
+- **mental_health_records:** followUpRequired
+- **mental_health_records:** followUpDate
+- **mental_health_records:** followUpCompleted
+- **mental_health_records:** referralReason
+- **mental_health_records:** parentNotified
+- **mental_health_records:** parentNotificationDate
+- **mental_health_records:** attachments
+- **mental_health_records:** metadata
+- **mental_health_records:** createdBy
+- **mental_health_records:** updatedBy
+- **mental_health_records:** accessLog
+- **medications:** id
+- **medications:** isControlled
+- **medications:** requiresWitness
+- **medications:** isActive
+- **medications:** deletedAt
+- **medications:** deletedBy
+- **medication_logs:** id
+- **medication_logs:** studentId
+- **medication_logs:** medicationId
+- **medication_logs:** scheduledAt
+- **medication_logs:** administeredAt
+- **medication_logs:** notes
+- **medication_logs:** reasonNotGiven
+- **medical_history:** id
+- **medical_history:** studentId
+- **medical_history:** diagnosisDate
+- **medical_history:** resolvedDate
+- **medical_history:** isActive
+- **medical_history:** treatment
+- **medical_history:** medication
+- **medical_history:** notes
+- **medical_history:** isFamilyHistory
+- **medical_history:** isCritical
+- **medical_history:** requiresMonitoring
+- **maintenance_logs:** id
+- **maintenance_logs:** inventoryItemId
+- **maintenance_logs:** description
+- **maintenance_logs:** performedById
+- **maintenance_logs:** nextMaintenanceDate
+- **maintenance_logs:** notes
+- **login_attempts:** id
+- **login_attempts:** userId
+- **login_attempts:** username
+- **login_attempts:** ipAddress
+- **login_attempts:** userAgent
+- **login_attempts:** success
+- **login_attempts:** failureReason
+- **login_attempts:** metadata
+- **licenses:** id
+- **licenses:** maxUsers
+- **licenses:** maxSchools
+- **licenses:** notes
+- **licenses:** issuedAt
+- **licenses:** activatedAt
+- **licenses:** expiresAt
+- **licenses:** deactivatedAt
+- **lab_results:** id
+- **lab_results:** studentId
+- **lab_results:** orderedDate
+- **lab_results:** collectionDate
+- **lab_results:** resultDate
+- **lab_results:** result
+- **lab_results:** resultValue
+- **lab_results:** isAbnormal
+- **lab_results:** abnormalFlags
+- **lab_results:** interpretation
+- **lab_results:** reviewedDate
+- **lab_results:** notes
+- **ip_restrictions:** id
+- **ip_restrictions:** ipAddress
+- **ip_restrictions:** ipRange
+- **ip_restrictions:** countries
+- **ip_restrictions:** reason
+- **ip_restrictions:** createdBy
+- **ip_restrictions:** expiresAt
+- **ip_restrictions:** isActive
+- **inventory_transactions:** id
+- **inventory_transactions:** inventoryItemId
+- **inventory_transactions:** quantity
+- **inventory_transactions:** expirationDate
+- **inventory_transactions:** performedById
+- **inventory_transactions:** notes
+- **inventory_items:** id
+- **inventory_items:** description
+- **inventory_items:** reorderLevel
+- **inventory_items:** reorderQuantity
+- **inventory_items:** notes
+- **inventory_items:** isActive
+- **integration_logs:** id
+- **integration_logs:** recordsProcessed
+- **integration_logs:** recordsSucceeded
+- **integration_logs:** recordsFailed
+- **integration_logs:** duration
+- **integration_logs:** errorMessage
+- **integration_logs:** details
+- **integration_configs:** id
+- **integration_configs:** endpoint
+- **integration_configs:** apiKey
+- **integration_configs:** password
+- **integration_configs:** settings
+- **integration_configs:** authentication
+- **integration_configs:** syncFrequency
+- **incident_reports:** id
+- **incident_reports:** studentId
+- **incident_reports:** reportedById
+- **incident_reports:** description
+- **incident_reports:** actionsTaken
+- **incident_reports:** parentNotified
+- **incident_reports:** parentNotifiedAt
+- **incident_reports:** parentNotifiedBy
+- **incident_reports:** followUpRequired
+- **incident_reports:** followUpNotes
+- **incident_reports:** occurredAt
+- **incident_reports:** createdBy
+- **incident_reports:** updatedBy
+- **immunizations:** id
+- **immunizations:** studentId
+- **immunizations:** administeredDate
+- **immunizations:** expirationDate
+- **immunizations:** administeredBy
+- **immunizations:** notes
+- **health_screenings:** id
+- **health_screenings:** studentId
+- **health_screenings:** screeningDate
+- **health_screenings:** results
+- **health_screenings:** passed
+- **health_screenings:** notes
+- **health_screenings:** conductedBy
+- **health_records:** id
+- **health_records:** studentId
+- **health_records:** description
+- **health_records:** recordDate
+- **health_records:** diagnosis
+- **health_records:** treatment
+- **health_records:** followUpRequired
+- **health_records:** followUpDate
+- **health_records:** followUpCompleted
+- **health_records:** attachments
+- **health_records:** metadata
+- **health_records:** isConfidential
+- **health_records:** notes
+- **health_records:** createdBy
+- **health_records:** updatedBy
+- **health_metric_snapshots:** id
+- **health_metric_snapshots:** schoolId
+- **health_metric_snapshots:** metadata
+- **health_metric_snapshots:** snapshotDate
+- **growth_tracking:** id
+- **growth_tracking:** studentId
+- **growth_tracking:** measurementDate
+- **growth_tracking:** height
+- **growth_tracking:** weight
+- **growth_tracking:** bmi
+- **growth_tracking:** percentileHeight
+- **growth_tracking:** percentileWeight
+- **growth_tracking:** percentileBmi
+- **growth_tracking:** notes
+- **growth_tracking:** measuredBy
+- **follow_up_appointments:** id
+- **follow_up_appointments:** originalVisitId
+- **follow_up_appointments:** scheduledBy
+- **follow_up_appointments:** durationMinutes
+- **follow_up_appointments:** reason
+- **follow_up_appointments:** assignedTo
+- **follow_up_appointments:** reminderSent
+- **follow_up_appointments:** reminderSentAt
+- **follow_up_appointments:** confirmedAt
+- **follow_up_appointments:** completedVisitId
+- **follow_up_appointments:** completedAt
+- **follow_up_appointments:** cancelledAt
+- **follow_up_appointments:** cancellationReason
+- **follow_up_appointments:** rescheduledFromId
+- **follow_up_appointments:** rescheduledToId
+- **follow_up_appointments:** notes
+- **follow_up_actions:** id
+- **follow_up_actions:** action
+- **follow_up_actions:** completedAt
+- **follow_up_actions:** completedBy
+- **follow_up_actions:** notes
+- **emergency_contacts:** id
+- **emergency_contacts:** studentId
+- **emergency_contacts:** address
+- **emergency_contacts:** isActive
+- **emergency_contacts:** lastVerifiedAt
+- **emergency_contacts:** canPickupStudent
+- **emergency_contacts:** notes
+- **emergency_broadcasts:** id
+- **emergency_broadcasts:** message
+- **emergency_broadcasts:** audience
+- **emergency_broadcasts:** schoolId
+- **emergency_broadcasts:** classId
+- **emergency_broadcasts:** groupIds
+- **emergency_broadcasts:** channels
+- **emergency_broadcasts:** requiresAcknowledgment
+- **emergency_broadcasts:** expiresAt
+- **emergency_broadcasts:** sentBy
+- **emergency_broadcasts:** sentAt
+- **emergency_broadcasts:** totalRecipients
+- **emergency_broadcasts:** deliveredCount
+- **emergency_broadcasts:** failedCount
+- **emergency_broadcasts:** acknowledgedCount
+- **emergency_broadcasts:** followUpRequired
+- **emergency_broadcasts:** followUpMessage
+- **drug_interactions:** id
+- **drug_interactions:** description
+- **drug_interactions:** clinicalEffects
+- **drug_interactions:** management
+- **drug_interactions:** references
+- **drug_catalog:** id
+- **drug_catalog:** brandNames
+- **drug_catalog:** fdaApproved
+- **drug_catalog:** commonDoses
+- **drug_catalog:** sideEffects
+- **drug_catalog:** contraindications
+- **drug_catalog:** warnings
+- **documents:** id
+- **documents:** description
+- **documents:** fileSize
+- **documents:** fileUrl
+- **documents:** templateData
+- **documents:** version
+- **documents:** isActive
+- **documents:** deletedAt
+- **document_signatures:** id
+- **document_audit_trails:** id
+- **document_audit_trails:** changes
+- **districts:** id
+- **districts:** address
+- **districts:** isActive
+- **device_tokens:** id
+- **device_tokens:** token
+- **device_tokens:** isActive
+- **device_tokens:** isValid
+- **device_tokens:** lastValidated
+- **device_tokens:** allowNotifications
+- **device_tokens:** allowSound
+- **device_tokens:** allowBadge
+- **device_tokens:** lastUsedAt
+- **delivery_logs:** id
+- **delivery_logs:** alertId
+- **delivery_logs:** recipientId
+- **delivery_logs:** success
+- **delivery_logs:** attemptCount
+- **delivery_logs:** lastAttempt
+- **delivery_logs:** deliveredAt
+- **delivery_logs:** errorMessage
+- **data_retention_policies:** id
+- **data_retention_policies:** description
+- **data_retention_policies:** retentionPeriodDays
+- **data_retention_policies:** legalBasis
+- **data_retention_policies:** autoDelete
+- **data_retention_policies:** lastReviewedAt
+- **data_retention_policies:** lastReviewedBy
+- **conversations:** id
+- **conversations:** description
+- **conversations:** tenantId
+- **conversations:** createdById
+- **conversations:** lastMessageAt
+- **conversations:** metadata
+- **conversations:** isArchived
+- **conversations:** deletedAt
+- **conversation_participants:** id
+- **conversation_participants:** conversationId
+- **conversation_participants:** userId
+- **conversation_participants:** joinedAt
+- **conversation_participants:** lastReadAt
+- **conversation_participants:** isMuted
+- **conversation_participants:** isPinned
+- **conversation_participants:** metadata
+- **contacts:** id
+- **contacts:** relationTo
+- **contacts:** customFields
+- **contacts:** isActive
+- **contacts:** notes
+- **contacts:** createdBy
+- **contacts:** updatedBy
+- **contacts:** deletedAt
+- **consent_signatures:** id
+- **consent_signatures:** consentFormId
+- **consent_signatures:** studentId
+- **consent_signatures:** signatureData
+- **consent_signatures:** withdrawnAt
+- **consent_forms:** id
+- **consent_forms:** description
+- **consent_forms:** content
+- **consent_forms:** isActive
+- **consent_forms:** expiresAt
+- **configuration_history:** id
+- **configuration_history:** oldValue
+- **configuration_history:** newValue
+- **compliance_violations:** id
+- **compliance_violations:** description
+- **compliance_violations:** reportedBy
+- **compliance_violations:** discoveredAt
+- **compliance_violations:** affectedStudents
+- **compliance_violations:** affectedDataCategories
+- **compliance_violations:** rootCause
+- **compliance_violations:** assignedTo
+- **compliance_violations:** resolutionNotes
+- **compliance_violations:** resolvedAt
+- **compliance_reports:** id
+- **compliance_reports:** description
+- **compliance_reports:** findings
+- **compliance_reports:** recommendations
+- **compliance_reports:** dueDate
+- **compliance_reports:** submittedAt
+- **compliance_reports:** submittedBy
+- **compliance_reports:** reviewedAt
+- **compliance_reports:** reviewedBy
+- **compliance_reports:** createdById
+- **compliance_checklist_items:** id
+- **compliance_checklist_items:** description
+- **compliance_checklist_items:** evidence
+- **compliance_checklist_items:** notes
+- **compliance_checklist_items:** dueDate
+- **compliance_checklist_items:** completedAt
+- **compliance_checklist_items:** completedBy
+- **compliance_checklist_items:** reportId
+- **clinical_protocols:** id
+- **clinical_protocols:** description
+- **clinical_protocols:** indications
+- **clinical_protocols:** contraindications
+- **clinical_protocols:** steps
+- **clinical_protocols:** decisionPoints
+- **clinical_protocols:** requiredEquipment
+- **clinical_protocols:** medications
+- **clinical_protocols:** createdBy
+- **clinical_protocols:** approvedBy
+- **clinical_protocols:** approvedDate
+- **clinical_protocols:** effectiveDate
+- **clinical_protocols:** reviewDate
+- **clinical_protocols:** references
+- **clinical_protocols:** tags
+- **clinical_notes:** id
+- **clinical_notes:** visitId
+- **clinical_notes:** content
+- **clinical_notes:** subjective
+- **clinical_notes:** objective
+- **clinical_notes:** assessment
+- **clinical_notes:** plan
+- **clinical_notes:** tags
+- **clinical_notes:** isConfidential
+- **clinical_notes:** isSigned
+- **clinical_notes:** signedAt
+- **clinical_notes:** amended
+- **clinical_notes:** amendmentReason
+- **clinic_visits:** id
+- **clinic_visits:** reasonForVisit
+- **clinic_visits:** symptoms
+- **clinic_visits:** treatment
+- **clinic_visits:** classesMissed
+- **clinic_visits:** minutesMissed
+- **clinic_visits:** notes
+- **chronic_conditions:** id
+- **chronic_conditions:** healthRecordId
+- **chronic_conditions:** diagnosedDate
+- **chronic_conditions:** notes
+- **chronic_conditions:** carePlan
+- **chronic_conditions:** emergencyProtocol
+- **chronic_conditions:** lastReviewDate
+- **cache_entries:** id
+- **cache_entries:** data
+- **cache_entries:** tags
+- **cache_entries:** expiresAt
+- **cache_entries:** accessCount
+- **cache_entries:** lastAccessed
+- **cache_entries:** dataSize
+- **budget_transactions:** id
+- **budget_transactions:** categoryId
+- **budget_transactions:** description
+- **budget_transactions:** transactionDate
+- **budget_transactions:** notes
+- **budget_categories:** id
+- **budget_categories:** description
+- **budget_categories:** fiscalYear
+- **budget_categories:** isActive
+- **backup_logs:** id
+- **backup_logs:** fileSize
+- **backup_logs:** location
+- **backup_logs:** triggeredBy
+- **backup_logs:** error
+- **backup_logs:** completedAt
+- **audit_logs:** id
+- **audit_logs:** userAgent
+- **audit_logs:** sessionId
+- **audit_logs:** isPHI
+- **audit_logs:** success
+- **audit_logs:** errorMessage
+- **appointments:** id
+- **appointments:** studentId
+- **appointments:** nurseId
+- **appointments:** scheduledAt
+- **appointments:** duration
+- **appointments:** notes
+- **appointments:** recurringGroupId
+- **appointments:** recurringEndDate
+- **appointment_waitlist:** id
+- **appointment_waitlist:** studentId
+- **appointment_waitlist:** nurseId
+- **appointment_waitlist:** preferredDate
+- **appointment_waitlist:** duration
+- **appointment_waitlist:** notes
+- **appointment_waitlist:** notifiedAt
+- **appointment_waitlist:** expiresAt
+- **appointment_reminders:** id
+- **appointment_reminders:** appointmentId
+- **appointment_reminders:** scheduledFor
+- **appointment_reminders:** sentAt
+- **appointment_reminders:** failureReason
+- **appointment_reminders:** message
+- **api_keys:** id
+- **api_keys:** description
+- **api_keys:** scopes
+- **api_keys:** isActive
+- **api_keys:** expiresAt
+- **api_keys:** lastUsedAt
+- **api_keys:** usageCount
+- **api_keys:** createdBy
+- **analytics_reports:** id
+- **analytics_reports:** description
+- **analytics_reports:** periodStart
+- **analytics_reports:** periodEnd
+- **analytics_reports:** generatedDate
+- **analytics_reports:** schoolId
+- **analytics_reports:** summary
+- **analytics_reports:** sections
+- **analytics_reports:** findings
+- **analytics_reports:** recommendations
+- **analytics_reports:** fileSize
+- **analytics_reports:** generatedBy
+- **analytics_reports:** reviewedBy
+- **analytics_reports:** reviewedAt
+- **analytics_reports:** approvedBy
+- **analytics_reports:** approvalDate
+- **analytics_reports:** distributionList
+- **analytics_reports:** sentAt
+- **allergies:** id
+- **allergies:** studentId
+- **allergies:** symptoms
+- **allergies:** reactions
+- **allergies:** treatment
+- **allergies:** emergencyProtocol
+- **allergies:** onsetDate
+- **allergies:** diagnosedDate
+- **allergies:** verified
+- **allergies:** verifiedBy
+- **allergies:** verificationDate
+- **allergies:** active
+- **allergies:** notes
+- **allergies:** epiPenRequired
+- **allergies:** epiPenExpiration
+- **allergies:** healthRecordId
+- **allergies:** createdBy
+- **allergies:** updatedBy
+- **alerts:** id
+- **alerts:** definitionId
+- **alerts:** message
+- **alerts:** studentId
+- **alerts:** userId
+- **alerts:** schoolId
+- **alerts:** metadata
+- **alerts:** createdBy
+- **alerts:** acknowledgedAt
+- **alerts:** acknowledgedBy
+- **alerts:** resolvedAt
+- **alerts:** resolvedBy
+- **alerts:** expiresAt
+- **alerts:** autoEscalateAfter
+- **alerts:** escalationLevel
+- **alerts:** requiresAcknowledgment
+- **alert_rules:** id
+- **alert_rules:** description
+- **alert_rules:** isActive
+- **alert_rules:** priority
+- **alert_rules:** triggerConditions
+- **alert_rules:** notificationChannels
+- **alert_rules:** schoolId
+- **alert_rules:** districtId
+- **alert_rules:** autoEscalateAfter
+- **alert_rules:** cooldownPeriod
+- **alert_rules:** requiresAcknowledgment
+- **alert_rules:** expiresAfter
+- **alert_rules:** metadata
+- **alert_rules:** createdBy
+- **alert_rules:** updatedBy
+- **alert_rules:** lastTriggered
+- **alert_rules:** triggerCount
+- **alert_preferences:** id
+- **alert_preferences:** userId
+- **alert_preferences:** schoolId
+- **alert_preferences:** isActive
+- **academic_transcripts:** id
+- **academic_transcripts:** studentId
+- **academic_transcripts:** subjects
+- **academic_transcripts:** attendance
+- **academic_transcripts:** behavior
+- **academic_transcripts:** importedBy
+- **academic_transcripts:** importedAt
+- **academic_transcripts:** metadata
+
+## Recommendations
+
+- Create missing tables: witness_statements, webhooks, vital_signs, vendors, vaccinations, users, treatment_plans, training_modules, threat_detections, system_configurations, sync_states, sync_sessions, sync_queue_items, sync_conflicts, suppliers, students, student_medications, student_drug_allergies, sis_sync_conflicts, sessions, security_incidents, schools, report_templates, report_schedules, report_executions, remediation_actions, push_notifications, purchase_orders, purchase_order_items, prescriptions, policy_documents, policy_acknowledgments, phi_disclosures, phi_disclosure_audits, performance_metrics, messages, message_templates, message_reads, message_reactions, message_deliveries, mental_health_records, medications, medication_logs, medical_history, maintenance_logs, login_attempts, licenses, lab_results, ip_restrictions, inventory_transactions, inventory_items, integration_logs, integration_configs, incident_reports, immunizations, health_screenings, health_records, health_metric_snapshots, growth_tracking, follow_up_appointments, follow_up_actions, emergency_contacts, emergency_broadcasts, drug_interactions, drug_catalog, documents, document_signatures, document_audit_trails, districts, device_tokens, delivery_logs, data_retention_policies, conversations, conversation_participants, contacts, consent_signatures, consent_forms, configuration_history, compliance_violations, compliance_reports, compliance_checklist_items, clinical_protocols, clinical_notes, clinic_visits, chronic_conditions, cache_entries, budget_transactions, budget_categories, backup_logs, audit_logs, appointments, appointment_waitlist, appointment_reminders, api_keys, analytics_reports, allergies, alerts, alert_rules, alert_preferences, academic_transcripts
+- Add missing columns to database or remove from models
+

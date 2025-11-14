@@ -1,6 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { HealthDomainCreateAllergyDto } from './create-allergy.dto';
+import { HealthDomainAllergyCreateDto } from './create-allergy.dto';
 
-export class HealthDomainUpdateAllergyDto extends PartialType(
-  HealthDomainCreateAllergyDto,
-) {}
+export class HealthDomainUpdateAllergyDto extends PartialType(HealthDomainAllergyCreateDto) {}

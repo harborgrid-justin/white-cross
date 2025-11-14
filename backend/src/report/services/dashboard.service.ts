@@ -1,23 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Student } from '../../database/models/student.model';
-import { Appointment } from '../../database/models/appointment.model';
-import { StudentMedication } from '../../database/models/student-medication.model';
-import { IncidentReport } from '../../database/models/incident-report.model';
-import { Allergy } from '../../database/models/allergy.model';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { ConditionStatus } from '../../chronic-condition/enums';
+import { Student } from '@/database/models';
+import { Appointment } from '@/database/models';
+import { StudentMedication } from '@/database/models';
+import { IncidentReport } from '@/database/models';
+import { Allergy } from '@/database/models';
+import { ChronicCondition } from '@/database/models';
+import { ConditionStatus } from '@/services/chronic-condition/enums';
 import { DashboardMetrics } from '../interfaces/report-types.interface';
 
+import { BaseService } from '@/common/base';
 /**
  * Dashboard Service
  * Provides real-time dashboard metrics and operational statistics
  */
 @Injectable()
-export class DashboardService {
-  private readonly logger = new Logger(DashboardService.name);
-
+export class DashboardService extends BaseService {
   constructor(
     @InjectModel(Student)
     private studentModel: typeof Student,
@@ -31,7 +30,9 @@ export class DashboardService {
     private allergyModel: typeof Allergy,
     @InjectModel(ChronicCondition)
     private chronicConditionModel: typeof ChronicCondition,
-  ) {}
+  ) {
+    super("DashboardService");
+  }
 
   /**
    * Get real-time dashboard metrics
@@ -73,7 +74,7 @@ export class DashboardService {
         }),
       ]);
 
-      this.logger.log('Dashboard metrics retrieved successfully');
+      this.logInfo('Dashboard metrics retrieved successfully');
 
       return {
         activeStudents,
@@ -86,7 +87,7 @@ export class DashboardService {
         timestamp: new Date(),
       };
     } catch (error) {
-      this.logger.error('Error fetching dashboard metrics:', error);
+      this.logError('Error fetching dashboard metrics:', error);
       throw error;
     }
   }

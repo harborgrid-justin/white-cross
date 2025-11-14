@@ -5,14 +5,15 @@ import { IncidentReport } from '@/database';
 import { IncidentSeverity } from '../enums/incident-severity.enum';
 import { IncidentType } from '../enums/incident-type.enum';
 
+import { BaseService } from '@/common/base';
 @Injectable()
-export class IncidentStatisticsService {
-  private readonly logger = new Logger(IncidentStatisticsService.name);
-
+export class IncidentStatisticsService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
-  ) {}
+  ) {
+    super('IncidentStatisticsService');
+  }
 
   /**
    * Get comprehensive incident statistics
@@ -115,7 +116,7 @@ export class IncidentStatisticsService {
         averageResponseTime: Math.round(averageResponseTime),
       };
     } catch (error) {
-      this.logger.error('Error fetching incident statistics:', error);
+      this.logError('Error fetching incident statistics:', error);
       throw error;
     }
   }
@@ -157,7 +158,7 @@ export class IncidentStatisticsService {
 
       return byType;
     } catch (error) {
-      this.logger.error('Error fetching incidents by type:', error);
+      this.logError('Error fetching incidents by type:', error);
       throw error;
     }
   }
@@ -199,7 +200,7 @@ export class IncidentStatisticsService {
 
       return bySeverity;
     } catch (error) {
-      this.logger.error('Error fetching incidents by severity:', error);
+      this.logError('Error fetching incidents by severity:', error);
       throw error;
     }
   }
@@ -235,7 +236,7 @@ export class IncidentStatisticsService {
 
       return trendsByMonth;
     } catch (error) {
-      this.logger.error('Error fetching severity trends:', error);
+      this.logError('Error fetching severity trends:', error);
       throw error;
     }
   }

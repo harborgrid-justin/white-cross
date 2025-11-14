@@ -1,33 +1,23 @@
-import {
-  Body,
-  Controller,
-  DefaultValuePipe,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { SignDocumentDto } from './dto/sign-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
-import { CurrentUser, IpAddress } from '@/auth/decorators';
+import { CurrentUser, IpAddress } from '../services/auth/decorators';
 
+import { BaseController } from '@/common/base';
 /**
  * Document Controller
  * Handles all document management REST endpoints with Swagger documentation
  */
 @ApiTags('documents')
+
 @Controller('documents')
 @ApiBearerAuth()
-export class DocumentController {
-  constructor(private readonly documentService: DocumentService) {}
+export class DocumentController extends BaseController {
+  constructor(private readonly documentService: DocumentService) {
+    super();}
 
   @Get()
   @ApiOperation({

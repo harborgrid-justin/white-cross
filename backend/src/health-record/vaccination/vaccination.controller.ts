@@ -4,10 +4,11 @@
  * @description HTTP endpoints for CDC-compliant vaccination tracking
  */
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Version } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { VaccinationService } from './vaccination.service';
 import { CreateVaccinationDto } from './dto/create-vaccination.dto';
+import { BaseController } from '@/common/base';
 import {
   BatchImportResponseDto,
   BatchVaccinationDto,
@@ -18,10 +19,12 @@ import {
 } from './dto/vaccination-endpoints.dto';
 
 @ApiTags('health-record-vaccination')
+
 @Controller('health-record/vaccination')
 // @ApiBearerAuth()
-export class VaccinationController {
-  constructor(private readonly vaccinationService: VaccinationService) {}
+export class VaccinationController extends BaseController {
+  constructor(private readonly vaccinationService: VaccinationService) {
+    super();}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

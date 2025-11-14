@@ -7,7 +7,7 @@
 import { ExecutionContext, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { CsrfGuard } from './csrf.guard';
-import { AppConfigService } from '../../config/app-config.service';
+import { AppConfigService } from '@/common/config/app-config.service';
 import * as crypto from 'crypto';
 
 describe('CsrfGuard - CRITICAL SECURITY', () => {

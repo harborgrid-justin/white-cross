@@ -14,6 +14,8 @@ import {
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
+import type { User } from './user.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * MessageRead attributes interface
@@ -128,7 +130,7 @@ export class MessageRead extends Model<
     foreignKey: 'userId',
     as: 'user',
   })
-  declare user?: any;
+  declare user?: User;
 
   @Column({
     type: DataType.DATE,
@@ -148,13 +150,9 @@ export class MessageRead extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: MessageRead) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] MessageRead ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('MessageRead', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MessageRead;

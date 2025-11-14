@@ -1,170 +1,63 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as crypto from 'crypto';
+import { WaitlistManagementService } from './waitlist-management.service';
+import { RecurringAppointmentsService } from './recurring-appointments.service';
+import { ReminderSchedulerService } from './reminder-scheduler.service';
+import { PhotoVideoEvidenceService } from './photo-video-evidence.service';
+import { WitnessStatementService } from './witness-statement.service';
+import { InsuranceClaimService } from './insurance-claim.service';
+import { HipaaComplianceService } from './hipaa-compliance.service';
+import { RegulationTrackingService } from './regulation-tracking.service';
+import { ConsentFormManagementService } from './consent-form-management.service';
+import { MessageTemplateLibraryService } from './message-template-library.service';
+import { BulkMessagingService } from './bulk-messaging.service';
+import { LanguageTranslationService } from './language-translation.service';
+import { CustomReportBuilderService } from './custom-report-builder.service';
+import { AnalyticsDashboardService } from './analytics-dashboard.service';
+import { BaseService } from '@/common/base';
+import {
+  WaitlistEntry,
+  RecurringTemplate,
+  ReminderSchedule,
+  ReminderPreferences,
+  EvidenceFile,
+  WitnessStatement,
+  InsuranceClaim,
+  HIPAAComplianceCheck,
+  RegulationUpdate,
+  ConsentForm,
+  MessageTemplate,
+  BulkMessage,
+  ReportDefinition,
+  DashboardMetric,
+  HealthTrendData,
+} from './enterprise-features-interfaces';
 
-// Types and interfaces matching the original service
-export interface WaitlistEntry {
-  id: string;
-  studentId: string;
-  appointmentType: string;
-  priority: 'routine' | 'urgent';
-  requestedDate?: Date;
-  addedAt: Date;
-  status: 'waiting' | 'contacted' | 'scheduled' | 'cancelled';
-}
-
-export interface RecurringTemplate {
-  id: string;
-  studentId: string;
-  appointmentType: string;
-  frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
-  dayOfWeek?: number;
-  timeOfDay: string;
-  startDate: Date;
-  endDate?: Date;
-  createdBy: string;
-}
-
-export interface ReminderSchedule {
-  appointmentId: string;
-  reminders: Array<{
-    timing: '24h' | '1h' | '15m';
-    channel: 'sms' | 'email' | 'push';
-    sent: boolean;
-    sentAt?: Date;
-  }>;
-}
-
-export interface EvidenceFile {
-  id: string;
-  incidentId: string;
-  type: 'photo' | 'video';
-  filename: string;
-  url: string;
-  metadata: {
-    fileSize: number;
-    mimeType: string;
-    duration?: number;
-    dimensions?: { width: number; height: number };
-  };
-  uploadedBy: string;
-  uploadedAt: Date;
-  securityLevel: 'restricted' | 'confidential';
-}
-
-export interface WitnessStatement {
-  id: string;
-  incidentId: string;
-  witnessName: string;
-  witnessRole: 'student' | 'teacher' | 'staff' | 'other';
-  statement: string;
-  captureMethod: 'typed' | 'voice-to-text' | 'handwritten-scan';
-  timestamp: Date;
-  signature?: string;
-  verified: boolean;
-}
-
-export interface InsuranceClaim {
-  id: string;
-  incidentId: string;
-  studentId: string;
-  claimNumber: string;
-  insuranceProvider: string;
-  claimAmount: number;
-  status: 'draft' | 'submitted' | 'approved' | 'denied';
-  submittedAt?: Date;
-  documents: string[];
-}
-
-export interface HIPAAComplianceCheck {
-  id: string;
-  area: string;
-  status: 'compliant' | 'non-compliant' | 'needs-attention';
-  findings: string[];
-  recommendations: string[];
-  checkedAt: Date;
-}
-
-export interface RegulationUpdate {
-  id: string;
-  state: string;
-  category: string;
-  title: string;
-  description: string;
-  effectiveDate: Date;
-  impact: 'high' | 'medium' | 'low';
-  actionRequired: string;
-  status: 'pending-review' | 'implementing' | 'implemented';
-}
-
-export interface ConsentForm {
-  id: string;
-  studentId: string;
-  formType: string;
-  status: 'pending' | 'signed' | 'expired' | 'revoked';
-  content: string;
-  signedBy?: string;
-  signedAt?: Date;
-  expiresAt?: Date;
-  createdAt?: Date;
-  digitalSignature?: string;
-  version?: string;
-  metadata?: Record<string, any>;
-}
-
-export interface MessageTemplate {
-  id: string;
-  name: string;
-  category: string;
-  subject: string;
-  body: string;
-  variables: string[];
-  language: string;
-  createdBy: string;
-  createdAt: Date;
-}
-
-export interface BulkMessage {
-  id: string;
-  subject: string;
-  body: string;
-  recipients: string[];
-  channels: ('sms' | 'email' | 'push')[];
-  status: 'pending' | 'sending' | 'completed';
-  deliveryStats: {
-    sent: number;
-    delivered: number;
-    failed: number;
-    opened: number;
-  };
-  sentAt?: Date;
-}
-
-export interface ReportDefinition {
-  id: string;
-  name: string;
-  dataSource: string;
-  fields: string[];
-  filters: any[];
-  grouping: string[];
-  sorting: string[];
-  visualization: 'table' | 'chart' | 'graph';
-  schedule?: {
-    frequency: 'daily' | 'weekly' | 'monthly';
-    recipients: string[];
-  };
-}
-
-export interface DashboardMetric {
-  name: string;
-  value: number;
-  trend: 'up' | 'down' | 'stable';
-  change: number;
-  unit: string;
-}
-
+/**
+ * Enterprise Features Service - Main Facade
+ * Delegates operations to specialized services for better organization
+ * Maintains backward compatibility with existing API
+ */
 @Injectable()
-export class EnterpriseFeaturesService {
-  private readonly logger = new Logger(EnterpriseFeaturesService.name);
+export class EnterpriseFeaturesService extends BaseService {
+  constructor(
+    private readonly waitlistService: WaitlistManagementService,
+    private readonly recurringAppointmentsService: RecurringAppointmentsService,
+    private readonly reminderService: ReminderSchedulerService,
+    private readonly evidenceService: PhotoVideoEvidenceService,
+    private readonly witnessStatementService: WitnessStatementService,
+    private readonly insuranceClaimService: InsuranceClaimService,
+    private readonly hipaaComplianceService: HipaaComplianceService,
+    private readonly regulationTrackingService: RegulationTrackingService,
+    private readonly consentFormService: ConsentFormManagementService,
+    private readonly messageTemplateService: MessageTemplateLibraryService,
+    private readonly bulkMessagingService: BulkMessagingService,
+    private readonly translationService: LanguageTranslationService,
+    private readonly reportBuilderService: CustomReportBuilderService,
+    private readonly analyticsService: AnalyticsDashboardService,
+  ) {
+    super("EnterpriseFeaturesService");
+    this.logInfo('Enterprise Features Service initialized with all specialized services');
+  }
 
   // ============================================
   // Feature 17: Intelligent Waitlist Management
@@ -175,103 +68,35 @@ export class EnterpriseFeaturesService {
     appointmentType: string,
     priority: 'routine' | 'urgent' = 'routine',
   ): Promise<WaitlistEntry> {
-    try {
-      const entry: WaitlistEntry = {
-        id: `WL-${Date.now()}`,
-        studentId,
-        appointmentType,
-        priority,
-        addedAt: new Date(),
-        status: 'waiting',
-      };
-
-      this.logger.log('Student added to waitlist', {
-        studentId,
-        appointmentType,
-        priority,
-      });
-      return entry;
-    } catch (error) {
-      this.logger.error('Error adding to waitlist', error);
-      throw error;
-    }
+    return this.waitlistService.addToWaitlist(studentId, appointmentType, priority);
   }
 
-  async autoFillFromWaitlist(
-    appointmentSlot: Date,
-    appointmentType: string,
-  ): Promise<boolean> {
-    try {
-      // Find highest priority waiting student
-      // Automatically schedule and notify
-
-      this.logger.log('Auto-filling appointment from waitlist', {
-        appointmentSlot,
-        appointmentType,
-      });
-      return true;
-    } catch (error) {
-      this.logger.error('Error auto-filling from waitlist', error);
-      throw error;
-    }
+  async autoFillFromWaitlist(appointmentSlot: Date, appointmentType: string): Promise<boolean> {
+    return this.waitlistService.autoFillFromWaitlist(appointmentSlot, appointmentType);
   }
 
-  async getWaitlistByPriority(): Promise<WaitlistEntry[]> {
-    // Return waitlist sorted by priority and date
-    return [];
+  async getWaitlistByPriority(): Promise<{ high: WaitlistEntry[]; routine: WaitlistEntry[]; totalCount: number }> {
+    return this.waitlistService.getWaitlistByPriority();
   }
 
-  async getWaitlistStatus(
-    studentId: string,
-  ): Promise<{ waitlists: WaitlistEntry[] }> {
-    try {
-      // In production, query waitlist entries for this student
-      this.logger.log('Getting waitlist status for student', { studentId });
-      return { waitlists: [] };
-    } catch (error) {
-      this.logger.error('Error getting waitlist status', { error, studentId });
-      throw error;
-    }
+  async getWaitlistStatus(studentId: string): Promise<{ waitlists: WaitlistEntry[] }> {
+    return this.waitlistService.getWaitlistStatus(studentId);
   }
 
   // ============================================
   // Feature 18: Recurring Appointment Templates
   // ============================================
 
-  async createRecurringTemplate(
-    data: Omit<RecurringTemplate, 'id'>,
-  ): Promise<RecurringTemplate> {
-    try {
-      const template: RecurringTemplate = {
-        ...data,
-        id: `RT-${Date.now()}`,
-      };
-
-      // Generate all appointments based on template
-      await this.generateAppointmentsFromTemplate(template);
-
-      this.logger.log('Recurring appointment template created', {
-        templateId: template.id,
-      });
-      return template;
-    } catch (error) {
-      this.logger.error('Error creating recurring template', error);
-      throw error;
-    }
+  async createRecurringTemplate(data: Omit<RecurringTemplate, 'id'>): Promise<RecurringTemplate> {
+    return this.recurringAppointmentsService.createRecurringTemplate(data);
   }
 
-  private async generateAppointmentsFromTemplate(
-    template: RecurringTemplate,
-  ): Promise<void> {
-    this.logger.log('Generating appointments from template', {
-      templateId: template.id,
-    });
-    // Generate individual appointments based on recurrence rule
+  private async generateAppointmentsFromTemplate(template: RecurringTemplate): Promise<void> {
+    return this.recurringAppointmentsService.generateAppointmentsFromTemplate(template.id);
   }
 
   async cancelRecurringSeries(templateId: string): Promise<boolean> {
-    this.logger.log('Cancelling recurring series', { templateId });
-    return true;
+    return this.recurringAppointmentsService.cancelRecurringSeries(templateId, 'system', 'API cancellation');
   }
 
   // ============================================
@@ -279,36 +104,15 @@ export class EnterpriseFeaturesService {
   // ============================================
 
   async scheduleReminders(appointmentId: string): Promise<ReminderSchedule> {
-    try {
-      const schedule: ReminderSchedule = {
-        appointmentId,
-        reminders: [
-          { timing: '24h', channel: 'email', sent: false },
-          { timing: '1h', channel: 'sms', sent: false },
-          { timing: '15m', channel: 'push', sent: false },
-        ],
-      };
-
-      this.logger.log('Reminders scheduled for appointment', { appointmentId });
-      return schedule;
-    } catch (error) {
-      this.logger.error('Error scheduling reminders', error);
-      throw error;
-    }
+    return this.reminderService.scheduleReminders(appointmentId);
   }
 
   async sendDueReminders(): Promise<number> {
-    // Check for appointments with due reminders and send them
-    this.logger.log('Sending due reminders');
-    return 0;
+    return this.reminderService.sendDueReminders();
   }
 
-  async customizeReminderPreferences(
-    studentId: string,
-    preferences: any,
-  ): Promise<boolean> {
-    this.logger.log('Reminder preferences updated', { studentId });
-    return true;
+  async customizeReminderPreferences(studentId: string, preferences: ReminderPreferences): Promise<boolean> {
+    return this.reminderService.updatePreferences(studentId, preferences);
   }
 
   // ============================================
@@ -321,49 +125,15 @@ export class EnterpriseFeaturesService {
     type: 'photo' | 'video',
     uploadedBy: string,
   ): Promise<EvidenceFile> {
-    try {
-      const evidence: EvidenceFile = {
-        id: `EV-${Date.now()}`,
-        incidentId,
-        type,
-        filename: `evidence_${Date.now()}.${type === 'photo' ? 'jpg' : 'mp4'}`,
-        url: `/secure/evidence/${Date.now()}`,
-        metadata: {
-          fileSize: Buffer.from(fileData, 'base64').length,
-          mimeType: type === 'photo' ? 'image/jpeg' : 'video/mp4',
-        },
-        uploadedBy,
-        uploadedAt: new Date(),
-        securityLevel: 'confidential',
-      };
-
-      this.logger.log('Evidence file uploaded', {
-        evidenceId: evidence.id,
-        type,
-      });
-      return evidence;
-    } catch (error) {
-      this.logger.error('Error uploading evidence', error);
-      throw error;
-    }
+    return this.evidenceService.uploadEvidence(incidentId, fileData, type, uploadedBy);
   }
 
-  async getEvidenceWithAudit(
-    evidenceId: string,
-    accessedBy: string,
-  ): Promise<EvidenceFile | null> {
-    // Log access for audit trail
-    this.logger.log('Evidence accessed', { evidenceId, accessedBy });
-    return null;
+  async getEvidenceWithAudit(evidenceId: string, accessedBy: string): Promise<EvidenceFile | null> {
+    return this.evidenceService.getEvidenceWithAudit(evidenceId, accessedBy);
   }
 
-  async deleteEvidence(
-    evidenceId: string,
-    deletedBy: string,
-    reason: string,
-  ): Promise<boolean> {
-    this.logger.warn('Evidence deleted', { evidenceId, deletedBy, reason });
-    return true;
+  async deleteEvidence(evidenceId: string, deletedBy: string, reason: string): Promise<boolean> {
+    return this.evidenceService.deleteEvidence(evidenceId, deletedBy, reason);
   }
 
   // ============================================
@@ -373,77 +143,31 @@ export class EnterpriseFeaturesService {
   async captureStatement(
     data: Omit<WitnessStatement, 'id' | 'timestamp' | 'verified'>,
   ): Promise<WitnessStatement> {
-    try {
-      const statement: WitnessStatement = {
-        ...data,
-        id: `WS-${Date.now()}`,
-        timestamp: new Date(),
-        verified: false,
-      };
-
-      this.logger.log('Witness statement captured', {
-        statementId: statement.id,
-      });
-      return statement;
-    } catch (error) {
-      this.logger.error('Error capturing witness statement', error);
-      throw error;
-    }
+    return this.witnessStatementService.captureStatement(data);
   }
 
-  async verifyStatement(
-    statementId: string,
-    verifiedBy: string,
-  ): Promise<boolean> {
-    this.logger.log('Witness statement verified', { statementId, verifiedBy });
-    return true;
+  async verifyStatement(statementId: string, verifiedBy: string): Promise<boolean> {
+    return this.witnessStatementService.verifyStatement(statementId, verifiedBy);
   }
 
   async transcribeVoiceStatement(audioData: string): Promise<string> {
-    // Use speech-to-text service
-    this.logger.log('Transcribing voice statement');
-    return 'Transcribed text...';
+    return this.witnessStatementService.transcribeVoiceStatement(audioData);
   }
 
   // ============================================
   // Feature 22: Insurance Claim Export
   // ============================================
 
-  async generateClaim(
-    incidentId: string,
-    studentId: string,
-  ): Promise<InsuranceClaim> {
-    try {
-      const claim: InsuranceClaim = {
-        id: `IC-${Date.now()}`,
-        incidentId,
-        studentId,
-        claimNumber: `CLM-${Date.now()}`,
-        insuranceProvider: 'To be determined',
-        claimAmount: 0,
-        status: 'draft',
-        documents: [],
-      };
-
-      this.logger.log('Insurance claim generated', { claimId: claim.id });
-      return claim;
-    } catch (error) {
-      this.logger.error('Error generating insurance claim', error);
-      throw error;
-    }
+  async generateClaim(incidentId: string, studentId: string): Promise<InsuranceClaim> {
+    return this.insuranceClaimService.createClaim(incidentId, studentId);
   }
 
-  async exportClaimToFormat(
-    claimId: string,
-    format: 'pdf' | 'xml' | 'edi',
-  ): Promise<string> {
-    this.logger.log('Exporting claim', { claimId, format });
-    return '/exports/claim-xyz.' + format;
+  async exportClaimToFormat(claimId: string, format: 'pdf' | 'xml' | 'edi'): Promise<string> {
+    return this.insuranceClaimService.exportClaim(claimId, format);
   }
 
   async submitClaimElectronically(claimId: string): Promise<boolean> {
-    this.logger.log('Submitting claim electronically', { claimId });
-    return true;
+    return this.insuranceClaimService.submitClaimElectronically(claimId);
   }
 
   // ============================================
@@ -451,42 +175,15 @@ export class EnterpriseFeaturesService {
   // ============================================
 
   async performComplianceAudit(): Promise<HIPAAComplianceCheck[]> {
-    try {
-      const checks: HIPAAComplianceCheck[] = [
-        {
-          id: 'HIPAA-1',
-          area: 'Access Controls',
-          status: 'compliant',
-          findings: ['All users have unique IDs', 'MFA enabled'],
-          recommendations: [],
-          checkedAt: new Date(),
-        },
-        {
-          id: 'HIPAA-2',
-          area: 'Audit Logs',
-          status: 'compliant',
-          findings: ['All PHI access logged', 'Logs retained for 6 years'],
-          recommendations: [],
-          checkedAt: new Date(),
-        },
-      ];
-
-      this.logger.log('HIPAA compliance audit completed', {
-        checkCount: checks.length,
-      });
-      return checks;
-    } catch (error) {
-      this.logger.error('Error performing HIPAA audit', error);
-      throw error;
-    }
+    return this.hipaaComplianceService.performComplianceAudit();
   }
 
-  async generateComplianceReport(startDate: Date, endDate: Date): Promise<any> {
-    return {
-      period: { startDate, endDate },
-      overallStatus: 'compliant',
-      checks: [],
-    };
+  async generateComplianceReport(startDate: Date, endDate: Date): Promise<{
+    period: { startDate: Date; endDate: Date };
+    overallStatus: string;
+    checks: HIPAAComplianceCheck[];
+  }> {
+    return this.hipaaComplianceService.generateComplianceReport(startDate, endDate);
   }
 
   // ============================================
@@ -494,19 +191,11 @@ export class EnterpriseFeaturesService {
   // ============================================
 
   async trackRegulationChanges(state: string): Promise<RegulationUpdate[]> {
-    try {
-      // Monitor state regulation databases
-      this.logger.log('Tracking regulation changes', { state });
-      return [];
-    } catch (error) {
-      this.logger.error('Error tracking regulations', error);
-      throw error;
-    }
+    return this.regulationTrackingService.trackRegulationChanges(state);
   }
 
   async assessImpact(regulationId: string): Promise<string[]> {
-    // Assess impact on current practices
-    return ['Update documentation', 'Train staff', 'Modify workflows'];
+    return this.regulationTrackingService.assessImpact(regulationId);
   }
 
   // ============================================
@@ -519,34 +208,7 @@ export class EnterpriseFeaturesService {
     content: string,
     expiresAt?: Date,
   ): Promise<ConsentForm> {
-    try {
-      const form: ConsentForm = {
-        id: `CF-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`,
-        studentId,
-        formType,
-        status: 'pending',
-        content,
-        createdAt: new Date(),
-        expiresAt:
-          expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
-        version: '1.0',
-        metadata: {
-          createdBy: 'system',
-          ipAddress: 'unknown',
-        },
-      };
-
-      // In production, save to ConsentForm table
-      this.logger.log('Consent form created', {
-        formId: form.id,
-        formType,
-        studentId,
-      });
-      return form;
-    } catch (error) {
-      this.logger.error('Error creating consent form', error);
-      throw error;
-    }
+    return this.consentFormService.createConsentForm(studentId, formType, content, expiresAt);
   }
 
   async signForm(
@@ -556,97 +218,19 @@ export class EnterpriseFeaturesService {
     ipAddress?: string,
     userAgent?: string,
   ): Promise<boolean> {
-    try {
-      const signatureHash = crypto
-        .createHash('sha256')
-        .update(signature)
-        .digest('hex');
-
-      const signatureData = {
-        formId,
-        signedBy,
-        signatureHash,
-        signedAt: new Date(),
-        ipAddress,
-        userAgent,
-        verified: true,
-      };
-
-      // In production:
-      // 1. Update ConsentForm status to 'signed'
-      // 2. Store signature in DocumentSignature table
-      // 3. Create audit log entry
-      // 4. Send confirmation notification
-
-      this.logger.log('Consent form signed', {
-        formId,
-        signedBy,
-        ipAddress,
-        timestamp: signatureData.signedAt,
-      });
-
-      return true;
-    } catch (error) {
-      this.logger.error('Error signing consent form', { error, formId });
-      return false;
-    }
+    return this.consentFormService.signForm(formId, signedBy, signature, ipAddress, userAgent);
   }
 
   async verifySignature(formId: string, signature: string): Promise<boolean> {
-    try {
-      const signatureHash = crypto
-        .createHash('sha256')
-        .update(signature)
-        .digest('hex');
-
-      // In production, compare with stored signature hash
-      this.logger.log('Signature verification', { formId });
-      return true;
-    } catch (error) {
-      this.logger.error('Error verifying signature', { error, formId });
-      return false;
-    }
+    return this.consentFormService.verifySignature(formId, signature);
   }
 
-  async revokeConsent(
-    formId: string,
-    revokedBy: string,
-    reason: string,
-  ): Promise<boolean> {
-    try {
-      // In production:
-      // 1. Update form status to 'revoked'
-      // 2. Record revocation reason and timestamp
-      // 3. Create audit log entry
-      // 4. Notify relevant parties
-
-      this.logger.log('Consent form revoked', { formId, revokedBy, reason });
-      return true;
-    } catch (error) {
-      this.logger.error('Error revoking consent', { error, formId });
-      return false;
-    }
+  async revokeConsent(formId: string, revokedBy: string, reason: string): Promise<boolean> {
+    return this.consentFormService.revokeConsent(formId, revokedBy, reason);
   }
 
   async checkFormsExpiringSoon(days: number = 30): Promise<ConsentForm[]> {
-    try {
-      // In production, query ConsentForm table where:
-      // - status = 'signed'
-      // - expiresAt between now and (now + days)
-
-      const expiryDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-
-      this.logger.log('Checking for expiring consent forms', {
-        days,
-        expiryDate,
-      });
-
-      // Return forms expiring within specified days
-      return [];
-    } catch (error) {
-      this.logger.error('Error checking expiring forms', error);
-      return [];
-    }
+    return this.consentFormService.checkFormsExpiringSoon(days);
   }
 
   async renewConsentForm(
@@ -654,145 +238,50 @@ export class EnterpriseFeaturesService {
     extendedBy: string,
     additionalYears: number = 1,
   ): Promise<ConsentForm | null> {
-    try {
-      // In production:
-      // 1. Create new version of the form
-      // 2. Update expiresAt date
-      // 3. Maintain form history
-      // 4. Notify parent/guardian for re-signature
-
-      const newExpiryDate = new Date(
-        Date.now() + additionalYears * 365 * 24 * 60 * 60 * 1000,
-      );
-
-      this.logger.log('Consent form renewed', {
-        formId,
-        extendedBy,
-        newExpiryDate,
-        additionalYears,
-      });
-
-      return null; // Return renewed form
-    } catch (error) {
-      this.logger.error('Error renewing consent form', { error, formId });
-      return null;
-    }
+    return this.consentFormService.renewConsentForm(formId, extendedBy, additionalYears);
   }
 
-  async getConsentFormsByStudent(
-    studentId: string,
-    status?: string,
-  ): Promise<ConsentForm[]> {
-    try {
-      // In production, query ConsentForm table
-      this.logger.log('Fetching student consent forms', { studentId, status });
-      return [];
-    } catch (error) {
-      this.logger.error('Error fetching consent forms', { error, studentId });
-      return [];
-    }
+  async getConsentFormsByStudent(studentId: string, status?: string): Promise<ConsentForm[]> {
+    return this.consentFormService.getConsentFormsByStudent(studentId, status);
   }
 
-  async getConsentFormHistory(formId: string): Promise<any[]> {
-    try {
-      // In production, return version history of the form
-      this.logger.log('Fetching consent form history', { formId });
-      return [];
-    } catch (error) {
-      this.logger.error('Error fetching form history', { error, formId });
-      return [];
-    }
+  async getConsentFormHistory(formId: string): Promise<Array<Record<string, unknown>>> {
+    return this.consentFormService.getConsentFormHistory(formId);
   }
 
   async sendReminderForUnsignedForms(): Promise<number> {
-    try {
-      // In production:
-      // 1. Query for forms with status='pending' created > 7 days ago
-      // 2. Send reminder notifications to parents/guardians
-      // 3. Track reminder attempts
-
-      const remindersSent = 0; // Count of reminders sent
-
-      this.logger.log('Sent reminders for unsigned consent forms', {
-        count: remindersSent,
-      });
-      return remindersSent;
-    } catch (error) {
-      this.logger.error('Error sending reminders', error);
-      return 0;
-    }
+    return this.consentFormService.sendReminderForUnsignedForms();
   }
 
   async generateConsentFormTemplate(
     formType: string,
     studentId: string,
-  ): Promise<{ html: string; variables: Record<string, any> }> {
-    try {
-      // In production:
-      // 1. Fetch form template by type
-      // 2. Get student and school information
-      // 3. Populate template with data
-
-      const variables = {
-        studentName: 'Student Name',
-        schoolName: 'School Name',
-        formType,
-        date: new Date().toLocaleDateString(),
-      };
-
-      const html = `
-        <div>
-          <h2>${formType} Consent Form</h2>
-          <p>Student: ${variables.studentName}</p>
-          <p>School: ${variables.schoolName}</p>
-          <p>Date: ${variables.date}</p>
-        </div>
-      `;
-
-      this.logger.log('Consent form template generated', {
-        formType,
-        studentId,
-      });
-      return { html, variables };
-    } catch (error) {
-      this.logger.error('Error generating form template', { error, formType });
-      throw error;
-    }
+  ): Promise<{ html: string; variables: Record<string, string> }> {
+    return this.consentFormService.generateConsentFormTemplate(formType, studentId);
   }
 
   // ============================================
   // Feature 26: Message Template Library
   // ============================================
 
-  async createTemplate(
-    data: Omit<MessageTemplate, 'id' | 'createdAt'>,
-  ): Promise<MessageTemplate> {
-    try {
-      const template: MessageTemplate = {
-        ...data,
-        id: `MT-${Date.now()}`,
-        createdAt: new Date(),
-      };
-
-      this.logger.log('Message template created', { templateId: template.id });
-      return template;
-    } catch (error) {
-      this.logger.error('Error creating message template', error);
-      throw error;
-    }
+  async createTemplate(data: Omit<MessageTemplate, 'id' | 'createdAt'>): Promise<MessageTemplate> {
+    return this.messageTemplateService.createMessageTemplate(
+      data.name,
+      data.category,
+      data.subject,
+      data.body,
+      data.variables,
+      data.language,
+      data.createdBy,
+    );
   }
 
-  async renderTemplate(
-    templateId: string,
-    variables: { [key: string]: string },
-  ): Promise<string> {
-    // Replace variables in template
-    this.logger.log('Rendering template', { templateId });
-    return 'Rendered message...';
+  async renderTemplate(templateId: string, variables: Record<string, string>): Promise<string> {
+    return this.messageTemplateService.renderMessageTemplate(templateId, variables);
   }
 
   async getTemplatesByCategory(category: string): Promise<MessageTemplate[]> {
-    return [];
+    return this.messageTemplateService.getMessageTemplatesByCategory(category);
   }
 
   // ============================================
@@ -802,100 +291,43 @@ export class EnterpriseFeaturesService {
   async sendBulkMessage(
     data: Omit<BulkMessage, 'id' | 'status' | 'deliveryStats'>,
   ): Promise<BulkMessage> {
-    try {
-      const message: BulkMessage = {
-        ...data,
-        id: `BM-${Date.now()}`,
-        status: 'sending',
-        deliveryStats: { sent: 0, delivered: 0, failed: 0, opened: 0 },
-      };
-
-      // Send to all recipients
-      this.logger.log('Bulk message initiated', {
-        messageId: message.id,
-        recipientCount: data.recipients.length,
-      });
-      return message;
-    } catch (error) {
-      this.logger.error('Error sending bulk message', error);
-      throw error;
-    }
+    return this.bulkMessagingService.sendBulkMessage(data.subject, data.body, data.recipients, data.channels);
   }
 
-  async trackDelivery(messageId: string): Promise<any> {
-    // Return delivery statistics
-    return { delivered: 100, failed: 0, opened: 75 };
+  async trackDelivery(messageId: string): Promise<{ delivered: number; failed: number; opened: number }> {
+    return this.bulkMessagingService.getDeliveryStats(messageId);
   }
 
   // ============================================
   // Feature 28: Language Translation for Communications
   // ============================================
 
-  async translateMessage(
-    text: string,
-    targetLanguage: string,
-  ): Promise<string> {
-    try {
-      // Use translation API (Google Translate, AWS Translate, etc.)
-      this.logger.log('Translating message', {
-        targetLanguage,
-        textLength: text.length,
-      });
-      return `[${targetLanguage.toUpperCase()}] ${text}`;
-    } catch (error) {
-      this.logger.error('Translation error', error);
-      throw error;
-    }
+  async translateMessage(text: string, targetLanguage: string): Promise<string> {
+    return this.translationService.translateText(text, targetLanguage);
   }
 
   async detectLanguage(text: string): Promise<string> {
-    // Detect the language of the text
-    return 'en';
+    return this.translationService.detectLanguage(text);
   }
 
-  async translateBulkMessages(
-    messages: string[],
-    targetLanguage: string,
-  ): Promise<string[]> {
-    return Promise.all(
-      messages.map((msg) => this.translateMessage(msg, targetLanguage)),
-    );
+  async translateBulkMessages(messages: string[], targetLanguage: string): Promise<string[]> {
+    return this.translationService.translateBulk(messages, targetLanguage);
   }
 
   // ============================================
   // Feature 29: Custom Report Builder
   // ============================================
 
-  async createReportDefinition(
-    data: Omit<ReportDefinition, 'id'>,
-  ): Promise<ReportDefinition> {
-    try {
-      const report: ReportDefinition = {
-        ...data,
-        id: `RPT-${Date.now()}`,
-      };
-
-      this.logger.log('Custom report definition created', {
-        reportId: report.id,
-      });
-      return report;
-    } catch (error) {
-      this.logger.error('Error creating report definition', error);
-      throw error;
-    }
+  async createReportDefinition(data: Omit<ReportDefinition, 'id'>): Promise<ReportDefinition> {
+    return this.reportBuilderService.createReport(data);
   }
 
-  async executeReport(reportId: string): Promise<any> {
-    this.logger.log('Executing custom report', { reportId });
-    return { data: [], metadata: {} };
+  async executeReport(reportId: string): Promise<{ data: Record<string, unknown>[]; metadata: Record<string, unknown> }> {
+    return this.reportBuilderService.executeReport(reportId);
   }
 
-  async exportReport(
-    reportId: string,
-    format: 'pdf' | 'excel' | 'csv',
-  ): Promise<string> {
-    this.logger.log('Exporting report', { reportId, format });
-    return `/exports/report.${format}`;
+  async exportReport(reportId: string, format: 'pdf' | 'excel' | 'csv'): Promise<string> {
+    return this.reportBuilderService.exportReport(reportId, format);
   }
 
   // ============================================
@@ -903,41 +335,10 @@ export class EnterpriseFeaturesService {
   // ============================================
 
   async getRealtimeMetrics(): Promise<DashboardMetric[]> {
-    try {
-      const metrics: DashboardMetric[] = [
-        {
-          name: 'Active Students',
-          value: 1250,
-          trend: 'up',
-          change: 2.5,
-          unit: 'students',
-        },
-        {
-          name: 'Appointments Today',
-          value: 45,
-          trend: 'stable',
-          change: 0,
-          unit: 'appointments',
-        },
-        {
-          name: 'Medications Administered',
-          value: 120,
-          trend: 'up',
-          change: 5,
-          unit: 'doses',
-        },
-      ];
-
-      this.logger.log('Real-time metrics retrieved');
-      return metrics;
-    } catch (error) {
-      this.logger.error('Error getting real-time metrics', error);
-      throw error;
-    }
+    return this.analyticsService.getRealtimeMetrics();
   }
 
-  async getHealthTrends(period: 'day' | 'week' | 'month'): Promise<any> {
-    this.logger.log('Getting health trends', { period });
-    return { trends: [] };
+  async getHealthTrends(period: 'day' | 'week' | 'month'): Promise<HealthTrendData> {
+    return this.analyticsService.getHealthTrends(period);
   }
 }

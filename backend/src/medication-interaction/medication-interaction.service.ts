@@ -1,14 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { StudentMedication } from '../database/models/student-medication.model';
-import { Medication } from '../database/models/medication.model';
+import { StudentMedication } from '@/database/models';
+import { Medication } from '@/database/models';
 import { DrugInteractionDto, InteractionCheckResultDto, InteractionSeverity } from './dto';
 
+import { BaseService } from '@/common/base';
 /**
  * Medication Interaction Checker Service
  * Checks for drug-drug interactions and contraindications
  *
- * Migrated from backend/src/services/medicationInteractionService.ts
+ * Migrated from backend/s@/services/medicationInteractionService.ts
  * LOC: 161334FAAD
  */
 
@@ -35,13 +36,13 @@ const KNOWN_INTERACTIONS: { [key: string]: DrugInteractionDto[] } = {
 };
 
 @Injectable()
-export class MedicationInteractionService {
-  private readonly logger = new Logger(MedicationInteractionService.name);
-
+export class MedicationInteractionService extends BaseService {
   constructor(
     @InjectModel(StudentMedication)
     private readonly studentMedicationModel: typeof StudentMedication,
-  ) {}
+  ) {
+    super("MedicationInteractionService");
+  }
 
   /**
    * Check for interactions in student's current medications
@@ -69,7 +70,7 @@ export class MedicationInteractionService {
       const hasInteractions = interactions.length > 0;
       const safetyScore = this.calculateSafetyScore(interactions);
 
-      this.logger.log({
+      this.logInfo({
         message: 'Medication interaction check completed',
         studentId,
         medicationCount: medications.length,
@@ -82,7 +83,7 @@ export class MedicationInteractionService {
         safetyScore,
       };
     } catch (error) {
-      this.logger.error('Error checking medication interactions', {
+      this.logError('Error checking medication interactions', {
         error,
         studentId,
       });
@@ -117,7 +118,7 @@ export class MedicationInteractionService {
       const hasInteractions = interactions.length > 0;
       const safetyScore = this.calculateSafetyScore(interactions);
 
-      this.logger.log({
+      this.logInfo({
         message: 'New medication interaction check completed',
         studentId,
         newMedication: newMedicationName,
@@ -130,7 +131,7 @@ export class MedicationInteractionService {
         safetyScore,
       };
     } catch (error) {
-      this.logger.error('Error checking new medication interactions', {
+      this.logError('Error checking new medication interactions', {
         error,
       });
       throw error;
@@ -165,7 +166,7 @@ export class MedicationInteractionService {
 
       return recommendations;
     } catch (error) {
-      this.logger.error('Error getting interaction recommendations', { error });
+      this.logError('Error getting interaction recommendations', { error });
       throw error;
     }
   }

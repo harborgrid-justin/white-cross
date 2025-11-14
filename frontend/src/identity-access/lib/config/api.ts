@@ -12,9 +12,9 @@
  * API base URLs for different environments
  */
 export const API_BASE_URLS = {
-  development: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  development: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
   production: process.env.NEXT_PUBLIC_API_URL || '/api',
-  test: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+  test: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
 } as const;
 
 /**
@@ -61,62 +61,62 @@ export const API_HEADERS = {
  */
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    REGISTER: '/auth/register',
-    VERIFY: '/auth/verify',
-    REFRESH: '/auth/refresh',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-    CHANGE_PASSWORD: '/auth/change-password',
-    PROFILE: '/auth/profile',
+    LOGIN: '/api/v1/auth/login',
+    LOGOUT: '/api/v1/auth/logout',
+    REGISTER: '/api/v1/auth/register',
+    VERIFY: '/api/v1/auth/verify',
+    REFRESH: '/api/v1/auth/refresh',
+    FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
+    RESET_PASSWORD: '/api/v1/auth/reset-password',
+    CHANGE_PASSWORD: '/api/v1/auth/change-password',
+    PROFILE: '/api/v1/auth/profile',
   },
   USERS: {
-    BASE: '/users',
-    ME: '/users/me',
-    BY_ID: (id: string) => `/users/${id}`,
-    PERMISSIONS: (id: string) => `/users/${id}/permissions`,
+    BASE: '/api/v1/users',
+    ME: '/api/v1/users/me',
+    BY_ID: (id: string) => `/api/v1/users/${id}`,
+    PERMISSIONS: (id: string) => `/api/v1/users/${id}/permissions`,
   },
   STUDENTS: {
-    BASE: '/students',
-    BY_ID: (id: string) => `/students/${id}`,
-    HEALTH_RECORDS: (id: string) => `/students/${id}/health-records`,
+    BASE: '/api/v1/students',
+    BY_ID: (id: string) => `/api/v1/students/${id}`,
+    HEALTH_RECORDS: (id: string) => `/api/v1/students/${id}/health-records`,
   },
   MEDICATIONS: {
-    BASE: '/medications',
-    BY_ID: (id: string) => `/medications/${id}`,
-    ADMINISTER: (id: string) => `/medications/${id}/administer`,
+    BASE: '/api/v1/medications',
+    BY_ID: (id: string) => `/api/v1/medications/${id}`,
+    ADMINISTER: (id: string) => `/api/v1/medications/${id}/administer`,
   },
   HEALTH_RECORDS: {
-    BASE: '/health-records',
-    BY_ID: (id: string) => `/health-records/${id}`,
+    BASE: '/api/v1/health-records',
+    BY_ID: (id: string) => `/api/v1/health-records/${id}`,
   },
   INCIDENTS: {
-    BASE: '/incidents',
-    BY_ID: (id: string) => `/incidents/${id}`,
+    BASE: '/api/v1/incidents',
+    BY_ID: (id: string) => `/api/v1/incidents/${id}`,
   },
   APPOINTMENTS: {
-    BASE: '/appointments',
-    BY_ID: (id: string) => `/appointments/${id}`,
-    AVAILABILITY: '/appointments/availability',
-    REMINDERS: '/appointments/reminders',
+    BASE: '/api/v1/appointments',
+    BY_ID: (id: string) => `/api/v1/appointments/${id}`,
+    AVAILABILITY: '/api/v1/appointments/availability',
+    REMINDERS: '/api/v1/appointments/reminders',
   },
   FORMS: {
-    BASE: '/forms',
-    BY_ID: (id: string) => `/forms/${id}`,
+    BASE: '/api/v1/forms',
+    BY_ID: (id: string) => `/api/v1/forms/${id}`,
   },
   DOCUMENTS: {
-    BASE: '/documents',
-    BY_ID: (id: string) => `/documents/${id}`,
+    BASE: '/api/v1/documents',
+    BY_ID: (id: string) => `/api/v1/documents/${id}`,
   },
   COMPLIANCE: {
-    BASE: '/compliance',
-    AUDIT_LOGS: '/compliance/audit-logs',
-    REPORTS: '/compliance/reports',
+    BASE: '/api/v1/compliance',
+    AUDIT_LOGS: '/api/v1/compliance/audit-logs',
+    REPORTS: '/api/v1/compliance/reports',
   },
   ANALYTICS: {
-    BASE: '/analytics',
-    METRICS: '/analytics/metrics',
+    BASE: '/api/v1/analytics',
+    METRICS: '/api/v1/analytics/metrics',
   },
 } as const;
 

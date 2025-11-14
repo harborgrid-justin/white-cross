@@ -10,5 +10,5 @@ export * from './medication-interaction.service';
 
 // Submodules
 export * from './dto';
-export * from './entities';
+export { Medication, StudentMedication } from '@/database/models';
 

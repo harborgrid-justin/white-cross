@@ -9,6 +9,7 @@ import { Op } from 'sequelize';
 import { AuditAction } from '../types/database.enums';
 import { AuditLog, AuditSeverity, ComplianceType } from '../models/audit-log.model';
 
+import { BaseService } from '@/common/base';
 /**
  * Interface for audit log query filters
  */
@@ -48,13 +49,13 @@ export interface AuditLogQueryOptions {
  * - PHI access log retrieval
  */
 @Injectable()
-export class AuditQueryService {
-  private readonly logger = new Logger(AuditQueryService.name);
-
+export class AuditQueryService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private readonly auditLogModel: typeof AuditLog,
-  ) {}
+  ) {
+    super("AuditQueryService");
+  }
 
   /**
    * Query audit logs with filters and pagination
@@ -124,7 +125,7 @@ export class AuditQueryService {
         pages: Math.ceil(total / limit),
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to query audit logs: ${error.message}`,
         error.stack,
       );

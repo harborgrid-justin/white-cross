@@ -1,0 +1,6540 @@
+{
+  "timestamp": "2025-11-14T18:48:44.245Z",
+  "models": [
+    {
+      "tableName": "witness_statements",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "statement",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verifiedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verifiedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "webhooks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "events",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "headers",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "vital_signs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "measurementDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "temperature",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "heartRate",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "respiratoryRate",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "bloodPressureSystolic",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "bloodPressureDiastolic",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "oxygenSaturation",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "weight",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "height",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "bmi",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "pain",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isAbnormal",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "abnormalFlags",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "vendors",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "address",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "paymentTerms",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "vaccinations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "healthRecordId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "doseNumber",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "totalDoses",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "seriesComplete",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reactions",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "adverseEvents",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "exemptionStatus",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "exemptionReason",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "vfcEligibility",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "visProvided",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "visDate",
+          "type": "DATEONLY",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "consentObtained",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "email",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "password",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "firstName",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastName",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastLogin",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "districtId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "emailVerified",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "emailVerificationToken",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "emailVerificationExpires",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "passwordResetToken",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "passwordResetExpires",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "passwordChangedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "twoFactorEnabled",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "twoFactorSecret",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failedLoginAttempts",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lockoutUntil",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastPasswordChange",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "mustChangePassword",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "mfaEnabled",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "mfaBackupCodes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "mfaEnabledAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "oauthProviderId",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "profilePictureUrl",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isEmailVerified",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "emailVerifiedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "treatment_plans",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "diagnosis",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "planDetails",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "startDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "endDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "prescribedBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "training_modules",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "duration",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completionCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "threat_detections",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "details",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isResolved",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "system_configurations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "value",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isPublic",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isEditable",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiresRestart",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sortOrder",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "sync_states",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "entityId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastSyncAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "errorMessage",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "sync_sessions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "configId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "stats",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "recordsProcessed",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "recordsSuccessful",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "recordsFailed",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "completionMessage",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "sync_queue_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "data",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "timestamp",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "syncedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "attempts",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "maxAttempts",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastError",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "conflictDetected",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiresOnline",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "sync_conflicts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "clientVersion",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "serverVersion",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "mergedData",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "suppliers",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "address",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "students",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "enrollmentDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "nurseId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "districtId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "student_medications",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "medicationId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "instructions",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "startDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "endDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "refillsRemaining",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "student_drug_allergies",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "drugId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reaction",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "diagnosedDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "sis_sync_conflicts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "localValue",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "sisValue",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "resolvedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "sessions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "sessionToken",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "ipAddress",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "userAgent",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastAccessedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "security_incidents",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "title",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "ipAddress",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userAgent",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "resourceAccessed",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "detectedAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "detectionMethod",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "indicators",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "impact",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "assignedTo",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "resolvedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "resolution",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "preventiveMeasures",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "metadata",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "schools",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "address",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "totalEnrollment",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "report_templates",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "queryConfiguration",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "formatOptions",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "report_schedules",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "templateId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parameters",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recipients",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastExecutedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "nextExecutionAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "executionCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failureCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastError",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "report_executions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "scheduleId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parameters",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "fileSize",
+          "type": "BIGINT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recordCount",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "executionTimeMs",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "executedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "startedAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "remediation_actions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "violationId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "action",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "assignedTo",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "dueDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "implementationNotes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verificationNotes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verifiedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verifiedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "push_notifications",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userIds",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deviceTokens",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "body",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "data",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "actions",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "badge",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "ttl",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requireInteraction",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "silent",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "scheduledFor",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sentAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deliveredAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deliveryResults",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "totalRecipients",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "successfulDeliveries",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failedDeliveries",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "clickedCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "dismissedCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "retryCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "maxRetries",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "nextRetryAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "purchase_orders",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "vendorId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "orderDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expectedDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "receivedDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "purchase_order_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "purchaseOrderId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "inventoryItemId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "prescriptions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "visitId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "treatmentPlanId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "prescribedBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "quantityFilled",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "refillsAuthorized",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "refillsUsed",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "startDate",
+          "type": "DATEONLY",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "endDate",
+          "type": "DATEONLY",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "instructions",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "filledDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "pickedUpDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "policy_documents",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "effectiveDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reviewDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "approvedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "approvedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "policy_acknowledgments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "policyId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "phi_disclosures",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "disclosureDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "informationDisclosed",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "minimumNecessary",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recipientAddress",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "authorizationObtained",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "authorizationDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "authorizationExpiryDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "patientRequested",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "disclosedBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpRequired",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpCompleted",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "phi_disclosure_audits",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "disclosureId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "changes",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "performedBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userAgent",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "performance_metrics",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "tags",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "messages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "encryptedContent",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "encryptionMetadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recipientCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "scheduledAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "senderId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "templateId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parentId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "threadId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isEdited",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "editedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "message_templates",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdById",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "message_reads",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "messageId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "readAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "message_reactions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "messageId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "message_deliveries",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recipientId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sentAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deliveredAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failureReason",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "messageId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "mental_health_records",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recordDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "counselorId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "therapistId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "psychiatristId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sessionNotes",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "assessment",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "diagnosis",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "treatmentPlan",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpRequired",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpCompleted",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "referralReason",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parentNotified",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parentNotificationDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "attachments",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "accessLog",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "medications",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isControlled",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiresWitness",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deletedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "medication_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "medicationId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "scheduledAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "administeredAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reasonNotGiven",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "medical_history",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "diagnosisDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "treatment",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "medication",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isFamilyHistory",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isCritical",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiresMonitoring",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "maintenance_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "inventoryItemId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "performedById",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "nextMaintenanceDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "login_attempts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "username",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "ipAddress",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userAgent",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "success",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failureReason",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "metadata",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "licenses",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "maxUsers",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "maxSchools",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "issuedAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "activatedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deactivatedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "lab_results",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "orderedDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "collectionDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resultDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "result",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resultValue",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isAbnormal",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "abnormalFlags",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "interpretation",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reviewedDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "ip_restrictions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "ipAddress",
+          "type": "STRING",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "ipRange",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "countries",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "reason",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "createdBy",
+          "type": "STRING",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "inventory_transactions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "inventoryItemId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expirationDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "performedById",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "inventory_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reorderLevel",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reorderQuantity",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "integration_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recordsProcessed",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "recordsSucceeded",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "recordsFailed",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "duration",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "errorMessage",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "details",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "integration_configs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "endpoint",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "apiKey",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "password",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "settings",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "authentication",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "syncFrequency",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "incident_reports",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reportedById",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "actionsTaken",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parentNotified",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parentNotifiedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "parentNotifiedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpRequired",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpNotes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "occurredAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "immunizations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "administeredDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expirationDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "administeredBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "health_screenings",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "screeningDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "results",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "passed",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "conductedBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "health_records",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recordDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "diagnosis",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "treatment",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpRequired",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpCompleted",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "attachments",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isConfidential",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "health_metric_snapshots",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "snapshotDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "growth_tracking",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "measurementDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "height",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "weight",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "bmi",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "percentileHeight",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "percentileWeight",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "percentileBmi",
+          "type": "FLOAT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "measuredBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "follow_up_appointments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "originalVisitId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "scheduledBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "durationMinutes",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reason",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "assignedTo",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reminderSent",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reminderSentAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "confirmedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedVisitId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "cancelledAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "cancellationReason",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "rescheduledFromId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "rescheduledToId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "follow_up_actions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "action",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "emergency_contacts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "address",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastVerifiedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "canPickupStudent",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": [
+        "idx_emergency_contacts_student_id"
+      ]
+    },
+    {
+      "tableName": "emergency_broadcasts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "message",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "audience",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "classId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "groupIds",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "channels",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiresAcknowledgment",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sentBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sentAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "totalRecipients",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deliveredCount",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failedCount",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "acknowledgedCount",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpRequired",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "followUpMessage",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "drug_interactions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "clinicalEffects",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "management",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "references",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "drug_catalog",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "brandNames",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "fdaApproved",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "commonDoses",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sideEffects",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "contraindications",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "warnings",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "documents",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "fileSize",
+          "type": "BIGINT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "fileUrl",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "templateData",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "version",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "document_signatures",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "document_audit_trails",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "changes",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "districts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "address",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "device_tokens",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "token",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isValid",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastValidated",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "allowNotifications",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "allowSound",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "allowBadge",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastUsedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "delivery_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "alertId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recipientId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "success",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "attemptCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastAttempt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deliveredAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "errorMessage",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "data_retention_policies",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "retentionPeriodDays",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "legalBasis",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "autoDelete",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastReviewedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastReviewedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "conversations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "tenantId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdById",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastMessageAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isArchived",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "conversation_participants",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "conversationId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "joinedAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastReadAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isMuted",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isPinned",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "contacts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "relationTo",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "customFields",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "deletedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "consent_signatures",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "consentFormId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "signatureData",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "withdrawnAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "consent_forms",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "configuration_history",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "oldValue",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "newValue",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "compliance_violations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reportedBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "discoveredAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "affectedStudents",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "affectedDataCategories",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "rootCause",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "assignedTo",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolutionNotes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "compliance_reports",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "findings",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recommendations",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "dueDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "submittedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "submittedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reviewedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reviewedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdById",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "compliance_checklist_items",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "evidence",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "dueDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reportId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "clinical_protocols",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "indications",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "contraindications",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "steps",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "decisionPoints",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiredEquipment",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "medications",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "approvedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "approvedDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "effectiveDate",
+          "type": "DATEONLY",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reviewDate",
+          "type": "DATEONLY",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "references",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "tags",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "clinical_notes",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "visitId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "subjective",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "objective",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "assessment",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "plan",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "tags",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isConfidential",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isSigned",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "signedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "amended",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "amendmentReason",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "clinic_visits",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reasonForVisit",
+          "type": "JSON",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "symptoms",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "treatment",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "classesMissed",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "minutesMissed",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "chronic_conditions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "healthRecordId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "diagnosedDate",
+          "type": "DATEONLY",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "carePlan",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "emergencyProtocol",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastReviewDate",
+          "type": "DATEONLY",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "cache_entries",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "data",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "tags",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "accessCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastAccessed",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "dataSize",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": [
+        "idx_cache_key"
+      ]
+    },
+    {
+      "tableName": "budget_transactions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "categoryId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "transactionDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "budget_categories",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "fiscalYear",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "backup_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "fileSize",
+          "type": "BIGINT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "location",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "triggeredBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "error",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "audit_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userAgent",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sessionId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isPHI",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "success",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "errorMessage",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "appointments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "nurseId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "scheduledAt",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "duration",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recurringGroupId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recurringEndDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "appointment_waitlist",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "nurseId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "preferredDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "duration",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notifiedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "appointment_reminders",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "appointmentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "scheduledFor",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sentAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "failureReason",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "message",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "api_keys",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "scopes",
+          "type": "JSON",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastUsedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "usageCount",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": true
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "analytics_reports",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "periodStart",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "periodEnd",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "generatedDate",
+          "type": "DATE",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "summary",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sections",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "findings",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "recommendations",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "fileSize",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "generatedBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reviewedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reviewedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "approvedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "approvalDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "distributionList",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "sentAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "allergies",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "symptoms",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "reactions",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "treatment",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "emergencyProtocol",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "onsetDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "diagnosedDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verified",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verifiedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "verificationDate",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "active",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "epiPenRequired",
+          "type": "BOOLEAN",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "epiPenExpiration",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "healthRecordId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "alerts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "definitionId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "message",
+          "type": "TEXT",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "acknowledgedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "acknowledgedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "resolvedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "autoEscalateAfter",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "escalationLevel",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiresAcknowledgment",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "alert_rules",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "priority",
+          "type": "INTEGER",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "triggerConditions",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "notificationChannels",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "districtId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "autoEscalateAfter",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "cooldownPeriod",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "requiresAcknowledgment",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "expiresAfter",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "createdBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "updatedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "lastTriggered",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "triggerCount",
+          "type": "INTEGER",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "alert_preferences",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "userId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "schoolId",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "isActive",
+          "type": "BOOLEAN",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    },
+    {
+      "tableName": "academic_transcripts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "studentId",
+          "type": "UUID",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "subjects",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "attendance",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "behavior",
+          "type": "JSONB",
+          "allowNull": false,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "importedBy",
+          "type": "UUID",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "importedAt",
+          "type": "DATE",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        },
+        {
+          "name": "metadata",
+          "type": "JSONB",
+          "allowNull": true,
+          "unique": false,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    }
+  ],
+  "totalModels": 100,
+  "totalColumns": 847
+}

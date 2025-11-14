@@ -21,6 +21,9 @@ export * from './exceptions/retryable.exception';
 export * from './student.exceptions';
 export * from './user.exceptions';
 
+// Exception strategies
+export * from './exception-filter-strategies.service';
+
 // Types
 export * from './types/error-response.types';
 

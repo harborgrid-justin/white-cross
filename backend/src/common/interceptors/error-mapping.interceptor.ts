@@ -10,11 +10,11 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { BaseInterceptor } from './base.interceptor';
 import {
   ForeignKeyConstraintError,
   QueryError,
@@ -46,8 +46,10 @@ import {
  * // API:      409 Conflict { message: "Resource already exists", errorCode: "BUSINESS_002" }
  */
 @Injectable()
-export class ErrorMappingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(ErrorMappingInterceptor.name);
+export class ErrorMappingInterceptor extends BaseInterceptor implements NestInterceptor {
+  constructor() {
+    super();
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
@@ -59,14 +61,20 @@ export class ErrorMappingInterceptor implements NestInterceptor {
 
         // Map internal errors to HTTP exceptions
         const mappedError = this.mapError(error);
+        const { handler, controller } = this.getHandlerInfo(context);
 
-        // Log the original error for debugging
-        this.logger.error('Internal error occurred:', error.stack, {
-          originalError: error.name,
-          mappedStatus: mappedError.getStatus(),
-          context: context.getClass().name,
-          handler: context.getHandler().name,
-        });
+        // Log the original error for debugging using base class
+        this.logError(
+          `Error mapped in ${controller}.${handler}`,
+          error,
+          {
+            originalError: error.name,
+            mappedStatus: mappedError.getStatus(),
+            controller,
+            handler,
+            errorCode: (mappedError.getResponse() as any)?.errorCode,
+          },
+        );
 
         return throwError(() => mappedError);
       }),

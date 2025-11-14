@@ -20,7 +20,7 @@ import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logg
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { QueryOptions } from '../../../database/types';
-import { GrowthTracking } from '../../../database/models/growth-tracking.model';
+import { GrowthTracking } from '@/database/models';
 
 @Injectable()
 export class GrowthTrackingRepository

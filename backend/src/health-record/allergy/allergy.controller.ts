@@ -10,17 +10,29 @@ import {
   Put,
   Request,
   UseGuards,
+  Version,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AllergyService } from './allergy.service';
-import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { HealthRecordCreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
-import { CheckMedicationConflictsDto, MedicationConflictResponseDto } from './dto/check-conflicts.dto';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../../auth/decorators/roles.decorator';
-import { UserRole } from '../../database/models/user.model';
+import {
+  CheckMedicationConflictsDto,
+  MedicationConflictResponseDto,
+} from './dto/check-conflicts.dto';
+import { JwtAuthGuard } from '../../services/auth';
+import { RolesGuard } from '../../services/auth';
+import { Roles } from '../../services/auth';
+import { UserRole } from '@/database/models';
 
+import { BaseController } from '@/common/base';
 /**
  * Allergy Management Controller
  *
@@ -32,8 +44,10 @@ import { UserRole } from '../../database/models/user.model';
 @Controller('health-records/allergies')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class HealthRecordAllergyController {
-  constructor(private readonly allergyService: AllergyService) {}
+export class HealthRecordAllergyController extends BaseController {
+  constructor(private readonly allergyService: AllergyService) {
+    super();
+  }
 
   /**
    * Get allergy by ID
@@ -78,10 +92,7 @@ export class HealthRecordAllergyController {
     description: 'Forbidden - Must be assigned nurse or admin',
   })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async getStudentAllergies(
-    @Param('studentId') studentId: string,
-    @Request() req: any,
-  ) {
+  async getStudentAllergies(@Param('studentId') studentId: string, @Request() req: any) {
     return this.allergyService.findByStudent(studentId, req.user);
   }
 
@@ -94,7 +105,7 @@ export class HealthRecordAllergyController {
   @Post()
   @Roles(UserRole.ADMIN, UserRole.NURSE)
   @ApiOperation({ summary: 'Create new allergy record' })
-    @ApiBody({ type: CreateAllergyDto })
+  @ApiBody({ type: HealthRecordCreateAllergyDto })
   @ApiResponse({
     status: 201,
     description: 'The allergy record has been successfully created.',
@@ -115,10 +126,7 @@ export class HealthRecordAllergyController {
     status: 500,
     description: 'Internal server error.',
   })
-  async create(
-    @Request() req: any,
-    @Body() createAllergyDto: CreateAllergyDto,
-  ) {
+  async create(@Request() req: any, @Body() createAllergyDto: HealthRecordCreateAllergyDto) {
     return this.allergyService.create(createAllergyDto, req.user);
   }
 
@@ -198,8 +206,7 @@ export class HealthRecordAllergyController {
     );
 
     // Enhanced response with safety recommendations
-    let recommendation: 'SAFE' | 'CONSULT_PHYSICIAN' | 'DO_NOT_ADMINISTER' =
-      'SAFE';
+    let recommendation: 'SAFE' | 'CONSULT_PHYSICIAN' | 'DO_NOT_ADMINISTER' = 'SAFE';
     let warning: string | undefined;
 
     if (result.hasInteractions) {

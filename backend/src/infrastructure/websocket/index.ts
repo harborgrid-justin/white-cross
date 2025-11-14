@@ -29,7 +29,7 @@ export * from './interfaces';
 export * from './dto';
 export * from './guards';
 export * from './filters/ws-exception.filter';
-export * from './adapters/redis-io.adapter';
+export * from './adapters';
 export * from './services';
 
 // NEW: Enhanced WebSocket components

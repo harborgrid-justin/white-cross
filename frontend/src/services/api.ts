@@ -228,7 +228,7 @@ export {
   type ScreeningResult,
   type EmergencyType,
   type EmergencySeverity
-} from './modules/healthAssessmentsApi';
+} from './modules/healthAssessments';
 
 // Export billing API service
 export {

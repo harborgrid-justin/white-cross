@@ -25,7 +25,7 @@ import {
   selectIsBulkSelectMode,
   selectExpandedStudentCards,
   type StudentUIState,
-} from '@/stores/slices/studentsSlice';
+} from '@/stores/slices/students';
 import { studentKeys, CACHE_CONFIG } from './studentQueryKeys';
 import type {
   UseStudentsReturn,

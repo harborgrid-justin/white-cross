@@ -17,9 +17,9 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { AllergySeverity, AllergyType } from '../../../database/models/allergy.model';
+import { AllergySeverity, AllergyType } from '@/database/models';
 
-export class CreateAllergyDto {
+export class HealthRecordCreateAllergyDto {
   @ApiProperty({
     description: 'Student ID (UUID)',
     example: '550e8400-e29b-41d4-a716-446655440000',

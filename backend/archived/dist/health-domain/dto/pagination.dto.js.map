@@ -1,0 +1,1 @@
+{"version":3,"file":"pagination.dto.js","sourceRoot":"","sources":["../../../src/health-domain/dto/pagination.dto.ts"],"names":[],"mappings":";;;;AAAA,oEAAuF;AAMvD,8FANN,8BAAmB,OAMA;AAE7C,MAAa,cAAc;IACzB,IAAI,CAAS;IACb,KAAK,CAAS;IACd,KAAK,CAAS;IACd,KAAK,CAAS;;;;CACf;AALD,wCAKC;AAED,MAAa,iBAAiB;IAC5B,OAAO,CAAO;IACd,KAAK,CAAO;IACZ,IAAI,CAAO;IACX,UAAU,CAAiB;;;;CAC5B;AALD,8CAKC"}

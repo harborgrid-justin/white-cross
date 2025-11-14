@@ -4,20 +4,25 @@
  * @description HTTP endpoints for health screening management
  */
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Version } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ScreeningService } from './screening.service';
-import { BatchScreeningDto } from './dto/screening.dto';
-import { CreateReferralDto } from './dto/screening.dto';
-import { OverdueScreeningsQueryDto } from './dto/screening.dto';
-import { ScreeningScheduleQueryDto } from './dto/screening.dto';
-import { ScreeningStatisticsQueryDto } from './dto/screening.dto';
-
+import { 
+  BatchScreeningDto,
+  CreateReferralDto,
+  OverdueScreeningsQueryDto,
+  ScreeningScheduleQueryDto,
+  ScreeningStatisticsQueryDto
+} from './dto/screening.dto';
+import { BaseController } from '@/common/base';
 @ApiTags('health-records-screenings')
+
 @Controller('health-records/screenings')
 // @ApiBearerAuth()
-export class ScreeningController {
-  constructor(private readonly screeningService: ScreeningService) {}
+export class ScreeningController extends BaseController {
+  constructor(private readonly screeningService: ScreeningService) {
+    super();
+  }
 
   /**
    * GAP-SCREEN-001: Get all screenings for a student

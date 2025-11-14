@@ -18,8 +18,9 @@ import { CacheConnectionService } from './cache-connection.service';
 import { CacheSerializationService } from './cache-serialization.service';
 import type { CacheOptions } from './cache.interfaces';
 import { CacheEvent } from './cache.interfaces';
-import { Cleanup, MemorySensitive } from '@/discovery/modules';
+import { Cleanup, MemorySensitive } from '../../discovery/modules';
 
+import { BaseService } from '@/common/base';
 /**
  * L1 (memory) cache entry structure
  */
@@ -34,8 +35,7 @@ interface L1Entry<T = any> {
  * Service responsible for cache storage operations across L1 and L2 tiers
  */
 @Injectable()
-export class CacheStorageService {
-  private readonly logger = new Logger(CacheStorageService.name);
+export class CacheStorageService extends BaseService {
   private l1Cache: Map<string, L1Entry> = new Map();
   private l1CleanupInterval?: NodeJS.Timeout;
 
@@ -44,7 +44,8 @@ export class CacheStorageService {
     private readonly connectionService: CacheConnectionService,
     private readonly serializationService: CacheSerializationService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    super("CacheStorageService");}
 
   /**
    * Start L1 cache cleanup interval
@@ -84,7 +85,7 @@ export class CacheStorageService {
       }
     }
 
-    this.logger.warn('All cache cleared');
+    this.logWarning('All cache cleared');
   }
 
   /**
@@ -203,7 +204,7 @@ export class CacheStorageService {
 
       return await this.serializationService.deserialize<T>(value);
     } catch (error) {
-      this.logger.error(`L2 cache get error for key ${key}:`, error);
+      this.logError(`L2 cache get error for key ${key}:`, error);
       return null;
     }
   }
@@ -220,7 +221,7 @@ export class CacheStorageService {
     const redis = this.connectionService.getClient();
     if (!redis) {
       const error = new Error(`Redis not connected - cannot set key in L2 cache: ${key}`);
-      this.logger.warn(error.message, {
+      this.logWarning(error.message, {
         key,
         redisStatus: 'disconnected',
         fallback: 'L1 cache only',
@@ -250,7 +251,7 @@ export class CacheStorageService {
       await redis.del(key);
       return true;
     } catch (error) {
-      this.logger.error(`L2 cache delete error for key ${key}:`, error);
+      this.logError(`L2 cache delete error for key ${key}:`, error);
       return false;
     }
   }
@@ -271,7 +272,7 @@ export class CacheStorageService {
       const exists = await redis.exists(key);
       return exists === 1;
     } catch (error) {
-      this.logger.error(`L2 cache has error for key ${key}:`, error);
+      this.logError(`L2 cache has error for key ${key}:`, error);
       return false;
     }
   }
@@ -298,7 +299,7 @@ export class CacheStorageService {
     try {
       return await redis.keys(pattern);
     } catch (error) {
-      this.logger.error(`L2 cache keys error for pattern ${pattern}:`, error);
+      this.logError(`L2 cache keys error for pattern ${pattern}:`, error);
       return [];
     }
   }
@@ -341,7 +342,7 @@ export class CacheStorageService {
     }
 
     if (removed > 0) {
-      this.logger.debug(`L1 cache cleanup: removed ${removed} expired entries`);
+      this.logDebug(`L1 cache cleanup: removed ${removed} expired entries`);
     }
   }
 

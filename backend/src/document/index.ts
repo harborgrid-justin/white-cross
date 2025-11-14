@@ -10,6 +10,6 @@ export * from './document.service';
 
 // Submodules
 export * from './dto';
-export * from './entities';
+export { Document, DocumentSignature, DocumentAuditTrail } from '@/database/models';
 export * from './enums';
 

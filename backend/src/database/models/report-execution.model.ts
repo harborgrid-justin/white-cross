@@ -13,6 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum ReportType {
   HEALTH_REPORT = 'HEALTH_REPORT',
@@ -61,7 +62,7 @@ export interface ReportExecutionAttributes {
     where: {
       deletedAt: null,
     },
-    order: [['createdAt', 'DESC']],
+    order: [['startedAt', 'DESC']],
   },
 }))
 @Table({
@@ -69,12 +70,12 @@ export interface ReportExecutionAttributes {
   timestamps: false,
   indexes: [
     {
-      fields: ['createdAt'],
-      name: 'idx_report_execution_created_at',
+      fields: ['startedAt'],
+      name: 'idx_report_execution_started_at',
     },
     {
-      fields: ['updatedAt'],
-      name: 'idx_report_execution_updated_at',
+      fields: ['status', 'startedAt'],
+      name: 'idx_report_execution_status_started',
     },
   ],
 })
@@ -194,13 +195,9 @@ export class ReportExecution
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ReportExecution) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ReportExecution ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ReportExecution', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ReportExecution;

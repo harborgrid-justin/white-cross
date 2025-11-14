@@ -1,17 +1,20 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Request } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Request, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChronicConditionService } from './chronic-condition.service';
 import { CreateChronicConditionDto } from './dto/create-chronic-condition.dto';
 import { UpdateChronicConditionDto } from './dto/update-chronic-condition.dto';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
+import { ChronicCondition   } from '@/database/models';
 
+import { BaseController } from '@/common/base';
 @ApiTags('chronic-conditions')
 @ApiBearerAuth()
+
 @Controller('chronic-conditions')
-export class HealthRecordChronicConditionController {
+export class HealthRecordChronicConditionController extends BaseController {
   constructor(
     private readonly chronicConditionService: ChronicConditionService,
-  ) {}
+  ) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create a new chronic condition record' })

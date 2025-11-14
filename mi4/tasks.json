@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "Optimize Hapi.js route architecture and middleware chain",
+    "description": "Analyze backend/src/routes/v1/ domain structure for performance bottlenecks. Review authentication middleware, RBAC permission checking, and HIPAA audit logging efficiency. Focus on optimizing the healthcare middleware stack including validation, security headers, and rate limiting. Target 20-30% response time improvement.",
+    "status": "open",
+    "priority": "high",
+    "domain": "core",
+    "estimated_hours": 4
+  },
+  {
+    "id": 2,
+    "title": "Enhance Sequelize ORM query performance and caching",
+    "description": "Review backend/src/database/models for N+1 queries, missing indexes, and inefficient relationships. Implement Redis caching for frequently accessed healthcare data (non-PHI). Optimize student, health record, and medication queries. Add connection pooling tuning. Target 40-50% database query improvement.",
+    "status": "open",
+    "priority": "high", 
+    "domain": "healthcare",
+    "estimated_hours": 6
+  },
+  {
+    "id": 3,
+    "title": "Implement semantic caching for GraphQL + REST hybrid API",
+    "description": "Integrate Redis LangCache semantic caching for GraphQL resolvers and REST endpoints. Focus on Contact, Student, and healthcare entity queries with computed fields. Implement cache warming strategies for emergency contact lookups. Expected 4-5x throughput improvement for repeated queries.",
+    "status": "open",
+    "priority": "high",
+    "domain": "operations",
+    "estimated_hours": 3
+  },
+  {
+    "id": 4,
+    "title": "Optimize PHI-compliant audit logging and monitoring",
+    "description": "Review audit logging performance in healthcare domain modules. Implement async batch processing for audit entries, structured logging with field redaction, and real-time monitoring dashboards. Ensure HIPAA compliance while improving logging throughput by 60-70%.",
+    "status": "open",
+    "priority": "medium",
+    "domain": "communications", 
+    "estimated_hours": 5
+  },
+  {
+    "id": 5,
+    "title": "Enhance error handling and resilience patterns",
+    "description": "Implement circuit breakers, retry logic with exponential backoff, and graceful degradation for external API calls. Review backend/src/services for error boundary patterns. Add comprehensive health checks for database, Redis, and third-party integrations. Target 95%+ uptime improvement.", 
+    "status": "open",
+    "priority": "medium",
+    "domain": "core",
+    "estimated_hours": 4
+  },
+  {
+    "id": 6,
+    "title": "Optimize Socket.io real-time messaging performance",
+    "description": "Review WebSocket connection management, room-based messaging for emergency alerts, and scalability patterns. Implement connection pooling, message queuing with Redis, and optimized event handlers. Focus on nurse-to-parent emergency communication latency reduction.",
+    "status": "open",
+    "priority": "medium",
+    "domain": "communications",
+    "estimated_hours": 3
+  }
+]

@@ -15,6 +15,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { ReportTemplate } from './report-template.model';
 import { OutputFormat, ReportType } from './report-execution.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum ScheduleFrequency {
   DAILY = 'daily',
@@ -197,13 +198,9 @@ export class ReportSchedule
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ReportSchedule) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ReportSchedule ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ReportSchedule', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ReportSchedule;

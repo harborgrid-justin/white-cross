@@ -6,12 +6,12 @@
  */
 
 import { PartialType } from '@nestjs/swagger';
-import { CreateAllergyDto } from './create-allergy.dto';
+import { HealthRecordCreateAllergyDto } from './create-allergy.dto';
 
 /**
  * Update Allergy DTO
  *
- * Extends CreateAllergyDto with all fields optional.
+ * Extends HealthRecordCreateAllergyDto with all fields optional.
  * This allows partial updates to allergy records.
  *
  * @example
@@ -22,4 +22,4 @@ import { CreateAllergyDto } from './create-allergy.dto';
  * };
  * ```
  */
-export class UpdateAllergyDto extends PartialType(CreateAllergyDto) {}
+export class UpdateAllergyDto extends PartialType(HealthRecordCreateAllergyDto) {}

@@ -11,7 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IntegrationType } from '../entities/integration-config.entity';
+import { IntegrationType } from '@/database/models';
 import type { AuthenticationConfig } from '../types/authentication.types';
 import type { IntegrationSettings } from '../types/integration-settings.types';
 

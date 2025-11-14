@@ -3,9 +3,10 @@ import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
 import { DiscoveryMetricsService } from '../services/discovery-metrics.service';
+import { BaseInterceptor } from '../../common/interceptors/base.interceptor';
 
 @Injectable()
-export class DiscoveryMetricsInterceptor implements NestInterceptor {
+export class DiscoveryMetricsInterceptor extends BaseInterceptor implements NestInterceptor {
   constructor(private readonly metricsService: DiscoveryMetricsService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -14,7 +15,7 @@ export class DiscoveryMetricsInterceptor implements NestInterceptor {
     const startTime = process.hrtime.bigint();
 
     const { method, url, route } = request;
-    const user = (request as any).user;
+    const user = this.getUserContext(context);
     const endpoint = route?.path || url;
 
     // Increment request counter

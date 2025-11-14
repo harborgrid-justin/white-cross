@@ -23,7 +23,13 @@ import {
   HealthMetricsAnalyzerService,
   IncidentAnalyticsService,
   PredictiveInsightsService,
-} from '@/analytics/services';
+  AnalyticsDashboardService,
+  AnalyticsReportService,
+  AnalyticsHealthService,
+  AnalyticsIncidentOrchestratorService,
+  AnalyticsMedicationOrchestratorService,
+  AnalyticsAppointmentOrchestratorService,
+} from './services';
 import {
   HealthRecordRepository,
   IncidentReportRepository,
@@ -77,6 +83,14 @@ import { ComplianceReportPersistenceService } from './services/compliance-report
   controllers: [AnalyticsController],
   providers: [
     AnalyticsService, // Main orchestration service
+    // Domain-specific orchestrator services
+    AnalyticsDashboardService, // Dashboard operations
+    AnalyticsReportService, // Report generation and retrieval
+    AnalyticsHealthService, // Health metrics orchestration
+    AnalyticsIncidentOrchestratorService, // Incident analytics
+    AnalyticsMedicationOrchestratorService, // Medication analytics
+    AnalyticsAppointmentOrchestratorService, // Appointment analytics
+    // Core analytics services
     HealthTrendAnalyticsService, // Health trend analysis and population health
     ComplianceReportGeneratorService, // Report generation service with export capabilities
     // Compliance report specialized services
@@ -100,6 +114,14 @@ import { ComplianceReportPersistenceService } from './services/compliance-report
   ],
   exports: [
     AnalyticsService,
+    // Domain-specific orchestrator services
+    AnalyticsDashboardService,
+    AnalyticsReportService,
+    AnalyticsHealthService,
+    AnalyticsIncidentOrchestratorService,
+    AnalyticsMedicationOrchestratorService,
+    AnalyticsAppointmentOrchestratorService,
+    // Core analytics services
     HealthTrendAnalyticsService,
     ComplianceReportGeneratorService,
     // Supporting analytics services

@@ -8,22 +8,23 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { ChronicCondition, ConditionStatus } from '../../database/models/chronic-condition.model';
-import { Student } from '../../database/models/student.model';
+import { ChronicCondition, ConditionStatus   } from '@/database/models';
+import { Student   } from '@/database/models';
 
+import { BaseService } from '@/common/base';
 @Injectable()
-export class ChronicConditionService {
-  private readonly logger = new Logger(ChronicConditionService.name);
-
+export class ChronicConditionService extends BaseService {
   constructor(
     @InjectModel(ChronicCondition)
     private readonly chronicConditionModel: typeof ChronicCondition,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super("ChronicConditionService");
+  }
 
   async addChronicCondition(conditionData: any): Promise<ChronicCondition> {
-    this.logger.log(
+    this.logInfo(
       `Adding chronic condition for student ${conditionData.studentId}`,
     );
 
@@ -41,14 +42,14 @@ export class ChronicConditionService {
       isActive: true,
     });
 
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Chronic condition record created for student ${conditionData.studentId}`,
     );
     return condition;
   }
 
   async getChronicConditions(studentId?: string): Promise<ChronicCondition[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting chronic conditions${studentId ? ` for student ${studentId}` : ''}`,
     );
 
@@ -74,7 +75,7 @@ export class ChronicConditionService {
   }
 
   async findOne(id: string, user: any): Promise<ChronicCondition> {
-    this.logger.log(`Finding chronic condition ${id} for user ${user.id}`);
+    this.logInfo(`Finding chronic condition ${id} for user ${user.id}`);
     const condition = await this.chronicConditionModel.findByPk(id, {
       include: [
         {
@@ -95,7 +96,7 @@ export class ChronicConditionService {
     studentId: string,
     user: any,
   ): Promise<ChronicCondition[]> {
-    this.logger.log(
+    this.logInfo(
       `Finding chronic conditions for student ${studentId} by user ${user.id}`,
     );
 
@@ -118,7 +119,7 @@ export class ChronicConditionService {
   }
 
   async create(createDto: any, user: any): Promise<ChronicCondition> {
-    this.logger.log(
+    this.logInfo(
       `Creating chronic condition for student ${createDto.studentId} by user ${user.id}`,
     );
 
@@ -137,7 +138,7 @@ export class ChronicConditionService {
       createdBy: user.id,
     });
 
-    this.logger.log(
+    this.logInfo(
       `PHI Created: Chronic condition record created for student ${createDto.studentId}`,
     );
     return condition;
@@ -158,7 +159,7 @@ export class ChronicConditionService {
       updatedBy: user.id,
     });
 
-    this.logger.log(
+    this.logInfo(
       `PHI Updated: Chronic condition ${id} updated by user ${user.id}`,
     );
     return condition;
@@ -176,13 +177,13 @@ export class ChronicConditionService {
       status: ConditionStatus.RESOLVED,
     });
 
-    this.logger.log(
+    this.logInfo(
       `PHI Deleted: Chronic condition ${id} deactivated by user ${user.id}`,
     );
   }
 
   async findActive(studentId?: string): Promise<ChronicCondition[]> {
-    this.logger.log(
+    this.logInfo(
       `Finding active chronic conditions${studentId ? ` for student ${studentId}` : ''}`,
     );
 
@@ -215,7 +216,7 @@ export class ChronicConditionService {
     plan: any,
     user: any,
   ): Promise<ChronicCondition> {
-    this.logger.log(
+    this.logInfo(
       `Updating care plan for chronic condition ${conditionId} by user ${user.id}`,
     );
 
@@ -231,14 +232,14 @@ export class ChronicConditionService {
       lastReviewDate: new Date(),
     });
 
-    this.logger.log(
+    this.logInfo(
       `PHI Updated: Care plan updated for chronic condition ${conditionId}`,
     );
     return condition;
   }
 
   async search(query: string, filters: any = {}): Promise<ChronicCondition[]> {
-    this.logger.log(`Searching chronic conditions with query: ${query}`);
+    this.logInfo(`Searching chronic conditions with query: ${query}`);
 
     const whereClause: any = { isActive: true };
 
@@ -289,7 +290,7 @@ export class ChronicConditionService {
    * Get conditions requiring review
    */
   async getConditionsRequiringReview(): Promise<ChronicCondition[]> {
-    this.logger.log('Getting chronic conditions requiring review');
+    this.logInfo('Getting chronic conditions requiring review');
 
     const now = new Date();
     const nextMonth = new Date();
@@ -316,7 +317,7 @@ export class ChronicConditionService {
    * Get conditions by ICD code
    */
   async getConditionsByICDCode(icdCode: string): Promise<ChronicCondition[]> {
-    this.logger.log(`Getting chronic conditions with ICD code: ${icdCode}`);
+    this.logInfo(`Getting chronic conditions with ICD code: ${icdCode}`);
 
     return await this.chronicConditionModel.findAll({
       where: {
@@ -339,7 +340,7 @@ export class ChronicConditionService {
    * Get conditions requiring accommodations
    */
   async getConditionsRequiringAccommodations(): Promise<ChronicCondition[]> {
-    this.logger.log('Getting chronic conditions requiring accommodations');
+    this.logInfo('Getting chronic conditions requiring accommodations');
 
     return await this.chronicConditionModel.findAll({
       where: {

@@ -13,6 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum ComplianceCategory {
   HIPAA_PRIVACY = 'HIPAA_PRIVACY',
@@ -162,13 +163,9 @@ export class ComplianceChecklistItem
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ComplianceChecklistItem) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ComplianceChecklistItem ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ComplianceChecklistItem', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ComplianceChecklistItem;

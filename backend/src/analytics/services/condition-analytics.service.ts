@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { BaseService } from '@/common/base';
 /**
  * Condition Analytics Service
  * Handles health condition normalization, categorization, and analysis
@@ -11,7 +12,11 @@ import { Injectable } from '@nestjs/common';
  * - Provide condition visualization utilities
  */
 @Injectable()
-export class ConditionAnalyticsService {
+export class ConditionAnalyticsService extends BaseService {
+  constructor() {
+    super("ConditionAnalyticsService");
+  }
+
   /**
    * Normalize condition names for consistent grouping
    */

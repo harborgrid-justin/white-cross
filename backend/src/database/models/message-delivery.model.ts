@@ -13,6 +13,8 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
+import type { Message } from './message.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum RecipientType {
   NURSE = 'NURSE',
@@ -83,6 +85,11 @@ export interface MessageDeliveryCreationAttributes
   paranoid: true,
   indexes: [
     {
+      unique: true,
+      fields: ['messageId', 'recipientType', 'recipientId', 'channel'],
+      name: 'message_deliveries_message_recipient_channel_unique',
+    },
+    {
       fields: ['createdAt'],
       name: 'idx_message_delivery_created_at',
     },
@@ -109,14 +116,14 @@ export class MessageDelivery extends Model<
     },
     allowNull: false,
   })
-  recipientType: RecipientType;
+  declare recipientType: RecipientType;
 
   @Index
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
-  recipientId: string;
+  declare recipientId: string;
 
   @Index
   @Column({
@@ -125,8 +132,9 @@ export class MessageDelivery extends Model<
       isIn: [Object.values(DeliveryChannelType)],
     },
     allowNull: false,
+    defaultValue: DeliveryChannelType.IN_APP,
   })
-  declare channel: any;
+  declare channel: DeliveryChannelType;
 
   @Index
   @Column({
@@ -135,53 +143,60 @@ export class MessageDelivery extends Model<
       isIn: [Object.values(DeliveryStatus)],
     },
     allowNull: false,
+    defaultValue: DeliveryStatus.PENDING,
   })
-  status: DeliveryStatus;
+  declare status: DeliveryStatus;
 
   @Column({
     type: DataType.STRING(500),
     allowNull: true,
   })
-  contactInfo?: string;
+  declare contactInfo?: string;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  sentAt?: Date;
+  declare sentAt?: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: true,
   })
-  deliveredAt?: Date;
+  declare deliveredAt?: Date;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  failureReason?: string;
+  declare failureReason?: string;
 
   @Index
   @Column({
     type: DataType.STRING(255),
     allowNull: true,
   })
-  externalId?: string;
+  declare externalId?: string;
 
   @Index
   @ForeignKey(() => require('./message.model').Message)
   @Column({
     type: DataType.UUID,
     allowNull: false,
+    references: {
+      model: 'messages',
+      key: 'id',
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
   })
-  messageId: string;
+  declare messageId: string;
 
   @BelongsTo(() => require('./message.model').Message, {
     foreignKey: 'messageId',
     as: 'message',
   })
-  declare message: any;
+  declare message?: Message;
 
   @Column({
     type: DataType.DATE,
@@ -201,13 +216,9 @@ export class MessageDelivery extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: MessageDelivery) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] MessageDelivery ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('MessageDelivery', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MessageDelivery;

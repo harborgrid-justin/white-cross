@@ -1,0 +1,35 @@
+{
+  "node": {
+    "7fa116af0736d6034e1d56926441256eda17534051": {
+      "workers": {
+        "app/(dashboard)/appointments/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/appointments/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/appointments.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/appointments.crud.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getAppointments",
+          "filename": "src/lib/actions/appointments.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/appointments/page": "action-browser"
+      },
+      "exportedName": "getAppointments",
+      "filename": "src/lib/actions/appointments.cache.ts"
+    },
+    "4054d0ed2fc0691098fcc94d488e5746cb87a2b5ec": {
+      "workers": {
+        "app/(dashboard)/appointments/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/appointments/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/appointments.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/appointments.crud.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteAppointment",
+          "filename": "src/lib/actions/appointments.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/appointments/page": "action-browser"
+      },
+      "exportedName": "deleteAppointment",
+      "filename": "src/lib/actions/appointments.crud.ts"
+    }
+  },
+  "edge": {}
+}

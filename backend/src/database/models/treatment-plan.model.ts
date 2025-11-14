@@ -10,7 +10,8 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
-import { TreatmentStatus } from '../../clinical/enums/treatment-status.enum';
+import { TreatmentStatus } from '../../services/clinical/enums/treatment-status.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface TreatmentPlanAttributes {
   id?: string;
@@ -116,13 +117,9 @@ export class TreatmentPlan
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: TreatmentPlan) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] TreatmentPlan ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('TreatmentPlan', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default TreatmentPlan;

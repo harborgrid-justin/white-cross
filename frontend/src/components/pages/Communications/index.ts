@@ -70,8 +70,11 @@ export type {
   NotificationPreference 
 } from './CommunicationNotifications';
 
-export type { 
+export type {
   CommunicationMetrics,
   AnalyticsDataPoint,
-  TimeSeriesData 
-} from './CommunicationAnalytics';
+  TimeSeriesData,
+  CommunicationAnalyticsProps,
+  SelectedMetric,
+  SelectedTimeframe
+} from './types';

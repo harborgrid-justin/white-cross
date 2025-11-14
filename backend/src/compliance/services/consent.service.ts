@@ -6,11 +6,12 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { ConsentForm, ConsentType } from '../../database/models/consent-form.model';
-import { ConsentSignature } from '../../database/models/consent-signature.model';
+import { ConsentForm, ConsentType } from '@/database/models';
+import { ConsentSignature } from '@/database/models';
 import { SignConsentFormDto } from '../dto/sign-consent-form.dto';
 import { COMPLIANCE_ERRORS, ComplianceUtils } from '../utils/index';
 
+import { BaseService } from '@/common/base';
 export interface CreateConsentFormData {
   type: ConsentType;
   title: string;
@@ -21,16 +22,16 @@ export interface CreateConsentFormData {
 }
 
 @Injectable()
-export class ConsentService {
-  private readonly logger = new Logger(ConsentService.name);
-
+export class ConsentService extends BaseService {
   constructor(
     @InjectModel(ConsentForm)
     private readonly consentFormModel: typeof ConsentForm,
     @InjectModel(ConsentSignature)
     private readonly consentSignatureModel: typeof ConsentSignature,
     private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ConsentService");
+  }
 
   /**
    * Get all consent forms with optional filtering
@@ -51,10 +52,10 @@ export class ConsentService {
         order: [['createdAt', 'DESC']],
       });
 
-      this.logger.log(`Retrieved ${forms.length} consent forms`);
+      this.logInfo(`Retrieved ${forms.length} consent forms`);
       return forms;
     } catch (error) {
-      this.logger.error('Error getting consent forms:', error);
+      this.logError('Error getting consent forms:', error);
       throw error;
     }
   }
@@ -72,10 +73,10 @@ export class ConsentService {
         throw new NotFoundException('Consent form not found');
       }
 
-      this.logger.log(`Retrieved consent form: ${id}`);
+      this.logInfo(`Retrieved consent form: ${id}`);
       return form;
     } catch (error) {
-      this.logger.error(`Error getting consent form ${id}:`, error);
+      this.logError(`Error getting consent form ${id}:`, error);
       throw error;
     }
   }
@@ -112,10 +113,10 @@ export class ConsentService {
         isActive: true,
       });
 
-      this.logger.log(`Created consent form: ${form.id} - ${form.title}`);
+      this.logInfo(`Created consent form: ${form.id} - ${form.title}`);
       return form;
     } catch (error) {
-      this.logger.error('Error creating consent form:', error);
+      this.logError('Error creating consent form:', error);
       throw error;
     }
   }
@@ -206,14 +207,14 @@ export class ConsentService {
 
       await transaction.commit();
 
-      this.logger.log(
+      this.logInfo(
         `CONSENT SIGNED: Form ${data.consentFormId} for student ${data.studentId} by ${data.signedBy} (${data.relationship})`,
       );
 
       return signature;
     } catch (error) {
       await transaction.rollback();
-      this.logger.error('Error signing consent form:', error);
+      this.logError('Error signing consent form:', error);
       throw error;
     }
   }
@@ -229,12 +230,12 @@ export class ConsentService {
         order: [['signedAt', 'DESC']],
       });
 
-      this.logger.log(
+      this.logInfo(
         `Retrieved ${consents.length} consents for student ${studentId}`,
       );
       return consents;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Error getting consents for student ${studentId}:`,
         error,
       );
@@ -276,13 +277,13 @@ export class ConsentService {
         withdrawnBy: withdrawnBy.trim(),
       });
 
-      this.logger.warn(
+      this.logWarning(
         `CONSENT WITHDRAWN: Signature ${signatureId} for student ${signature.studentId} withdrawn by ${withdrawnBy}. Consent is no longer valid.`,
       );
 
       return signature;
     } catch (error) {
-      this.logger.error(`Error withdrawing consent ${signatureId}:`, error);
+      this.logError(`Error withdrawing consent ${signatureId}:`, error);
       throw error;
     }
   }

@@ -1,9 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HistogramEntry, MetricsSnapshot } from '../interfaces/metrics.interface';
 
+import { BaseService } from '@/common/base';
 @Injectable()
-export class DiscoveryMetricsService {
-  private readonly logger = new Logger(DiscoveryMetricsService.name);
+export class DiscoveryMetricsService extends BaseService {
+  constructor() {
+    super("DiscoveryMetricsService");
+  }
+
   private counters = new Map<string, Map<string, number>>();
   private histograms = new Map<string, Array<HistogramEntry>>();
   private gauges = new Map<
@@ -197,7 +201,7 @@ export class DiscoveryMetricsService {
     this.counters.clear();
     this.histograms.clear();
     this.gauges.clear();
-    this.logger.log('All metrics cleared');
+    this.logInfo('All metrics cleared');
   }
 
   /**

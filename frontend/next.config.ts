@@ -3,17 +3,33 @@
  *
  * PERFORMANCE FIX: Aggressive bundle splitting for heavy libraries
  *
+ * NEXT.JS 16 COMPATIBILITY:
+ * - Uses Turbopack by default (development and production)
+ * - Webpack config maintained for compatibility and custom optimizations
+ * - Empty turbopack config acknowledges Turbopack without migration
+ *
  * @module next.config
  * @since 2025-11-05
+ * @updated 2025-11-11 - Added Turbopack compatibility for Next.js 16
  */
 
 import type { NextConfig } from 'next';
+
+/**
+ * Determine if running in GitHub Codespaces
+ */
+const isCodespaces = process.env.CODESPACES === 'true' || 
+                     process.env.CODESPACE_NAME !== undefined;
 
 const nextConfig: NextConfig = {
   // ... keep your existing configuration ...
 
   // React Compiler (Next.js 16)
   reactCompiler: true,
+
+  // Turbopack configuration (Next.js 16+ default)
+  // Empty config to acknowledge Turbopack and silence migration warning
+  turbopack: {},
 
   webpack: (config, { isServer }) => {
     // Aggressive bundle splitting for heavy libraries
@@ -97,8 +113,12 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-label',
       '@radix-ui/react-switch',
     ],
-    // Allow forwarded headers in development for Server Actions
-    serverComponentsExternalPackages: [],
+    // Allow Server Actions from Codespaces origin
+    ...(isCodespaces && {
+      serverActions: {
+        allowedOrigins: ['*.app.github.dev', 'localhost:3000'],
+      },
+    }),
   },
 
   // Remove console.log in production (except errors/warnings)
@@ -121,23 +141,29 @@ const nextConfig: NextConfig = {
   // Output standalone for Docker deployment
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
 
-  // Handle forwarded headers for development (Server Actions)
+  // Handle Codespaces forwarded headers for Server Actions
   async headers() {
-    const headers = [];
+    if (!isCodespaces) return [];
 
-    if (process.env.NODE_ENV === 'development') {
-      headers.push({
-        source: '/(.*)',
+    return [
+      {
+        source: '/:path*',
         headers: [
           {
-            key: 'X-Forwarded-Host',
-            value: 'localhost:3000',
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-Requested-With, Content-Type, Authorization',
           },
         ],
-      });
-    }
-
-    return headers;
+      },
+    ];
   },
 };
 

@@ -1,9 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { DiscoveryService, Reflector } from '@nestjs/core';
 import { MemoryOptimizedCacheService } from '../services/memory-optimized-cache.service';
 import { AuthenticatedRequest, CacheableData } from '../types/resource.types';
+import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
 /**
  * Smart Cache Interceptor
@@ -12,8 +13,7 @@ import { AuthenticatedRequest, CacheableData } from '../types/resource.types';
  * provider metadata and current memory conditions
  */
 @Injectable()
-export class SmartCacheInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(SmartCacheInterceptor.name);
+export class SmartCacheInterceptor extends BaseInterceptor implements NestInterceptor {
 
   constructor(
     private readonly discoveryService: DiscoveryService,
@@ -51,7 +51,10 @@ export class SmartCacheInterceptor implements NestInterceptor {
         .get(cacheKey)
         .then((cachedResult) => {
           if (cachedResult !== null) {
-            this.logger.debug(`Cache hit for ${cacheKey}`);
+            this.logRequest('debug', `Cache hit for ${cacheKey}`, {
+              operation: 'CACHE_HIT',
+              cacheKey: cacheKey.substring(0, 50),
+            });
             observer.next(cachedResult);
             observer.complete();
             return;
@@ -66,10 +69,10 @@ export class SmartCacheInterceptor implements NestInterceptor {
                 this.cacheService
                   .set(cacheKey, result, controller.name, cacheMetadata.ttl)
                   .catch((error) => {
-                    this.logger.error(
-                      `Failed to cache result for ${cacheKey}:`,
-                      error,
-                    );
+                    this.logError(`Failed to cache result for ${cacheKey}`, error, {
+                      operation: 'CACHE_SET',
+                      cacheKey: cacheKey.substring(0, 50),
+                    });
                   });
               }),
             )
@@ -80,7 +83,10 @@ export class SmartCacheInterceptor implements NestInterceptor {
             });
         })
         .catch((error) => {
-          this.logger.error(`Cache lookup failed for ${cacheKey}:`, error);
+          this.logError(`Cache lookup failed for ${cacheKey}`, error, {
+            operation: 'CACHE_LOOKUP',
+            cacheKey: cacheKey.substring(0, 50),
+          });
           // Fall back to normal execution
           next.handle().subscribe({
             next: (result) => observer.next(result),

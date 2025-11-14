@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { HealthDomainService } from './health-domain.service';
-import { HealthDomainFacadeService } from './services/health-domain-facade.service';
+import { HealthDomainFacadeService } from '@/health-domain/services/health-domain-facade.service';
 import { HealthDomainController } from './health-domain.controller';
 
 // Import all health-record sub-modules
 import { VaccinationModule } from '../health-record/vaccination/vaccination.module';
 import { AllergyModule } from '../health-record/allergy/allergy.module';
-import { ChronicConditionModule } from '../health-record/chronic-condition/chronic-condition.module';
+import { ChronicConditionModule } from '../services/chronic-condition/chronic-condition.module';
 import { VitalsModule } from '../health-record/vitals/vitals.module';
 import { SearchModule } from '../health-record/search/search.module';
 import { StatisticsModule } from '../health-record/statistics/statistics.module';

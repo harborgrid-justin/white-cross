@@ -1,21 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { col, fn, literal, Op, QueryTypes, Sequelize } from 'sequelize';
-import { HealthRecord } from '../../database/models/health-record.model';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { Allergy } from '../../database/models/allergy.model';
+import { HealthRecord } from '@/database/models';
+import { ChronicCondition } from '@/database/models';
+import { Allergy } from '@/database/models';
 import { HealthTrendsReport } from '../interfaces/report-types.interface';
 import { HealthTrendsDto } from '../dto/health-trends.dto';
 import { AllergySeverity, HealthRecordType } from '../../common/enums';
 
+import { BaseService } from '@/common/base';
 /**
  * Health Reports Service
  * Handles health trend analysis, chronic condition tracking, and allergy reporting
  */
 @Injectable()
-export class HealthReportsService {
-  private readonly logger = new Logger(HealthReportsService.name);
-
+export class HealthReportsService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private healthRecordModel: typeof HealthRecord,
@@ -25,7 +24,9 @@ export class HealthReportsService {
     private allergyModel: typeof Allergy,
     @InjectConnection()
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("HealthReportsService");
+  }
 
   /**
    * Get comprehensive health trends with grouping and monthly analysis
@@ -119,7 +120,7 @@ export class HealthReportsService {
         count: parseInt(String(record.count), 10),
       }));
 
-      this.logger.log(
+      this.logInfo(
         `Health trends report generated: ${healthRecords.length} record types, ${chronicConditions.length} conditions, ${allergies.length} allergens`,
       );
 
@@ -130,7 +131,7 @@ export class HealthReportsService {
         monthlyTrends,
       };
     } catch (error) {
-      this.logger.error('Error getting health trends:', error);
+      this.logError('Error getting health trends:', error);
       throw error;
     }
   }

@@ -11,7 +11,7 @@ import {
   selectStudentPagination,
   selectStudentPaginationInfo,
   selectExpandedStudentCards,
-} from '@/stores/slices/studentsSlice';
+} from '@/stores/slices/students';
 
 /**
  * Hook for managing student pagination

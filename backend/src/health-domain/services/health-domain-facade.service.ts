@@ -1,6 +1,6 @@
 /**
  * @fileoverview Health Domain Facade Service
- * @module health-domain/services/health-domain-facade.service
+ * @module health-doma@/services/health-domain-facade.service
  * @description Facade service for health domain operations
  *
  * This facade provides a unified interface to health domain functionality
@@ -11,13 +11,13 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { RequestContextService } from '../../shared/context/request-context.service';
-import { BaseService } from '../../shared/base/base.service';
+import { RequestContextService } from '@/common/context/request-context.service';
+import { BaseService } from '@/common/base';
 import {
   AllergyFiltersDto,
   ChronicConditionFiltersDto,
   CreateImmunizationDto,
-  HealthDomainCreateAllergyDto,
+  HealthDomainAllergyCreateDto,
   HealthDomainCreateChronicConditionDto,
   HealthDomainCreateRecordDto,
   HealthDomainUpdateAllergyDto,
@@ -88,9 +88,7 @@ export class HealthDomainFacadeService extends BaseService {
 
   private async getAllergyService() {
     if (!this.allergyService) {
-      const { AllergyService } = await import(
-        '../../health-record/allergy/allergy.service.js'
-      );
+      const { AllergyService } = await import('../../health-record/allergy/allergy.service.js');
       this.allergyService = this.moduleRef.get(AllergyService, {
         strict: false,
       });
@@ -103,19 +101,14 @@ export class HealthDomainFacadeService extends BaseService {
       const { ChronicConditionService } = await import(
         '../../health-record/chronic-condition/chronic-condition.service.js'
       );
-      this.chronicConditionService = this.moduleRef.get(
-        ChronicConditionService,
-        { strict: false },
-      );
+      this.chronicConditionService = this.moduleRef.get(ChronicConditionService, { strict: false });
     }
     return this.chronicConditionService;
   }
 
   private async getVitalsService() {
     if (!this.vitalsService) {
-      const { VitalsService } = await import(
-        '../../health-record/vitals/vitals.service.js'
-      );
+      const { VitalsService } = await import('../../health-record/vitals/vitals.service.js');
       this.vitalsService = this.moduleRef.get(VitalsService, { strict: false });
     }
     return this.vitalsService;
@@ -180,10 +173,7 @@ export class HealthDomainFacadeService extends BaseService {
     }
   }
 
-  async updateHealthRecord(
-    id: string,
-    data: HealthDomainUpdateRecordDto,
-  ): Promise<any> {
+  async updateHealthRecord(id: string, data: HealthDomainUpdateRecordDto): Promise<any> {
     try {
       this.validateUUID(id, 'Health record ID');
       // TODO: Implement with proper repository
@@ -228,7 +218,7 @@ export class HealthDomainFacadeService extends BaseService {
 
   // ==================== Allergies Operations ====================
 
-  async createAllergy(data: HealthDomainCreateAllergyDto): Promise<any> {
+  async createAllergy(data: HealthDomainAllergyCreateDto): Promise<any> {
     try {
       const allergyService = await this.getAllergyService();
       const mockUser = {
@@ -254,10 +244,7 @@ export class HealthDomainFacadeService extends BaseService {
     }
   }
 
-  async updateAllergy(
-    id: string,
-    data: HealthDomainUpdateAllergyDto,
-  ): Promise<any> {
+  async updateAllergy(id: string, data: HealthDomainUpdateAllergyDto): Promise<any> {
     try {
       this.validateUUID(id, 'Allergy ID');
       const allergyService = await this.getAllergyService();
@@ -269,12 +256,7 @@ export class HealthDomainFacadeService extends BaseService {
 
       this.eventEmitter.emit(
         'allergy.updated',
-        new Events.AllergyUpdatedEvent(
-          id,
-          data.studentId || '',
-          data,
-          this.requestContext?.userId,
-        ),
+        new Events.AllergyUpdatedEvent(id, data.studentId || '', data, this.requestContext?.userId),
       );
 
       this.logInfo('Allergy updated', { allergyId: id });
@@ -368,8 +350,7 @@ export class HealthDomainFacadeService extends BaseService {
     try {
       this.validateUUID(studentId, 'Student ID');
       const vaccinationService = await this.getVaccinationService();
-      const vaccinations =
-        await vaccinationService.getVaccinationHistory(studentId);
+      const vaccinations = await vaccinationService.getVaccinationHistory(studentId);
 
       // Apply pagination
       const start = (page - 1) * limit;
@@ -402,9 +383,7 @@ export class HealthDomainFacadeService extends BaseService {
 
   // ==================== Chronic Conditions Operations ====================
 
-  async createChronicCondition(
-    data: HealthDomainCreateChronicConditionDto,
-  ): Promise<any> {
+  async createChronicCondition(data: HealthDomainCreateChronicConditionDto): Promise<any> {
     try {
       const chronicConditionService = await this.getChronicConditionService();
       const result = await chronicConditionService.addChronicCondition(data);
@@ -435,8 +414,7 @@ export class HealthDomainFacadeService extends BaseService {
     try {
       this.validateUUID(studentId, 'Student ID');
       const chronicConditionService = await this.getChronicConditionService();
-      const conditions =
-        await chronicConditionService.getChronicConditions(studentId);
+      const conditions = await chronicConditionService.getChronicConditions(studentId);
 
       // Apply pagination
       const start = (page - 1) * limit;
@@ -459,11 +437,7 @@ export class HealthDomainFacadeService extends BaseService {
 
   // ==================== Vital Signs Operations ====================
 
-  async recordVitalSigns(
-    studentId: string,
-    vitals: any,
-    notes?: string,
-  ): Promise<any> {
+  async recordVitalSigns(studentId: string, vitals: any, notes?: string): Promise<any> {
     try {
       this.validateUUID(studentId, 'Student ID');
       const vitalsService = await this.getVitalsService();
@@ -555,11 +529,7 @@ export class HealthDomainFacadeService extends BaseService {
         id: this.requestContext?.userId || 'system',
         role: 'admin',
       };
-      return await importExportService.importRecords(
-        importData,
-        format,
-        mockUser,
-      );
+      return await importExportService.importRecords(importData, format, mockUser);
     } catch (error) {
       this.handleError('Failed to import student data', error);
     }

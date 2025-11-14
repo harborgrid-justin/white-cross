@@ -38,3 +38,16 @@ export type {
   ComplianceRisk as ComplianceRiskData,
   ComplianceRiskProps
 } from './ComplianceRisk'
+
+export type {
+  WorkflowStatus,
+  StepStatus,
+  TriggerType,
+  WorkflowPriority,
+  StepAction,
+  WorkflowStep,
+  WorkflowLogEntry,
+  ComplianceWorkflow as ComplianceWorkflowData,
+  ComplianceWorkflowProps,
+  WorkflowStats
+} from './ComplianceWorkflow'

@@ -3,6 +3,9 @@
  * Provides clean public API
  */
 
+// Force compilation
+export const _barrel = true;
+
 // Module files
 export * from './dynamic-resource-pool.module';
 export * from './memory-optimized-cache.module';

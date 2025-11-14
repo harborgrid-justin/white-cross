@@ -157,13 +157,9 @@ export class MessageTemplate extends Model<MessageTemplateAttributes> {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: MessageTemplate) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] MessageTemplate ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('MessageTemplate', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MessageTemplate;

@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
+import { BaseService } from '@/common/base';
 import {
   DatabaseProviderMetadata,
   PoolableResource,
@@ -46,8 +47,7 @@ export interface PoolStats {
  * Uses Discovery Service to automatically configure pools
  */
 @Injectable()
-export class DynamicResourcePoolService {
-  private readonly logger = new Logger(DynamicResourcePoolService.name);
+export class DynamicResourcePoolService extends BaseService {
   private pools = new Map<string, ResourcePool>();
   private databaseProviders = new Map<string, DatabaseProviderMetadata>();
 
@@ -56,14 +56,16 @@ export class DynamicResourcePoolService {
     private readonly options: ResourcePoolGlobalOptions,
     private readonly discoveryService: DiscoveryService,
     private readonly reflector: Reflector,
-  ) {}
+  ) {
+    super("DynamicResourcePoolService");
+  }
 
   /**
    * Create a new resource pool
    */
   async createPool(name: string, config: PoolConfig): Promise<void> {
     if (this.pools.has(name)) {
-      this.logger.warn(`Pool ${name} already exists`);
+      this.logWarning(`Pool ${name} already exists`);
       return;
     }
 
@@ -71,7 +73,7 @@ export class DynamicResourcePoolService {
     this.pools.set(name, pool);
 
     await pool.initialize();
-    this.logger.log(`Created resource pool: ${name}`, {
+    this.logInfo(`Created resource pool: ${name}`, {
       minSize: config.minSize,
       maxSize: config.maxSize,
       type: config.resourceType,
@@ -128,18 +130,18 @@ export class DynamicResourcePoolService {
       maxLifetime: metadata.maxLifetime || 3600000, // 1 hour
     });
 
-    this.logger.log(`Registered database provider: ${name}`);
+    this.logInfo(`Registered database provider: ${name}`);
   }
 
   /**
    * Scale down pools during memory pressure
    */
   async scaleDownPools(reason: string): Promise<void> {
-    this.logger.log(`Scaling down pools due to: ${reason}`);
+    this.logInfo(`Scaling down pools due to: ${reason}`);
 
     for (const [name, pool] of this.pools.entries()) {
       await pool.scaleDown();
-      this.logger.debug(`Scaled down pool: ${name}`);
+      this.logDebug(`Scaled down pool: ${name}`);
     }
   }
 
@@ -154,14 +156,14 @@ export class DynamicResourcePoolService {
       totalCleaned += cleaned;
 
       if (cleaned > 0) {
-        this.logger.debug(
+        this.logDebug(
           `Cleaned ${cleaned} idle resources from pool: ${name}`,
         );
       }
     }
 
     if (totalCleaned > 0) {
-      this.logger.log(`Cleaned up ${totalCleaned} idle resources total`);
+      this.logInfo(`Cleaned up ${totalCleaned} idle resources total`);
     }
   }
 
@@ -190,7 +192,7 @@ export class DynamicResourcePoolService {
    * Shutdown all pools
    */
   async shutdown(): Promise<void> {
-    this.logger.log('Shutting down all resource pools...');
+    this.logInfo('Shutting down all resource pools...');
 
     const shutdownPromises = Array.from(this.pools.values()).map((pool) =>
       pool.shutdown(),
@@ -200,7 +202,7 @@ export class DynamicResourcePoolService {
     this.pools.clear();
     this.databaseProviders.clear();
 
-    this.logger.log('All resource pools shut down successfully');
+    this.logInfo('All resource pools shut down successfully');
   }
 }
 

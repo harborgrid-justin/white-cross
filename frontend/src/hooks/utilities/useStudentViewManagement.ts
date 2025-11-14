@@ -12,7 +12,7 @@ import {
   selectStudentUIState,
   selectFilteredAndSortedStudents,
   selectPaginatedStudents,
-} from '@/stores/slices/studentsSlice';
+} from '@/stores/slices/students';
 
 // Re-export individual hooks from modular files
 export {

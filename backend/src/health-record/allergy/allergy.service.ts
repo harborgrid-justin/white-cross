@@ -5,36 +5,41 @@
  * HIPAA Compliance: All allergy data is PHI and requires audit logging
  */
 
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Allergy, AllergySeverity, AllergyType } from '../../database/models/allergy.model';
-import { Student } from '../../database/models/student.model';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
+import { Allergy, AllergySeverity, AllergyType } from '@/database/models';
+import { Student } from '@/database/models';
 import { AllergyFilterDto } from './dto/allergy-filter.dto';
-import { CreateAllergyDto } from './dto/create-allergy.dto';
+import { HealthRecordCreateAllergyDto } from './dto/create-allergy.dto';
 import { UpdateAllergyDto } from './dto/update-allergy.dto';
-import { AuthenticatedUser } from '../../shared/types';
+import { AuthenticatedUser } from '@/common/types';
 
 @Injectable()
-export class AllergyService {
-  private readonly logger = new Logger(AllergyService.name);
-
+export class AllergyService extends BaseService {
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     @InjectModel(Allergy)
     private readonly allergyModel: typeof Allergy,
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
-  ) {}
+  ) {
+    super({
+      serviceName: 'AllergyService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
-  async addAllergy(allergyData: CreateAllergyDto): Promise<Allergy> {
-    this.logger.log(`Adding allergy for student ${allergyData.studentId}`);
+  async addAllergy(allergyData: HealthRecordCreateAllergyDto): Promise<Allergy> {
+    this.logInfo(`Adding allergy for student ${allergyData.studentId}`);
 
     // Verify student exists
     const student = await this.studentModel.findByPk(allergyData.studentId);
     if (!student) {
-      throw new BadRequestException(
-        `Student with ID ${allergyData.studentId} not found`,
-      );
+      throw new BadRequestException(`Student with ID ${allergyData.studentId} not found`);
     }
 
     const allergy = await this.allergyModel.create({
@@ -43,9 +48,7 @@ export class AllergyService {
       verified: false,
     } as any);
 
-    this.logger.log(
-      `PHI Created: Allergy record created for student ${allergyData.studentId}`,
-    );
+    this.logger.log(`PHI Created: Allergy record created for student ${allergyData.studentId}`);
     return allergy;
   }
 
@@ -67,13 +70,8 @@ export class AllergyService {
     return allergy;
   }
 
-  async findByStudent(
-    studentId: string,
-    user: AuthenticatedUser,
-  ): Promise<Allergy[]> {
-    this.logger.log(
-      `Finding allergies for student ${studentId} by user ${user.id}`,
-    );
+  async findByStudent(studentId: string, user: AuthenticatedUser): Promise<Allergy[]> {
+    this.logger.log(`Finding allergies for student ${studentId} by user ${user.id}`);
 
     // Verify student exists
     const student = await this.studentModel.findByPk(studentId);
@@ -93,20 +91,13 @@ export class AllergyService {
     });
   }
 
-  async create(
-    createDto: CreateAllergyDto,
-    user: AuthenticatedUser,
-  ): Promise<Allergy> {
-    this.logger.log(
-      `Creating allergy for student ${createDto.studentId} by user ${user.id}`,
-    );
+  async create(createDto: HealthRecordCreateAllergyDto, user: AuthenticatedUser): Promise<Allergy> {
+    this.logger.log(`Creating allergy for student ${createDto.studentId} by user ${user.id}`);
 
     // Verify student exists
     const student = await this.studentModel.findByPk(createDto.studentId);
     if (!student) {
-      throw new BadRequestException(
-        `Student with ID ${createDto.studentId} not found`,
-      );
+      throw new BadRequestException(`Student with ID ${createDto.studentId} not found`);
     }
 
     const allergy = await this.allergyModel.create({
@@ -116,17 +107,11 @@ export class AllergyService {
       verified: false,
     } as any);
 
-    this.logger.log(
-      `PHI Created: Allergy record created for student ${createDto.studentId}`,
-    );
+    this.logger.log(`PHI Created: Allergy record created for student ${createDto.studentId}`);
     return allergy;
   }
 
-  async update(
-    id: string,
-    updateDto: UpdateAllergyDto,
-    user: AuthenticatedUser,
-  ): Promise<Allergy> {
+  async update(id: string, updateDto: UpdateAllergyDto, user: AuthenticatedUser): Promise<Allergy> {
     const allergy = await this.allergyModel.findByPk(id);
     if (!allergy) {
       throw new NotFoundException(`Allergy with ID ${id} not found`);
@@ -153,9 +138,7 @@ export class AllergyService {
       updatedBy: user.id,
     });
 
-    this.logger.log(
-      `PHI Deleted: Allergy ${id} deactivated by user ${user.id}`,
-    );
+    this.logger.log(`PHI Deleted: Allergy ${id} deactivated by user ${user.id}`);
   }
 
   async getAllergies(studentId: string): Promise<Allergy[]> {
@@ -172,13 +155,8 @@ export class AllergyService {
     });
   }
 
-  async checkMedicationInteractions(
-    studentId: string,
-    medication: string,
-  ): Promise<any> {
-    this.logger.log(
-      `Checking medication interactions for student ${studentId} with ${medication}`,
-    );
+  async checkMedicationInteractions(studentId: string, medication: string): Promise<any> {
+    this.logger.log(`Checking medication interactions for student ${studentId} with ${medication}`);
 
     const allergies = await this.allergyModel.findAll({
       where: {
@@ -249,12 +227,10 @@ export class AllergyService {
    * Create multiple allergies (bulk operation)
    */
   async createMany(
-    allergies: CreateAllergyDto[],
+    allergies: HealthRecordCreateAllergyDto[],
     user: AuthenticatedUser,
   ): Promise<Allergy[]> {
-    this.logger.log(
-      `Creating ${allergies.length} allergies in bulk by user ${user.id}`,
-    );
+    this.logger.log(`Creating ${allergies.length} allergies in bulk by user ${user.id}`);
 
     const allergyData = allergies.map((allergy) => ({
       ...allergy,
@@ -264,19 +240,14 @@ export class AllergyService {
     }));
 
     const created = await this.allergyModel.bulkCreate(allergyData as any);
-    this.logger.log(
-      `PHI Created: ${created.length} allergy records created in bulk`,
-    );
+    this.logger.log(`PHI Created: ${created.length} allergy records created in bulk`);
     return created;
   }
 
   /**
    * Search allergies with filters
    */
-  async search(
-    query: string,
-    filters: AllergyFilterDto = {},
-  ): Promise<Allergy[]> {
+  async search(query: string, filters: AllergyFilterDto = {}): Promise<Allergy[]> {
     this.logger.log(`Searching allergies with query: ${query}`);
 
     const whereClause: any = { active: true };
@@ -352,10 +323,7 @@ export class AllergyService {
       // Return in same order as input, null for missing
       return ids.map((id) => allergyMap.get(id) || null);
     } catch (error) {
-      this.logger.error(
-        `Failed to batch fetch allergies: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Failed to batch fetch allergies: ${error.message}`, error.stack);
       // Return array of nulls on error to prevent breaking entire query
       return ids.map(() => null);
     }
@@ -395,14 +363,12 @@ export class AllergyService {
         if (!allergiesByStudent.has(allergy.studentId)) {
           allergiesByStudent.set(allergy.studentId, []);
         }
-        allergiesByStudent.get(allergy.studentId)!.push(allergy);
+        allergiesByStudent.get(allergy.studentId).push(allergy);
       }
 
       // Return allergies in same order as requested student IDs
       // Return empty array for students with no allergies
-      return studentIds.map(
-        (studentId) => allergiesByStudent.get(studentId) || [],
-      );
+      return studentIds.map((studentId) => allergiesByStudent.get(studentId) || []);
     } catch (error) {
       this.logger.error(
         `Failed to batch fetch allergies by student IDs: ${error.message}`,

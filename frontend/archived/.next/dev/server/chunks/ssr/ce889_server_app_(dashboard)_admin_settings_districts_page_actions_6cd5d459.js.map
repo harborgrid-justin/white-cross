@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/.next-internal/server/app/%28dashboard%29/admin/settings/districts/page/actions.js%20%28server%20actions%20loader%29"],"sourcesContent":["export {revalidateDistrictsCache as '0018872ad5d456a505fdf08b70ef1f44e4d171c220'} from 'ACTIONS_MODULE0'\nexport {getAdminDistricts as '401b780634ff25f1a8b3dec22b12dcd686d7117d89'} from 'ACTIONS_MODULE0'\nexport {getAdminDistrictById as '40a4903b9e2b0fe165598adca72db362ce04e082be'} from 'ACTIONS_MODULE0'\nexport {revalidateDistrictsCache as '0018872ad5d456a505fdf08b70ef1f44e4d171c220'} from 'ACTIONS_MODULE0'\nexport {getAdminDistricts as '401b780634ff25f1a8b3dec22b12dcd686d7117d89'} from 'ACTIONS_MODULE0'\nexport {getAdminDistrictById as '40a4903b9e2b0fe165598adca72db362ce04e082be'} from 'ACTIONS_MODULE0'\n"],"names":[],"mappings":";AAAA","debugId":null}}]
+}

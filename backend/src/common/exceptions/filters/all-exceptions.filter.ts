@@ -14,7 +14,7 @@ import {
   getRequestId,
   SystemErrorCodes,
 } from '@/common';
-import { LoggerService } from '../../../shared/logging/logger.service';
+import { LoggerService } from '@/common/logging/logger.service';
 import { SentryService } from '@/infrastructure/monitoring/sentry.service';
 
 /**

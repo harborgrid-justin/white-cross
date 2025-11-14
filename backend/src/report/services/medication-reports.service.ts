@@ -2,26 +2,27 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
-import { MedicationLog } from '../../database/models/medication-log.model';
-import { StudentMedication } from '../../database/models/student-medication.model';
+import { MedicationLog } from '@/database/models';
+import { StudentMedication } from '@/database/models';
 import { MedicationUsageReport } from '../interfaces/report-types.interface';
 import { MedicationUsageDto } from '../dto/medication-usage.dto';
 
+import { BaseService } from '@/common/base';
 /**
  * Medication Reports Service
  * Handles medication usage analysis, compliance tracking, and adverse reaction monitoring
  */
 @Injectable()
-export class MedicationReportsService {
-  private readonly logger = new Logger(MedicationReportsService.name);
-
+export class MedicationReportsService extends BaseService {
   constructor(
     @InjectModel(MedicationLog)
     private medicationLogModel: typeof MedicationLog,
     @InjectModel(StudentMedication)
     private studentMedicationModel: typeof StudentMedication,
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MedicationReportsService");
+  }
 
   /**
    * Generate comprehensive medication usage and compliance report
@@ -145,7 +146,7 @@ export class MedicationReportsService {
         order: [['administeredAt', 'DESC']],
       });
 
-      this.logger.log(
+      this.logInfo(
         `Medication usage report generated: ${administrationLogs.length} logs, ${adverseReactions.length} adverse reactions, compliance: ${totalLogs}/${totalScheduled}`,
       );
 
@@ -157,7 +158,7 @@ export class MedicationReportsService {
         adverseReactions,
       };
     } catch (error) {
-      this.logger.error('Error getting medication usage report:', error);
+      this.logError('Error getting medication usage report:', error);
       throw error;
     }
   }

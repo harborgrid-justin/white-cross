@@ -204,7 +204,7 @@ export class MedicationLog
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
       const { logModelPHIAccess } = await import(
-        '../services/model-audit-helper.service.js'
+        '@/database/services/model-audit-helper.service.js'
       );
       const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
       await logModelPHIAccess(
@@ -217,3 +217,6 @@ export class MedicationLog
     }
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default MedicationLog;

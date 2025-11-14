@@ -1,0 +1,140 @@
+{
+  "node": {
+    "401c3b2e139b9cd667cfe6b8a267cbe4ed0bba7a2b": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "deleteHealthRecordAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "exportedName": "deleteHealthRecordAction",
+      "filename": "src/lib/actions/health-records.crud.ts"
+    },
+    "601350e016c74379f9d38d00de45cbba64fcb8c3de": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createHealthRecordAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "exportedName": "createHealthRecordAction",
+      "filename": "src/lib/actions/health-records.crud.ts"
+    },
+    "602c56788cb4489bd68f5c78fbc0e1b8ea9933b502": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "action-browser"
+      },
+      "exportedName": "getHealthRecordsAction",
+      "filename": "src/lib/actions/health-records.crud.ts"
+    },
+    "70976e72785808b0c22fece96600204947582b83a5": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateHealthRecordAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "exportedName": "updateHealthRecordAction",
+      "filename": "src/lib/actions/health-records.crud.ts"
+    },
+    "6071e6cda37f781b11e42ce907acc67bf7893c4d8a": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createImmunizationAction",
+          "filename": "src/lib/actions/health-records.immunizations.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "exportedName": "createImmunizationAction",
+      "filename": "src/lib/actions/health-records.immunizations.ts"
+    },
+    "404e468b55a224ed8b919346dffcfe92ae0b75c5d8": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getStudentAllergiesAction",
+          "filename": "src/lib/actions/health-records.allergies.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "exportedName": "getStudentAllergiesAction",
+      "filename": "src/lib/actions/health-records.allergies.ts"
+    },
+    "603e9cc08c1ce4432d53176d17604022a4a08926ab": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createAllergyAction",
+          "filename": "src/lib/actions/health-records.allergies.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "exportedName": "createAllergyAction",
+      "filename": "src/lib/actions/health-records.allergies.ts"
+    },
+    "004e89d6aec3dc95bec36ee8e5764906cfd6539ed7": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsStats",
+          "filename": "src/lib/actions/health-records.stats.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "action-browser"
+      },
+      "exportedName": "getHealthRecordsStats",
+      "filename": "src/lib/actions/health-records.stats.ts"
+    },
+    "00b4b9e56569e7f810f3bb4ac72dc59b66119068d4": {
+      "workers": {
+        "app/(dashboard)/health-records/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.immunizations.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/health-records.allergies.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsDashboardData",
+          "filename": "src/lib/actions/health-records.stats.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/page": "rsc"
+      },
+      "exportedName": "getHealthRecordsDashboardData",
+      "filename": "src/lib/actions/health-records.stats.ts"
+    }
+  },
+  "edge": {}
+}

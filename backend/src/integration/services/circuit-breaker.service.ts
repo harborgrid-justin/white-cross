@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '@/common/base';
 /**
  * Circuit breaker states
  */
@@ -33,8 +34,11 @@ export interface CircuitBreakerStatus {
  * in external API integrations
  */
 @Injectable()
-export class CircuitBreakerService {
-  private readonly logger = new Logger(CircuitBreakerService.name);
+export class CircuitBreakerService extends BaseService {
+  constructor() {
+    super("CircuitBreakerService");
+  }
+
   private readonly circuits = new Map<
     string,
     {
@@ -67,7 +71,7 @@ export class CircuitBreakerService {
       config: { ...defaultConfig, ...config },
     });
 
-    this.logger.log(`Circuit breaker initialized for ${serviceName}`);
+    this.logInfo(`Circuit breaker initialized for ${serviceName}`);
   }
 
   /**
@@ -90,7 +94,7 @@ export class CircuitBreakerService {
       // Transition to HALF_OPEN
       circuit.state = CircuitState.HALF_OPEN;
       circuit.successCount = 0;
-      this.logger.log(`${serviceName} circuit breaker: OPEN -> HALF_OPEN`);
+      this.logInfo(`${serviceName} circuit breaker: OPEN -> HALF_OPEN`);
     }
 
     try {
@@ -118,7 +122,7 @@ export class CircuitBreakerService {
       if (circuit.successCount >= circuit.config.successThreshold) {
         circuit.state = CircuitState.CLOSED;
         circuit.successCount = 0;
-        this.logger.log(`${serviceName} circuit breaker: HALF_OPEN -> CLOSED`);
+        this.logInfo(`${serviceName} circuit breaker: HALF_OPEN -> CLOSED`);
       }
     }
   }
@@ -135,7 +139,7 @@ export class CircuitBreakerService {
     if (circuit.failureCount >= circuit.config.failureThreshold) {
       circuit.state = CircuitState.OPEN;
       circuit.nextAttempt = Date.now() + circuit.config.timeout;
-      this.logger.error(`${serviceName} circuit breaker: CLOSED -> OPEN`, {
+      this.logError(`${serviceName} circuit breaker: CLOSED -> OPEN`, {
         failures: circuit.failureCount,
         nextAttempt: new Date(circuit.nextAttempt).toISOString(),
       });
@@ -169,6 +173,6 @@ export class CircuitBreakerService {
     circuit.state = CircuitState.CLOSED;
     circuit.failureCount = 0;
     circuit.successCount = 0;
-    this.logger.log(`${serviceName} circuit breaker reset to CLOSED`);
+    this.logInfo(`${serviceName} circuit breaker reset to CLOSED`);
   }
 }

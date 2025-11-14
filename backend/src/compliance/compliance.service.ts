@@ -1,4 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 
 /**
  * ComplianceService
@@ -13,8 +15,16 @@ import { Injectable, Logger } from '@nestjs/common';
  * - Audit log compliance verification
  */
 @Injectable()
-export class ComplianceService {
-  private readonly logger = new Logger(ComplianceService.name);
+export class ComplianceService extends BaseService {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+  ) {
+    super({
+      serviceName: 'ComplianceService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Validate if user has minimum necessary access for requested PHI
@@ -26,7 +36,7 @@ export class ComplianceService {
     dataType: 'full_record' | 'summary' | 'specific_field',
     purpose: string,
   ): Promise<{ allowed: boolean; reason?: string }> {
-    this.logger.log(
+    this.logInfo(
       `Validating minimum necessary access for user ${userId}, dataType: ${dataType}`,
     );
 
@@ -50,7 +60,7 @@ export class ComplianceService {
     }
 
     // Log compliance check
-    this.logger.log(
+    this.logInfo(
       `Minimum necessary check passed for user ${userId} accessing ${dataType}`,
     );
 
@@ -118,7 +128,7 @@ export class ComplianceService {
     // 3. Verify no gaps in logging
     // 4. Check for suspicious patterns
 
-    this.logger.log(
+    this.logInfo(
       `Validating audit log completeness from ${startDate} to ${endDate}`,
     );
 
@@ -155,7 +165,7 @@ export class ComplianceService {
     studentId: string,
     accessType: 'read' | 'write' | 'delete',
   ): Promise<{ authorized: boolean; reason?: string }> {
-    this.logger.log(
+    this.logInfo(
       `Validating PHI access: user ${userId} (${userRole}) attempting ${accessType} on student ${studentId}`,
     );
 
@@ -196,7 +206,7 @@ export class ComplianceService {
       details: string;
     }>;
   }> {
-    this.logger.log(
+    this.logInfo(
       `Generating compliance report from ${startDate} to ${endDate}`,
     );
 
@@ -260,7 +270,7 @@ export class ComplianceService {
     recipients: string[];
     reasoning: string;
   }> {
-    this.logger.warn(
+    this.logWarning(
       'Assessing potential HIPAA breach notification requirement',
     );
 

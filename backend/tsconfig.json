@@ -14,14 +14,16 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@/test/*": ["test/*"]
+      "@/test/*": ["test/*"],
+      "@/common/base": ["src/common/base"],
+      "@/database/models": ["src/database/models"]
     },
     "incremental": true,
     "skipLibCheck": true,
     "noCheck": true,
     "strict": false,
     "strictNullChecks": false,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strictBindCallApply": false,
     "strictFunctionTypes": false,
     "strictPropertyInitialization": false,

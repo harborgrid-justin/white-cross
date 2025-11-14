@@ -10,6 +10,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface ThreatDetectionAttributes {
   id?: string;
@@ -109,13 +110,9 @@ export class ThreatDetection
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ThreatDetection) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ThreatDetection ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ThreatDetection', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ThreatDetection;

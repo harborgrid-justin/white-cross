@@ -1,9 +1,10 @@
-import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { SmartGarbageCollectionService } from '../services/smart-garbage-collection.service';
 import { GCOptimizationService } from '../services/gc-optimization.service';
+import { BaseInterceptor } from '../../../common/interceptors/base.interceptor';
 
 interface MemoryPressureConfig {
   maxHeapSize: number; // MB
@@ -29,8 +30,7 @@ interface MemoryMetrics {
  * using Discovery Service patterns
  */
 @Injectable()
-export class MemoryPressureInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(MemoryPressureInterceptor.name);
+export class MemoryPressureInterceptor extends BaseInterceptor implements NestInterceptor {
   private readonly memoryHistory: MemoryMetrics[] = [];
   private readonly maxHistorySize = 100;
   private lastGCTime = 0;
@@ -66,22 +66,26 @@ export class MemoryPressureInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const requestId = this.generateRequestId(context);
+    const requestId = this.getOrGenerateRequestId(context.switchToHttp().getRequest());
 
     try {
       // Check memory pressure before request execution
       const memoryBefore = this.getCurrentMemoryMetrics();
       const pressureLevel = this.calculateMemoryPressure(memoryBefore, config);
 
-      this.logger.debug(
-        `Memory pressure check for ${requestId}: ${pressureLevel} (${memoryBefore.heapUtilization.toFixed(1)}%)`,
-      );
+      this.logRequest('debug', `Memory pressure check for ${requestId}: ${pressureLevel} (${memoryBefore.heapUtilization.toFixed(1)}%)`, {
+        operation: 'MEMORY_PRESSURE_CHECK',
+        requestId,
+        pressureLevel,
+        heapUtilization: memoryBefore.heapUtilization,
+      });
 
       // Handle memory pressure based on configuration
       if (pressureLevel === 'critical' && config.failOnPressure) {
-        this.logger.error(
-          `Critical memory pressure detected, rejecting request ${requestId}`,
-        );
+        this.logRequest('error', `Critical memory pressure detected, rejecting request ${requestId}`, {
+          operation: 'MEMORY_PRESSURE_REJECTION',
+          requestId,
+        });
         return throwError(
           () => new Error('Request rejected due to critical memory pressure'),
         );
@@ -117,9 +121,12 @@ export class MemoryPressureInterceptor implements NestInterceptor {
           );
 
           if (pressureAfter !== pressureLevel) {
-            this.logger.debug(
-              `Memory pressure changed after request ${requestId}: ${pressureLevel} -> ${pressureAfter}`,
-            );
+            this.logRequest('debug', `Memory pressure changed after request ${requestId}: ${pressureLevel} -> ${pressureAfter}`, {
+              operation: 'MEMORY_PRESSURE_CHANGE',
+              requestId,
+              pressureBefore: pressureLevel,
+              pressureAfter,
+            });
           }
 
           // Trigger cleanup if memory increased significantly
@@ -131,23 +138,12 @@ export class MemoryPressureInterceptor implements NestInterceptor {
         }),
       );
     } catch (error) {
-      this.logger.error(
-        `Error in memory pressure interceptor for request ${requestId}:`,
-        error,
-      );
+      this.logError(`Error in memory pressure interceptor for request ${requestId}`, error, {
+        operation: 'MEMORY_PRESSURE_INTERCEPTOR_ERROR',
+        requestId,
+      });
       return throwError(() => error);
     }
-  }
-
-  /**
-   * Generate unique request ID
-   */
-  private generateRequestId(context: ExecutionContext): string {
-    const request = context.switchToHttp().getRequest();
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substr(2, 9);
-
-    return `${request.method || 'unknown'}_${timestamp}_${random}`;
   }
 
   /**
@@ -211,9 +207,9 @@ export class MemoryPressureInterceptor implements NestInterceptor {
 
     // Respect GC cooldown period
     if (now - this.lastGCTime < this.gcCooldownMs) {
-      this.logger.debug(
-        'GC cooldown period active, skipping memory optimization',
-      );
+      this.logRequest('debug', 'GC cooldown period active, skipping memory optimization', {
+        operation: 'GC_COOLDOWN',
+      });
       return;
     }
 
@@ -222,23 +218,26 @@ export class MemoryPressureInterceptor implements NestInterceptor {
     try {
       switch (pressureLevel) {
         case 'critical':
-          this.logger.warn(
-            'Critical memory pressure detected, triggering aggressive cleanup',
-          );
+          this.logRequest('warn', 'Critical memory pressure detected, triggering aggressive cleanup', {
+            operation: 'CRITICAL_MEMORY_PRESSURE',
+            pressureLevel,
+          });
           await this.performAggressiveCleanup(config);
           break;
 
         case 'high':
-          this.logger.warn(
-            'High memory pressure detected, triggering memory optimization',
-          );
+          this.logRequest('warn', 'High memory pressure detected, triggering memory optimization', {
+            operation: 'HIGH_MEMORY_PRESSURE',
+            pressureLevel,
+          });
           await this.performStandardCleanup(config);
           break;
 
         case 'medium':
-          this.logger.debug(
-            'Medium memory pressure detected, triggering light cleanup',
-          );
+          this.logRequest('debug', 'Medium memory pressure detected, triggering light cleanup', {
+            operation: 'MEDIUM_MEMORY_PRESSURE',
+            pressureLevel,
+          });
           await this.performLightCleanup(config);
           break;
 
@@ -247,7 +246,10 @@ export class MemoryPressureInterceptor implements NestInterceptor {
           break;
       }
     } catch (error) {
-      this.logger.error('Error during memory optimization:', error);
+      this.logError('Error during memory optimization', error, {
+        operation: 'MEMORY_OPTIMIZATION_ERROR',
+        pressureLevel,
+      });
     }
   }
 
@@ -313,7 +315,9 @@ export class MemoryPressureInterceptor implements NestInterceptor {
       try {
         await this.performLightCleanup(config);
       } catch (error) {
-        this.logger.error('Error during scheduled cleanup:', error);
+        this.logError('Error during scheduled cleanup', error, {
+          operation: 'SCHEDULED_CLEANUP_ERROR',
+        });
       }
     }, 100); // 100ms delay
   }
@@ -343,9 +347,12 @@ export class MemoryPressureInterceptor implements NestInterceptor {
 
       if (Math.abs(changeMB) > 5) {
         // Log changes > 5MB
-        this.logger.debug(
-          `Memory change for ${requestId}: ${changeMB > 0 ? '+' : ''}${changeMB.toFixed(1)}MB (${success ? 'success' : 'error'})`,
-        );
+        this.logRequest('debug', `Memory change for ${requestId}: ${changeMB > 0 ? '+' : ''}${changeMB.toFixed(1)}MB (${success ? 'success' : 'error'})`, {
+          operation: 'MEMORY_CHANGE',
+          requestId,
+          memoryChangeMB: changeMB,
+          success,
+        });
       }
     }
   }
@@ -422,7 +429,9 @@ export class MemoryPressureInterceptor implements NestInterceptor {
    * Force immediate memory cleanup
    */
   async forceMemoryCleanup(): Promise<void> {
-    this.logger.log('Forcing immediate memory cleanup');
+    this.logRequest('log', 'Forcing immediate memory cleanup', {
+      operation: 'FORCE_MEMORY_CLEANUP',
+    });
 
     const config: MemoryPressureConfig = {
       maxHeapSize: 1000, // 1GB default
@@ -442,6 +451,8 @@ export class MemoryPressureInterceptor implements NestInterceptor {
   reset(): void {
     this.memoryHistory.length = 0;
     this.lastGCTime = 0;
-    this.logger.log('Memory pressure interceptor reset');
+    this.logRequest('log', 'Memory pressure interceptor reset', {
+      operation: 'MEMORY_INTERCEPTOR_RESET',
+    });
   }
 }

@@ -15,7 +15,8 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
-import { VisitDisposition } from '../../clinical/enums/visit-disposition.enum';
+import { VisitDisposition } from '../../services/clinical/enums/visit-disposition.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface ClinicVisitAttributes {
   id: string;
@@ -248,16 +249,7 @@ export class ClinicVisit
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ClinicVisit) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ClinicVisit ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
-      );
-      console.log(
-        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Nurse: ${instance.attendedBy}`,
-      );
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ClinicVisit', instance);
   }
 
   @BeforeCreate
@@ -313,3 +305,6 @@ export class ClinicVisit
     return duration !== null && duration > 30;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ClinicVisit;

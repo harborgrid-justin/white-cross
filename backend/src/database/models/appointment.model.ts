@@ -6,7 +6,6 @@ import {
   DataType,
   Default,
   ForeignKey,
-  HasMany,
   Index,
   Model,
   PrimaryKey,
@@ -14,9 +13,6 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Op, Optional } from 'sequelize';
-import type { User } from './user.model';
-import type { Student } from './student.model';
-import type { AppointmentReminder } from './appointment-reminder.model';
 
 export enum AppointmentType {
   ROUTINE_CHECKUP = 'ROUTINE_CHECKUP',
@@ -170,17 +166,17 @@ export interface AppointmentCreationAttributes
     },
   ],
 })
-export class Appointment extends Model<
-  AppointmentAttributes,
-  AppointmentCreationAttributes
-> {
+export class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   declare id: string;
 
   @Index
-  @ForeignKey(() => require('./student.model').Student)
+  @ForeignKey(() => {
+    const { Student } = require('./student.model');
+    return Student;
+  })
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -195,7 +191,10 @@ export class Appointment extends Model<
   studentId: string;
 
   @Index
-  @ForeignKey(() => require('./user.model').User)
+  @ForeignKey(() => {
+    const { User } = require('./user.model');
+    return User;
+  })
   @Column({
     type: DataType.UUID,
     allowNull: true,
@@ -209,19 +208,25 @@ export class Appointment extends Model<
   })
   nurseId: string;
 
-  @BelongsTo(() => require('./user.model').User, {
+  @BelongsTo(() => {
+    const { User } = require('./user.model');
+    return User;
+  }, {
     foreignKey: 'nurseId',
     as: 'nurse',
     constraints: true,
   })
-  declare nurse?: User;
+  declare nurse?: any;
 
-  @BelongsTo(() => require('./student.model').Student, {
+  @BelongsTo(() => {
+    const { Student } = require('./student.model');
+    return Student;
+  }, {
     foreignKey: 'studentId',
     as: 'student',
     constraints: true,
   })
-  declare student?: Student;
+  declare student?: any;
 
   @Index
   @Column({
@@ -327,8 +332,17 @@ export class Appointment extends Model<
   })
   recurringEndDate?: Date;
 
-  @HasMany(() => require('./appointment-reminder.model').AppointmentReminder)
-  declare reminders?: AppointmentReminder[];
+  // Note: reminders association commented out to prevent Swagger circular dependency
+  // The association still works via Sequelize, but Swagger won't generate schemas for it
+  // @HasMany(() => {
+  //   const { AppointmentReminder } = require('./appointment-reminder.model');
+  //   return AppointmentReminder;
+  // }, {
+  //   foreignKey: 'appointmentId',
+  //   as: 'reminders',
+  // })
+  // @ApiHideProperty()
+  // declare reminders?: any[];
 
   @Column({
     type: DataType.DATE,
@@ -348,9 +362,7 @@ export class Appointment extends Model<
   get isUpcoming(): boolean {
     return (
       this.scheduledAt > new Date() &&
-      [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS].includes(
-        this.status,
-      )
+      [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS].includes(this.status)
     );
   }
 
@@ -377,7 +389,7 @@ export class Appointment extends Model<
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
       const { logModelPHIAccess } = await import(
-        '../services/model-audit-helper.service.js'
+        '@/database/services/model-audit-helper.service.js'
       );
       const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
       await logModelPHIAccess(
@@ -393,10 +405,7 @@ export class Appointment extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async validateScheduledDate(instance: Appointment) {
-    if (
-      instance.status === AppointmentStatus.SCHEDULED &&
-      instance.scheduledAt < new Date()
-    ) {
+    if (instance.status === AppointmentStatus.SCHEDULED && instance.scheduledAt < new Date()) {
       throw new Error('Cannot schedule appointment in the past');
     }
   }
@@ -407,11 +416,144 @@ export class Appointment extends Model<
     if (instance.recurringGroupId && !instance.recurringFrequency) {
       throw new Error('Recurring appointments must have a frequency');
     }
-    if (
-      instance.recurringEndDate &&
-      instance.recurringEndDate < instance.scheduledAt
-    ) {
+    if (instance.recurringEndDate && instance.recurringEndDate < instance.scheduledAt) {
       throw new Error('Recurring end date must be after scheduled date');
     }
   }
 }
+
+/**
+ * Represents an available time slot for appointment scheduling
+ */
+export interface AvailabilitySlot {
+  /** Start time of the available slot */
+  startTime: Date;
+
+  /** End time of the available slot */
+  endTime: Date;
+
+  /** ID of the nurse/provider available during this slot */
+  nurseId: string;
+
+  /** Name of the nurse/provider */
+  nurseName?: string;
+
+  /** Whether this slot is currently available for booking */
+  isAvailable: boolean;
+
+  /** Duration of the slot in minutes */
+  duration: number;
+
+  /** Optional reason if slot is unavailable */
+  unavailabilityReason?: string;
+}
+
+/**
+ * Complete appointment entity with all relations and computed fields
+ */
+export interface AppointmentEntity {
+  /** Unique identifier for the appointment */
+  id: string;
+
+  /** ID of the student/patient */
+  studentId: string;
+
+  /** ID of the assigned nurse */
+  nurseId: string;
+
+  /** Type of appointment */
+  type: AppointmentType;
+
+  /** Alias for type field (for DTO compatibility) */
+  appointmentType?: AppointmentType;
+
+  /** Scheduled date and time */
+  scheduledAt: Date;
+
+  /** Alias for scheduledAt field (for DTO compatibility) */
+  appointmentDate?: Date;
+
+  /** Duration in minutes */
+  duration: number;
+
+  /** Current status of the appointment */
+  status: AppointmentStatus;
+
+  /** Reason for the appointment */
+  reason: string;
+
+  /** Additional notes about the appointment */
+  notes?: string;
+
+  /** Group ID for recurring appointments */
+  recurringGroupId?: string;
+
+  /** Frequency of recurrence (DAILY, WEEKLY, MONTHLY, YEARLY) */
+  recurringFrequency?: string;
+
+  /** End date for recurring appointments */
+  recurringEndDate?: Date;
+
+  /** Related student information */
+  student?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phoneNumber?: string;
+  };
+
+  /** Related nurse information */
+  nurse?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+  };
+
+
+
+  /** Creation timestamp */
+  createdAt: Date;
+
+  /** Last update timestamp */
+  updatedAt: Date;
+}
+
+/**
+ * Generic paginated response wrapper
+ */
+export interface PaginatedResponse<T> {
+  /** Array of items for the current page */
+  data: T[];
+
+  /** Pagination metadata */
+  pagination: {
+    /** Current page number (1-indexed) */
+    page: number;
+
+    /** Number of items per page */
+    limit: number;
+
+    /** Total number of items across all pages */
+    total: number;
+
+    /** Total number of pages */
+    totalPages: number;
+
+    /** Whether there is a next page */
+    hasNext: boolean;
+
+    /** Whether there is a previous page */
+    hasPrevious: boolean;
+  };
+}
+
+/**
+ * Type alias for paginated appointment response
+ */
+export type PaginatedAppointments = PaginatedResponse<AppointmentEntity>;
+
+// Default export for Sequelize-TypeScript
+export default Appointment;

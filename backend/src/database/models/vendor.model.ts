@@ -11,6 +11,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface VendorAttributes {
   id: string;
@@ -125,13 +126,9 @@ export class Vendor
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Vendor) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Vendor ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('Vendor', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default Vendor;

@@ -4,7 +4,9 @@
  * @description Implements rate limiting for email sending to prevent abuse and comply with provider limits
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 import { ConfigService } from '@nestjs/config';
 import { RateLimitConfig, RateLimitStatus } from './dto/email.dto';
 
@@ -21,22 +23,30 @@ interface RateLimitEntry {
  * Manages rate limiting for email sending operations
  */
 @Injectable()
-export class EmailRateLimiterService {
-  private readonly logger = new Logger(EmailRateLimiterService.name);
+export class EmailRateLimiterService extends BaseService {
   private readonly enabled: boolean;
   private readonly globalConfig: RateLimitConfig;
   private readonly perRecipientConfig: RateLimitConfig;
   private readonly store = new Map<string, RateLimitEntry>();
   private cleanupIntervalId: NodeJS.Timeout;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    @Inject(LoggerService) logger: LoggerService,
+    private readonly configService: ConfigService
+  ) {
+    super({
+      serviceName: 'EmailRateLimiterService',
+      logger,
+      enableAuditLogging: true,
+    });
+
     this.enabled = this.configService.get<boolean>('EMAIL_RATE_LIMIT_ENABLED', true);
 
     this.globalConfig = {
       maxEmails: this.configService.get<number>('EMAIL_RATE_LIMIT_GLOBAL_MAX', 100),
       windowMs: this.configService.get<number>('EMAIL_RATE_LIMIT_GLOBAL_WINDOW', 3600000), // 1 hour
       scope: 'global',
-    };
+  };
 
     this.perRecipientConfig = {
       maxEmails: this.configService.get<number>('EMAIL_RATE_LIMIT_RECIPIENT_MAX', 10),
@@ -47,7 +57,7 @@ export class EmailRateLimiterService {
     // Cleanup expired entries every 5 minutes
     this.cleanupIntervalId = setInterval(() => this.cleanup(), 300000);
 
-    this.logger.log(
+    this.logInfo(
       `EmailRateLimiterService initialized (enabled: ${this.enabled}, ` +
         `global: ${this.globalConfig.maxEmails}/${this.globalConfig.windowMs}ms, ` +
         `recipient: ${this.perRecipientConfig.maxEmails}/${this.perRecipientConfig.windowMs}ms)`,
@@ -120,7 +130,7 @@ export class EmailRateLimiterService {
       );
     }
 
-    this.logger.debug(`Recorded ${recipientArray.length} email(s) sent`);
+    this.logDebug(`Recorded ${recipientArray.length} email(s) sent`);
   }
 
   /**
@@ -220,7 +230,7 @@ export class EmailRateLimiterService {
     }
 
     if (cleanedCount > 0) {
-      this.logger.debug(`Cleaned up ${cleanedCount} expired rate limit entries`);
+      this.logDebug(`Cleaned up ${cleanedCount} expired rate limit entries`);
     }
   }
 
@@ -231,7 +241,7 @@ export class EmailRateLimiterService {
   resetLimit(identifier: string): void {
     const key = identifier === 'global' ? 'global' : `recipient:${identifier.toLowerCase()}`;
     this.store.delete(key);
-    this.logger.debug(`Reset rate limit for: ${identifier}`);
+    this.logDebug(`Reset rate limit for: ${identifier}`);
   }
 
   /**
@@ -239,7 +249,7 @@ export class EmailRateLimiterService {
    */
   resetAll(): void {
     this.store.clear();
-    this.logger.log('Reset all rate limits');
+    this.logInfo('Reset all rate limits');
   }
 
   /**
@@ -316,7 +326,7 @@ export class EmailRateLimiterService {
     while (!status.allowed) {
       const waitTime = status.resetAt.getTime() - Date.now();
       if (waitTime > 0) {
-        this.logger.debug(`Rate limit exceeded, waiting ${waitTime}ms for: ${status.identifier}`);
+        this.logDebug(`Rate limit exceeded, waiting ${waitTime}ms for: ${status.identifier}`);
         await new Promise((resolve) => setTimeout(resolve, Math.min(waitTime, 60000))); // Max 1 minute wait
       }
 

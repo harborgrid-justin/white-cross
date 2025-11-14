@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
-import { Sequelize } from 'sequelize-typescript';
+import { Sequelize, QueryTypes } from 'sequelize-typescript';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+import { BaseService } from '../../common/base';
 /**
  * Materialized View Service
  *
@@ -43,12 +44,12 @@ import { Cron, CronExpression } from '@nestjs/schedule';
  * Task Tracking: .temp/task-status-DB6C9F.json
  */
 @Injectable()
-export class MaterializedViewService {
-  private readonly logger = new Logger(MaterializedViewService.name);
-
+export class MaterializedViewService extends BaseService {
   constructor(
     @InjectConnection() private readonly sequelize: Sequelize,
-  ) {}
+  ) {
+    super("MaterializedViewService");
+  }
 
   /**
    * Refresh student health summary materialized view
@@ -58,18 +59,18 @@ export class MaterializedViewService {
   async refreshStudentHealthSummary(): Promise<void> {
     const startTime = Date.now();
     try {
-      this.logger.log('Refreshing mv_student_health_summary...');
+      this.logInfo('Refreshing mv_student_health_summary...');
 
       await this.sequelize.query(
         'REFRESH MATERIALIZED VIEW CONCURRENTLY "mv_student_health_summary";',
       );
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `mv_student_health_summary refreshed successfully in ${duration}ms`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to refresh mv_student_health_summary: ${error.message}`,
         error.stack,
       );
@@ -85,18 +86,18 @@ export class MaterializedViewService {
   async refreshComplianceStatus(): Promise<void> {
     const startTime = Date.now();
     try {
-      this.logger.log('Refreshing mv_compliance_status...');
+      this.logInfo('Refreshing mv_compliance_status...');
 
       await this.sequelize.query(
         'REFRESH MATERIALIZED VIEW CONCURRENTLY "mv_compliance_status";',
       );
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `mv_compliance_status refreshed successfully in ${duration}ms`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to refresh mv_compliance_status: ${error.message}`,
         error.stack,
       );
@@ -112,18 +113,18 @@ export class MaterializedViewService {
   async refreshMedicationSchedule(): Promise<void> {
     const startTime = Date.now();
     try {
-      this.logger.log('Refreshing mv_medication_schedule...');
+      this.logInfo('Refreshing mv_medication_schedule...');
 
       await this.sequelize.query(
         'REFRESH MATERIALIZED VIEW CONCURRENTLY "mv_medication_schedule";',
       );
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `mv_medication_schedule refreshed successfully in ${duration}ms`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to refresh mv_medication_schedule: ${error.message}`,
         error.stack,
       );
@@ -139,18 +140,18 @@ export class MaterializedViewService {
   async refreshAllergySummary(): Promise<void> {
     const startTime = Date.now();
     try {
-      this.logger.log('Refreshing mv_allergy_summary...');
+      this.logInfo('Refreshing mv_allergy_summary...');
 
       await this.sequelize.query(
         'REFRESH MATERIALIZED VIEW CONCURRENTLY "mv_allergy_summary";',
       );
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `mv_allergy_summary refreshed successfully in ${duration}ms`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to refresh mv_allergy_summary: ${error.message}`,
         error.stack,
       );
@@ -166,18 +167,18 @@ export class MaterializedViewService {
   async refreshAppointmentStatistics(): Promise<void> {
     const startTime = Date.now();
     try {
-      this.logger.log('Refreshing mv_appointment_statistics...');
+      this.logInfo('Refreshing mv_appointment_statistics...');
 
       await this.sequelize.query(
         'REFRESH MATERIALIZED VIEW CONCURRENTLY "mv_appointment_statistics";',
       );
 
       const duration = Date.now() - startTime;
-      this.logger.log(
+      this.logInfo(
         `mv_appointment_statistics refreshed successfully in ${duration}ms`,
       );
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to refresh mv_appointment_statistics: ${error.message}`,
         error.stack,
       );
@@ -201,7 +202,7 @@ export class MaterializedViewService {
       totalDuration: 0,
     };
 
-    this.logger.log('Starting refresh of all materialized views...');
+    this.logInfo('Starting refresh of all materialized views...');
 
     const refreshOperations = [
       { name: 'student_health_summary', fn: () => this.refreshStudentHealthSummary() },
@@ -216,7 +217,7 @@ export class MaterializedViewService {
         await operation.fn();
         results.success.push(operation.name);
       } catch (error) {
-        this.logger.error(
+        this.logError(
           `Failed to refresh ${operation.name}: ${error.message}`,
         );
         results.failed.push(operation.name);
@@ -225,7 +226,7 @@ export class MaterializedViewService {
 
     results.totalDuration = Date.now() - startTime;
 
-    this.logger.log(
+    this.logInfo(
       `Materialized view refresh complete: ${results.success.length} succeeded, ${results.failed.length} failed, ${results.totalDuration}ms total`,
     );
 
@@ -252,7 +253,7 @@ export class MaterializedViewService {
 
       return result[0]?.last_refresh || null;
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to get last refresh time for ${viewName}: ${error.message}`,
       );
       return null;
@@ -306,7 +307,7 @@ export class MaterializedViewService {
         lastRefresh,
       };
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Failed to get statistics for ${viewName}: ${error.message}`,
       );
       return null;
@@ -348,7 +349,7 @@ export class MaterializedViewService {
    */
   @Cron(CronExpression.EVERY_HOUR)
   async scheduledHourlyRefresh(): Promise<void> {
-    this.logger.log('Starting scheduled hourly refresh...');
+    this.logInfo('Starting scheduled hourly refresh...');
 
     try {
       await Promise.all([
@@ -357,9 +358,9 @@ export class MaterializedViewService {
         this.refreshAllergySummary(),
       ]);
 
-      this.logger.log('Scheduled hourly refresh completed successfully');
+      this.logInfo('Scheduled hourly refresh completed successfully');
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Scheduled hourly refresh failed: ${error.message}`,
         error.stack,
       );
@@ -372,14 +373,14 @@ export class MaterializedViewService {
    */
   @Cron('0 */6 * * *')
   async scheduledComplianceRefresh(): Promise<void> {
-    this.logger.log('Starting scheduled compliance refresh...');
+    this.logInfo('Starting scheduled compliance refresh...');
 
     try {
       await this.refreshComplianceStatus();
 
-      this.logger.log('Scheduled compliance refresh completed successfully');
+      this.logInfo('Scheduled compliance refresh completed successfully');
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Scheduled compliance refresh failed: ${error.message}`,
         error.stack,
       );
@@ -392,14 +393,14 @@ export class MaterializedViewService {
    */
   @Cron('0 2 * * *')
   async scheduledDailyRefresh(): Promise<void> {
-    this.logger.log('Starting scheduled daily refresh...');
+    this.logInfo('Starting scheduled daily refresh...');
 
     try {
       await this.refreshAppointmentStatistics();
 
-      this.logger.log('Scheduled daily refresh completed successfully');
+      this.logInfo('Scheduled daily refresh completed successfully');
     } catch (error) {
-      this.logger.error(
+      this.logError(
         `Scheduled daily refresh failed: ${error.message}`,
         error.stack,
       );

@@ -2,24 +2,25 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { col, fn, Op, QueryTypes } from 'sequelize';
-import { IncidentReport } from '../../database/models/incident-report.model';
+import { IncidentReport } from '@/database/models';
 import { IncidentStatisticsReport } from '../interfaces/report-types.interface';
 import { IncidentStatisticsDto } from '../dto/incident-statistics.dto';
 
+import { BaseService } from '@/common/base';
 /**
  * Incident Reports Service
  * Handles incident statistics, safety analytics, and compliance monitoring
  */
 @Injectable()
-export class IncidentReportsService {
-  private readonly logger = new Logger(IncidentReportsService.name);
-
+export class IncidentReportsService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private incidentReportModel: typeof IncidentReport,
     @InjectConnection()
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("IncidentReportsService");
+  }
 
   /**
    * Generate comprehensive incident statistics and safety analytics
@@ -153,7 +154,7 @@ export class IncidentReportsService {
         count: parseInt(record.count, 10),
       }));
 
-      this.logger.log(
+      this.logInfo(
         `Incident statistics report generated: ${incidents.length} total incidents, ${incidentsByType.length} types, ${incidentsBySeverity.length} severity levels`,
       );
 
@@ -168,7 +169,7 @@ export class IncidentReportsService {
         totalIncidents: incidents.length,
       };
     } catch (error) {
-      this.logger.error('Error getting incident statistics:', error);
+      this.logError('Error getting incident statistics:', error);
       throw error;
     }
   }

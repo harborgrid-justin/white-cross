@@ -1,0 +1,34 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditAction = void 0;
+var AuditAction;
+(function (AuditAction) {
+    AuditAction["LOGIN"] = "LOGIN";
+    AuditAction["LOGOUT"] = "LOGOUT";
+    AuditAction["LOGIN_FAILED"] = "LOGIN_FAILED";
+    AuditAction["PASSWORD_RESET"] = "PASSWORD_RESET";
+    AuditAction["PASSWORD_CHANGE"] = "PASSWORD_CHANGE";
+    AuditAction["CREATE"] = "CREATE";
+    AuditAction["READ"] = "READ";
+    AuditAction["UPDATE"] = "UPDATE";
+    AuditAction["DELETE"] = "DELETE";
+    AuditAction["BULK_CREATE"] = "BULK_CREATE";
+    AuditAction["BULK_UPDATE"] = "BULK_UPDATE";
+    AuditAction["BULK_DELETE"] = "BULK_DELETE";
+    AuditAction["EXPORT"] = "EXPORT";
+    AuditAction["IMPORT"] = "IMPORT";
+    AuditAction["DOWNLOAD"] = "DOWNLOAD";
+    AuditAction["PERMISSION_GRANT"] = "PERMISSION_GRANT";
+    AuditAction["PERMISSION_REVOKE"] = "PERMISSION_REVOKE";
+    AuditAction["ROLE_ASSIGN"] = "ROLE_ASSIGN";
+    AuditAction["ROLE_REMOVE"] = "ROLE_REMOVE";
+    AuditAction["SYSTEM_CONFIG_CHANGE"] = "SYSTEM_CONFIG_CHANGE";
+    AuditAction["SYSTEM_MAINTENANCE"] = "SYSTEM_MAINTENANCE";
+    AuditAction["PHI_ACCESS"] = "PHI_ACCESS";
+    AuditAction["PHI_MODIFY"] = "PHI_MODIFY";
+    AuditAction["PHI_DELETE"] = "PHI_DELETE";
+    AuditAction["PHI_EXPORT"] = "PHI_EXPORT";
+    AuditAction["REPORT_GENERATE"] = "REPORT_GENERATE";
+    AuditAction["REPORT_EXPORT"] = "REPORT_EXPORT";
+})(AuditAction || (exports.AuditAction = AuditAction = {}));
+//# sourceMappingURL=audit-action.enum.js.map

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 114, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/app/%28dashboard%29/admin/%40sidebar/default.tsx"],"sourcesContent":["/**\r\n * @fileoverview Admin Sidebar Default - Default state for admin sidebar slot\r\n * @module app/(dashboard)/admin/@sidebar/default\r\n * @category Admin - Parallel Routes\r\n */\r\n\r\n/**\r\n * Default Sidebar Component\r\n * \r\n * Provides the default (empty) state for the admin sidebar parallel route slot.\r\n * This component is rendered when no specific sidebar route is active.\r\n * The main AdminSidebar is already integrated in the layout, so this slot\r\n * can be used for additional contextual sidebars when needed.\r\n * \r\n * @returns Empty fragment (no additional sidebar displayed)\r\n */\r\nexport default function DefaultSidebar() {\r\n  return null;\r\n}"],"names":[],"mappings":"AAAA;;;;CAIC,GAED;;;;;;;;;CASC;;;;AACc,SAAS;IACtB,OAAO;AACT","debugId":null}}]
+}

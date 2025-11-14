@@ -181,6 +181,16 @@ export function createAuthResponseInterceptor(options: ResponseInterceptorOption
 
       // Log error
       if (enableLogging) {
+        console.log('[ApiClient Interceptor] Error details:', {
+          hasResponse: !!error.response,
+          hasConfig: !!error.config,
+          errorMessage: error.message,
+          errorCode: error.code,
+          errorStatus: error.response?.status,
+          errorData: error.response?.data,
+          fullError: error
+        });
+
         logger.error('API Response Error', error as Error, {
           url: error.config?.url,
           method: error.config?.method,

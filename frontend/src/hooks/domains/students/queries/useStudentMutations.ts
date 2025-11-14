@@ -15,7 +15,7 @@ import type {
   UpdateStudentData,
 } from '@/types/student.types';
 import { useAppDispatch } from '@/stores/hooks';
-import { studentsActions } from '@/stores/slices/studentsSlice';
+import { studentsActions } from '@/stores/slices/students';
 import { studentKeys } from './studentQueryKeys';
 
 // =====================

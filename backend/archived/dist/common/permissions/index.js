@@ -1,0 +1,34 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PermissionMiddleware = exports.PermissionModule = exports.requireRole = exports.hasAllRoles = exports.hasAnyRole = exports.getUserId = exports.getUserRole = exports.assertUserPermission = exports.checkUserPermission = exports.requirePermission = exports.isAction = exports.isResource = exports.isRole = exports.getAllowedResources = exports.getAllowedActions = exports.can = exports.checkPermission = exports.permissionChecker = exports.PermissionChecker = exports.PERMISSION_MATRIX = exports.Action = exports.Resource = exports.Role = void 0;
+var Permission_1 = require("./Permission");
+Object.defineProperty(exports, "Role", { enumerable: true, get: function () { return Permission_1.Role; } });
+Object.defineProperty(exports, "Resource", { enumerable: true, get: function () { return Permission_1.Resource; } });
+Object.defineProperty(exports, "Action", { enumerable: true, get: function () { return Permission_1.Action; } });
+Object.defineProperty(exports, "PERMISSION_MATRIX", { enumerable: true, get: function () { return Permission_1.PERMISSION_MATRIX; } });
+Object.defineProperty(exports, "PermissionChecker", { enumerable: true, get: function () { return Permission_1.PermissionChecker; } });
+Object.defineProperty(exports, "permissionChecker", { enumerable: true, get: function () { return Permission_1.permissionChecker; } });
+Object.defineProperty(exports, "checkPermission", { enumerable: true, get: function () { return Permission_1.checkPermission; } });
+Object.defineProperty(exports, "can", { enumerable: true, get: function () { return Permission_1.can; } });
+Object.defineProperty(exports, "getAllowedActions", { enumerable: true, get: function () { return Permission_1.getAllowedActions; } });
+Object.defineProperty(exports, "getAllowedResources", { enumerable: true, get: function () { return Permission_1.getAllowedResources; } });
+Object.defineProperty(exports, "isRole", { enumerable: true, get: function () { return Permission_1.isRole; } });
+Object.defineProperty(exports, "isResource", { enumerable: true, get: function () { return Permission_1.isResource; } });
+Object.defineProperty(exports, "isAction", { enumerable: true, get: function () { return Permission_1.isAction; } });
+var middleware_1 = require("./middleware");
+Object.defineProperty(exports, "requirePermission", { enumerable: true, get: function () { return middleware_1.requirePermission; } });
+Object.defineProperty(exports, "checkUserPermission", { enumerable: true, get: function () { return middleware_1.checkUserPermission; } });
+Object.defineProperty(exports, "assertUserPermission", { enumerable: true, get: function () { return middleware_1.assertUserPermission; } });
+Object.defineProperty(exports, "getUserRole", { enumerable: true, get: function () { return middleware_1.getUserRole; } });
+Object.defineProperty(exports, "getUserId", { enumerable: true, get: function () { return middleware_1.getUserId; } });
+Object.defineProperty(exports, "hasAnyRole", { enumerable: true, get: function () { return middleware_1.hasAnyRole; } });
+Object.defineProperty(exports, "hasAllRoles", { enumerable: true, get: function () { return middleware_1.hasAllRoles; } });
+Object.defineProperty(exports, "requireRole", { enumerable: true, get: function () { return middleware_1.requireRole; } });
+var Permission_2 = require("./Permission");
+Object.defineProperty(exports, "PermissionModule", { enumerable: true, get: function () { return __importDefault(Permission_2).default; } });
+var middleware_2 = require("./middleware");
+Object.defineProperty(exports, "PermissionMiddleware", { enumerable: true, get: function () { return __importDefault(middleware_2).default; } });
+//# sourceMappingURL=index.js.map

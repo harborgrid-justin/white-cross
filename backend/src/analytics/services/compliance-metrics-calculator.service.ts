@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '@/common/base';
 /**
  * Compliance Metrics Calculator Service
  *
@@ -15,8 +16,10 @@ import { Injectable, Logger } from '@nestjs/common';
  * - Compute health screening completion rates
  */
 @Injectable()
-export class ComplianceMetricsCalculatorService {
-  private readonly logger = new Logger(ComplianceMetricsCalculatorService.name);
+export class ComplianceMetricsCalculatorService extends BaseService {
+  constructor() {
+    super("ComplianceMetricsCalculatorService");
+  }
 
   /**
    * Calculate immunization compliance metrics

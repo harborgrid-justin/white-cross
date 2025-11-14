@@ -13,6 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface PolicyAcknowledgmentAttributes {
   id?: string;
@@ -27,7 +28,7 @@ export interface PolicyAcknowledgmentAttributes {
     where: {
       deletedAt: null,
     },
-    order: [['createdAt', 'DESC']],
+    order: [['acknowledgedAt', 'DESC']],
   },
 }))
 @Table({
@@ -37,14 +38,6 @@ export interface PolicyAcknowledgmentAttributes {
     {
       unique: true,
       fields: ['policyId', 'userId'],
-    },
-    {
-      fields: ['createdAt'],
-      name: 'idx_policy_acknowledgment_created_at',
-    },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_policy_acknowledgment_updated_at',
     },
   ],
 })
@@ -88,13 +81,9 @@ export class PolicyAcknowledgment
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PolicyAcknowledgment) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] PolicyAcknowledgment ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('PolicyAcknowledgment', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PolicyAcknowledgment;

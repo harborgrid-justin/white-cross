@@ -13,12 +13,12 @@ import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
 import { JobType } from '../enums/job-type.enum';
 import { InventoryMaintenanceData } from '../interfaces/job-data.interface';
-import { CacheService } from '../../../shared/cache/cache.service';
-import { InventoryAlertService } from '../../../inventory/services/inventory-alert.service';
-import { InventoryNotificationService } from '../../../inventory/services/inventory-notification.service';
-import { InventoryReorderService } from '../../../inventory/services/inventory-reorder.service';
-import { InventoryReportService } from '../../../inventory/services/inventory-report.service';
-import { InventoryDisposalService } from '../../../inventory/services/inventory-disposal.service';
+import { CacheService } from '@/infrastructure/cache/cache.service';
+import { InventoryAlertService } from '../../../services/inventory/services/inventory-alert.service';
+import { InventoryNotificationService } from '../../../services/inventory/services/inventory-notification.service';
+import { InventoryReorderService } from '../../../services/inventory/services/inventory-reorder.service';
+import { InventoryReportService } from '../../../services/inventory/services/inventory-report.service';
+import { InventoryDisposalService } from '../../../services/inventory/services/inventory-disposal.service';
 
 /**
  * Cache configuration constants

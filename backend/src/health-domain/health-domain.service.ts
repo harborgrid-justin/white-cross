@@ -3,7 +3,7 @@ import {
   AllergyFiltersDto,
   ChronicConditionFiltersDto,
   CreateImmunizationDto,
-  HealthDomainCreateAllergyDto,
+  HealthDomainAllergyCreateDto,
   HealthDomainCreateChronicConditionDto,
   HealthDomainCreateRecordDto,
   HealthDomainUpdateAllergyDto,
@@ -18,13 +18,15 @@ import {
 // Import all health-record services
 import { VaccinationService } from '../health-record/vaccination/vaccination.service';
 import { AllergyService } from '../health-record/allergy/allergy.service';
-import { ChronicConditionService } from '../health-record/chronic-condition/chronic-condition.service';
+import { ChronicConditionService } from '../services/chronic-condition/chronic-condition.service';
+import { HealthRecordService } from '../health-record/health-record.service';
 import { VitalsService } from '../health-record/vitals/vitals.service';
 import { SearchService } from '../health-record/search/search.service';
 import { StatisticsService } from '../health-record/statistics/statistics.service';
 import { ImportExportService } from '../health-record/import-export/import-export.service';
 import { ValidationService } from '../health-record/validation/validation.service';
 
+import { BaseService } from '@/common/base';
 /**
  * Main Health Domain Service
  * Orchestrates all health-related operations including records, allergies,
@@ -41,7 +43,7 @@ import { ValidationService } from '../health-record/validation/validation.servic
  * - ValidationService: Data integrity and compliance checking
  */
 @Injectable()
-export class HealthDomainService {
+export class HealthDomainService extends BaseService {
   constructor(
     @Inject(forwardRef(() => VaccinationService))
     private readonly vaccinationService: VaccinationService,
@@ -66,7 +68,9 @@ export class HealthDomainService {
 
     @Inject(forwardRef(() => ValidationService))
     private readonly validationService: ValidationService,
-  ) {}
+  ) {
+    super("HealthDomainService");
+  }
   /**
    * Health Records Operations
    */
@@ -121,7 +125,7 @@ export class HealthDomainService {
    * Allergies Operations
    * Delegates to AllergyService from health-record module
    */
-  async createAllergy(data: HealthDomainCreateAllergyDto): Promise<any> {
+  async createAllergy(data: HealthDomainAllergyCreateDto): Promise<any> {
     // Delegate to existing AllergyService (user context would come from request)
     const mockUser = { id: 'system', role: 'admin' as any, email: 'system@whitecross.com', isActive: true };
     return this.allergyService.create(data, mockUser);

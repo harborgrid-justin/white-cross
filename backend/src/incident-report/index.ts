@@ -9,7 +9,7 @@ export * from './incident-report.module';
 
 // Submodules
 export * from './dto';
-export * from './entities';
+export { IncidentReport, FollowUpAction, WitnessStatement } from '@/database/models';
 export * from './enums';
 export * from './services';
 

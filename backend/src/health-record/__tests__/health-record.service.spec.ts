@@ -22,11 +22,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthRecordService } from '../health-record.service';
 import { getModelToken } from '@nestjs/sequelize';
-import { HealthRecord } from '../../database/models/health-record.model';
-import { Allergy } from '../../database/models/allergy.model';
-import { Student } from '../../database/models/student.model';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { Vaccination } from '../../database/models/vaccination.model';
+import { HealthRecord   } from '@/database/models';
+import { Allergy   } from '@/database/models';
+import { Student   } from '@/database/models';
+import { ChronicCondition   } from '@/database/models';
+import { Vaccination   } from '@/database/models';
 import { NotFoundException } from '@nestjs/common';
 import { Op } from 'sequelize';
 

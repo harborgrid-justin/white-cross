@@ -98,6 +98,7 @@ input ContactInputDto {
   address: String
   city: String
   customFields: JSON
+  dateOfBirth: DateTime!
   email: String
   firstName: String!
   isActive: Boolean = true
@@ -105,6 +106,7 @@ input ContactInputDto {
   notes: String
   organization: String
   phone: String
+  photo: String
   relationTo: ID
   relationshipType: String
   state: String
@@ -136,6 +138,7 @@ input ContactUpdateInputDto {
   address: String
   city: String
   customFields: JSON
+  dateOfBirth: DateTime
   email: String
   firstName: String
   isActive: Boolean
@@ -143,6 +146,7 @@ input ContactUpdateInputDto {
   notes: String
   organization: String
   phone: String
+  photo: String
   relationTo: ID
   relationshipType: String
   state: String
@@ -245,22 +249,13 @@ input HealthRecordFilterInputDto {
 input HealthRecordInputDto {
   attachments: [String!] = []
   description: String!
-  diagnosis: String
-  diagnosisCode: String
-  facility: String
-  facilityNpi: String
-  followUpDate: DateTime
-  followUpRequired: Boolean! = false
   isConfidential: Boolean! = false
   metadata: JSON
   notes: String
-  provider: String
-  providerNpi: String
   recordDate: DateTime!
   recordType: String!
   studentId: ID!
   title: String!
-  treatment: String
 }
 
 type HealthRecordListResponseDto {
@@ -271,22 +266,13 @@ type HealthRecordListResponseDto {
 input HealthRecordUpdateInputDto {
   attachments: [String!]
   description: String
-  diagnosis: String
-  diagnosisCode: String
-  facility: String
-  facilityNpi: String
   followUpCompleted: Boolean
-  followUpDate: DateTime
-  followUpRequired: Boolean
   isConfidential: Boolean
   metadata: JSON
   notes: String
-  provider: String
-  providerNpi: String
   recordDate: DateTime
   recordType: String
   title: String
-  treatment: String
 }
 
 type IncidentReport {

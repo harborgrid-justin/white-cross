@@ -5,20 +5,20 @@
  * HIPAA Compliance: Search results are filtered by user permissions and PHI access is audited
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { Student } from '../../database/models/student.model';
-import { Vaccination } from '../../database/models/vaccination.model';
-import { Allergy } from '../../database/models/allergy.model';
-import { ChronicCondition } from '../../database/models/chronic-condition.model';
-import { VitalSigns } from '../../database/models/vital-signs.model';
-import { ClinicVisit } from '../../database/models/clinic-visit.model';
+import { Student   } from '@/database/models';
+import { Vaccination   } from '@/database/models';
+import { Allergy   } from '@/database/models';
+import { ChronicCondition   } from '@/database/models';
+import { VitalSigns   } from '@/database/models';
+import { ClinicVisit   } from '@/database/models';
 
 @Injectable()
-export class SearchService {
-  private readonly logger = new Logger(SearchService.name);
-
+export class SearchService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -32,10 +32,12 @@ export class SearchService {
     private readonly vitalSignsModel: typeof VitalSigns,
     @InjectModel(ClinicVisit)
     private readonly clinicVisitModel: typeof ClinicVisit,
-  ) {}
+  ) {
+    super("SearchService");
+  }
 
   async searchHealthRecords(query: string, filters?: any): Promise<any[]> {
-    this.logger.log(
+    this.logInfo(
       `Searching health records: ${query}, filters: ${JSON.stringify(filters)}`,
     );
 
@@ -115,7 +117,7 @@ export class SearchService {
   }
 
   async advancedSearch(criteria: any): Promise<any> {
-    this.logger.log('Performing advanced health record search');
+    this.logInfo('Performing advanced health record search');
 
     const {
       query,
@@ -302,7 +304,7 @@ export class SearchService {
   }
 
   async searchByDiagnosis(diagnosis: string): Promise<any[]> {
-    this.logger.log(`Searching by diagnosis: ${diagnosis}`);
+    this.logInfo(`Searching by diagnosis: ${diagnosis}`);
 
     const conditions = await this.chronicConditionModel.findAll({
       where: {
@@ -325,7 +327,7 @@ export class SearchService {
    * Search by ICD code
    */
   async searchByICDCode(icdCode: string): Promise<any[]> {
-    this.logger.log(`Searching by ICD code: ${icdCode}`);
+    this.logInfo(`Searching by ICD code: ${icdCode}`);
 
     const conditions = await this.chronicConditionModel.findAll({
       where: {
@@ -347,7 +349,7 @@ export class SearchService {
    * Search by CVX code
    */
   async searchByCVXCode(cvxCode: string): Promise<any[]> {
-    this.logger.log(`Searching by CVX code: ${cvxCode}`);
+    this.logInfo(`Searching by CVX code: ${cvxCode}`);
 
     const vaccinations = await this.vaccinationModel.findAll({
       where: { cvxCode },
@@ -364,7 +366,7 @@ export class SearchService {
    * Find students with specific conditions
    */
   async findStudentsWithCondition(conditionName: string): Promise<string[]> {
-    this.logger.log(`Finding students with condition: ${conditionName}`);
+    this.logInfo(`Finding students with condition: ${conditionName}`);
 
     const conditions = await this.chronicConditionModel.findAll({
       where: {
@@ -381,7 +383,7 @@ export class SearchService {
    * Find students with specific allergens
    */
   async findStudentsWithAllergen(allergen: string): Promise<string[]> {
-    this.logger.log(`Finding students with allergen: ${allergen}`);
+    this.logInfo(`Finding students with allergen: ${allergen}`);
 
     const allergies = await this.allergyModel.findAll({
       where: {
@@ -398,7 +400,7 @@ export class SearchService {
    * Get recently updated records
    */
   async getRecentUpdates(days: number = 7, limit: number = 20): Promise<any[]> {
-    this.logger.log(
+    this.logInfo(
       `Getting records updated in last ${days} days, limit ${limit}`,
     );
 

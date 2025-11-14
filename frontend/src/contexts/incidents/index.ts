@@ -35,13 +35,13 @@
 export {
   FollowUpActionProvider,
   useFollowUpActions,
-} from './FollowUpActionContext';
+} from './FollowUpAction';
 
 export type {
   FollowUpActionContextType,
   ActionFilters,
   OverdueAlert,
-} from './FollowUpActionContext';
+} from './FollowUpAction';
 
 // ==========================================
 // WITNESS STATEMENTS CONTEXT

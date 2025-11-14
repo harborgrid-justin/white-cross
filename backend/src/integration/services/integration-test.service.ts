@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IntegrationConfig, IntegrationStatus } from '../../database/models/integration-config.model';
+import { IntegrationConfig, IntegrationStatus } from '@/database/models';
 import { IntegrationConfigService } from './integration-config.service';
 import { IntegrationLogService } from './integration-log.service';
 import type { IntegrationTestDetails } from '../types/test-details.types';
 
+import { BaseService } from '@/common/base';
 export interface IntegrationTestResult {
   success: boolean;
   message: string;
@@ -17,15 +18,15 @@ export interface IntegrationTestResult {
  * Tests connectivity and validates integration configurations
  */
 @Injectable()
-export class IntegrationTestService {
-  private readonly logger = new Logger(IntegrationTestService.name);
-
+export class IntegrationTestService extends BaseService {
   constructor(
     @InjectModel(IntegrationConfig)
     private readonly configModel: typeof IntegrationConfig,
     private readonly configService: IntegrationConfigService,
     private readonly logService: IntegrationLogService,
-  ) {}
+  ) {
+    super("IntegrationTestService");
+  }
 
   /**
    * Test integration connection
@@ -69,7 +70,7 @@ export class IntegrationTestService {
         details: testResult.details as any,
       });
 
-      this.logger.log(
+      this.logInfo(
         `Connection test ${testResult.success ? 'succeeded' : 'failed'} for ${integration.name}`,
       );
 
@@ -88,7 +89,7 @@ export class IntegrationTestService {
         { where: { id } },
       );
 
-      this.logger.error('Error testing connection', error);
+      this.logError('Error testing connection', error);
 
       return {
         success: false,
@@ -100,7 +101,6 @@ export class IntegrationTestService {
 
   /**
    * Perform actual connection test based on integration type
-   * Mock implementation - in production, this would make real API calls
    */
   private async performConnectionTest(
     integration: IntegrationConfig,
@@ -113,75 +113,160 @@ export class IntegrationTestService {
       };
     }
 
-    // Simulate different test scenarios based on type
+    const endpoint = integration.endpoint || '';
+    const timeout = (integration.timeout as number) || 5000;
+
+    try {
+      // Perform actual HTTP health check for most integration types
+      const connectionSuccess = await this.testHttpEndpoint(endpoint, timeout);
+
+      if (!connectionSuccess) {
+        return {
+          success: false,
+          message: `Failed to connect to ${integration.type} endpoint: ${endpoint}`,
+        };
+      }
+
+      // Build success response based on type
+      const details = await this.buildIntegrationDetails(integration);
+
+      return {
+        success: true,
+        message: `Successfully connected to ${this.getIntegrationTypeName(integration.type)}`,
+        details,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Connection test failed: ${(error as Error).message}`,
+      };
+    }
+  }
+
+  /**
+   * Tests HTTP endpoint connectivity
+   */
+  private async testHttpEndpoint(endpoint: string, timeout: number): Promise<boolean> {
+    if (!endpoint) return false;
+
+    return new Promise(async (resolve) => {
+      try {
+        const https = await import('https');
+        const http = await import('http');
+        const { URL } = await import('url');
+
+        const parsedUrl = new URL(endpoint);
+        const isHttps = parsedUrl.protocol === 'https:';
+        const client = isHttps ? https : http;
+
+        const req = client.request(
+          {
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port || (isHttps ? 443 : 80),
+            path: parsedUrl.pathname || '/',
+            method: 'HEAD', // Use HEAD for lightweight check
+            timeout,
+            headers: {
+              'User-Agent': 'WhiteCross-Integration-Test/1.0',
+            },
+          },
+          (res) => {
+            res.on('data', () => {}); // Consume response
+            res.on('end', () => {
+              resolve(res.statusCode ? res.statusCode < 500 : false);
+            });
+          }
+        );
+
+        req.on('error', () => resolve(false));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(false);
+        });
+        req.end();
+      } catch {
+        resolve(false);
+      }
+    });
+  }
+
+  /**
+   * Builds integration-specific details
+   */
+  private async buildIntegrationDetails(
+    integration: IntegrationConfig,
+  ): Promise<IntegrationTestDetails> {
+    const baseDetails: IntegrationTestDetails = {
+      testedAt: new Date().toISOString(),
+      endpointUrl: integration.endpoint || 'N/A',
+    };
+
+    const settings = integration.settings as Record<string, unknown> || {};
+
+    // Add type-specific details based on configuration
     switch (integration.type) {
       case 'SIS':
         return {
-          success: true,
-          message: 'Successfully connected to Student Information System',
-          details: {
-            version: '2.1.0',
-            studentCount: 1542,
-            lastSync: new Date().toISOString(),
-          },
+          ...baseDetails,
+          systemName: settings.systemName as string || 'Student Information System',
+          version: settings.version as string || 'Unknown',
         };
 
       case 'EHR':
         return {
-          success: true,
-          message: 'Successfully connected to Electronic Health Record system',
-          details: {
-            version: '3.4.2',
-            recordsAvailable: 1542,
-            integrationVersion: 'HL7 FHIR R4',
-          },
+          ...baseDetails,
+          systemName: settings.systemName as string || 'Electronic Health Record',
+          integrationVersion: settings.integrationVersion as string || 'HL7 FHIR R4',
+          version: settings.version as string || 'Unknown',
         };
 
       case 'PHARMACY':
         return {
-          success: true,
-          message: 'Successfully connected to Pharmacy Management System',
-          details: {
-            pharmacyName: integration.settings?.pharmacyName || 'Main Pharmacy',
-            activeOrders: 45,
-          },
+          ...baseDetails,
+          pharmacyName: settings.pharmacyName as string || 'Pharmacy System',
+          systemName: 'Pharmacy Management',
         };
 
       case 'LABORATORY':
         return {
-          success: true,
-          message: 'Successfully connected to Laboratory Information System',
-          details: {
-            labName: integration.settings?.labName || 'Central Lab',
-            pendingResults: 12,
-          },
+          ...baseDetails,
+          labName: settings.labName as string || 'Laboratory System',
+          systemName: 'Laboratory Information System',
         };
 
       case 'INSURANCE':
         return {
-          success: true,
-          message: 'Successfully connected to Insurance Verification System',
-          details: {
-            provider: integration.settings?.provider || 'Insurance Provider',
-            apiVersion: '2.0',
-          },
+          ...baseDetails,
+          provider: settings.provider as string || 'Insurance Provider',
+          systemName: 'Insurance Verification System',
         };
 
       case 'PARENT_PORTAL':
         return {
-          success: true,
-          message: 'Successfully connected to Parent Portal',
-          details: {
-            activeParents: 1200,
-            portalVersion: '1.8.3',
-          },
+          ...baseDetails,
+          portalVersion: settings.portalVersion as string || '1.0.0',
+          systemName: 'Parent Portal',
         };
 
       default:
-        return {
-          success: false,
-          message: 'Unknown integration type',
-        };
+        return baseDetails;
     }
+  }
+
+  /**
+   * Gets human-readable integration type name
+   */
+  private getIntegrationTypeName(type: string): string {
+    const typeNames: Record<string, string> = {
+      SIS: 'Student Information System',
+      EHR: 'Electronic Health Record System',
+      PHARMACY: 'Pharmacy Management System',
+      LABORATORY: 'Laboratory Information System',
+      INSURANCE: 'Insurance Verification System',
+      PARENT_PORTAL: 'Parent Portal',
+      GOVERNMENT_REPORTING: 'Government Reporting System',
+    };
+
+    return typeNames[type] || type;
   }
 }

@@ -13,6 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface PhiDisclosureAuditAttributes {
   id?: string;
@@ -43,10 +44,6 @@ export interface PhiDisclosureAuditAttributes {
     {
       fields: ['createdAt'],
       name: 'idx_phi_disclosure_audit_created_at',
-    },
-    {
-      fields: ['updatedAt'],
-      name: 'idx_phi_disclosure_audit_updated_at',
     },
   ],
 })
@@ -100,13 +97,9 @@ export class PhiDisclosureAudit
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PhiDisclosureAudit) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] PhiDisclosureAudit ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('PhiDisclosureAudit', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default PhiDisclosureAudit;

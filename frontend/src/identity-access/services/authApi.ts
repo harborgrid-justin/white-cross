@@ -364,6 +364,9 @@ export class AuthApi {
     try {
       registerSchema.parse(userData);
 
+      console.log('Register API endpoint:', API_ENDPOINTS.AUTH.REGISTER);
+      console.log('API client base URL:', this.client);
+
       const response = await this.client.post<{
         accessToken: string;
         refreshToken: string;
@@ -614,5 +617,5 @@ export function createAuthApi(client: ApiClient): AuthApi {
 }
 
 // Create and export a default instance for backward compatibility
-import { apiClient } from '@/services/core/ApiClient';
+import { apiClient } from '../../services/core/ApiClient.instance';
 export const authApi = createAuthApi(apiClient);

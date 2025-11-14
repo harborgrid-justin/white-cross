@@ -1,16 +1,26 @@
 /**
- * API Client for White Cross Healthcare Platform - Next.js
+ * API Client for White Cross Healthcare Platform - Next.js v16
  *
- * Centralized API client for backend communication through proxy route
- * Handles authentication, error handling, and request/response formatting
+ * Centralized API client for backend communication with Next.js v16 enhancements.
+ * Features enhanced fetch(), automatic retries, server actions integration,
+ * and streaming capabilities.
+ *
+ * **Next.js v16 Features:**
+ * - Enhanced fetch() with automatic request deduplication
+ * - Better error handling and retry mechanisms
+ * - Server actions integration for mutations
+ * - Streaming response support
+ * - Edge runtime compatibility
+ * - Progressive enhancement patterns
  *
  * @module lib/api-client
- * @version 2.0.0
- * @updated 2025-10-29 - Production-grade improvements
+ * @version 3.0.0 - Next.js v16 compatible
+ * @updated 2025-11-12 - Next.js v16 enhancements
  */
 
 import { ApiError as AppApiError, isApiError } from '@/types/errors';
 import { ErrorHandler } from '@/lib/errorHandler';
+import { generateV16FetchOptions } from '@/lib/cache/config';
 
 const API_PROXY_BASE = '/api/proxy';
 

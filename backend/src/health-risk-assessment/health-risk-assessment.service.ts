@@ -1,12 +1,13 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { BaseService } from '@/common/base';
 
 // Import Sequelize models
-import { Student } from '../database/models/student.model';
-import { Allergy } from '../database/models/allergy.model';
-import { ChronicCondition } from '../database/models/chronic-condition.model';
-import { StudentMedication } from '../database/models/student-medication.model';
-import { IncidentReport } from '../database/models/incident-report.model';
+import { Student } from '@/database/models';
+import { Allergy } from '@/database/models';
+import { ChronicCondition } from '@/database/models';
+import { StudentMedication } from '@/database/models';
+import { IncidentReport } from '@/database/models';
 
 import { HealthRiskScoreDto, HighRiskStudentDto, RiskFactorDto, RiskLevel } from './dto';
 
@@ -23,9 +24,7 @@ import { HealthRiskScoreDto, HighRiskStudentDto, RiskFactorDto, RiskLevel } from
  * with corresponding risk level (low, moderate, high, critical) and recommendations.
  */
 @Injectable()
-export class HealthRiskAssessmentService {
-  private readonly logger = new Logger(HealthRiskAssessmentService.name);
-
+export class HealthRiskAssessmentService extends BaseService {
   constructor(
     @InjectModel(Student)
     private readonly studentModel: typeof Student,
@@ -37,7 +36,9 @@ export class HealthRiskAssessmentService {
     private readonly studentMedicationModel: typeof StudentMedication,
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
-  ) {}
+  ) {
+    super('HealthRiskAssessmentService');
+  }
 
   /**
    * Calculate comprehensive health risk score for a student
@@ -90,16 +91,13 @@ export class HealthRiskAssessmentService {
         calculatedAt: new Date(),
       };
 
-      this.logger.log(
+      this.logInfo(
         `Health risk assessment completed for student ${studentId}: ${riskLevel} (score: ${overallScore})`,
       );
 
       return assessment;
     } catch (error) {
-      this.logger.error(
-        `Error calculating health risk score for student ${studentId}`,
-        error.stack,
-      );
+      this.logError(`Error calculating health risk score for student ${studentId}`, error.stack);
       throw error;
     }
   }
@@ -330,13 +328,13 @@ export class HealthRiskAssessmentService {
         (a, b) => b.assessment.overallScore - a.assessment.overallScore,
       );
 
-      this.logger.log(
+      this.logInfo(
         `Identified ${highRiskStudents.length} high-risk students (minScore: ${minScore})`,
       );
 
       return highRiskStudents;
     } catch (error) {
-      this.logger.error('Error getting high-risk students', error.stack);
+      this.logError('Error getting high-risk students', error.stack);
       throw error;
     }
   }

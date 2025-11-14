@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReportGenerationService } from '../services/report-generation.service';
 import { ReportExportService } from '../services/report-export.service';
@@ -11,6 +11,7 @@ import { BaseReportDto } from '../dto/base-report.dto';
 import { ExportOptionsDto } from '../dto/export-options.dto';
 import { ReportType } from '../constants/report.constants';
 
+import { BaseController } from '@/common/base';
 /**
  * Reports Controller
  * Comprehensive reporting system for healthcare analytics, compliance, and operational insights.
@@ -18,15 +19,17 @@ import { ReportType } from '../constants/report.constants';
  */
 @ApiTags('Reports')
 @ApiBearerAuth()
+
 @Controller('reports')
-export class ReportsController {
+export class ReportsController extends BaseController {
   private readonly logger = new Logger(ReportsController.name);
 
   constructor(
     private readonly reportGenerationService: ReportGenerationService,
     private readonly reportExportService: ReportExportService,
     private readonly dashboardService: DashboardService,
-  ) {}
+  ) {
+    super();}
 
   /**
    * Generate health trends analysis report

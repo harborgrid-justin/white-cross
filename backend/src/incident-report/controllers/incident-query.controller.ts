@@ -4,7 +4,7 @@
  * @description HTTP endpoints for incident report queries
  */
 
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -16,6 +16,7 @@ import {
 import { IncidentReadService } from '../services/incident-read.service';
 import { IncidentStatisticsService } from '../services/incident-statistics.service';
 
+import { BaseController } from '@/common/base';
 /**
  * Incident Query Controller
  *
@@ -29,12 +30,15 @@ import { IncidentStatisticsService } from '../services/incident-statistics.servi
  */
 @ApiTags('incident-reports-query')
 @ApiBearerAuth()
+
 @Controller('incident-reports')
-export class IncidentQueryController {
+export class IncidentQueryController extends BaseController {
   constructor(
     private readonly readService: IncidentReadService,
     private readonly statisticsService: IncidentStatisticsService,
-  ) {}
+  ) {
+    super();
+  }
 
   @Get('follow-up/required')
   @ApiOperation({ summary: 'Get incidents requiring follow-up' })

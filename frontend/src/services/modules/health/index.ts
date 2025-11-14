@@ -21,6 +21,12 @@ import { createGrowthMeasurementsApi } from './growthMeasurementsApi';
 import { createVitalSignsApi } from './vitalSignsApi';
 import { createHealthRecordsApi } from './healthRecordsApi';
 
+// Import specialized health records service modules
+import { createHealthRecordsPHILogger } from './healthRecordsPHI';
+import { createHealthRecordsExportService } from './healthRecordsExport';
+import { createHealthRecordsFollowUpService } from './healthRecordsFollowUp';
+import { createHealthRecordsStatisticsService } from './healthRecordsStatistics';
+
 // Re-export all factory functions
 export {
   createAllergiesApi,
@@ -29,7 +35,12 @@ export {
   createScreeningsApi,
   createGrowthMeasurementsApi,
   createVitalSignsApi,
-  createHealthRecordsApi
+  createHealthRecordsApi,
+  // Specialized health records services
+  createHealthRecordsPHILogger,
+  createHealthRecordsExportService,
+  createHealthRecordsFollowUpService,
+  createHealthRecordsStatisticsService
 };
 
 // Re-export all types from individual modules
@@ -110,7 +121,7 @@ export type {
 } from './vitalSignsApi';
 
 export type {
-  // Health Records types
+  // Health Records types (from healthRecordsTypes)
   HealthRecord,
   HealthRecordType,
   HealthRecordCreate,
@@ -118,8 +129,12 @@ export type {
   HealthRecordFilters,
   HealthSummary,
   ExportOptions,
-  ImportResult
-} from './healthRecordsApi';
+  ImportResult,
+  HealthRecordSearchParams,
+  FollowUpCompletionData,
+  DocumentAttachmentResult,
+  HealthStatistics
+} from './healthRecordsTypes';
 
 // ==========================================
 // UNIFIED HEALTH API FACTORY

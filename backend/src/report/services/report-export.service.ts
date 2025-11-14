@@ -5,17 +5,18 @@ import { ExportOptionsDto } from '../dto/export-options.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import { BaseService } from '@/common/base';
 /**
  * Report Export Service
  * Orchestrates export operations across different formats
  * Implements strategy pattern for format-specific exports
  */
 @Injectable()
-export class ReportExportService {
-  private readonly logger = new Logger(ReportExportService.name);
+export class ReportExportService extends BaseService {
   private readonly outputDir = path.join(process.cwd(), 'reports', 'generated');
 
   constructor() {
+    super('ReportExportService');
     this.ensureOutputDirectory();
   }
 
@@ -58,7 +59,7 @@ export class ReportExportService {
       const downloadUrl = `/api/reports/download/${path.basename(filePath)}`;
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-      this.logger.log(`Report exported: ${reportType} as ${format}, size: ${fileSize} bytes`);
+      this.logInfo(`Report exported: ${reportType} as ${format}, size: ${fileSize} bytes`);
 
       return {
         format,
@@ -69,7 +70,7 @@ export class ReportExportService {
         expiresAt,
       };
     } catch (error) {
-      this.logger.error('Error exporting report:', error);
+      this.logError('Error exporting report:', error);
       throw error;
     }
   }
@@ -80,7 +81,7 @@ export class ReportExportService {
   private async exportToPdf(data: any): Promise<Buffer> {
     // PDF generation using pdfkit would go here
     // For now, returning a placeholder
-    this.logger.warn('PDF export not fully implemented - returning JSON as fallback');
+    this.logWarning('PDF export not fully implemented - returning JSON as fallback');
     return Buffer.from(JSON.stringify(data, null, 2));
   }
 
@@ -102,7 +103,7 @@ export class ReportExportService {
       const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
       return buffer;
     } catch (error) {
-      this.logger.warn('Excel library not available - returning JSON as fallback');
+      this.logWarning('Excel library not available - returning JSON as fallback');
       return Buffer.from(JSON.stringify(data, null, 2));
     }
   }
@@ -140,7 +141,7 @@ export class ReportExportService {
 
       return Buffer.from(csv, 'utf-8');
     } catch (error) {
-      this.logger.error('Error generating CSV:', error);
+      this.logError('Error generating CSV:', error);
       throw error;
     }
   }
@@ -212,7 +213,7 @@ export class ReportExportService {
     try {
       await fs.mkdir(this.outputDir, { recursive: true });
     } catch (error) {
-      this.logger.error('Error creating output directory:', error);
+      this.logError('Error creating output directory:', error);
     }
   }
 
@@ -231,11 +232,11 @@ export class ReportExportService {
 
         if (now - stats.mtimeMs > maxAge) {
           await fs.unlink(filePath);
-          this.logger.log(`Deleted old report file: ${file}`);
+          this.logInfo(`Deleted old report file: ${file}`);
         }
       }
     } catch (error) {
-      this.logger.error('Error cleaning up old reports:', error);
+      this.logError('Error cleaning up old reports:', error);
     }
   }
 }

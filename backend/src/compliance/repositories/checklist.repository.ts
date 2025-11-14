@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import {
   ComplianceChecklistItem,
   ComplianceChecklistItemAttributes,
-} from '../../database/models/compliance-checklist-item.model';
+} from '@/database/models';
 
 @Injectable()
 export class ChecklistRepository {

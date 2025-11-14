@@ -1,15 +1,18 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MedicationService } from './medication.service';
 import { HealthRecordCreateMedicationDto } from './dto/create-medication.dto';
 import { UpdateHealthRecordMedicationDto } from './dto/update-medication.dto';
-import { Medication } from '../../database/models/medication.model';
+import { Medication   } from '@/database/models';
 
+import { BaseController } from '@/common/base';
 @ApiTags('medications')
 @ApiBearerAuth()
+
 @Controller('medications')
-export class HealthRecordMedicationController {
-  constructor(private readonly medicationService: MedicationService) {}
+export class HealthRecordMedicationController extends BaseController {
+  constructor(private readonly medicationService: MedicationService) {
+    super();}
 
   @Post()
   @ApiOperation({ summary: 'Create a new medication' })

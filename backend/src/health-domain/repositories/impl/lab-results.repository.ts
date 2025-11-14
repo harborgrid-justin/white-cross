@@ -19,7 +19,7 @@ import type { IAuditLogger } from '../../../database/interfaces/audit/audit-logg
 import { sanitizeSensitiveData } from '../../../database/interfaces/audit/audit-logger.interface';
 import type { ICacheManager } from '../../../database/interfaces/cache/cache-manager.interface';
 import { QueryOptions } from '../../../database/types';
-import { LabResults } from '../../../database/models/lab-results.model';
+import { LabResults } from '@/database/models';
 
 @Injectable()
 export class LabResultsRepository

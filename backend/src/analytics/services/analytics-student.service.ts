@@ -4,6 +4,7 @@ import { Appointment, HealthRecord, MedicationLog } from '@/database';
 import { Op } from 'sequelize';
 import { GetStudentHealthMetricsQueryDto } from '../dto/health-metrics.dto';
 
+import { BaseService } from '@/common/base';
 /**
  * Analytics Student Service
  *
@@ -18,9 +19,7 @@ import { GetStudentHealthMetricsQueryDto } from '../dto/health-metrics.dto';
  * for clinical decision support and parent/guardian reporting.
  */
 @Injectable()
-export class AnalyticsStudentService {
-  private readonly logger = new Logger(AnalyticsStudentService.name);
-
+export class AnalyticsStudentService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
@@ -28,7 +27,9 @@ export class AnalyticsStudentService {
     private readonly appointmentModel: typeof Appointment,
     @InjectModel(MedicationLog)
     private readonly medicationLogModel: typeof MedicationLog,
-  ) {}
+  ) {
+    super("AnalyticsStudentService");
+  }
 
   /**
    * Get comprehensive health metrics for a specific student
@@ -119,7 +120,7 @@ export class AnalyticsStudentService {
         appointments: appointmentMetrics,
       };
 
-      this.logger.log(
+      this.logInfo(
         `Student health metrics retrieved: ${studentId} (${healthRecords.length} health records, ${medicationLogs.length} medication logs, ${appointments.length} appointments)`,
       );
 
@@ -130,7 +131,7 @@ export class AnalyticsStudentService {
         includesHistoricalData: query.includeHistory !== false,
       };
     } catch (error) {
-      this.logger.error('Error getting student health metrics', error);
+      this.logError('Error getting student health metrics', error);
       throw error;
     }
   }

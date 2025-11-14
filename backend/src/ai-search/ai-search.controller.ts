@@ -4,9 +4,10 @@
  * @description HTTP endpoints for AI-powered semantic search
  */
 
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AiSearchService } from './ai-search.service';
+import { BaseController } from '@/common/base';
 import {
   AdvancedSearchCriteriaDto,
   AnalyticsPeriod,
@@ -15,13 +16,16 @@ import {
   SearchQueryDto,
   SemanticSearchDto,
   SimilarCasesDto,
-} from '@/ai-search/dto';
+} from './dto';
 
 @ApiTags('AI Search')
+
 @Controller('ai-search')
 @ApiBearerAuth()
-export class AiSearchController {
-  constructor(private readonly aiSearchService: AiSearchService) {}
+export class AiSearchController extends BaseController {
+  constructor(private readonly aiSearchService: AiSearchService) {
+    super();
+  }
 
   @Post('query')
   @HttpCode(HttpStatus.OK)

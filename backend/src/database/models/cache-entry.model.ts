@@ -272,13 +272,9 @@ export class CacheEntry extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: CacheEntry) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] CacheEntry ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('CacheEntry', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default CacheEntry;

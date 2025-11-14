@@ -18,9 +18,12 @@ import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.
 import { AdvancedFeaturesScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationAdministrationDto } from './dto/verify-medication-administration.dto';
 
+import { BaseService } from '@/common/base';
 @Injectable()
-export class AdvancedFeaturesService {
-  private readonly logger = new Logger(AdvancedFeaturesService.name);
+export class AdvancedFeaturesService extends BaseService {
+  constructor() {
+    super('AdvancedFeaturesService');
+  }
 
   // ==================== Screening Service Methods ====================
 
@@ -28,8 +31,8 @@ export class AdvancedFeaturesService {
    * Record a health screening for a student
    */
   async recordScreening(screeningData: RecordScreeningDto) {
-    this.logger.warn('recordScreening called - stub implementation');
-    this.logger.log(
+    this.logWarning('recordScreening called - stub implementation');
+    this.logInfo(
       `Recording ${screeningData.screeningType} screening for student ${screeningData.studentId}`,
     );
 
@@ -51,8 +54,8 @@ export class AdvancedFeaturesService {
    * Get screening history for a student
    */
   async getScreeningHistory(studentId: string) {
-    this.logger.warn('getScreeningHistory called - stub implementation');
-    this.logger.log(`Fetching screening history for student ${studentId}`);
+    this.logWarning('getScreeningHistory called - stub implementation');
+    this.logInfo(`Fetching screening history for student ${studentId}`);
 
     // TODO: Implement actual database query
     // - Fetch all screenings for student
@@ -73,8 +76,8 @@ export class AdvancedFeaturesService {
    * Record a growth measurement for a student
    */
   async recordMeasurement(measurementData: RecordMeasurementDto) {
-    this.logger.warn('recordMeasurement called - stub implementation');
-    this.logger.log(
+    this.logWarning('recordMeasurement called - stub implementation');
+    this.logInfo(
       `Recording measurement for student ${measurementData.studentId}`,
     );
 
@@ -108,8 +111,8 @@ export class AdvancedFeaturesService {
    * Analyze growth trend for a student
    */
   async analyzeGrowthTrend(studentId: string) {
-    this.logger.warn('analyzeGrowthTrend called - stub implementation');
-    this.logger.log(`Analyzing growth trend for student ${studentId}`);
+    this.logWarning('analyzeGrowthTrend called - stub implementation');
+    this.logInfo(`Analyzing growth trend for student ${studentId}`);
 
     // TODO: Implement actual analysis logic
     // - Fetch all growth measurements for student
@@ -133,8 +136,8 @@ export class AdvancedFeaturesService {
    * Get immunization forecast for a student
    */
   async getImmunizationForecast(studentId: string) {
-    this.logger.warn('getImmunizationForecast called - stub implementation');
-    this.logger.log(
+    this.logWarning('getImmunizationForecast called - stub implementation');
+    this.logInfo(
       `Generating immunization forecast for student ${studentId}`,
     );
 
@@ -164,8 +167,8 @@ export class AdvancedFeaturesService {
   async sendEmergencyNotification(
     notificationData: SendEmergencyNotificationDto,
   ) {
-    this.logger.warn('sendEmergencyNotification called - stub implementation');
-    this.logger.log(
+    this.logWarning('sendEmergencyNotification called - stub implementation');
+    this.logInfo(
       `Sending ${notificationData.severity} emergency notification: ${notificationData.title}`,
     );
 
@@ -190,12 +193,12 @@ export class AdvancedFeaturesService {
    * Get emergency notification history
    */
   async getEmergencyHistory(studentId?: string, limit?: number) {
-    this.logger.warn('getEmergencyHistory called - stub implementation');
+    this.logWarning('getEmergencyHistory called - stub implementation');
 
     const logMessage = studentId
       ? `Fetching emergency history for student ${studentId}`
       : 'Fetching all emergency notifications';
-    this.logger.log(logMessage);
+    this.logInfo(logMessage);
 
     // TODO: Implement actual database query
     // - Fetch emergency notifications
@@ -217,8 +220,8 @@ export class AdvancedFeaturesService {
    * Scan and identify a barcode
    */
   async scanBarcode(scanData: AdvancedFeaturesScanBarcodeDto) {
-    this.logger.warn('scanBarcode called - stub implementation');
-    this.logger.log(
+    this.logWarning('scanBarcode called - stub implementation');
+    this.logInfo(
       `Scanning ${scanData.scanType} barcode: ${scanData.barcodeString}`,
     );
 
@@ -245,10 +248,10 @@ export class AdvancedFeaturesService {
   async verifyMedicationAdministration(
     verificationData: VerifyMedicationAdministrationDto,
   ) {
-    this.logger.warn(
+    this.logWarning(
       'verifyMedicationAdministration called - stub implementation',
     );
-    this.logger.log(
+    this.logInfo(
       `Verifying medication administration with three-barcode scan`,
     );
 

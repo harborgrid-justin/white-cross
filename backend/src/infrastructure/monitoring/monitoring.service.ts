@@ -6,7 +6,7 @@
  * with metrics collection, alerting, and performance tracking
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ComponentHealth,
@@ -27,7 +27,8 @@ import { MetricsCollectionService } from './metrics-collection.service';
 import { AlertManagementService } from './alert-management.service';
 import { PerformanceTrackingService } from './performance-tracking.service';
 import { LogAggregationService } from './log-aggregation.service';
-
+import { BaseService } from '@/common/base';
+import { LoggerService } from '@/common/logging/logger.service';
 /**
  * Service interfaces for optional dependencies
  */
@@ -78,27 +79,32 @@ interface CircuitBreakerServiceInterface {
  * ```
  */
 @Injectable()
-export class MonitoringService implements OnModuleInit {
-  private readonly logger = new Logger(MonitoringService.name);
-
+export class MonitoringService extends BaseService implements OnModuleInit, OnModuleDestroy {
   // Metrics collection interval
   private metricsInterval?: NodeJS.Timeout;
   private lastMetrics?: MetricsSnapshot;
 
   constructor(
+    @Inject(LoggerService) logger: LoggerService,
     private readonly configService: ConfigService,
     private readonly healthCheckService: HealthCheckService,
     private readonly metricsCollectionService: MetricsCollectionService,
     private readonly alertManagementService: AlertManagementService,
     private readonly performanceTrackingService: PerformanceTrackingService,
     private readonly logAggregationService: LogAggregationService,
-  ) {}
+  ) {
+    super({
+      serviceName: 'MonitoringService',
+      logger,
+      enableAuditLogging: true,
+    });
+  }
 
   /**
    * Initialize monitoring service
    */
   async onModuleInit() {
-    this.logger.log('Initializing monitoring service...');
+    this.logInfo('Initializing monitoring service...');
 
     // Initialize log aggregation
     await this.logAggregationService.initialize();
@@ -113,7 +119,15 @@ export class MonitoringService implements OnModuleInit {
     // Start metrics collection interval (every 30 seconds)
     this.startMetricsCollection();
 
-    this.logger.log('Monitoring service initialized successfully');
+    this.logInfo('Monitoring service initialized successfully');
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    if (this.metricsInterval) {
+      clearInterval(this.metricsInterval);
+      this.metricsInterval = undefined;
+    }
+    this.logInfo('Monitoring service destroyed');
   }
 
   /**
@@ -122,24 +136,24 @@ export class MonitoringService implements OnModuleInit {
   setCacheService(cacheService: CacheServiceInterface | undefined): void {
     this.healthCheckService.setCacheService(cacheService);
     this.metricsCollectionService.setCacheService(cacheService);
-    this.logger.log('Cache service registered for monitoring');
+    this.logInfo('Cache service registered for monitoring');
   }
 
   setWebSocketService(websocketService: WebSocketServiceInterface | undefined): void {
     this.healthCheckService.setWebSocketService(websocketService);
     this.metricsCollectionService.setWebSocketService(websocketService);
-    this.logger.log('WebSocket service registered for monitoring');
+    this.logInfo('WebSocket service registered for monitoring');
   }
 
   setQueueManagerService(queueManagerService: MessageQueueServiceInterface | undefined): void {
     this.healthCheckService.setQueueManagerService(queueManagerService);
     this.metricsCollectionService.setQueueManagerService(queueManagerService);
-    this.logger.log('Queue manager service registered for monitoring');
+    this.logInfo('Queue manager service registered for monitoring');
   }
 
   setCircuitBreakerService(circuitBreakerService: CircuitBreakerServiceInterface | undefined): void {
     this.healthCheckService.setCircuitBreakerService(circuitBreakerService);
-    this.logger.log('Circuit breaker service registered for monitoring');
+    this.logInfo('Circuit breaker service registered for monitoring');
   }
 
   /**
@@ -294,24 +308,24 @@ export class MonitoringService implements OnModuleInit {
   private startMetricsCollection(): void {
     // Collect metrics immediately
     this.collectMetrics().catch((error) => {
-      this.logger.error('Failed to collect initial metrics', error);
+      this.logError('Failed to collect initial metrics', error);
     });
 
     // Collect metrics every 30 seconds
     this.metricsInterval = setInterval(() => {
       this.collectMetrics().catch((error) => {
-        this.logger.error('Failed to collect metrics', error);
+        this.logError('Failed to collect metrics', error);
       });
     }, 30000);
 
-    this.logger.log('Metrics collection started (30s interval)');
+    this.logInfo('Metrics collection started (30s interval)');
   }
 
   stopMetricsCollection(): void {
     if (this.metricsInterval) {
       clearInterval(this.metricsInterval);
       this.metricsInterval = undefined;
-      this.logger.log('Metrics collection stopped');
+      this.logInfo('Metrics collection stopped');
     }
   }
 }

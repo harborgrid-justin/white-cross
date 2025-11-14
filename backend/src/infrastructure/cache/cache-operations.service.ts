@@ -14,12 +14,12 @@ import { CacheConfigService } from './cache.config';
 import { CacheConnectionService } from './cache-connection.service';
 import type { CacheOptions } from './cache.interfaces';
 
+import { BaseService } from '@/common/base';
 /**
  * Service responsible for advanced cache operations
  */
 @Injectable()
-export class CacheOperationsService {
-  private readonly logger = new Logger(CacheOperationsService.name);
+export class CacheOperationsService extends BaseService {
   private stats = {
     errors: 0,
   };
@@ -27,7 +27,8 @@ export class CacheOperationsService {
   constructor(
     private readonly cacheConfig: CacheConfigService,
     private readonly connectionService: CacheConnectionService,
-  ) {}
+  ) {
+    super("CacheOperationsService");}
 
   /**
    * Increment numeric value in Redis
@@ -45,7 +46,7 @@ export class CacheOperationsService {
       const redis = this.connectionService.getClient();
       if (!redis) {
         const error = new Error(`Redis not connected - cannot increment key: ${fullKey}`);
-        this.logger.warn(error.message, {
+        this.logWarning(error.message, {
           key: fullKey,
           amount,
           redisStatus: 'disconnected',
@@ -64,7 +65,7 @@ export class CacheOperationsService {
 
       return result;
     } catch (error) {
-      this.logger.error(`Cache increment error for key ${fullKey}:`, {
+      this.logError(`Cache increment error for key ${fullKey}:`, {
         error: error.message,
         key: fullKey,
         amount,
@@ -91,7 +92,7 @@ export class CacheOperationsService {
       const redis = this.connectionService.getClient();
       if (!redis) {
         const error = new Error(`Redis not connected - cannot decrement key: ${fullKey}`);
-        this.logger.warn(error.message, {
+        this.logWarning(error.message, {
           key: fullKey,
           amount,
           redisStatus: 'disconnected',
@@ -110,7 +111,7 @@ export class CacheOperationsService {
 
       return result;
     } catch (error) {
-      this.logger.error(`Cache decrement error for key ${fullKey}:`, {
+      this.logError(`Cache decrement error for key ${fullKey}:`, {
         error: error.message,
         key: fullKey,
         amount,
@@ -141,7 +142,7 @@ export class CacheOperationsService {
         const value = await getCallback(key, options);
         results.push(value);
       } catch (error) {
-        this.logger.error(`Batch get error for key ${key}:`, error);
+        this.logError(`Batch get error for key ${key}:`, error);
         results.push(null);
         this.stats.errors++;
       }
@@ -166,7 +167,7 @@ export class CacheOperationsService {
       try {
         await setCallback(entry.key, entry.value, options);
       } catch (error) {
-        this.logger.error(`Batch set error for key ${entry.key}:`, error);
+        this.logError(`Batch set error for key ${entry.key}:`, error);
         this.stats.errors++;
       }
     }
@@ -194,7 +195,7 @@ export class CacheOperationsService {
           count++;
         }
       } catch (error) {
-        this.logger.error(`Batch delete error for key ${key}:`, error);
+        this.logError(`Batch delete error for key ${key}:`, error);
         this.stats.errors++;
       }
     }

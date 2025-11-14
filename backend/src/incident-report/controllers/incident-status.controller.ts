@@ -4,7 +4,7 @@
  * @description HTTP endpoints for incident report status updates
  */
 
-import { Body, Controller, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Patch, Post, Version } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { IncidentStatusService } from '../services/incident-status.service';
 
+import { BaseController } from '@/common/base';
 /**
  * Incident Status Controller
  *
@@ -29,23 +30,26 @@ import { IncidentStatusService } from '../services/incident-status.service';
  */
 @ApiTags('incident-reports-status')
 @ApiBearerAuth()
-@Controller('incident-reports')
-export class IncidentStatusController {
-  constructor(private readonly statusService: IncidentStatusService) {}
 
-  @Post(':id/follow-up-notes')
-  @ApiOperation({ summary: 'Add follow-up notes to incident report' })
-  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+@Controller('incident-reports')
+export class IncidentStatusController extends BaseController {
+  constructor(private readonly statusService: IncidentStatusService) {
+    super();
+  }
+
+  @Post(':id/notes')
+  @ApiOperation({ summary: 'Add notes to incident report' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid', description: 'Incident report ID' })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        notes: { type: 'string', description: 'Follow-up notes to add' },
+        notes: { type: 'string', description: 'Notes to add' },
       },
       required: ['notes'],
     },
   })
-  @ApiResponse({ status: 200, description: 'Follow-up notes added successfully' })
+  @ApiResponse({ status: 201, description: 'Notes added successfully' })
   @ApiResponse({ status: 404, description: 'Incident report not found' })
   async addFollowUpNotes(
     @Param('id', ParseUUIDPipe) id: string,
@@ -54,10 +58,20 @@ export class IncidentStatusController {
     return this.statusService.addFollowUpNotes(id, notes);
   }
 
-  @Post(':id/parent-notified')
-  @ApiOperation({ summary: 'Mark parent as notified' })
-  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @ApiResponse({ status: 200, description: 'Parent marked as notified' })
+  @Post(':id/notifications')
+  @ApiOperation({ summary: 'Create parent notification for incident' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid', description: 'Incident report ID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        type: { type: 'string', enum: ['PARENT', 'GUARDIAN', 'EMERGENCY_CONTACT'], default: 'PARENT' },
+        method: { type: 'string', enum: ['EMAIL', 'PHONE', 'SMS', 'IN_PERSON'] },
+        notes: { type: 'string', description: 'Additional notification notes' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Notification created successfully' })
   @ApiResponse({ status: 404, description: 'Incident report not found' })
   async markParentNotified(@Param('id', ParseUUIDPipe) id: string) {
     return this.statusService.markParentNotified(id);

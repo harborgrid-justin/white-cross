@@ -1,17 +1,6 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/services/auth/guards/jwt-auth.guard';
 import { IncidentCoreService } from './services/incident-core.service';
 import { IncidentFollowUpService } from './services/incident-follow-up.service';
 import { IncidentNotificationService } from './services/incident-notification.service';
@@ -24,18 +13,22 @@ import { IncidentFiltersDto } from './dto/incident-filters.dto';
 import { UpdateFollowUpActionDto } from './dto/update-follow-up-action.dto';
 import { UpdateIncidentReportDto } from './dto/update-incident-report.dto';
 
-@ApiTags('incident-report')
-@Controller('incident-report')
+import { BaseController } from '@/common/base';
+@ApiTags('Incident Reports')
+
+@Controller('incident-reports')
 @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard) // Uncomment when auth is set up
-export class IncidentReportController {
+@UseGuards(JwtAuthGuard)
+export class IncidentReportController extends BaseController {
   constructor(
     private readonly coreService: IncidentCoreService,
     private readonly followUpService: IncidentFollowUpService,
     private readonly witnessService: IncidentWitnessService,
     private readonly statisticsService: IncidentStatisticsService,
     private readonly notificationService: IncidentNotificationService,
-  ) {}
+  ) {
+    super();
+  }
 
   // ==================== INCIDENT REPORTS ====================
 

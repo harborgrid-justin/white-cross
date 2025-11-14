@@ -14,7 +14,7 @@ import {
   selectSelectedStudents,
   selectIsBulkSelectMode,
   studentsSelectors,
-} from '@/stores/slices/studentsSlice';
+} from '@/stores/slices/students';
 import type { Student } from '@/types/student.types';
 
 /**

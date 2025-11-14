@@ -1,0 +1,35 @@
+{
+  "node": {
+    "601350e016c74379f9d38d00de45cbba64fcb8c3de": {
+      "workers": {
+        "app/(dashboard)/health-records/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "createHealthRecordAction",
+          "filename": "src/lib/actions/health-records.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/new/page": "action-browser"
+      },
+      "exportedName": "createHealthRecordAction",
+      "filename": "src/lib/actions/health-records.crud.ts"
+    },
+    "004e89d6aec3dc95bec36ee8e5764906cfd6539ed7": {
+      "workers": {
+        "app/(dashboard)/health-records/new/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/health-records/new/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/health-records.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/health-records.stats.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getHealthRecordsStats",
+          "filename": "src/lib/actions/health-records.stats.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/health-records/new/page": "action-browser"
+      },
+      "exportedName": "getHealthRecordsStats",
+      "filename": "src/lib/actions/health-records.stats.ts"
+    }
+  },
+  "edge": {}
+}

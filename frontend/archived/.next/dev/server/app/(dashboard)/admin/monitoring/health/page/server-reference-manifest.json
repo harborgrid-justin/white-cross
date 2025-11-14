@@ -1,0 +1,95 @@
+{
+  "node": {
+    "006d2a066d801463fc8aae48679d87eda4b592c513": {
+      "workers": {
+        "app/(dashboard)/admin/monitoring/health/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/monitoring/health/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.monitoring.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getRealTimeMetrics",
+          "filename": "src/lib/actions/admin.monitoring.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/monitoring/health/page": "rsc"
+      },
+      "exportedName": "getRealTimeMetrics",
+      "filename": "src/lib/actions/admin.monitoring.ts"
+    },
+    "007b4002e1ded3b228ace33ba53e0ff93b72d5c8be": {
+      "workers": {
+        "app/(dashboard)/admin/monitoring/health/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/monitoring/health/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.monitoring.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getSystemHealth",
+          "filename": "src/lib/actions/admin.monitoring.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/monitoring/health/page": "rsc"
+      },
+      "exportedName": "getSystemHealth",
+      "filename": "src/lib/actions/admin.monitoring.ts"
+    },
+    "00d459a6438f8f12a847b331d3231ad807cc9035e3": {
+      "workers": {
+        "app/(dashboard)/admin/monitoring/health/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/monitoring/health/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.monitoring.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getApiMetrics",
+          "filename": "src/lib/actions/admin.monitoring.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/monitoring/health/page": "rsc"
+      },
+      "exportedName": "getApiMetrics",
+      "filename": "src/lib/actions/admin.monitoring.ts"
+    },
+    "400dbc23b144bcd7094a10ddfe12b277180301f010": {
+      "workers": {
+        "app/(dashboard)/admin/monitoring/health/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/monitoring/health/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.monitoring.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getUserActivity",
+          "filename": "src/lib/actions/admin.monitoring.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/monitoring/health/page": "rsc"
+      },
+      "exportedName": "getUserActivity",
+      "filename": "src/lib/actions/admin.monitoring.ts"
+    },
+    "4021a501288af2734e8520e13439e7c804e40de9ec": {
+      "workers": {
+        "app/(dashboard)/admin/monitoring/health/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/monitoring/health/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.monitoring.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getErrorLogs",
+          "filename": "src/lib/actions/admin.monitoring.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/monitoring/health/page": "rsc"
+      },
+      "exportedName": "getErrorLogs",
+      "filename": "src/lib/actions/admin.monitoring.ts"
+    },
+    "402b51b315f91998b5ec6ff7f6b2d4465618f19948": {
+      "workers": {
+        "app/(dashboard)/admin/monitoring/health/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/monitoring/health/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.monitoring.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getPerformanceMetrics",
+          "filename": "src/lib/actions/admin.monitoring.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/monitoring/health/page": "rsc"
+      },
+      "exportedName": "getPerformanceMetrics",
+      "filename": "src/lib/actions/admin.monitoring.ts"
+    }
+  },
+  "edge": {}
+}

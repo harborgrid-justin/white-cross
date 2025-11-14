@@ -7,7 +7,9 @@
 
 import { Controller, Get, HttpStatus, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Public } from '../../services/auth/decorators/public.decorator';
 import { MonitoringService } from './monitoring.service';
+import { BaseController } from '@/common/base';
 import {
   HealthCheckResponse,
   HealthStatus,
@@ -43,8 +45,9 @@ import {
  */
 @ApiTags('Health & Monitoring')
 @Controller({ path: 'health', version: VERSION_NEUTRAL })
-export class HealthController {
-  constructor(private readonly monitoringService: MonitoringService) {}
+export class HealthController extends BaseController {
+  constructor(private readonly monitoringService: MonitoringService) {
+    super();}
 
   /**
    * Comprehensive health check endpoint
@@ -60,6 +63,7 @@ export class HealthController {
    * - 200: System is healthy or degraded
    * - 503: System is unhealthy (Service Unavailable)
    */
+  @Public()
   @Get()
   @ApiOperation({
     summary: 'Comprehensive health check',
@@ -110,6 +114,7 @@ export class HealthController {
    *
    * @see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
    */
+  @Public()
   @Get('ready')
   @ApiOperation({
     summary: 'Kubernetes readiness probe',
@@ -156,6 +161,7 @@ export class HealthController {
    *
    * @see https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
    */
+  @Public()
   @Get('live')
   @ApiOperation({
     summary: 'Kubernetes liveness probe',

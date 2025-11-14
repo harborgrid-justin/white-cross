@@ -1,0 +1,10 @@
+{
+  "/(dashboard)/compliance/page": "app/(dashboard)/compliance/page.js",
+  "/(dashboard)/compliance/training/page": "app/(dashboard)/compliance/training/page.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
+  "/(dashboard)/health-records/page": "app/(dashboard)/health-records/page.js",
+  "/(dashboard)/medications/page": "app/(dashboard)/medications/page.js",
+  "/(dashboard)/settings/page": "app/(dashboard)/settings/page.js",
+  "/(dashboard)/settings/profile/page": "app/(dashboard)/settings/profile/page.js",
+  "/login/page": "app/login/page.js"
+}

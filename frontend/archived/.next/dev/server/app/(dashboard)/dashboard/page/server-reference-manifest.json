@@ -1,0 +1,50 @@
+{
+  "node": {
+    "7fe22b086e54131e2da80588001a3fca4cc808b133": {
+      "workers": {
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/dashboard/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/dashboard.aggregation.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/dashboard.alerts.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/dashboard.utils.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getDashboardData",
+          "filename": "src/lib/actions/dashboard.aggregation.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/page": "action-browser"
+      },
+      "exportedName": "getDashboardData",
+      "filename": "src/lib/actions/dashboard.aggregation.ts"
+    },
+    "60ee91299b8808aaf85eb687fb9823b31fc246c44b": {
+      "workers": {
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/dashboard/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/dashboard.aggregation.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/dashboard.alerts.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/dashboard.utils.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "acknowledgeHealthAlert",
+          "filename": "src/lib/actions/dashboard.alerts.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/page": "action-browser"
+      },
+      "exportedName": "acknowledgeHealthAlert",
+      "filename": "src/lib/actions/dashboard.alerts.ts"
+    },
+    "00e6964bfa542a0ea937f9c5fab5df3458e87f668a": {
+      "workers": {
+        "app/(dashboard)/dashboard/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/dashboard/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/dashboard.aggregation.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/dashboard.alerts.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/dashboard.utils.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "refreshDashboardData",
+          "filename": "src/lib/actions/dashboard.utils.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/dashboard/page": "action-browser"
+      },
+      "exportedName": "refreshDashboardData",
+      "filename": "src/lib/actions/dashboard.utils.ts"
+    }
+  },
+  "edge": {}
+}

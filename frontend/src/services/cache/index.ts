@@ -4,8 +4,26 @@
  * Centralized exports for all caching services, utilities, and hooks.
  *
  * @module services/cache
- * @version 1.0.0
+ * @version 2.0.0 - Consolidated
+ * @updated 2025-11-12
  */
+
+// ============================================================================
+// CONSOLIDATED CACHE SERVICE (RECOMMENDED)
+// ============================================================================
+
+/**
+ * Consolidated Cache Service - All-in-one caching solution
+ * Recommended for new code - provides unified caching API
+ */
+export {
+  CacheService,
+  cacheService,
+} from './CacheService';
+
+// ============================================================================
+// INDIVIDUAL CACHE SERVICES
+// ============================================================================
 
 // Core Cache Manager
 import {
@@ -49,13 +67,19 @@ export {
 import {
   InvalidationStrategy as InvalidationStrategyClass,
   getInvalidationStrategy as getInvalidationStrategyFunc,
-  resetInvalidationStrategy as resetInvalidationStrategyFunc,
-  createStudentUpdateOperation as createStudentUpdateOperationFunc
+  resetInvalidationStrategy as resetInvalidationStrategyFunc
 } from './InvalidationStrategy';
 export {
   InvalidationStrategyClass as InvalidationStrategy,
   getInvalidationStrategyFunc as getInvalidationStrategy,
-  resetInvalidationStrategyFunc as resetInvalidationStrategy,
+  resetInvalidationStrategyFunc as resetInvalidationStrategy
+};
+
+// Invalidation Helpers
+import {
+  createStudentUpdateOperation as createStudentUpdateOperationFunc
+} from './invalidation-helpers';
+export {
   createStudentUpdateOperationFunc as createStudentUpdateOperation
 };
 
@@ -154,9 +178,7 @@ export type {
  *
  * @param _queryClient - React Query client instance (unused, reserved for future use)
  */
-export async function initializeCacheInfrastructure(
-  _queryClient?: unknown
-): Promise<void> {
+export async function initializeCacheInfrastructure(): Promise<void> {
   console.log('[CacheInfrastructure] Initializing...');
 
   try {
@@ -234,7 +256,7 @@ export async function getCacheInfrastructureStats(): Promise<{
   // Note: We need a queryClient instance for optimistic update manager
   // This is a placeholder - in real usage, pass the actual queryClient
   const optimisticUpdateManager = getOptimisticUpdateManagerFunc(
-    {} as any // Placeholder
+    undefined as any // Placeholder - requires QueryClient instance
   );
 
   const stats = {
@@ -252,7 +274,7 @@ export async function getCacheInfrastructureStats(): Promise<{
 /**
  * Export default cache infrastructure object
  */
-export default {
+const cacheInfrastructure = {
   // Managers
   getCacheManager: getCacheManagerFunc,
   getInvalidationStrategy: getInvalidationStrategyFunc,
@@ -272,3 +294,5 @@ export default {
   ttl: TTL_CONFIG_OBJ,
   refetchStrategies: REFETCH_STRATEGIES_OBJ
 };
+
+export default cacheInfrastructure;

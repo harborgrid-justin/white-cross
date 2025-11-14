@@ -5,7 +5,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { AuthService } from '@/auth';
+import { AuthService } from './services/auth';
 
 async function testLogin() {
   console.log('🔍 Testing login API...\n');

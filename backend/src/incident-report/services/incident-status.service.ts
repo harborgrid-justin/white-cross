@@ -1,6 +1,6 @@
 /**
  * @fileoverview Incident Status Service
- * @module incident-report/services/incident-status.service
+ * @module incident-repo@/services/incident-status.service
  * @description Business logic for incident report status updates
  */
 
@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { IncidentReport } from '@/database';
 import { IncidentNotificationService } from './incident-notification.service';
 
+import { BaseService } from '@/common/base';
 /**
  * Incident Status Service
  *
@@ -22,20 +23,20 @@ import { IncidentNotificationService } from './incident-notification.service';
  * - Notify parent
  */
 @Injectable()
-export class IncidentStatusService {
-  private readonly logger = new Logger(IncidentStatusService.name);
-
+export class IncidentStatusService extends BaseService {
   constructor(
     @InjectModel(IncidentReport)
     private readonly incidentReportModel: typeof IncidentReport,
     private readonly notificationService: IncidentNotificationService,
-  ) {}
+  ) {
+    super('IncidentStatusService');
+  }
 
   /**
    * Add follow-up notes to incident report
    */
   async addFollowUpNotes(id: string, notes: string) {
-    this.logger.log(`Adding follow-up notes to incident: ${id}`);
+    this.logInfo(`Adding follow-up notes to incident: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {
@@ -56,7 +57,7 @@ export class IncidentStatusService {
    * Mark parent as notified
    */
   async markParentNotified(id: string) {
-    this.logger.log(`Marking parent as notified for incident: ${id}`);
+    this.logInfo(`Marking parent as notified for incident: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {
@@ -73,7 +74,7 @@ export class IncidentStatusService {
    * Add evidence to incident report
    */
   async addEvidence(id: string, evidence: string[]) {
-    this.logger.log(`Adding evidence to incident: ${id}`);
+    this.logInfo(`Adding evidence to incident: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {
@@ -93,7 +94,7 @@ export class IncidentStatusService {
    * Update insurance claim status
    */
   async updateInsuranceClaim(id: string, status: string, claimNumber?: string) {
-    this.logger.log(`Updating insurance claim for incident: ${id}`);
+    this.logInfo(`Updating insurance claim for incident: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {
@@ -116,7 +117,7 @@ export class IncidentStatusService {
    * Update compliance status
    */
   async updateComplianceStatus(id: string, status: string, notes?: string) {
-    this.logger.log(`Updating compliance status for incident: ${id}`);
+    this.logInfo(`Updating compliance status for incident: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {
@@ -139,7 +140,7 @@ export class IncidentStatusService {
    * Notify emergency contacts
    */
   async notifyEmergencyContacts(id: string) {
-    this.logger.log(`Notifying emergency contacts for incident: ${id}`);
+    this.logInfo(`Notifying emergency contacts for incident: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {
@@ -154,7 +155,7 @@ export class IncidentStatusService {
    * Notify parent
    */
   async notifyParent(id: string, message?: string) {
-    this.logger.log(`Notifying parent for incident: ${id}`);
+    this.logInfo(`Notifying parent for incident: ${id}`);
 
     const incident = await this.incidentReportModel.findByPk(id);
     if (!incident) {

@@ -12,6 +12,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum SyncActionType {
   CREATE = 'CREATE',
@@ -240,13 +241,9 @@ export class SyncQueueItem
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: SyncQueueItem) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] SyncQueueItem ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('SyncQueueItem', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default SyncQueueItem;

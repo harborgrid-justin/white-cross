@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac } from 'crypto';
+import { BaseService } from '@/common/base';
 import {
   HealthRecordUpdatedPayload,
   isHealthRecordUpdatedPayload,
@@ -11,8 +12,10 @@ import {
 } from '../types/webhook.types';
 
 @Injectable()
-export class WebhookHandlerService {
-  private readonly logger = new Logger(WebhookHandlerService.name);
+export class WebhookHandlerService extends BaseService {
+  constructor() {
+    super("WebhookHandlerService");
+  }
 
   /**
    * Validate webhook signature
@@ -29,7 +32,7 @@ export class WebhookHandlerService {
 
       return signature === computedSignature;
     } catch (error) {
-      this.logger.error('Error validating webhook signature', error);
+      this.logError('Error validating webhook signature', error);
       return false;
     }
   }
@@ -42,7 +45,7 @@ export class WebhookHandlerService {
     eventType: string,
     payload: WebhookPayload,
   ): Promise<void> {
-    this.logger.log(
+    this.logInfo(
       `Processing webhook event: ${eventType} for integration ${integrationId}`,
     );
 
@@ -66,7 +69,7 @@ export class WebhookHandlerService {
         }
         break;
       default:
-        this.logger.warn(`Unknown webhook event type: ${eventType}`);
+        this.logWarning(`Unknown webhook event type: ${eventType}`);
     }
   }
 
@@ -74,7 +77,7 @@ export class WebhookHandlerService {
     integrationId: string,
     _payload: StudentCreatedPayload,
   ): Promise<void> {
-    this.logger.log(`Handling student created event for ${integrationId}`);
+    this.logInfo(`Handling student created event for ${integrationId}`);
     // Implementation would create or update student record
   }
 
@@ -82,7 +85,7 @@ export class WebhookHandlerService {
     integrationId: string,
     _payload: StudentUpdatedPayload,
   ): Promise<void> {
-    this.logger.log(`Handling student updated event for ${integrationId}`);
+    this.logInfo(`Handling student updated event for ${integrationId}`);
     // Implementation would update student record
   }
 
@@ -90,7 +93,7 @@ export class WebhookHandlerService {
     integrationId: string,
     _payload: HealthRecordUpdatedPayload,
   ): Promise<void> {
-    this.logger.log(
+    this.logInfo(
       `Handling health record updated event for ${integrationId}`,
     );
     // Implementation would update health record

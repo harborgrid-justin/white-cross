@@ -15,13 +15,13 @@
  */
 import DataLoader from 'dataloader';
 import { Injectable, Logger, Scope } from '@nestjs/common';
-import { StudentService } from '@/student';
-import { ContactService } from '@/contact';
-import { MedicationService } from '@/medication';
+import { StudentService } from '../../../services/student';
+import { ContactService } from '../../../services/communication/contact';
+import { MedicationService } from '../../../services/medication';
 import { HealthRecordService } from '@/health-record';
-import { EmergencyContactService } from '@/emergency-contact';
-import { ChronicConditionService } from '@/chronic-condition';
-import { IncidentCoreService } from '@/incident-report';
+import { EmergencyContactService } from '../../../services/communication/emergency-contact';
+import { ChronicConditionService } from '../../../services/chronic-condition';
+import { IncidentCoreService } from '../../../incident-report';
 import { AllergyService } from '@/health-record/allergy';
 import type {
   Allergy,

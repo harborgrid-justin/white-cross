@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { BaseService } from '@/common/base';
 /**
  * Rate limiter configuration
  */
@@ -23,8 +24,11 @@ export interface RateLimiterStatus {
  * Implements sliding window rate limiting for external API calls
  */
 @Injectable()
-export class RateLimiterService {
-  private readonly logger = new Logger(RateLimiterService.name);
+export class RateLimiterService extends BaseService {
+  constructor() {
+    super("RateLimiterService");
+  }
+
   private readonly limiters = new Map<
     string,
     {
@@ -50,7 +54,7 @@ export class RateLimiterService {
       config: { ...defaultConfig, ...config },
     });
 
-    this.logger.log(
+    this.logInfo(
       `Rate limiter initialized for ${serviceName}: ${defaultConfig.maxRequests} requests per ${defaultConfig.windowMs}ms`,
     );
   }
@@ -77,7 +81,7 @@ export class RateLimiterService {
       if (oldestTimestamp !== undefined) {
         const waitTime = oldestTimestamp + limiter.config.windowMs - now;
 
-        this.logger.warn(
+        this.logWarning(
           `Rate limit exceeded for ${serviceName}. Wait ${waitTime}ms`,
         );
 
@@ -122,6 +126,6 @@ export class RateLimiterService {
     if (!limiter) return;
 
     limiter.timestamps = [];
-    this.logger.log(`${serviceName} rate limiter reset`);
+    this.logInfo(`${serviceName} rate limiter reset`);
   }
 }

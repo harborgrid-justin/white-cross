@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///F:/temp/white-cross/frontend/src/components/ui/skeleton.tsx"],"sourcesContent":["\"use client\"\r\n\r\nimport { cn } from \"@/lib/utils\"\r\n\r\nfunction Skeleton({\r\n  className,\r\n  ...props\r\n}: React.HTMLAttributes<HTMLDivElement>) {\r\n  return (\r\n    <div\r\n      className={cn(\"animate-pulse rounded-md bg-primary/10\", className)}\r\n      {...props}\r\n    />\r\n  )\r\n}\r\n\r\nexport { Skeleton }\r\n"],"names":[],"mappings":";;;;;AAEA;AAFA;;;AAIA,SAAS,SAAS,EAChB,SAAS,EACT,GAAG,OACkC;IACrC,qBACE,6LAAC;QACC,WAAW,IAAA,4HAAE,EAAC,0CAA0C;QACvD,GAAG,KAAK;;;;;;AAGf;KAVS","debugId":null}}]
+}

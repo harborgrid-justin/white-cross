@@ -20,6 +20,7 @@ import {
 } from 'sequelize-typescript';
 import type { School } from './school.model';
 import type { License } from './license.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * District attributes interface
@@ -202,14 +203,7 @@ export class District extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditAccess(instance: District) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] District ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('District', instance);
   }
 
   // Relationships
@@ -225,3 +219,6 @@ export class District extends Model<
   })
   declare licenses?: License[];
 }
+
+// Default export for Sequelize-TypeScript
+export default District;

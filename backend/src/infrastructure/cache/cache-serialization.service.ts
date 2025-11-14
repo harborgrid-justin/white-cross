@@ -15,6 +15,7 @@ import { promisify } from 'util';
 import { CacheConfigService } from './cache.config';
 import type { CacheOptions } from './cache.interfaces';
 
+import { BaseService } from '@/common/base';
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
 
@@ -22,10 +23,9 @@ const gunzip = promisify(zlib.gunzip);
  * Service responsible for cache value serialization and compression
  */
 @Injectable()
-export class CacheSerializationService {
-  private readonly logger = new Logger(CacheSerializationService.name);
-
-  constructor(private readonly cacheConfig: CacheConfigService) {}
+export class CacheSerializationService extends BaseService {
+  constructor(private readonly cacheConfig: CacheConfigService) {
+    super("CacheSerializationService");}
 
   /**
    * Serialize value for storage in Redis
@@ -49,7 +49,7 @@ export class CacheSerializationService {
 
       return json;
     } catch (error) {
-      this.logger.error('Serialization error:', error);
+      this.logError('Serialization error:', error);
       throw new Error(`Failed to serialize value: ${error.message}`);
     }
   }
@@ -71,7 +71,7 @@ export class CacheSerializationService {
 
       return JSON.parse(value);
     } catch (error) {
-      this.logger.error('Deserialization error:', error);
+      this.logError('Deserialization error:', error);
       throw new Error(`Failed to deserialize value: ${error.message}`);
     }
   }
@@ -88,7 +88,7 @@ export class CacheSerializationService {
       const json = JSON.stringify(value);
       return json.length * 2; // Rough estimate for UTF-16 encoding
     } catch (error) {
-      this.logger.warn('Size estimation error, returning default:', error);
+      this.logWarning('Size estimation error, returning default:', error);
       return 1024; // Default fallback size
     }
   }

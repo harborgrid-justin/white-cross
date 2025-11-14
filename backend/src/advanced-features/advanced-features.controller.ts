@@ -4,7 +4,7 @@
  * @description HTTP endpoints for advanced healthcare features
  */
 
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Version } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdvancedFeaturesService } from './advanced-features.service';
 import { RecordScreeningDto } from './dto/record-screening.dto';
@@ -13,13 +13,17 @@ import { SendEmergencyNotificationDto } from './dto/send-emergency-notification.
 import { AdvancedFeaturesScanBarcodeDto } from './dto/scan-barcode.dto';
 import { VerifyMedicationAdministrationDto } from './dto/verify-medication-administration.dto';
 
+import { BaseController } from '@/common/base';
 @ApiTags('Advanced Features')
+
 @Controller('advanced-features')
 @ApiBearerAuth()
-export class AdvancedFeaturesController {
+export class AdvancedFeaturesController extends BaseController {
   constructor(
     private readonly advancedFeaturesService: AdvancedFeaturesService,
-  ) {}
+  ) {
+    super();
+  }
 
   // ==================== Screening Endpoints ====================
 

@@ -16,7 +16,8 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 
-import { NoteType } from '../../clinical/enums/note-type.enum';
+import { NoteType } from '../../services/clinical/enums/note-type.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface ClinicalNoteAttributes {
   id: string;
@@ -282,16 +283,7 @@ export class ClinicalNote
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ClinicalNote) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ClinicalNote ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
-      );
-      console.log(
-        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Author: ${instance.createdBy}`,
-      );
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ClinicalNote', instance);
   }
 
   @BeforeCreate
@@ -368,3 +360,6 @@ export class ClinicalNote
     this.amendmentReason = reason;
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default ClinicalNote;

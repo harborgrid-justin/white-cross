@@ -16,7 +16,7 @@ export { AnalyticsController } from './analytics.controller';
 export * from './dto';
 
 // Entities
-export * from './entities';
+export { HealthMetricSnapshot, AnalyticsReport } from '@/database/models';
 
 // Enums
 export * from './enums';

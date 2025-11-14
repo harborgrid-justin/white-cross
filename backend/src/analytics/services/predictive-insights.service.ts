@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { BaseService } from '@/common/base';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { TimePeriod } from '../enums/time-period.enum';
 import { PredictiveInsight } from '../interfaces/health-analytics.interfaces';
-import { HealthRecord } from '../../database/models/health-record.model';
+import { HealthRecord } from '@/database/models';
 import { DateRangeService } from './date-range.service';
 import { TrendCalculationService } from './trend-calculation.service';
 
@@ -18,15 +19,15 @@ import { TrendCalculationService } from './trend-calculation.service';
  * - Calculate probability and impact predictions
  */
 @Injectable()
-export class PredictiveInsightsService {
-  private readonly logger = new Logger(PredictiveInsightsService.name);
-
+export class PredictiveInsightsService extends BaseService {
   constructor(
     @InjectModel(HealthRecord)
     private readonly healthRecordModel: typeof HealthRecord,
     private readonly dateRangeService: DateRangeService,
     private readonly trendCalculationService: TrendCalculationService,
-  ) {}
+  ) {
+    super(PredictiveInsightsService.name);
+  }
 
   /**
    * Get predictive insights using statistical analysis

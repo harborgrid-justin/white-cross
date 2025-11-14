@@ -2,24 +2,25 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { Op, QueryTypes } from 'sequelize';
-import { AuditLog } from '../../database/models/audit-log.model';
+import { AuditLog } from '@/database/models';
 import { ComplianceReport } from '../interfaces/report-types.interface';
 import { BaseReportDto } from '../dto/base-report.dto';
 
+import { BaseService } from '@/common/base';
 /**
  * Compliance Reports Service
  * Handles HIPAA compliance reporting and regulatory audit trails
  */
 @Injectable()
-export class ComplianceReportsService {
-  private readonly logger = new Logger(ComplianceReportsService.name);
-
+export class ComplianceReportsService extends BaseService {
   constructor(
     @InjectModel(AuditLog)
     private auditLogModel: typeof AuditLog,
     @InjectConnection()
     private sequelize: Sequelize,
-  ) {}
+  ) {
+    super("ComplianceReportsService");
+  }
 
   /**
    * Get compliance report with HIPAA and medication compliance data
@@ -121,7 +122,7 @@ export class ComplianceReportsService {
         raw: true,
       });
 
-      this.logger.log('Compliance report generated successfully');
+      this.logInfo('Compliance report generated successfully');
 
       return {
         hipaaLogs,
@@ -130,7 +131,7 @@ export class ComplianceReportsService {
         vaccinationRecords: (vaccinationRecords as any)[0]?.count || 0,
       };
     } catch (error) {
-      this.logger.error('Error generating compliance report:', error);
+      this.logError('Error generating compliance report:', error);
       throw error;
     }
   }

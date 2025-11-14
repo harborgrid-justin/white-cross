@@ -15,7 +15,8 @@ import {
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
 
-import { FollowUpStatus } from '../../clinical/enums/follow-up-status.enum';
+import { FollowUpStatus } from '../../services/clinical/enums/follow-up-status.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface FollowUpAppointmentAttributes {
   id: string;
@@ -317,13 +318,9 @@ export class FollowUpAppointment
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: FollowUpAppointment) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] FollowUpAppointment ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('FollowUpAppointment', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default FollowUpAppointment;

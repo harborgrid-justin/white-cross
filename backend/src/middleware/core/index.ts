@@ -11,6 +11,9 @@ export { CoreMiddlewareModule } from './core-middleware.module';
 export { PermissionsGuard } from './guards/permissions.guard';
 export { RbacGuard } from './guards/rbac.guard';
 
+// Services
+export { RbacPermissionService } from './services/rbac-permission.service';
+
 // Pipes
 export {
   HealthcareValidationPipe,

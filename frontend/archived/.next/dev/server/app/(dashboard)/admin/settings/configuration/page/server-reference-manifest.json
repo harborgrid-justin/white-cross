@@ -1,0 +1,65 @@
+{
+  "node": {
+    "00228b91b474c92971dfd748c29dc8b2542785f3ed": {
+      "workers": {
+        "app/(dashboard)/admin/settings/configuration/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/configuration/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.configuration.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getSystemConfiguration",
+          "filename": "src/lib/actions/admin.configuration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/configuration/page": "rsc"
+      },
+      "exportedName": "getSystemConfiguration",
+      "filename": "src/lib/actions/admin.configuration.ts"
+    },
+    "0039f13be7a2372585d08c26af331c6a113c4a216b": {
+      "workers": {
+        "app/(dashboard)/admin/settings/configuration/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/configuration/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.configuration.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "resetConfigurationToDefaults",
+          "filename": "src/lib/actions/admin.configuration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/configuration/page": "action-browser"
+      },
+      "exportedName": "resetConfigurationToDefaults",
+      "filename": "src/lib/actions/admin.configuration.ts"
+    },
+    "00b9c292d61c70eff7a06e5f8b885fb81ca66c3391": {
+      "workers": {
+        "app/(dashboard)/admin/settings/configuration/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/configuration/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.configuration.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getConfigurationAuditTrail",
+          "filename": "src/lib/actions/admin.configuration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/configuration/page": "rsc"
+      },
+      "exportedName": "getConfigurationAuditTrail",
+      "filename": "src/lib/actions/admin.configuration.ts"
+    },
+    "402b8515ed8c2f2e22bbc4374c605b0f5e932dcc9a": {
+      "workers": {
+        "app/(dashboard)/admin/settings/configuration/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/admin/settings/configuration/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/admin.configuration.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateSystemConfiguration",
+          "filename": "src/lib/actions/admin.configuration.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/admin/settings/configuration/page": "action-browser"
+      },
+      "exportedName": "updateSystemConfiguration",
+      "filename": "src/lib/actions/admin.configuration.ts"
+    }
+  },
+  "edge": {}
+}

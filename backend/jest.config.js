@@ -23,15 +23,30 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@/test/(.*)$': '<rootDir>/test/$1',
+    '^@/common/base$': '<rootDir>/src/common/base',
+    '^@/database/models$': '<rootDir>/src/database/models',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^test/(.*)$': '<rootDir>/test/$1',
   },
   coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 60,
-      lines: 60,
-      statements: 60,
+      branches: 80,
+      functions: 85,
+      lines: 80,
+      statements: 80,
+    },
+    // Higher thresholds for critical security paths
+    './src/services/auth/**/*.ts': {
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95,
+    },
+    './src/middleware/security/**/*.ts': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
     },
   },
   coverageReporters: ['text', 'text-summary', 'html', 'lcov', 'json'],

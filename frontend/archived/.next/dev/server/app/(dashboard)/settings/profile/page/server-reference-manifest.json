@@ -1,0 +1,140 @@
+{
+  "node": {
+    "7f9ba877bd43434c78f2d985e3acf815ac88abb20e": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getCurrentUserProfile",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "getCurrentUserProfile",
+      "filename": "src/lib/actions/profile.cache.ts"
+    },
+    "7fb8fb277277f26e14657b591aa9828c66f2ba3968": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getProfileSettings",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "getProfileSettings",
+      "filename": "src/lib/actions/profile.cache.ts"
+    },
+    "7f56947cc0b7ff2b95bc2415fe08da397da9f0d15c": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getSecurityLogs",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "getSecurityLogs",
+      "filename": "src/lib/actions/profile.cache.ts"
+    },
+    "7fbb558c044ab200ced757830993c0e3fb591b8ccf": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "getActiveSessions",
+          "filename": "src/lib/actions/profile.cache.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "getActiveSessions",
+      "filename": "src/lib/actions/profile.cache.ts"
+    },
+    "609c253f112d692e935cdc5a9e62474ecd6be2b73e": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "updateProfileFromForm",
+          "filename": "src/lib/actions/profile.forms.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "updateProfileFromForm",
+      "filename": "src/lib/actions/profile.forms.ts"
+    },
+    "6013c98fd3f7993a7b99b701ff35d750827909d7ba": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "changePasswordFromForm",
+          "filename": "src/lib/actions/profile.forms.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "changePasswordFromForm",
+      "filename": "src/lib/actions/profile.forms.ts"
+    },
+    "608b7bdad2d385e579e49ce11b9ba8100f5fa3d393": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "uploadAvatarAction",
+          "filename": "src/lib/actions/profile.crud.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "uploadAvatarAction",
+      "filename": "src/lib/actions/profile.crud.ts"
+    },
+    "40bb1833dd9b13b834a002b6d9513b5afc8dab6d64": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "enableTwoFactorAction",
+          "filename": "src/lib/actions/profile.security.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "enableTwoFactorAction",
+      "filename": "src/lib/actions/profile.security.ts"
+    },
+    "40e5e2b058d30a225fc718256adf3c5c7b766676ed": {
+      "workers": {
+        "app/(dashboard)/settings/profile/page": {
+          "moduleId": "[project]/.next-internal/server/app/(dashboard)/settings/profile/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/actions/profile.cache.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/lib/actions/profile.forms.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE2 => \"[project]/src/lib/actions/profile.crud.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE3 => \"[project]/src/lib/actions/profile.security.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false,
+          "exportedName": "disableTwoFactorAction",
+          "filename": "src/lib/actions/profile.security.ts"
+        }
+      },
+      "layer": {
+        "app/(dashboard)/settings/profile/page": "action-browser"
+      },
+      "exportedName": "disableTwoFactorAction",
+      "filename": "src/lib/actions/profile.security.ts"
+    }
+  },
+  "edge": {}
+}

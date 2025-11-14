@@ -10,5 +10,5 @@ export * from './allergy.service';
 
 // Submodules
 export * from './dto';
-export * from './entities';
+export { Allergy } from '@/database/models';
 

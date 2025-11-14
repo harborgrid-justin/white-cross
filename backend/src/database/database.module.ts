@@ -17,6 +17,7 @@
 import { Global, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LoggerService } from '@/common/logging/logger.service';
 
 // Services
 import {
@@ -61,6 +62,7 @@ import {
   AlertRule,
   Allergy,
   AnalyticsReport,
+  ApiKey,
   Appointment,
   AppointmentReminder,
   AppointmentWaitlist,
@@ -83,6 +85,9 @@ import {
   DeliveryLog,
   DeviceToken,
   District,
+  Document,
+  DocumentAuditTrail,
+  DocumentSignature,
   DrugCatalog,
   DrugInteraction,
   EmergencyBroadcast,
@@ -99,6 +104,7 @@ import {
   IntegrationLog,
   InventoryItem,
   InventoryTransaction,
+  IpRestriction,
   LabResults,
   License,
   MaintenanceLog,
@@ -133,6 +139,9 @@ import {
   SyncSession,
   SyncState,
   SystemConfig,
+  LoginAttempt,
+  Session,
+  SecurityIncident,
   ThreatDetection,
   TrainingModule,
   TreatmentPlan,
@@ -177,9 +186,9 @@ import {
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const databaseUrl = configService.get('DATABASE_URL');
-        const isProduction = configService.get('NODE_ENV') === 'production';
-        const isDevelopment = configService.get('NODE_ENV') === 'development';
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+        const isDevelopment = configService.get<string>('NODE_ENV') === 'development';
 
         if (databaseUrl) {
           // Use DATABASE_URL if provided (for cloud deployments)
@@ -188,24 +197,25 @@ import {
             uri: databaseUrl,
             autoLoadModels: true,
             synchronize: configService.get('database.synchronize', false),
-            alter: configService.get('database.synchronize', false),
             // OPTIMIZATION: Enhanced logging with slow query detection
             // HIPAA COMPLIANCE: Always log in production for audit trail
             logging: isProduction
               ? (sql: string, timing?: number) => {
+                  const logger = new LoggerService();
                   // Always log queries in production for HIPAA compliance
-                  console.log(
-                    `[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`,
-                  );
+                  logger.log(`${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`, {
+                    context: 'DatabaseModule',
+                  });
                   // Also warn about slow queries
                   if (timing && timing > 1000) {
-                    console.warn(
-                      `SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`,
-                    );
+                    console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
                   }
                 }
               : isDevelopment
-                ? console.log
+                ? (sql: string) => {
+                    const logger = new LoggerService();
+                    logger.debug(`${sql}`, { context: 'DatabaseModule' });
+                  }
                 : false,
             benchmark: true,
             // V6 recommended options
@@ -216,20 +226,19 @@ import {
             },
             // OPTIMIZATION: Production-ready connection pool configuration from environment
             pool: {
-              max: configService.get<number>(
-                'DB_POOL_MAX',
-                isProduction ? 20 : 10,
-              ),
-              min: configService.get<number>(
-                'DB_POOL_MIN',
-                isProduction ? 5 : 2,
-              ),
+              max: configService.get<number>('DB_POOL_MAX', isProduction ? 20 : 10),
+              min: configService.get<number>('DB_POOL_MIN', isProduction ? 5 : 2),
               acquire: configService.get<number>('DB_ACQUIRE_TIMEOUT', 60000),
               idle: configService.get<number>('DB_IDLE_TIMEOUT', 10000),
               evict: 1000, // Check for idle connections every 1s
               handleDisconnects: true,
               validate: (connection: any) => {
-                return connection && !connection._closed;
+                return (
+                  connection &&
+                  typeof connection === 'object' &&
+                  '_closed' in connection &&
+                  !connection._closed
+                );
               },
             },
             // Retry configuration for connection failures
@@ -277,25 +286,25 @@ import {
             password: configService.get('database.password'),
             database: configService.get('database.database', 'whitecross'),
             autoLoadModels: true,
-            synchronize: configService.get('database.synchronize', false),
-            alter: configService.get('database.synchronize', false),
             // OPTIMIZATION: Enhanced logging with slow query detection
             // HIPAA COMPLIANCE: Always log in production for audit trail
             logging: isProduction
               ? (sql: string, timing?: number) => {
+                  const logger = new LoggerService();
                   // Always log queries in production for HIPAA compliance
-                  console.log(
-                    `[DB] ${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`,
-                  );
+                  logger.log(`${sql.substring(0, 200)}${sql.length > 200 ? '...' : ''}`, {
+                    context: 'DatabaseModule',
+                  });
                   // Also warn about slow queries
                   if (timing && timing > 1000) {
-                    console.warn(
-                      `SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`,
-                    );
+                    console.warn(`SLOW QUERY (${timing}ms): ${sql.substring(0, 200)}...`);
                   }
                 }
               : isDevelopment
-                ? console.log
+                ? (sql: string) => {
+                    const logger = new LoggerService();
+                    logger.debug(`${sql}`, { context: 'DatabaseModule' });
+                  }
                 : false,
             benchmark: true,
             // V6 recommended options
@@ -306,14 +315,8 @@ import {
             },
             // OPTIMIZATION: Production-ready connection pool configuration from environment
             pool: {
-              max: configService.get<number>(
-                'DB_POOL_MAX',
-                isProduction ? 20 : 10,
-              ),
-              min: configService.get<number>(
-                'DB_POOL_MIN',
-                isProduction ? 5 : 2,
-              ),
+              max: configService.get<number>('DB_POOL_MAX', isProduction ? 20 : 10),
+              min: configService.get<number>('DB_POOL_MIN', isProduction ? 5 : 2),
               acquire: configService.get<number>('DB_ACQUIRE_TIMEOUT', 60000),
               idle: configService.get<number>('DB_IDLE_TIMEOUT', 10000),
               evict: 1000, // Check for idle connections every 1s
@@ -362,6 +365,7 @@ import {
       AuditLog,
       Student,
       User,
+      ApiKey,
       Contact,
       District,
       School,
@@ -414,6 +418,7 @@ import {
       // Inventory Models
       InventoryItem,
       InventoryTransaction,
+      IpRestriction,
       MaintenanceLog,
       PurchaseOrder,
       PurchaseOrderItem,
@@ -431,12 +436,20 @@ import {
       Supplier,
       SyncState,
       SystemConfig,
+      LoginAttempt,
+      Session,
+      SecurityIncident,
       ThreatDetection,
       Webhook,
       License,
       ConfigurationHistory,
       BackupLog,
       PerformanceMetric,
+
+      // Document Models
+      Document,
+      DocumentSignature,
+      DocumentAuditTrail,
 
       // Compliance Models
       ConsentForm,

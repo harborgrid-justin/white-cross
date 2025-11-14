@@ -12,6 +12,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { StudentMedication } from './student-medication.model';
 
 export interface MedicationAttributes {
   id: string;
@@ -230,7 +231,7 @@ export class Medication
     if (instance.changed()) {
       const changedFields = instance.changed() as string[];
       const { logModelPHIAccess } = await import(
-        '../services/model-audit-helper.service.js'
+        '@/database/services/model-audit-helper.service.js'
       );
       const action = instance.isNewRecord ? 'CREATE' : 'UPDATE';
       await logModelPHIAccess(
@@ -266,3 +267,35 @@ export class Medication
     }
   }
 }
+
+/**
+ * Medication list item with student context
+ * Used when listing medications for a specific student
+ */
+export interface MedicationWithStudentContext extends MedicationAttributes {
+  studentId: string;
+  studentName?: string;
+  dosage?: string;
+  frequency?: string;
+  route?: string;
+  prescribedBy?: string;
+  startDate?: Date;
+  endDate?: Date;
+  instructions?: string;
+}
+
+/**
+ * Paginated medication response
+ */
+export interface PaginatedMedicationResponse {
+  medications: StudentMedication[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+// Default export for Sequelize-TypeScript
+export default Medication;

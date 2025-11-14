@@ -20,7 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { WsException } from '@nestjs/websockets';
 import { AuthenticatedSocket, AuthPayload } from '../interfaces';
-import { TokenBlacklistService } from '@/auth';
+import { TokenBlacklistService } from '../../../services/auth';
 
 
 /**

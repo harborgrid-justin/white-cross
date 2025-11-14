@@ -11,6 +11,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface InventoryItemAttributes {
   id: string;
@@ -66,12 +67,6 @@ export interface InventoryItemAttributes {
     {
       fields: ['updatedAt'],
       name: 'idx_inventory_item_updated_at',
-    },
-    {
-      // Full-text search GIN index (created by migration)
-      name: 'idx_inventory_items_search_vector',
-      using: 'GIN',
-      fields: ['search_vector'] as any, // tsvector type, managed by PostgreSQL trigger
     },
   ],
 })
@@ -155,13 +150,9 @@ export class InventoryItem
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: InventoryItem) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] InventoryItem ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('InventoryItem', instance);
   }
 }
+
+// Default export for Sequelize-TypeScript
+export default InventoryItem;
