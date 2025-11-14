@@ -5,3 +5,4 @@ export * from './waitlist.dto';
 export * from './reminder.dto';
 export * from './statistics.dto';
 export * from './recurring.dto';
+export * from './appointment-response.dto';
