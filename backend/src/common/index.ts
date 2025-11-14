@@ -14,7 +14,7 @@ export * from './openapi-response-formatters.service';
 export * from './enums';
 
 // Submodules
-export * from './caching';
+export * from './cache';
 export * from './decorators';
 export * from './encryption';
 export * from './exceptions';

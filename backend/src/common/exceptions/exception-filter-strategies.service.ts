@@ -31,13 +31,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { QueryFailedError, EntityNotFoundError } from 'typeorm';
+import { DatabaseError, EmptyResultError } from 'sequelize';
 import { ValidationError } from 'class-validator';
 
 import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -506,12 +504,12 @@ export class EnhancedValidationFilter implements ExceptionFilter {
  * export class UsersController { ... }
  * ```
  */
-@Catch(QueryFailedError, EntityNotFoundError)
+@Catch(DatabaseError, EmptyResultError)
 @Injectable()
 export class DatabaseExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(DatabaseExceptionFilter.name);
 
-  catch(exception: QueryFailedError | EntityNotFoundError, host: ArgumentsHost): void {
+  catch(exception: DatabaseError | EmptyResultError, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -520,11 +518,11 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
     let message = 'Database error occurred';
     let error = 'DatabaseError';
 
-    if (exception instanceof EntityNotFoundError) {
+    if (exception instanceof EmptyResultError) {
       status = HttpStatus.NOT_FOUND;
       message = 'Resource not found';
       error = 'NotFoundError';
-    } else if (exception instanceof QueryFailedError) {
+    } else if (exception instanceof DatabaseError) {
       const dbError = this.parseQueryError(exception);
       status = dbError.status;
       message = dbError.message;
@@ -549,7 +547,7 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
     response.status(status).json(errorResponse);
   }
 
-  private parseQueryError(exception: QueryFailedError): {
+  private parseQueryError(exception: DatabaseError): {
     status: number;
     message: string;
     error: string;
@@ -602,7 +600,7 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
  * export class SearchController { ... }
  * ```
  */
-@Catch(QueryFailedError)
+@Catch(DatabaseError)
 @Injectable()
 export class SQLInjectionFilter implements ExceptionFilter {
   private readonly logger = new Logger(SQLInjectionFilter.name);
@@ -613,7 +611,7 @@ export class SQLInjectionFilter implements ExceptionFilter {
     /(\bAND\b.*=.*)/i,
   ];
 
-  catch(exception: QueryFailedError, host: ArgumentsHost): void {
+  catch(exception: DatabaseError, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();

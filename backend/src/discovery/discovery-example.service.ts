@@ -5,26 +5,15 @@ import {
   OnApplicationShutdown,
   OnModuleDestroy,
   OnModuleInit,
+  Inject,
 } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { ExperimentalFeature } from './decorators/metadata.decorator';
 import { DiscoveryMetricsService } from './services/discovery-metrics.service';
 import { DiscoveryCacheService } from './services/discovery-cache.service';
-
-import { BaseService } from '@/common/base';
 import { BaseService } from '@/common/base';
 import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
 export interface ProviderInfo {
   name: string;
   instance: any;
@@ -39,7 +28,7 @@ export interface ControllerInfo {
 }
 
 @Injectable()
-export class DiscoveryExampleService
+export class DiscoveryExampleService extends BaseService
   implements
     OnModuleInit,
     OnApplicationBootstrap,

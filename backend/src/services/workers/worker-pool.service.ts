@@ -320,8 +320,6 @@ export class WorkerPoolService extends BaseService implements OnModuleInit, OnMo
    *
    * @returns Promise that resolves when shutdown is complete
    */
-  @ImmediateCleanup()
-  @Cleanup('high')
   public async shutdown(): Promise<void> {
     if (this.isShuttingDown) {
       this.logWarning('Worker pool already shutting down');

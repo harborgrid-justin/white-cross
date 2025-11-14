@@ -109,8 +109,6 @@ export class HealthCalculationsService
   /**
    * Cleanup worker pool on module destroy
    */
-  @ImmediateCleanup()
-  @Cleanup('high')
   async onModuleDestroy(): Promise<void> {
     if (this.workerPool) {
       this.logInfo('Shutting down health calculations worker pool');
@@ -163,7 +161,6 @@ export class HealthCalculationsService
    * console.log(bmis); // [23.1, 22.0]
    * ```
    */
-  @MemorySensitive(75) // 75MB threshold for batch calculations
   async batchCalculateBMI(records: BatchBMIInput[]): Promise<number[]> {
     const pool = this.getPool();
     return pool.executeTask<number[]>('bmi_batch', records);
@@ -186,7 +183,6 @@ export class HealthCalculationsService
    * console.log(analysis.changeRate); // 8.3
    * ```
    */
-  @MemorySensitive(50) // 50MB threshold for trend analysis
   async analyzeVitalTrends(
     vitals: VitalDataPoint[],
   ): Promise<VitalTrendAnalysis> {
@@ -208,7 +204,6 @@ export class HealthCalculationsService
    * console.log(stats.stdDev); // 14.14
    * ```
    */
-  @MemorySensitive(60) // 60MB threshold for statistical calculations
   async calculateAggregations(
     values: number[],
   ): Promise<StatisticalAggregations> {
