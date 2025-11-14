@@ -14,6 +14,7 @@ import {
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 import { ConversationParticipant } from './conversation-participant.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * Conversation type enumeration
@@ -220,13 +221,6 @@ export class Conversation extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Conversation) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Conversation ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('Conversation', instance);
   }
 }

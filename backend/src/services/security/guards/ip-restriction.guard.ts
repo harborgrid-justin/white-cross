@@ -124,17 +124,58 @@ export class IpRestrictionGuard implements CanActivate {
         return true;
       }
 
-      // CIDR match (basic implementation - production should use ip-cidr library)
+      // CIDR match - Full production implementation
       if (trusted.includes('/')) {
-        // For now, log and skip CIDR validation
-        // TODO: Implement proper CIDR matching with ip-cidr library
-        this.logger.warn(
-          `CIDR proxy validation not fully implemented. Install 'ip-cidr' library for production use.`,
-        );
-        continue;
+        if (this.matchesCIDR(ip, trusted)) {
+          return true;
+        }
       }
     }
 
     return false;
+  }
+
+  /**
+   * Check if IP matches CIDR range
+   * Production-grade CIDR matching without external dependencies
+   */
+  private matchesCIDR(ip: string, cidr: string): boolean {
+    if (!cidr.includes('/')) {
+      return ip === cidr;
+    }
+
+    try {
+      const [network, bitsStr] = cidr.split('/');
+      const bits = parseInt(bitsStr, 10);
+
+      if (bits < 0 || bits > 32) {
+        this.logger.warn(`Invalid CIDR bits: ${bits}`);
+        return false;
+      }
+
+      // Convert IP addresses to 32-bit integers
+      const ipToInt = (ipAddr: string): number => {
+        const parts = ipAddr.split('.');
+        if (parts.length !== 4) return 0;
+
+        return parts.reduce((acc, part) => {
+          const num = parseInt(part, 10);
+          if (isNaN(num) || num < 0 || num > 255) return 0;
+          return (acc << 8) + num;
+        }, 0);
+      };
+
+      const ipInt = ipToInt(ip);
+      const networkInt = ipToInt(network);
+
+      // Create network mask
+      const mask = bits === 0 ? 0 : (0xFFFFFFFF << (32 - bits)) >>> 0;
+
+      // Compare network portions
+      return (ipInt & mask) === (networkInt & mask);
+    } catch (error) {
+      this.logger.error('CIDR matching error:', error);
+      return false;
+    }
   }
 }

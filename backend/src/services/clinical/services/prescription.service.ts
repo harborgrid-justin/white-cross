@@ -30,7 +30,35 @@ export class PrescriptionService extends BaseService {
       `Creating prescription for student ${createDto.studentId}: ${createDto.drugName}`,
     );
 
-    return this.prescriptionModel.create(createDto as any);
+    try {
+      const prescription = await this.prescriptionModel.create({
+        studentId: createDto.studentId,
+        visitId: createDto.visitId,
+        treatmentPlanId: createDto.treatmentPlanId,
+        prescribedBy: createDto.prescribedBy,
+        drugName: createDto.drugName,
+        drugCode: createDto.drugCode,
+        dosage: createDto.dosage,
+        frequency: createDto.frequency,
+        route: createDto.route,
+        quantity: createDto.quantity,
+        quantityFilled: createDto.quantityFilled || 0,
+        refillsAuthorized: createDto.refillsAuthorized || 0,
+        refillsUsed: 0,
+        startDate: createDto.startDate,
+        endDate: createDto.endDate,
+        instructions: createDto.instructions,
+        status: createDto.status || PrescriptionStatus.PENDING,
+        pharmacyName: createDto.pharmacyName,
+        notes: createDto.notes,
+      });
+
+      this.logInfo(`Prescription created successfully: ${prescription.id}`);
+      return prescription;
+    } catch (error) {
+      this.logError(`Failed to create prescription: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
+    }
   }
 
   /**

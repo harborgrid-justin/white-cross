@@ -12,6 +12,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum NotificationPriority {
   CRITICAL = 'CRITICAL', // Immediate delivery, sound, vibration
@@ -413,13 +414,6 @@ export class PushNotification
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: PushNotification) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] PushNotification ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('PushNotification', instance);
   }
 }

@@ -66,8 +66,34 @@ export class CacheTierManagerService extends BaseService {
   }
 
   async getFromL3<T>(key: string, compliance: ComplianceLevel): Promise<CacheOperationResult<T>> {
-    // TODO: Implement L3 cache with proper database integration
-    return { success: false, responseTime: 0 };
+    const startTime = Date.now();
+    try {
+      // L3 cache uses disk-based caching service
+      const result = await this.l3CacheService.get<T>(key);
+
+      if (!result) {
+        return {
+          success: false,
+          responseTime: Date.now() - startTime,
+          tier: CacheTier.L3,
+        };
+      }
+
+      return {
+        success: true,
+        data: result,
+        responseTime: Date.now() - startTime,
+        tier: CacheTier.L3,
+      };
+    } catch (error) {
+      this.logError(`L3 cache get failed for key ${key}:`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        responseTime: Date.now() - startTime,
+        tier: CacheTier.L3,
+      };
+    }
   }
 
   setInL1<T>(key: string, entry: InMemoryCacheEntry<T>): CacheOperationResult<void> {
@@ -114,8 +140,25 @@ export class CacheTierManagerService extends BaseService {
   }
 
   async setInL3<T>(key: string, entry: InMemoryCacheEntry<T>, ttl: number): Promise<CacheOperationResult<void>> {
-    // TODO: Implement L3 cache with proper database integration
-    return { success: true, responseTime: 0, tier: CacheTier.L3 };
+    const startTime = Date.now();
+    try {
+      // L3 cache uses disk-based caching with compression
+      await this.l3CacheService.set(key, entry.data, ttl);
+
+      return {
+        success: true,
+        responseTime: Date.now() - startTime,
+        tier: CacheTier.L3,
+      };
+    } catch (error) {
+      this.logError(`L3 cache set failed for key ${key}:`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        responseTime: Date.now() - startTime,
+        tier: CacheTier.L3,
+      };
+    }
   }
 
   promoteToL1<T>(key: string, data: T, compliance: ComplianceLevel): CacheOperationResult<void> {

@@ -13,6 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface ConsentSignatureAttributes {
   id?: string;
@@ -127,13 +128,6 @@ export class ConsentSignature
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ConsentSignature) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ConsentSignature ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ConsentSignature', instance);
   }
 }

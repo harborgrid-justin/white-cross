@@ -1,6 +1,9 @@
-import { All, Controller, Req, Res, Version } from '@nestjs/common';
+import { All, Controller, Req, Res, Version, Inject } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { HttpService } from '@nestjs/axios';
 import type { Request, Response } from 'express';
+import { firstValueFrom } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
 
 import { BaseController } from '@/common/base';
 /**
@@ -32,8 +35,11 @@ import { BaseController } from '@/common/base';
 
 @Controller('prescriptions')
 export class PrescriptionAliasController extends BaseController {
-  constructor() {
-    super();
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    super('PrescriptionAliasController');
   }
 
   /**
@@ -50,32 +56,151 @@ export class PrescriptionAliasController extends BaseController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    // Extract the path after /prescriptions
-    const path = req.path.replace('/prescriptions', '');
+    try {
+      // Extract the path after /prescriptions
+      const path = req.path.replace('/prescriptions', '');
 
-    // Build the new path
-    const newPath = `/clinical/prescriptions${path}`;
+      // Build the new path
+      const newPath = `/clinical/prescriptions${path}`;
 
-    // Add a header to indicate this was aliased (for debugging/monitoring)
-    res.setHeader('X-Prescription-Alias', 'true');
-    res.setHeader('X-Original-Path', req.path);
-    res.setHeader('X-Forwarded-To', newPath);
+      // Get base URL from config or use localhost
+      const baseUrl = this.configService.get<string>('API_BASE_URL', 'http://localhost:3000');
+      const fullUrl = `${baseUrl}${newPath}`;
 
-    // Note: In a production environment, you would use req.app to forward
-    // the request internally to the clinical prescriptions controller.
-    // For now, this serves as a placeholder that will be completed when
-    // integrated with the actual routing infrastructure.
+      // Add headers to indicate this was aliased (for debugging/monitoring)
+      res.setHeader('X-Prescription-Alias', 'true');
+      res.setHeader('X-Original-Path', req.path);
+      res.setHeader('X-Forwarded-To', newPath);
 
-    // Return a helpful message indicating the alias is in place
-    return res.status(200).json({
-      message: 'Prescription alias endpoint',
-      note: 'This endpoint forwards to /clinical/prescriptions',
-      originalPath: req.path,
-      forwardedTo: newPath,
-      method: req.method,
-      implementation:
-        'TO BE COMPLETED: Integrate with internal routing or reverse proxy',
-    });
+      // Log the forwarding for audit purposes
+      this.logInfo(`Forwarding ${req.method} request from ${req.path} to ${newPath}`);
+
+      // Build query string
+      const queryString = new URLSearchParams(req.query as Record<string, string>).toString();
+      const urlWithQuery = queryString ? `${fullUrl}?${queryString}` : fullUrl;
+
+      // Forward the request based on HTTP method
+      let response;
+
+      switch (req.method.toUpperCase()) {
+        case 'GET':
+          response = await firstValueFrom(
+            this.httpService.get(urlWithQuery, {
+              headers: this.forwardHeaders(req),
+              validateStatus: () => true, // Don't throw on any status code
+            }),
+          );
+          break;
+
+        case 'POST':
+          response = await firstValueFrom(
+            this.httpService.post(fullUrl, req.body, {
+              headers: this.forwardHeaders(req),
+              params: req.query,
+              validateStatus: () => true,
+            }),
+          );
+          break;
+
+        case 'PATCH':
+        case 'PUT':
+          response = await firstValueFrom(
+            this.httpService.patch(fullUrl, req.body, {
+              headers: this.forwardHeaders(req),
+              params: req.query,
+              validateStatus: () => true,
+            }),
+          );
+          break;
+
+        case 'DELETE':
+          response = await firstValueFrom(
+            this.httpService.delete(fullUrl, {
+              headers: this.forwardHeaders(req),
+              params: req.query,
+              data: req.body, // DELETE requests can have body
+              validateStatus: () => true,
+            }),
+          );
+          break;
+
+        default:
+          return res.status(405).json({
+            error: 'Method Not Allowed',
+            message: `HTTP method ${req.method} is not supported`,
+          });
+      }
+
+      // Forward response headers
+      Object.entries(response.headers).forEach(([key, value]) => {
+        if (this.shouldForwardResponseHeader(key)) {
+          res.setHeader(key, value as string);
+        }
+      });
+
+      // Return the response with the same status code and body
+      return res.status(response.status).json(response.data);
+    } catch (error) {
+      this.logError(`Failed to forward prescription request: ${error instanceof Error ? error.message : 'Unknown error'}`);
+
+      // Return error response
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: 'Failed to forward request to prescription service',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+
+  /**
+   * Forward relevant headers from original request
+   */
+  private forwardHeaders(req: Request): Record<string, string> {
+    const headersToForward: Record<string, string> = {};
+
+    // Forward authentication headers
+    if (req.headers.authorization) {
+      headersToForward['authorization'] = req.headers.authorization;
+    }
+
+    // Forward content type
+    if (req.headers['content-type']) {
+      headersToForward['content-type'] = req.headers['content-type'];
+    }
+
+    // Forward accept header
+    if (req.headers['accept']) {
+      headersToForward['accept'] = req.headers['accept'];
+    }
+
+    // Forward user agent for tracking
+    if (req.headers['user-agent']) {
+      headersToForward['user-agent'] = req.headers['user-agent'];
+    }
+
+    // Add custom header to indicate internal forwarding
+    headersToForward['X-Forwarded-From'] = 'PrescriptionAliasController';
+    headersToForward['X-Internal-Forward'] = 'true';
+
+    return headersToForward;
+  }
+
+  /**
+   * Determine if response header should be forwarded back to client
+   */
+  private shouldForwardResponseHeader(headerName: string): boolean {
+    const lowerHeaderName = headerName.toLowerCase();
+
+    // Don't forward these headers as they're managed by NestJS/Express
+    const skipHeaders = [
+      'connection',
+      'keep-alive',
+      'transfer-encoding',
+      'upgrade',
+      'host',
+    ];
+
+    return !skipHeaders.includes(lowerHeaderName);
   }
 }
 

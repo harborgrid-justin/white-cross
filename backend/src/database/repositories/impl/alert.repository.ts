@@ -3,10 +3,12 @@
  */
 
 import { Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { BaseRepository } from '../base/base.repository';
 import type { IAuditLogger } from "../../interfaces";
 import { sanitizeSensitiveData } from "../../interfaces";
 import type { ICacheManager } from "../../interfaces";
+import { Alert } from '../../models/alert.model';
 
 export interface AlertAttributes {
   id: string;
@@ -24,16 +26,16 @@ export interface UpdateAlertDTO {
 
 @Injectable()
 export class AlertRepository extends BaseRepository<
-  any,
+  Alert,
   AlertAttributes,
   CreateAlertDTO
 > {
   constructor(
+    @InjectModel(Alert) private readonly alertModel: typeof Alert,
     @Inject('IAuditLogger') auditLogger: IAuditLogger,
     @Inject('ICacheManager') cacheManager: ICacheManager,
   ) {
-    // TODO: Inject proper Alert model when implemented
-    super(null as Alert, auditLogger, cacheManager, 'Alert');
+    super(alertModel, auditLogger, cacheManager, 'Alert');
   }
 
   protected async validateCreate(data: CreateAlertDTO): Promise<void> {}
@@ -42,7 +44,7 @@ export class AlertRepository extends BaseRepository<
     data: UpdateAlertDTO,
   ): Promise<void> {}
 
-  protected async invalidateCaches(entity: Alert): Promise<void> {
+  protected async invalidateCaches(entity: typeof Alert.prototype): Promise<void> {
     try {
       const entityData = entity.get();
       await this.cacheManager.delete(

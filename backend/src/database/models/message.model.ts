@@ -20,6 +20,7 @@ import type { MessageDelivery } from './message-delivery.model';
 import type { MessageReaction } from './message-reaction.model';
 import type { MessageRead } from './message-read.model';
 import type { User } from './user.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum MessagePriority {
   LOW = 'LOW',
@@ -335,13 +336,6 @@ export class Message extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Message) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Message ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('Message', instance);
   }
 }

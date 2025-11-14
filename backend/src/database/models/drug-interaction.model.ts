@@ -16,6 +16,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 import { InteractionSeverity } from '../../services/clinical/enums/interaction-severity.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface DrugInteractionAttributes {
   id: string;
@@ -151,13 +152,6 @@ export class DrugInteraction
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: DrugInteraction) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] DrugInteraction ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('DrugInteraction', instance);
   }
 }

@@ -25,6 +25,7 @@ import type { User } from './user.model';
 import type { Student } from './student.model';
 import type { Alert } from './alert.model';
 import type { IncidentReport } from './incident-report.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * School attributes interface
@@ -244,14 +245,7 @@ export class School extends Model<SchoolAttributes, CreateSchoolAttributes> {
   @BeforeCreate
   @BeforeUpdate
   static async auditAccess(instance: School) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] School ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('School', instance);
   }
 
   // Relationships

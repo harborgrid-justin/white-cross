@@ -13,6 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum ReportType {
   HEALTH_REPORT = 'HEALTH_REPORT',
@@ -194,13 +195,6 @@ export class ReportExecution
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ReportExecution) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ReportExecution ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ReportExecution', instance);
   }
 }

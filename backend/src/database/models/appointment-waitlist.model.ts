@@ -13,6 +13,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { AppointmentType } from './appointment.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum WaitlistPriority {
   LOW = 'LOW',
@@ -182,13 +183,6 @@ export class AppointmentWaitlist extends Model<AppointmentWaitlistAttributes> {
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: AppointmentWaitlist) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] AppointmentWaitlist ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('AppointmentWaitlist', instance);
   }
 }

@@ -4,8 +4,11 @@
  * @description Service for collecting data for analytics reports
  */
 
-import { Injectable, Logger } from '@nestjs/common';
-// TypeORM removed - not using repository pattern for this analytics service
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Op, fn, col } from 'sequelize';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 import { BaseService } from '@/common/base';
 import {
   AnalyticsReportType,
@@ -18,13 +21,37 @@ import {
   DashboardData,
   ComplianceData,
 } from '../analytics-interfaces';
+import {
+  Student,
+  HealthRecord,
+  MedicationLog,
+  Appointment,
+  IncidentReport,
+  StudentMedication,
+  Vaccination,
+} from '@/database/models';
 
 @Injectable()
 export class ReportDataCollectorService extends BaseService {
-  constructor() {
+  constructor(
+    @InjectModel(Student)
+    private readonly studentModel: typeof Student,
+    @InjectModel(HealthRecord)
+    private readonly healthRecordModel: typeof HealthRecord,
+    @InjectModel(MedicationLog)
+    private readonly medicationLogModel: typeof MedicationLog,
+    @InjectModel(Appointment)
+    private readonly appointmentModel: typeof Appointment,
+    @InjectModel(IncidentReport)
+    private readonly incidentReportModel: typeof IncidentReport,
+    @InjectModel(StudentMedication)
+    private readonly studentMedicationModel: typeof StudentMedication,
+    @InjectModel(Vaccination)
+    private readonly vaccinationModel: typeof Vaccination,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
+  ) {
     super('ReportDataCollectorService');
-    // In a real implementation, Sequelize repositories would be injected here
-    // Example: @Inject('StudentRepository') private readonly studentRepository: IStudentRepository
   }
 
   /**
@@ -76,16 +103,149 @@ export class ReportDataCollectorService extends BaseService {
     period: AnalyticsTimePeriod,
     filters?: Record<string, any>,
   ): Promise<HealthMetricsData> {
-    // In a real implementation, this would query the database
-    // For now, return mock data
-    return {
-      totalStudents: 500,
-      activeHealthRecords: 1250,
-      medicationAdherence: 87.5,
-      immunizationCompliance: 92.3,
-      incidentCount: 15,
-      appointmentCompletion: 89.2,
-    };
+    try {
+      const dateRange = this.getDateRange(period);
+
+      // Query real database for health metrics
+      const [
+        totalStudents,
+        activeHealthRecords,
+        totalMedications,
+        administeredMedications,
+        totalVaccinations,
+        requiredVaccinations,
+        incidentCount,
+        totalAppointments,
+        completedAppointments,
+      ] = await Promise.all([
+        // Total active students in school
+        this.studentModel.count({
+          where: { schoolId, isActive: true },
+        }),
+
+        // Active health records in period
+        this.healthRecordModel.count({
+          where: {
+            schoolId,
+            createdAt: { [Op.between]: [dateRange.start, dateRange.end] },
+          },
+        }),
+
+        // Total scheduled medications
+        this.studentMedicationModel.count({
+          where: {
+            schoolId,
+            isActive: true,
+            startDate: { [Op.lte]: dateRange.end },
+            [Op.or]: [
+              { endDate: null },
+              { endDate: { [Op.gte]: dateRange.start } },
+            ],
+          },
+        }),
+
+        // Actually administered medications
+        this.medicationLogModel.count({
+          where: {
+            schoolId,
+            administeredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+          },
+        }),
+
+        // Total vaccinations administered
+        this.vaccinationModel.count({
+          where: {
+            schoolId,
+            administeredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+          },
+        }),
+
+        // Required vaccinations (estimate: 10 per student)
+        this.studentModel.count({
+          where: { schoolId, isActive: true },
+        }).then(count => count * 10),
+
+        // Incident count in period
+        this.incidentReportModel.count({
+          where: {
+            schoolId,
+            occurredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+          },
+        }),
+
+        // Total appointments in period
+        this.appointmentModel.count({
+          where: {
+            schoolId,
+            scheduledAt: { [Op.between]: [dateRange.start, dateRange.end] },
+          },
+        }),
+
+        // Completed appointments
+        this.appointmentModel.count({
+          where: {
+            schoolId,
+            scheduledAt: { [Op.between]: [dateRange.start, dateRange.end] },
+            status: 'COMPLETED',
+          },
+        }),
+      ]);
+
+      // Calculate percentages
+      const medicationAdherence = totalMedications > 0
+        ? (administeredMedications / totalMedications) * 100
+        : 0;
+
+      const immunizationCompliance = requiredVaccinations > 0
+        ? (totalVaccinations / requiredVaccinations) * 100
+        : 0;
+
+      const appointmentCompletion = totalAppointments > 0
+        ? (completedAppointments / totalAppointments) * 100
+        : 0;
+
+      return {
+        totalStudents,
+        activeHealthRecords,
+        medicationAdherence: parseFloat(medicationAdherence.toFixed(1)),
+        immunizationCompliance: parseFloat(immunizationCompliance.toFixed(1)),
+        incidentCount,
+        appointmentCompletion: parseFloat(appointmentCompletion.toFixed(1)),
+      };
+    } catch (error) {
+      this.logError('Error collecting health overview data', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get date range for analytics period
+   */
+  private getDateRange(period: AnalyticsTimePeriod): { start: Date; end: Date } {
+    const end = new Date();
+    const start = new Date();
+
+    switch (period) {
+      case AnalyticsTimePeriod.LAST_7_DAYS:
+        start.setDate(end.getDate() - 7);
+        break;
+      case AnalyticsTimePeriod.LAST_30_DAYS:
+        start.setDate(end.getDate() - 30);
+        break;
+      case AnalyticsTimePeriod.LAST_90_DAYS:
+        start.setDate(end.getDate() - 90);
+        break;
+      case AnalyticsTimePeriod.LAST_6_MONTHS:
+        start.setMonth(end.getMonth() - 6);
+        break;
+      case AnalyticsTimePeriod.LAST_YEAR:
+        start.setFullYear(end.getFullYear() - 1);
+        break;
+      default:
+        start.setDate(end.getDate() - 30);
+    }
+
+    return { start, end };
   }
 
   /**
@@ -96,17 +256,67 @@ export class ReportDataCollectorService extends BaseService {
     period: AnalyticsTimePeriod,
     filters?: Record<string, any>,
   ): Promise<MedicationAnalyticsData> {
-    // In a real implementation, this would query medication records
-    return {
-      medications: [
-        { name: 'Ibuprofen', count: 45, students: 32 },
-        { name: 'Acetaminophen', count: 38, students: 28 },
-        { name: 'Diphenhydramine', count: 22, students: 18 },
-        { name: 'Albuterol', count: 15, students: 12 },
-      ],
-      adherence: 87.5,
-      commonMedications: ['Ibuprofen', 'Acetaminophen', 'Diphenhydramine'],
-    };
+    try {
+      const dateRange = this.getDateRange(period);
+
+      // Get medication administration statistics
+      const medicationStats = await this.medicationLogModel.findAll({
+        attributes: [
+          'medicationName',
+          [fn('COUNT', col('id')), 'count'],
+          [fn('COUNT', fn('DISTINCT', col('studentId'))), 'students'],
+        ],
+        where: {
+          schoolId,
+          administeredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+        },
+        group: ['medicationName'],
+        order: [[fn('COUNT', col('id')), 'DESC']],
+        limit: 10,
+        raw: true,
+      });
+
+      const medications = medicationStats.map((stat: any) => ({
+        name: stat.medicationName,
+        count: parseInt(stat.count, 10),
+        students: parseInt(stat.students, 10),
+      }));
+
+      const commonMedications = medications.slice(0, 3).map(m => m.name);
+
+      // Calculate medication adherence
+      const totalScheduled = await this.studentMedicationModel.count({
+        where: {
+          schoolId,
+          isActive: true,
+          startDate: { [Op.lte]: dateRange.end },
+          [Op.or]: [
+            { endDate: null },
+            { endDate: { [Op.gte]: dateRange.start } },
+          ],
+        },
+      });
+
+      const totalAdministered = await this.medicationLogModel.count({
+        where: {
+          schoolId,
+          administeredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+        },
+      });
+
+      const adherence = totalScheduled > 0
+        ? (totalAdministered / totalScheduled) * 100
+        : 0;
+
+      return {
+        medications,
+        adherence: parseFloat(adherence.toFixed(1)),
+        commonMedications,
+      };
+    } catch (error) {
+      this.logError('Error collecting medication data', error);
+      throw error;
+    }
   }
 
   /**
@@ -117,32 +327,112 @@ export class ReportDataCollectorService extends BaseService {
     period: AnalyticsTimePeriod,
     filters?: Record<string, any>,
   ): Promise<StudentHealthMetrics[]> {
-    // In a real implementation, this would query student health records
-    // Return mock data for multiple students
-    return [
-      {
-        studentId: 'student_001',
-        period,
-        healthRecords: 12,
-        medicationAdministrations: 8,
-        appointments: 3,
-        incidents: 1,
-        lastHealthRecord: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        lastMedication: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        upcomingAppointments: 1,
-      },
-      {
-        studentId: 'student_002',
-        period,
-        healthRecords: 8,
-        medicationAdministrations: 15,
-        appointments: 5,
-        incidents: 0,
-        lastHealthRecord: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-        lastMedication: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        upcomingAppointments: 2,
-      },
-    ];
+    try {
+      const dateRange = this.getDateRange(period);
+
+      // Get all active students for the school
+      const students = await this.studentModel.findAll({
+        where: { schoolId, isActive: true },
+        attributes: ['id'],
+        limit: filters?.limit || 100,
+      });
+
+      if (students.length === 0) {
+        return [];
+      }
+
+      const studentIds = students.map(s => s.id);
+
+      // Collect metrics for each student in parallel
+      const studentMetrics = await Promise.all(
+        studentIds.map(async (studentId) => {
+          const [
+            healthRecordsCount,
+            medicationLogsCount,
+            appointmentsCount,
+            incidentsCount,
+            lastHealthRecordData,
+            lastMedicationData,
+            upcomingAppointmentsCount,
+          ] = await Promise.all([
+            this.healthRecordModel.count({
+              where: {
+                studentId,
+                createdAt: { [Op.between]: [dateRange.start, dateRange.end] },
+              },
+            }),
+
+            this.medicationLogModel.count({
+              where: {
+                studentId,
+                administeredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+              },
+            }),
+
+            this.appointmentModel.count({
+              where: {
+                studentId,
+                scheduledAt: { [Op.between]: [dateRange.start, dateRange.end] },
+              },
+            }),
+
+            this.incidentReportModel.count({
+              where: {
+                studentId,
+                occurredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+              },
+            }),
+
+            this.healthRecordModel.findOne({
+              where: { studentId },
+              order: [['createdAt', 'DESC']],
+              attributes: ['createdAt'],
+            }),
+
+            this.medicationLogModel.findOne({
+              where: { studentId },
+              order: [['administeredAt', 'DESC']],
+              attributes: ['administeredAt'],
+            }),
+
+            this.appointmentModel.count({
+              where: {
+                studentId,
+                scheduledAt: { [Op.gt]: new Date() },
+                status: { [Op.in]: ['SCHEDULED', 'IN_PROGRESS'] },
+              },
+            }),
+          ]);
+
+          return {
+            studentId,
+            period,
+            healthRecords: healthRecordsCount,
+            medicationAdministrations: medicationLogsCount,
+            appointments: appointmentsCount,
+            incidents: incidentsCount,
+            lastHealthRecord: lastHealthRecordData?.createdAt || null,
+            lastMedication: lastMedicationData?.administeredAt || null,
+            upcomingAppointments: upcomingAppointmentsCount,
+          };
+        })
+      );
+
+      // Filter out students with no activity if specified
+      if (filters?.activeOnly) {
+        return studentMetrics.filter(m =>
+          m.healthRecords > 0 ||
+          m.medicationAdministrations > 0 ||
+          m.appointments > 0 ||
+          m.incidents > 0
+        );
+      }
+
+      return studentMetrics;
+    } catch (error) {
+      this.logError('Error collecting student health data', error);
+      throw error;
+    }
   }
 
   /**
@@ -245,23 +535,62 @@ export class ReportDataCollectorService extends BaseService {
     period: AnalyticsTimePeriod,
     filters?: Record<string, any>,
   ): Promise<IncidentAnalyticsData> {
-    // In a real implementation, this would query incident records
-    return {
-      totalIncidents: 15,
-      incidentTypes: {
-        'Medication Error': 5,
-        'Allergic Reaction': 3,
-        'Injury': 4,
-        'Illness': 3,
-      },
-      severityBreakdown: {
-        LOW: 8,
-        MEDIUM: 5,
-        HIGH: 2,
+    try {
+      const dateRange = this.getDateRange(period);
+
+      // Get all incidents for the period
+      const incidents = await this.incidentReportModel.findAll({
+        where: {
+          schoolId,
+          occurredAt: { [Op.between]: [dateRange.start, dateRange.end] },
+        },
+        attributes: ['type', 'severity', 'occurredAt', 'resolvedAt'],
+      });
+
+      const totalIncidents = incidents.length;
+
+      // Group by type
+      const incidentTypes: Record<string, number> = {};
+      incidents.forEach(incident => {
+        const type = incident.type || 'Unknown';
+        incidentTypes[type] = (incidentTypes[type] || 0) + 1;
+      });
+
+      // Group by severity
+      const severityBreakdown: Record<string, number> = {
+        LOW: 0,
+        MEDIUM: 0,
+        HIGH: 0,
         CRITICAL: 0,
-      },
-      resolutionTime: 4.2, // hours
-    };
+      };
+      incidents.forEach(incident => {
+        const severity = incident.severity || 'LOW';
+        if (severityBreakdown.hasOwnProperty(severity)) {
+          severityBreakdown[severity]++;
+        }
+      });
+
+      // Calculate average resolution time
+      const resolvedIncidents = incidents.filter(i => i.resolvedAt && i.occurredAt);
+      let resolutionTime = 0;
+      if (resolvedIncidents.length > 0) {
+        const totalResolutionTime = resolvedIncidents.reduce((sum, incident) => {
+          const resolutionMs = incident.resolvedAt!.getTime() - incident.occurredAt.getTime();
+          return sum + (resolutionMs / (1000 * 60 * 60)); // Convert to hours
+        }, 0);
+        resolutionTime = totalResolutionTime / resolvedIncidents.length;
+      }
+
+      return {
+        totalIncidents,
+        incidentTypes,
+        severityBreakdown,
+        resolutionTime: parseFloat(resolutionTime.toFixed(1)),
+      };
+    } catch (error) {
+      this.logError('Error collecting incident data', error);
+      throw error;
+    }
   }
 
   /**
@@ -272,18 +601,51 @@ export class ReportDataCollectorService extends BaseService {
     period: AnalyticsTimePeriod,
     filters?: Record<string, any>,
   ): Promise<AppointmentAnalyticsData> {
-    // In a real implementation, this would query appointment records
-    const totalAppointments = 245;
-    const completedAppointments = 218;
-    const noShowAppointments = 27;
+    try {
+      const dateRange = this.getDateRange(period);
 
-    return {
-      totalAppointments,
-      completedAppointments,
-      noShowAppointments,
-      completionRate: (completedAppointments / totalAppointments) * 100,
-      averageWaitTime: 12.5, // minutes
-    };
+      // Get appointment statistics
+      const appointments = await this.appointmentModel.findAll({
+        where: {
+          schoolId,
+          scheduledAt: { [Op.between]: [dateRange.start, dateRange.end] },
+        },
+        attributes: ['status', 'scheduledAt', 'checkInTime'],
+      });
+
+      const totalAppointments = appointments.length;
+      const completedAppointments = appointments.filter(a => a.status === 'COMPLETED').length;
+      const noShowAppointments = appointments.filter(a => a.status === 'NO_SHOW').length;
+
+      // Calculate average wait time (from scheduled to check-in)
+      const appointmentsWithWaitTime = appointments.filter(a =>
+        a.checkInTime && a.scheduledAt
+      );
+
+      let averageWaitTime = 0;
+      if (appointmentsWithWaitTime.length > 0) {
+        const totalWaitTime = appointmentsWithWaitTime.reduce((sum, apt) => {
+          const waitMs = apt.checkInTime!.getTime() - apt.scheduledAt.getTime();
+          return sum + (waitMs / (1000 * 60)); // Convert to minutes
+        }, 0);
+        averageWaitTime = totalWaitTime / appointmentsWithWaitTime.length;
+      }
+
+      const completionRate = totalAppointments > 0
+        ? (completedAppointments / totalAppointments) * 100
+        : 0;
+
+      return {
+        totalAppointments,
+        completedAppointments,
+        noShowAppointments,
+        completionRate: parseFloat(completionRate.toFixed(1)),
+        averageWaitTime: parseFloat(averageWaitTime.toFixed(1)),
+      };
+    } catch (error) {
+      this.logError('Error collecting appointment data', error);
+      throw error;
+    }
   }
 
   /**

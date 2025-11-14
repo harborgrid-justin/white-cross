@@ -15,6 +15,7 @@ import {
 import { Optional } from 'sequelize';
 import { Message } from './message.model';
 import type { User } from './user.model';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 /**
  * MessageReaction attributes interface
@@ -152,13 +153,6 @@ export class MessageReaction extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: MessageReaction) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] MessageReaction ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('MessageReaction', instance);
   }
 }

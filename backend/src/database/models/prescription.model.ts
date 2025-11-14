@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { literal, Op } from 'sequelize';
 
 import { PrescriptionStatus } from '../../services/clinical/enums/prescription-status.enum';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export interface PrescriptionAttributes {
   id: string;
@@ -329,16 +330,7 @@ export class Prescription
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: Prescription) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] Prescription ${instance.id} modified for student ${instance.studentId} at ${new Date().toISOString()}`,
-      );
-      console.log(
-        `[AUDIT] Changed fields: ${changedFields.join(', ')}, Drug: ${instance.drugName}`,
-      );
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('Prescription', instance);
   }
 
   @BeforeCreate

@@ -11,6 +11,7 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum ViolationType {
   HIPAA_BREACH = 'HIPAA_BREACH',
@@ -192,13 +193,6 @@ export class ComplianceViolation
   @BeforeCreate
   @BeforeUpdate
   static async auditPHIAccess(instance: ComplianceViolation) {
-    if (instance.changed()) {
-      const changedFields = instance.changed() as string[];
-      console.log(
-        `[AUDIT] ComplianceViolation ${instance.id} modified at ${new Date().toISOString()}`,
-      );
-      console.log(`[AUDIT] Changed fields: ${changedFields.join(', ')}`);
-      // TODO: Integrate with AuditLog service for persistent audit trail
-    }
+    await createModelAuditHook('ComplianceViolation', instance);
   }
 }
