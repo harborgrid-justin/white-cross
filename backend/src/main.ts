@@ -168,17 +168,17 @@ async function bootstrap() {
   app.use(
     helmet({
       // Content Security Policy
+      // SECURITY: Removed 'unsafe-inline' to prevent XSS attacks
+      // Use nonce-based CSP for any dynamic scripts/styles if needed
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
           styleSrc: [
             "'self'",
-            "'unsafe-inline'",
             'https://cdnjs.cloudflare.com',
           ],
           scriptSrc: [
             "'self'",
-            "'unsafe-inline'",
             'https://cdnjs.cloudflare.com',
           ],
           imgSrc: ["'self'", 'data:', 'https:'],

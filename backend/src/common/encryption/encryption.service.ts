@@ -110,6 +110,7 @@ export class HealthcareEncryptionService extends BaseService {
   private readonly MAX_PLAINTEXT_SIZE = 10 * 1024 * 1024; // 10MB
 
   constructor(private configService: ConfigService) {
+    super({ serviceName: 'HealthcareEncryptionService' });
     this.initializeHealthcareKeys();
   }
 

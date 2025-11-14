@@ -10,8 +10,10 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/services/auth/guards/jwt-auth.guard';
 import { IncidentCoreService } from './services/incident-core.service';
 import { IncidentFollowUpService } from './services/incident-follow-up.service';
 import { IncidentNotificationService } from './services/incident-notification.service';
@@ -28,7 +30,7 @@ import { BaseController } from '@/common/base';
 @ApiTags('incident-report')
 @Controller('incident-report')
 @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard) // Uncomment when auth is set up
+@UseGuards(JwtAuthGuard)
 export class IncidentReportController extends BaseController {
   constructor(
     private readonly coreService: IncidentCoreService,
