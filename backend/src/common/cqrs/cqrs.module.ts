@@ -33,8 +33,6 @@ export class CqrsModule {}
  */
 
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { CommandBus } from './command-bus';
-import { QueryBus } from './query-bus';
 import { ICommandHandler, IQueryHandler } from './interfaces';
 
 @Injectable()

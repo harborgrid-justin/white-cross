@@ -82,7 +82,6 @@ export class ContextInterceptor extends BaseInterceptor implements NestIntercept
 
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { RequestContextService } from './request-context.service';
 
 @Injectable()
 export class ContextMiddleware implements NestMiddleware {
@@ -105,7 +104,6 @@ export class ContextMiddleware implements NestMiddleware {
 
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RequestContextService } from './request-context.service';
 
 @Injectable()
 export class ContextGuard implements CanActivate {
