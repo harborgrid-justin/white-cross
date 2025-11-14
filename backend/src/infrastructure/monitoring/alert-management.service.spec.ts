@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-describe('Sms.Service', () => {
+describe('AlertManagement.Service', () => {
   let service: unknown;
   let mockDependency: jest.Mocked<unknown>;
 
@@ -13,7 +13,7 @@ describe('Sms.Service', () => {
       ],
     }).compile();
 
-    // service = module.get<Sms.Service>(Sms.Service);
+    // service = module.get<AlertManagement.Service>(AlertManagement.Service);
   });
 
   afterEach(() => {
