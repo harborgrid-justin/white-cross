@@ -21,46 +21,9 @@ import { Worker } from 'worker_threads';
 import { cpus } from 'os';
 import { EventEmitter } from 'events';
 import type { WorkerInfo, WorkerPoolOptions, WorkerPoolStats, WorkerTask } from './worker-pool.interfaces';
-import { BaseService } from '../../../common/base/base.service';
-import { LoggerService } from '../../../common/logging/logger.service';
-import {
-  Cleanup,
-  CPUIntensive,
-  ImmediateCleanup,
-  LeakProne,
-  MemoryIntensive,
-  MemoryMonitoring,
-  MemorySensitive,
-  ResourcePool,
-} from '../../../discovery/modules';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../common/logging/logger.service';
 
-@CPUIntensive()
-@ResourcePool({
-  enabled: true,
-  resourceType: 'worker',
-  minSize: 2,
-  maxSize: 16, // Based on typical CPU core counts
-  priority: 10,
-  validationEnabled: true,
-  autoScale: true,
-})
-@MemoryIntensive({
-  enabled: true,
-  threshold: 150, // 150MB threshold for worker threads
-  priority: 'high',
-  cleanupStrategy: 'aggressive',
-  monitoring: true,
-})
-@MemoryMonitoring({
-  enabled: true,
-  interval: 15000, // 15 seconds - more frequent for worker monitoring
-  threshold: 100, // 100MB
-  alerts: true,
-})
-@LeakProne({
-  monitoring: true,
-  alertThreshold: 200, // 200MB for worker memory leaks
-})
 @Injectable()
 export class WorkerPoolService extends BaseService implements OnModuleInit, OnModuleDestroy {
   private workers: WorkerInfo[] = [];
@@ -297,7 +260,6 @@ export class WorkerPoolService extends BaseService implements OnModuleInit, OnMo
    * const result = await workerPool.executeTask<number>('bmi', { height: 180, weight: 75 });
    * ```
    */
-  @MemorySensitive(100) // 100MB threshold for CPU-intensive tasks
   public async executeTask<T>(
     type: string,
     data: any,

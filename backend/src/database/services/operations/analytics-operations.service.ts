@@ -57,7 +57,7 @@ export async function executeAggregate<M extends Model>(
           transaction,
           raw: true,
         });
-        value = result ? parseFloat((result as { avg: string }).avg) : null;
+        value = result ? parseFloat((result as any).avg) : null;
         break;
       }
 

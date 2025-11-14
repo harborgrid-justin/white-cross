@@ -17,7 +17,7 @@ import {
   Attributes,
   BulkCreateOptions,
 } from 'sequelize';
-import { AuditMetadata, SoftDeleteOptions, BatchExecutionResult } from './interfaces';
+import type { AuditMetadata, SoftDeleteOptions, BatchExecutionResult } from './interfaces';
 
 /**
  * Enhanced model interface for audit fields
@@ -52,7 +52,7 @@ export async function createWithAudit<M extends Model>(
       createdAt: audit.timestamp,
     } as Partial<Attributes<M>>;
 
-    const record = await model.create(recordData, options);
+    const record = await model.create(recordData as any, options);
 
     logger.log(`Created ${model.name} record: ${(record as unknown as AuditableModel).id} by user ${audit.userId}`);
 
@@ -236,7 +236,7 @@ export async function batchCreateWithAudit<M extends Model>(
       createdAt: audit.timestamp,
     }));
 
-    const created = await model.bulkCreate(recordsWithAudit, {
+    const created = await model.bulkCreate(recordsWithAudit as any, {
       validate: true,
       individualHooks: false,
       returning: true,
@@ -349,7 +349,7 @@ export async function findOrCreateWithAudit<M extends Model>(
 
     const [record, created] = await model.findOrCreate({
       where,
-      defaults: defaultsWithAudit,
+      defaults: defaultsWithAudit as any,
       transaction: options?.transaction,
     });
 
@@ -386,7 +386,7 @@ export async function upsertWithAudit<M extends Model>(
       updatedAt: audit.timestamp,
     };
 
-    const [record, created] = await model.upsert(dataWithAudit, {
+    const [record, created] = await model.upsert(dataWithAudit as any, {
       transaction: options?.transaction,
       returning: true,
     });

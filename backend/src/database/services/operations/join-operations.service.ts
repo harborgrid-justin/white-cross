@@ -8,7 +8,7 @@
 
 import { Logger, InternalServerErrorException } from '@nestjs/common';
 import { Sequelize, QueryTypes, Transaction } from 'sequelize';
-import { ComplexJoinConfig, CTEConfig } from './interfaces';
+import type { ComplexJoinConfig, CTEConfig } from './interfaces';
 
 /**
  * Execute complex multi-table join

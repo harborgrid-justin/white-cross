@@ -95,7 +95,7 @@ export function buildExistsSubquery(
       const quotedKey = sequelize.getQueryInterface().quoteIdentifier(key);
       // For complex operators, this needs more sophisticated handling
       if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-        return `${quotedKey} = ${sequelize.escape(value)}`;
+        return `${quotedKey} = ${sequelize.escape(String(value))}`;
       } else {
         logger.warn('Complex WHERE conditions in EXISTS subquery may not be properly escaped');
         return `${quotedKey} = ${sequelize.escape(String(value))}`;
@@ -164,7 +164,7 @@ export function buildInSubquery(
     .map(([key, value]) => {
       const quotedKey = sequelize.getQueryInterface().quoteIdentifier(key);
       if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-        return `${quotedKey} = ${sequelize.escape(value)}`;
+        return `${quotedKey} = ${sequelize.escape(String(value))}`;
       } else {
         logger.warn('Complex WHERE conditions in IN subquery may not be properly escaped');
         return `${quotedKey} = ${sequelize.escape(String(value))}`;

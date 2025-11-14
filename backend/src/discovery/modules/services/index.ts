@@ -3,6 +3,9 @@
  * Auto-generated exports for clean public API
  */
 
+// Force compilation
+export const _servicesBarrel = true;
+
 export * from './cache-eviction.service';
 export * from './dynamic-resource-pool.service';
 export * from './gc-optimization.service';

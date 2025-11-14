@@ -41,6 +41,7 @@ export * from './verify-medication.dto';
 // Waitlist Management DTOs
 export * from './add-waitlist.dto';
 export * from './waitlist-status.dto';
+export * from './waitlist-priority.dto';
 
 // Type definitions
 export * from '../types';

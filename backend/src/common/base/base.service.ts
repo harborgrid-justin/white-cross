@@ -1020,6 +1020,52 @@ export abstract class BaseService {
     };
   }
 
+  // ==================== Logging Methods ====================
+
+  /**
+   * Log an informational message
+   */
+  protected logInfo(message: string, context?: string): void {
+    if (this.logger instanceof Logger) {
+      this.logger.log(message, context || this.serviceName);
+    } else {
+      this.logger.log(message, context || this.serviceName);
+    }
+  }
+
+  /**
+   * Log an error message
+   */
+  protected logError(message: string, error?: any, context?: string): void {
+    if (this.logger instanceof Logger) {
+      this.logger.error(message, error?.stack || error, context || this.serviceName);
+    } else {
+      this.logger.error(message, error, context || this.serviceName);
+    }
+  }
+
+  /**
+   * Log a debug message
+   */
+  protected logDebug(message: string, context?: string): void {
+    if (this.logger instanceof Logger) {
+      this.logger.debug(message, context || this.serviceName);
+    } else {
+      this.logger.debug(message, context || this.serviceName);
+    }
+  }
+
+  /**
+   * Log a warning message
+   */
+  protected logWarning(message: string, context?: string): void {
+    if (this.logger instanceof Logger) {
+      this.logger.warn(message, context || this.serviceName);
+    } else {
+      this.logger.warn(message, context || this.serviceName);
+    }
+  }
+
   // ==================== Legacy Success Handler ====================
 
   /**

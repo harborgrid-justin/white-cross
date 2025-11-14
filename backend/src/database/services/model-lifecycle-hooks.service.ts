@@ -13,13 +13,13 @@
 import {
   Model,
   ModelStatic,
-  Hooks,
   Transaction,
   Op,
   Sequelize,
   ValidationError,
   ValidationErrorItem,
 } from 'sequelize';
+import { Hooks } from 'sequelize/types/hooks';
 import * as crypto from 'crypto';
 
 /**
@@ -1264,7 +1264,7 @@ export function removeAllHooks(
   hookType?: keyof Hooks<any>
 ): void {
   if (hookType) {
-    model.removeHook(hookType);
+    (model as any).removeHook(hookType);
   } else {
     const hookTypes: Array<keyof Hooks<any>> = [
       'beforeValidate',
@@ -1280,7 +1280,7 @@ export function removeAllHooks(
     ];
 
     for (const type of hookTypes) {
-      model.removeHook(type);
+      (model as any).removeHook(type);
     }
   }
 }
@@ -1326,7 +1326,7 @@ export function listModelHooks(
   for (const hookType of hookTypes) {
     const modelHooks = model.options.hooks?.[hookType];
     if (modelHooks) {
-      hooks[hookType] = Array.isArray(modelHooks) ? modelHooks : [modelHooks];
+      (hooks as any)[hookType] = Array.isArray(modelHooks) ? modelHooks : [modelHooks];
     }
   }
 

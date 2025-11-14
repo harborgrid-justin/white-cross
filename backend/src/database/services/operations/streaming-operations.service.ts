@@ -9,7 +9,7 @@
 import { Logger, InternalServerErrorException } from '@nestjs/common';
 import { Readable } from 'stream';
 import { Model, ModelCtor, WhereOptions, OrderItem, Op, Transaction, Attributes } from 'sequelize';
-import {
+import type {
   StreamingMetrics,
   StreamConfig,
   CursorPaginationConfig,

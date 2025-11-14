@@ -155,14 +155,14 @@ export function buildOptimizedQuery<M extends Model>(
   // Use distinct for accurate counts with joins
   // Prevents duplicate rows when using LEFT JOIN with hasMany relations
   if (config.distinct !== undefined) {
-    options.distinct = config.distinct;
+    (options as any).distinct = config.distinct;
   } else if (
     config.include &&
     config.include.length > 0 &&
     (config.limit || config.offset !== undefined)
   ) {
     // Auto-enable distinct when using pagination with includes
-    options.distinct = true;
+    (options as any).distinct = true;
   }
 
   // Add attributes selection - always specify to reduce data transfer

@@ -23,6 +23,7 @@ import {
   Sequelize,
   Transaction,
   FindOptions,
+  DataTypes,
 } from 'sequelize';
 
 /**
@@ -295,14 +296,14 @@ export function createPolymorphicBelongsTo(
   // Add polymorphic fields to source model if not already present
   if (!sourceModel.rawAttributes[config.typeField]) {
     sourceModel.rawAttributes[config.typeField] = {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: false,
     };
   }
 
   if (!sourceModel.rawAttributes[config.idField]) {
     sourceModel.rawAttributes[config.idField] = {
-      type: Sequelize.INTEGER,
+      type: DataTypes.INTEGER,
       allowNull: false,
     };
   }

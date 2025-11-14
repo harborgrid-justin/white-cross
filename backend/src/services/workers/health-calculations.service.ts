@@ -13,29 +13,8 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { join } from 'path';
 import { WorkerPoolService } from './worker-pool.service';
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import {
-  Cleanup,
-  CPUIntensive,
-  ImmediateCleanup,
-  LeakProne,
-  MemoryIntensive,
-  MemoryMonitoring,
-  MemorySensitive,
-  ResourcePool,
-} from '../../discovery/modules';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../common/logging/logger.service';
 
 /**
  * Input for single BMI calculation
@@ -85,33 +64,6 @@ export interface StatisticalAggregations {
   stdDev: number;
 }
 
-@CPUIntensive()
-@ResourcePool({
-  enabled: true,
-  resourceType: 'worker',
-  minSize: 1,
-  maxSize: 8, // Lower than worker pool since this is a wrapper service
-  priority: 8,
-  validationEnabled: true,
-  autoScale: true,
-})
-@MemoryIntensive({
-  enabled: true,
-  threshold: 75, // 75MB threshold for health calculations
-  priority: 'high',
-  cleanupStrategy: 'aggressive',
-  monitoring: true,
-})
-@MemoryMonitoring({
-  enabled: true,
-  interval: 20000, // 20 seconds for health calculations monitoring
-  threshold: 50, // 50MB
-  alerts: true,
-})
-@LeakProne({
-  monitoring: true,
-  alertThreshold: 100, // 100MB for health calculation memory leaks
-})
 @Injectable()
 export class HealthCalculationsService
   implements OnModuleInit, OnModuleDestroy

@@ -26,7 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/services/auth';
 import { StudentService } from '../student.service';
-import { AddToWaitlistDto } from '../dto/add-to-waitlist.dto';
+import { AddWaitlistDto } from '../dto/add-waitlist.dto';
 import { WaitlistPriorityDto } from '../dto/waitlist-priority.dto';
 
 import { BaseController } from '@/common/base';
@@ -87,7 +87,7 @@ export class StudentWaitlistController extends BaseController {
   })
   async addToWaitlist(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() addToWaitlistDto: AddToWaitlistDto,
+    @Body() addToWaitlistDto: AddWaitlistDto,
   ): Promise<any> {
     return await this.studentService.addStudentToWaitlist(id, addToWaitlistDto);
   }

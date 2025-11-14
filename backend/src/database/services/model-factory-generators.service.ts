@@ -16,6 +16,7 @@ import {
   ModelStatic,
   ModelAttributes,
   ModelOptions,
+  InitOptions,
   DataTypes,
   QueryInterface,
   Transaction,
@@ -174,7 +175,7 @@ export function createModelFromSchema(
 
   class DynamicModel extends Model {}
 
-  const modelOptions: ModelOptions<any> = {
+  const modelOptions: InitOptions<any> = {
     sequelize,
     modelName,
     tableName: options.tableName || modelName.toLowerCase() + 's',
@@ -221,14 +222,14 @@ export async function generateModelFromTable(
       allowNull: columnInfo.allowNull,
       primaryKey: columnInfo.primaryKey,
       autoIncrement: columnInfo.autoIncrement,
-      defaultValue: columnInfo.defaultValue,
-      unique: columnInfo.unique,
+      defaultValue: (columnInfo as any).defaultValue,
+      unique: (columnInfo as any).unique,
     };
 
-    if (columnInfo.references) {
+    if ((columnInfo as any).references) {
       attr.references = {
-        model: columnInfo.references.model,
-        key: columnInfo.references.key || 'id',
+        model: (columnInfo as any).references.model,
+        key: (columnInfo as any).references.key || 'id',
       };
     }
 
@@ -393,7 +394,7 @@ export function cloneModelWithModifications(
 
   class ClonedModel extends Model {}
 
-  const newOptions: ModelOptions<any> = {
+  const newOptions: InitOptions<any> = {
     ...sourceModel.options,
     ...modifications.addOptions,
     sequelize,
@@ -524,7 +525,7 @@ export async function inferSchemaFromTable(
 
   return {
     attributes,
-    indexes,
+    indexes: indexes as any,
     constraints,
     metadata: {
       tableName,
@@ -703,7 +704,7 @@ export function generateOptimalIndexes(
   const indexes: Array<{ fields: string[]; unique?: boolean; type?: string; name: string }> = [];
 
   // Add single-field indexes for frequently used fields
-  for (const [field, frequency] of singleFieldFrequency.entries()) {
+  for (const [field, frequency] of Array.from(singleFieldFrequency.entries())) {
     if (frequency >= queryPatterns.length * 0.3) {
       indexes.push({
         fields: [field],
@@ -714,10 +715,10 @@ export function generateOptimalIndexes(
   }
 
   // Add composite indexes
-  for (const [key, fields] of indexMap.entries()) {
+  for (const [key, fields] of Array.from(indexMap.entries())) {
     const fieldArray = Array.from(fields);
     indexes.push({
-      fields: fieldArray,
+      fields: fieldArray as string[],
       type: 'BTREE',
       name: `${model.tableName}_${fieldArray.join('_')}_idx`,
     });
@@ -1220,7 +1221,7 @@ export function createModelFromTemplate(
 
   class TemplateModel extends Model {}
 
-  const modelOptions: ModelOptions<any> = {
+  const modelOptions: InitOptions<any> = {
     ...template.requiredOptions,
     ...customizations.options,
     sequelize,

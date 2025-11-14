@@ -23,7 +23,7 @@ export * from './unions-subqueries.service';
 export * from './optimization.service';
 
 // Consolidated query builder object for convenience
-import { BasicBuilders } from './basic-builders.service';
+import * as BasicBuilders from './basic-builders.service';
 import { AdvancedAggregates } from './advanced-aggregates.service';
 import { UnionsSubqueries } from './unions-subqueries.service';
 import { Optimization } from './optimization.service';

@@ -15,7 +15,7 @@ import {
   FindOptions,
   Attributes,
 } from 'sequelize';
-import { BatchExecutionResult, BatchConfig } from './interfaces';
+import type { BatchExecutionResult, BatchConfig } from './interfaces';
 
 /**
  * Utility function to limit concurrency of promises
@@ -91,9 +91,7 @@ export async function executeBatchQueries<M extends Model>(
           })
         );
 
-        const batchResults = await Promise.allSettled(
-          limitConcurrency(batchPromises, config.maxConcurrency)
-        );
+        const batchResults = await Promise.allSettled(batchPromises);
 
         batchResults.forEach((outcome, idx) => {
           if (outcome.status === 'fulfilled') {

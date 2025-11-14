@@ -134,7 +134,7 @@ class QueryCache {
 
   invalidateByTag(tag: string): void {
     // In production, implement tag-based invalidation
-    for (const [key, value] of this.cache.entries()) {
+    for (const [key, value] of Array.from(this.cache.entries())) {
       if (key.includes(tag)) {
         this.cache.delete(key);
       }
@@ -149,7 +149,7 @@ class QueryCache {
     let totalHits = 0;
     const keys: string[] = [];
 
-    for (const [key, value] of this.cache.entries()) {
+    for (const [key, value] of Array.from(this.cache.entries())) {
       totalHits += value.hits;
       keys.push(key);
     }
@@ -738,7 +738,7 @@ export function optimizeConnectionPool(
 ): void {
   const logger = new Logger('QueryOptimization::optimizeConnectionPool');
 
-  const pool = sequelize.connectionManager.pool;
+  const pool = (sequelize.connectionManager as any).pool;
 
   if (config.max !== undefined) {
     (pool as any).options.max = config.max;
@@ -790,8 +790,9 @@ export async function executeWithTimeout<T = any>(
   query: string,
   timeoutMs: number,
   transaction?: Transaction
-): Promise<T[]> {
+): Promise<[T[], number]> {
   const logger = new Logger('QueryOptimization::executeWithTimeout');
+  const startTime = Date.now();
 
   try {
     await sequelize.query(`SET statement_timeout = ${timeoutMs}`, { transaction });
@@ -803,8 +804,9 @@ export async function executeWithTimeout<T = any>(
 
     await sequelize.query('RESET statement_timeout', { transaction });
 
+    const duration = Date.now() - startTime;
     logger.log(`Query executed within timeout: ${timeoutMs}ms`);
-    return results;
+    return [results, duration];
   } catch (error) {
     logger.error(`Query timeout or execution failed: ${(error as Error).message}`);
     throw new InternalServerErrorException('Query timeout or execution failed');

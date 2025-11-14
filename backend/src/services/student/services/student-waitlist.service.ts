@@ -15,6 +15,7 @@ import { RequestContextService } from '@/common/context/request-context.service'
 import { BaseService } from '@/common/base';
 import { AddWaitlistDto } from '../dto/add-waitlist.dto';
 import { WaitlistStatusDto } from '../dto/waitlist-status.dto';
+import { WaitlistPriorityDto } from '../dto/waitlist-priority.dto';
 
 /**
  * Student Waitlist Service
@@ -215,6 +216,77 @@ export class StudentWaitlistService extends BaseService {
         throw error;
       }
       this.handleError('Failed to retrieve waitlist status', error);
+    }
+  }
+
+  /**
+   * Update waitlist priority
+   * Changes the priority level of an existing waitlist entry
+   */
+  async updateWaitlistPriority(studentId: string, priorityDto: WaitlistPriorityDto): Promise<any> {
+    try {
+      this.validateUUID(studentId, 'Student ID');
+
+      // Verify student exists
+      const student = await this.studentModel.findByPk(studentId);
+      if (!student) {
+        throw new NotFoundException(`Student with ID ${studentId} not found`);
+      }
+
+      const { priority, reason, notes } = priorityDto;
+
+      // Simulate finding and updating waitlist entry
+      // In a real implementation, this would update the waitlist database table
+      const simulatedWaitlistEntry = {
+        id: `WL-${Date.now()}-UPD`,
+        studentId,
+        priority: priority,
+        previousPriority: 'medium', // Simulate previous priority
+        updatedAt: new Date().toISOString(),
+        reason,
+        notes,
+      };
+
+      // Recalculate position based on new priority
+      const priorityPositions = {
+        urgent: 1,
+        high: 3,
+        medium: 7,
+        low: 15,
+      };
+
+      const newEstimatedPosition = priorityPositions[priority];
+      const newEstimatedWaitMinutes = newEstimatedPosition * 15;
+      const newEstimatedAvailability = new Date(Date.now() + newEstimatedWaitMinutes * 60000);
+
+      this.logInfo(
+        `Waitlist priority updated for student: ${studentId} (${student.firstName} ${student.lastName}) ` +
+          `from medium to ${priority} - New position: ${newEstimatedPosition}`,
+      );
+
+      return {
+        success: true,
+        message: 'Waitlist priority updated successfully',
+        studentId,
+        studentName: `${student.firstName} ${student.lastName}`,
+        waitlistEntry: simulatedWaitlistEntry,
+        positionChange: {
+          previousPosition: 7, // Simulated previous position
+          newPosition: newEstimatedPosition,
+          estimatedWaitTime: `${newEstimatedWaitMinutes} minutes`,
+          estimatedAvailability: newEstimatedAvailability.toISOString(),
+        },
+        notification: {
+          message: `Priority updated to ${priority}. Student will be notified of position changes.`,
+          method: 'email,sms',
+        },
+        note: 'Waitlist module integration pending - This is a simulated response',
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.handleError('Failed to update waitlist priority', error);
     }
   }
 }

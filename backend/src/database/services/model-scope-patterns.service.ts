@@ -964,7 +964,7 @@ export function mergeScopes(
     // Merge order
     if (scope.order) {
       const orders = Array.isArray(scope.order[0]) ? scope.order : [scope.order];
-      (merged.order as Order).push(...orders);
+      (merged.order as any[]).push(...orders);
     }
 
     // Copy other properties
@@ -1240,7 +1240,7 @@ export function createScopeFromFindOptions(
 ): ScopeDefinition {
   return {
     where: findOptions.where,
-    include: findOptions.include,
+    include: findOptions.include as any,
     attributes: findOptions.attributes as any,
     order: findOptions.order,
     limit: findOptions.limit,

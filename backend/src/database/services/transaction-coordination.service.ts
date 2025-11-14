@@ -32,10 +32,10 @@
 import {
   Sequelize,
   Transaction,
-  IsolationLevel,
   Model,
   ModelStatic
 } from 'sequelize';
+import { IsolationLevel } from 'sequelize/types/transaction';
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter } from 'events';
 
@@ -46,7 +46,7 @@ import { EventEmitter } from 'events';
 export interface TransactionConfig {
   isolationLevel?: IsolationLevel;
   type?: Transaction.TYPES;
-  deferrable?: Transaction.DEFERRABLE;
+  // deferrable?: Transaction.DEFERRABLE;
   autocommit?: boolean;
   readOnly?: boolean;
   logging?: boolean | ((sql: string, timing?: number) => void);
@@ -801,12 +801,12 @@ export async function createSavepoint(
 
   try {
     // Use dialect-appropriate syntax
-    const dialect = transaction.sequelize.getDialect();
+    const dialect = (transaction as any).sequelize.getDialect();
     const savepointSQL = dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite'
       ? `SAVEPOINT "${savepointName}"`
       : `SAVEPOINT ${savepointName}`;
 
-    await transaction.sequelize.query(savepointSQL, { transaction });
+    await (transaction as any).sequelize.query(savepointSQL, { transaction });
 
     return savepointName;
   } catch (error: any) {
@@ -853,12 +853,12 @@ export async function rollbackToSavepoint(
   savepointName: string
 ): Promise<void> {
   try {
-    const dialect = transaction.sequelize.getDialect();
+    const dialect = (transaction as any).sequelize.getDialect();
     const rollbackSQL = dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite'
       ? `ROLLBACK TO SAVEPOINT "${savepointName}"`
       : `ROLLBACK TO SAVEPOINT ${savepointName}`;
 
-    await transaction.sequelize.query(rollbackSQL, { transaction });
+    await (transaction as any).sequelize.query(rollbackSQL, { transaction });
   } catch (error: any) {
     throw new SavepointError(
       `Failed to rollback to savepoint '${savepointName}': ${error.message}`,
@@ -908,12 +908,12 @@ export async function releaseSavepoint(
   savepointName: string
 ): Promise<void> {
   try {
-    const dialect = transaction.sequelize.getDialect();
+    const dialect = (transaction as any).sequelize.getDialect();
     const releaseSQL = dialect === 'postgres' || dialect === 'mysql' || dialect === 'sqlite'
       ? `RELEASE SAVEPOINT "${savepointName}"`
       : `RELEASE SAVEPOINT ${savepointName}`;
 
-    await transaction.sequelize.query(releaseSQL, { transaction });
+    await (transaction as any).sequelize.query(releaseSQL, { transaction });
   } catch (error: any) {
     throw new SavepointError(
       `Failed to release savepoint '${savepointName}': ${error.message}`,
@@ -1274,7 +1274,7 @@ export class TwoPhaseCommitCoordinator {
       );
     } finally {
       // Ensure all transactions are closed
-      for (const [id, transaction] of transactions) {
+      for (const [id, transaction] of Array.from(transactions)) {
         try {
           if (isTransactionActive(transaction)) {
             await transaction.rollback();
@@ -1375,7 +1375,7 @@ export class DistributedTransactionCoordinator {
       }
 
       // Execute operations
-      for (const [db, operation] of operations) {
+      for (const [db, operation] of Array.from(operations)) {
         const transaction = transactions.get(db);
         if (!transaction) {
           throw new Error(`No transaction found for database`);
@@ -1387,7 +1387,7 @@ export class DistributedTransactionCoordinator {
       }
 
       // Commit all transactions
-      for (const [db, transaction] of transactions) {
+      for (const [db, transaction] of Array.from(transactions)) {
         await transaction.commit();
         this.logger.debug(`Committed transaction on database`);
       }
@@ -1398,7 +1398,7 @@ export class DistributedTransactionCoordinator {
       this.logger.error(`Distributed transaction failed: ${error.message}`);
 
       // Rollback all transactions
-      for (const [db, transaction] of transactions) {
+      for (const [db, transaction] of Array.from(transactions)) {
         try {
           if (isTransactionActive(transaction)) {
             await transaction.rollback();
@@ -1437,7 +1437,7 @@ export class DistributedTransactionCoordinator {
   ): Promise<void> {
     this.logger.log('Executing compensation handlers');
 
-    for (const [name, handler] of handlers) {
+    for (const [name, handler] of Array.from(handlers)) {
       try {
         const data = Array.from(completedOperations.values());
         await handler.compensate(data);
@@ -1887,10 +1887,4 @@ class CircuitBreakerRegistry {
 }
 
 // Export all classes and utilities
-export {
-  NestedTransactionManager,
-  TwoPhaseCommitCoordinator,
-  DistributedTransactionCoordinator,
-  TransactionBoundaryManager,
-  SavepointStack
-};
+

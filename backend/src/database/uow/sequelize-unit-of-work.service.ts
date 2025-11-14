@@ -10,27 +10,18 @@ import { IUnitOfWork } from './unit-of-work.interface';
 import { ExecutionContext } from '../types';
 import type { IAuditLogger } from '../interfaces/audit/audit-logger.interface';
 
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../common/logging/logger.service';
 @Injectable()
-export class SequelizeUnitOfWorkService implements IUnitOfWork {
+export class SequelizeUnitOfWorkService extends BaseService implements IUnitOfWork {
   private transaction: Transaction | null = null;
 
   constructor(
     private readonly sequelize: Sequelize,
     @Inject('IAuditLogger') private readonly auditLogger: IAuditLogger,
-  ) {}
+  ) {
+    super({ serviceName: 'SequelizeUnitOfWorkService' });
+  }
 
   async begin(): Promise<void> {
     if (this.transaction) {

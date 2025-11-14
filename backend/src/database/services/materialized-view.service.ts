@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
-import { Sequelize } from 'sequelize-typescript';
+import { Sequelize, QueryTypes } from 'sequelize-typescript';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
-import { BaseService } from '@/common/base';
+import { BaseService } from '../../common/base';
 /**
  * Materialized View Service
  *

@@ -14,8 +14,8 @@ import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/commo
 import { Model, ModelCtor } from 'sequelize-typescript';
 import * as crypto from 'crypto';
 
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../common/logging/logger.service';
 import { Inject } from '@nestjs/common';
 export interface CacheOptions {
   ttl?: number; // Time to live in seconds (default: 300)
@@ -63,7 +63,7 @@ export class QueryCacheService extends BaseService implements OnModuleInit, OnMo
   private modelHooks = new Map<string, Set<string>>();
 
   constructor(
-    @Inject(LoggerService) logger: LoggerService
+    logger: LoggerService
   ) {
     super({
       serviceName: 'QueryCacheService',

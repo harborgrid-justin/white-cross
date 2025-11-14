@@ -13,19 +13,8 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 
-import { BaseService } from '@/common/base';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
-import { BaseService } from '@/common/base';
-import { LoggerService } from '@/common/logging/logger.service';
-import { Inject } from '@nestjs/common';
+import { BaseService } from '../../common/base';
+import { LoggerService } from '../../common/logging/logger.service';
 export interface QueryMetrics {
   count: number;
   totalDuration: number;
@@ -61,7 +50,9 @@ export class QueryLoggerService extends BaseService implements OnModuleInit {
     { startTime: number; options: any }
   >();
 
-  constructor(@InjectConnection() private readonly sequelize: Sequelize) {}
+  constructor(@InjectConnection() private readonly sequelize: Sequelize) {
+    super();
+  }
 
   async onModuleInit(): Promise<void> {
     this.logInfo('Initializing Query Logger Service');

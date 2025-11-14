@@ -259,4 +259,22 @@ export class StudentService extends BaseService {
   async verifyStudentBarcode(verifyBarcodeDto: VerifyBarcodeDto): Promise<any> {
     return await this.barcodeService.verifyBarcode(verifyBarcodeDto);
   }
+
+  // ==================== Waitlist Methods ====================
+
+  /**
+   * Add student to waitlist
+   */
+  async addStudentToWaitlist(id: string, addWaitlistDto: AddWaitlistDto): Promise<any> {
+    // Add studentId to the DTO since the service method expects it
+    const dtoWithStudentId = { ...addWaitlistDto, studentId: id };
+    return await this.waitlistService.addStudentToWaitlist(dtoWithStudentId);
+  }
+
+  /**
+   * Update waitlist priority
+   */
+  async updateWaitlistPriority(id: string, priorityDto: WaitlistPriorityDto): Promise<any> {
+    return await this.waitlistService.updateWaitlistPriority(id, priorityDto);
+  }
 }
