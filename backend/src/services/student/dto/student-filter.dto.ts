@@ -7,7 +7,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { Gender } from '../entities/student.entity';
+import { Gender } from '@/database/models';
 
 /**
  * Student Filter DTO

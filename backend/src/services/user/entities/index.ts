@@ -3,5 +3,5 @@
  * Auto-generated exports for clean public API
  */
 
-export * from './user.entity';
+export { User } from '@/database/models';
 

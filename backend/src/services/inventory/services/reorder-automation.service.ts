@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { InventoryItem } from '../entities/inventory-item.entity';
+import { InventoryItem } from '@/database/models';
 import { InventoryStockManagementService } from './stock-management.service';
 
 export enum ReorderPriority {

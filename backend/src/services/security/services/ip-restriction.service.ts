@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IpRestrictionEntity } from '../entities/ip-restriction.entity';
+import { IpRestriction } from '@/database/models';
 import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
 import { IPCheckResult } from '../interfaces/ip-check-result.interface';
 import { IPRestrictionRule } from '../interfaces/ip-restriction-rule.interface';
@@ -15,10 +15,10 @@ import { BaseService } from '@/common/base';
 @Injectable()
 export class IpRestrictionService extends BaseService {
   constructor(
-    @InjectModel(IpRestrictionEntity)
-    private readonly ipRestrictionModel: typeof IpRestrictionEntity,
+    @InjectModel(IpRestriction)
+    private readonly ipRestrictionModel: typeof IpRestriction,
   ) {
-    super("IpRestrictionService");
+    super('IpRestrictionService');
   }
 
   /**

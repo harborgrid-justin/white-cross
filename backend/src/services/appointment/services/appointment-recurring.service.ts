@@ -10,12 +10,12 @@ import { Op, Sequelize, Transaction } from 'sequelize';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { CreateRecurringAppointmentDto, RecurrenceFrequency } from '../dto/recurring.dto';
 import { BulkCancelDto } from '../dto/statistics.dto';
-import { AppointmentEntity } from '../entities/appointment.entity';
+import { Appointment } from '@/database/models';
 import { AppointmentValidation } from '../validators/appointment-validation';
 import { AppointmentStatus } from '../dto/update-appointment.dto';
 import { BaseService } from '@/common/base';
 import {
-  Appointment,
+  Appointment as ModelAppointment,
   AppointmentStatus as ModelAppointmentStatus,
 } from '@/database/models';
 import {
@@ -53,12 +53,12 @@ export class AppointmentRecurringService extends BaseService {
    */
   async createRecurringAppointments(
     createDto: CreateRecurringAppointmentDto,
-    createAppointmentFn: (dto: CreateAppointmentDto) => Promise<AppointmentEntity>,
-  ): Promise<{ appointments: AppointmentEntity[]; count: number }> {
+    createAppointmentFn: (dto: CreateAppointmentDto) => Promise<Appointment>,
+  ): Promise<{ appointments: Appointment[]; count: number }> {
     this.logInfo('Creating recurring appointments');
 
     try {
-      const appointments: AppointmentEntity[] = [];
+      const appointments: Appointment[] = [];
       const startDate = new Date(createDto.scheduledAt);
       const endDate = new Date(createDto.recurrence.endDate);
       const currentDate = new Date(startDate);

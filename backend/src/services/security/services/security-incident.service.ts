@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { IpRestrictionEntity } from '../entities/ip-restriction.entity';
-import { SecurityIncidentEntity } from '../entities/security-incident.entity';
+import { SecurityIncident, IpRestriction } from '@/database/models';
 import { IncidentSeverity } from '../enums/incident-severity.enum';
 import { IncidentStatus } from '../enums/incident-status.enum';
 import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
@@ -19,10 +18,10 @@ import { BaseService } from '@/common/base';
 @Injectable()
 export class SecurityIncidentService extends BaseService {
   constructor(
-    @InjectModel(SecurityIncidentEntity)
-    private readonly incidentModel: typeof SecurityIncidentEntity,
-    @InjectModel(IpRestrictionEntity)
-    private readonly ipRestrictionModel: typeof IpRestrictionEntity,
+    @InjectModel(SecurityIncident)
+    private readonly incidentModel: typeof SecurityIncident,
+    @InjectModel(IpRestriction)
+    private readonly ipRestrictionModel: typeof IpRestriction,
   ) {
     super("SecurityIncidentService");
   }

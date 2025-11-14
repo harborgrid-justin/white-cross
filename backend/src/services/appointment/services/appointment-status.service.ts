@@ -14,7 +14,7 @@ import {
   AppointmentNoShowEvent,
 } from '../events/appointment.events';
 import { AppointmentStatus } from '../dto/update-appointment.dto';
-import { AppointmentEntity } from '../entities/appointment.entity';
+import { Appointment } from '@/database/models';
 import { AppointmentValidation } from '../validators/appointment-validation';
 import { BaseService } from '@/common/base';
 import {
@@ -43,7 +43,7 @@ export class AppointmentStatusService extends BaseService {
   /**
    * Start an appointment (transition to IN_PROGRESS)
    */
-  async startAppointment(id: string): Promise<AppointmentEntity> {
+  async startAppointment(id: string): Promise<Appointment> {
     this.logInfo(`Starting appointment: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
@@ -96,7 +96,7 @@ export class AppointmentStatusService extends BaseService {
       followUpRequired?: boolean;
       followUpDate?: Date;
     },
-  ): Promise<AppointmentEntity> {
+  ): Promise<Appointment> {
     this.logInfo(`Completing appointment: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
@@ -157,7 +157,7 @@ export class AppointmentStatusService extends BaseService {
   /**
    * Mark appointment as no-show
    */
-  async markNoShow(id: string): Promise<AppointmentEntity> {
+  async markNoShow(id: string): Promise<Appointment> {
     this.logInfo(`Marking appointment as no-show: ${id}`);
 
     const appointment = await this.appointmentModel.findByPk(id);
@@ -206,7 +206,7 @@ export class AppointmentStatusService extends BaseService {
   /**
    * Get appointment by ID with relations (simplified version)
    */
-  private async getAppointmentById(id: string): Promise<AppointmentEntity> {
+  private async getAppointmentById(id: string): Promise<Appointment> {
     const appointment = await this.appointmentModel.findByPk(id, {
       include: [
         {
@@ -227,7 +227,7 @@ export class AppointmentStatusService extends BaseService {
   /**
    * Map Sequelize model to entity
    */
-  private mapToEntity(appointment: Appointment): AppointmentEntity {
+  private mapToEntity(appointment: Appointment): Appointment {
     return {
       id: appointment.id,
       studentId: appointment.studentId,

@@ -18,6 +18,7 @@
 // =============================================================================
 
 export * from './user.model';
+export * from './api-key.model';
 export * from './district.model';
 export * from './school.model';
 
@@ -123,6 +124,7 @@ export * from './policy-acknowledgment.model';
 export * from './budget-transaction.model';
 export * from './inventory-item.model';
 export * from './inventory-transaction.model';
+export * from './ip-restriction.model';
 export * from './purchase-order.model';
 export * from './purchase-order-item.model';
 export * from './supplier.model';
@@ -156,6 +158,9 @@ export * from './configuration-history.model';
 export * from './data-retention-policy.model';
 export * from './backup-log.model';
 export * from './maintenance-log.model';
+export * from './security-incident.model';
+export * from './login-attempt.model';
+export * from './session.model';
 export * from './threat-detection.model';
 
 // Integration and external systems
@@ -165,6 +170,11 @@ export * from './webhook.model';
 // Training and licensing
 export * from './training-module.model';
 export * from './license.model';
+
+// Document management
+export * from './document.model';
+export * from './document-signature.model';
+export * from './document-audit-trail.model';
 
 // Consent management
 export * from './consent-form.model';

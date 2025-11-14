@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { LoginAttemptEntity } from '../entities/login-attempt.entity';
+import { LoginAttempt } from '@/database/models';
 
 import { BaseService } from '@/common/base';
 /**
@@ -14,8 +14,8 @@ export class ThreatDetectionService extends BaseService {
   private readonly BRUTE_FORCE_WINDOW = 300000; // 5 minutes in milliseconds
 
   constructor(
-    @InjectModel(LoginAttemptEntity)
-    private readonly loginAttemptModel: typeof LoginAttemptEntity,
+    @InjectModel(LoginAttempt)
+    private readonly loginAttemptModel: typeof LoginAttempt,
   ) {
     super("ThreatDetectionService");
   }

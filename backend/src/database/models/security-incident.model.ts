@@ -1,10 +1,10 @@
 import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
-import { IncidentSeverity } from '../enums/incident-severity.enum';
-import { IncidentStatus } from '../enums/incident-status.enum';
-import { SecurityIncidentType } from '../enums/incident-type.enum';
+import { IncidentSeverity } from '../../services/security/enums/incident-severity.enum';
+import { IncidentStatus } from '../../services/security/enums/incident-status.enum';
+import { SecurityIncidentType } from '../../services/security/enums/incident-type.enum';
 
 /**
- * Security Incident Entity
+ * Security Incident Model
  * Tracks security incidents, threats, and their investigation/resolution
  */
 @Table({
@@ -17,28 +17,52 @@ import { SecurityIncidentType } from '../enums/incident-type.enum';
     { fields: ['detectedAt'] },
   ],
 })
-export class SecurityIncidentEntity extends Model {
+export class SecurityIncident extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.STRING)
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(SecurityIncidentType) as string[])),
+    type: DataType.STRING(50),
     allowNull: false,
+    validate: {
+      isIn: [
+        [
+          'unauthorized_access',
+          'brute_force_attack',
+          'suspicious_activity',
+          'data_breach_attempt',
+          'privilege_escalation',
+          'sql_injection_attempt',
+          'xss_attempt',
+          'account_takeover',
+          'malware_detected',
+          'ddos_attempt',
+          'policy_violation',
+          'other',
+        ],
+      ],
+    },
   })
   type!: SecurityIncidentType;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(IncidentSeverity) as string[])),
+    type: DataType.STRING(20),
     allowNull: false,
+    validate: {
+      isIn: [['low', 'medium', 'high', 'critical']],
+    },
   })
   severity!: IncidentSeverity;
 
-  @Default(IncidentStatus.DETECTED)
+  @Default('detected')
   @Column({
-    type: DataType.ENUM(...(Object.values(IncidentStatus) as string[])),
+    type: DataType.STRING(20),
     allowNull: false,
+    validate: {
+      isIn: [['detected', 'investigating', 'contained', 'resolved', 'false_positive']],
+    },
   })
   status!: IncidentStatus;
 

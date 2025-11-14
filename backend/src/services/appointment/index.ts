@@ -32,7 +32,7 @@ export { AppointmentStatus } from './dto/update-appointment.dto';
 export { AppointmentType } from './dto/create-appointment.dto';
 
 // Entities (excluding conflicting enums)
-export { Appointment } from './entities/appointment.entity';
+export { Appointment } from '@/database/models';
 export type { AvailabilitySlot } from './entities/appointment.entity';
 
 // Validators

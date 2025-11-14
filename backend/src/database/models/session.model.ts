@@ -1,7 +1,7 @@
 import { Column, DataType, Default, Index, Model, PrimaryKey, Table } from 'sequelize-typescript';
 
 /**
- * Session Entity
+ * Session Model
  * Manages active user sessions for security tracking and concurrent session limits
  */
 @Table({
@@ -13,7 +13,7 @@ import { Column, DataType, Default, Index, Model, PrimaryKey, Table } from 'sequ
     { fields: ['expiresAt'] },
   ],
 })
-export class SessionEntity extends Model {
+export class Session extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.STRING)

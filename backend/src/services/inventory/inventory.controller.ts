@@ -11,7 +11,7 @@ import { UpdateInventoryItemDto } from './dto/update-inventory-item.dto';
 import { StockAdjustmentDto } from './dto/stock-adjustment.dto';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
 import { CreateInventoryTransactionDto } from './dto/create-inventory-transaction.dto';
-import { PurchaseOrderStatus } from './entities/purchase-order.entity';
+import { PurchaseOrderStatus } from '@/database/models';
 import { AlertSeverity, AlertType } from './dto/inventory-alert.dto';
 
 import { BaseController } from '@/common/base';

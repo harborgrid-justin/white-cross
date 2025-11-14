@@ -8,7 +8,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { AppointmentValidation } from '../validators/appointment-validation';
-import { AppointmentEntity, AvailabilitySlot } from '../entities/appointment.entity';
+import { AvailabilitySlot } from '../entities/appointment.entity';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
@@ -53,7 +53,7 @@ export class AppointmentSchedulingService extends BaseService {
     startTime: Date,
     duration: number,
     excludeAppointmentId?: string,
-  ): Promise<AppointmentEntity[]> {
+  ): Promise<Appointment[]> {
     this.logInfo(`Checking availability for nurse: ${nurseId}`);
 
     // Calculate time range including buffer
@@ -191,7 +191,7 @@ export class AppointmentSchedulingService extends BaseService {
     excludeAppointmentId?: string,
   ): Promise<{
     hasConflict: boolean;
-    conflicts: AppointmentEntity[];
+    conflicts: Appointment[];
     availableSlots: AvailabilitySlot[];
   }> {
     this.logInfo('Checking scheduling conflicts');
@@ -277,9 +277,9 @@ export class AppointmentSchedulingService extends BaseService {
    * Map Sequelize model to entity
    *
    * @param appointment Sequelize appointment model
-   * @returns AppointmentEntity
+   * @returns Appointment
    */
-  private mapToEntity(appointment: Appointment): AppointmentEntity {
+  private mapToEntity(appointment: Appointment): Appointment {
     return {
       id: appointment.id,
       studentId: appointment.studentId,

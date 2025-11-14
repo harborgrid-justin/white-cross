@@ -3,7 +3,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import { ConfigService } from '@nestjs/config';
 import { ApiKeyAuthService } from '../api-key-auth.service';
-import { ApiKeyEntity } from '../entities/api-key.entity';
+import { ApiKey } from '@/database/models';
 import * as crypto from 'crypto';
 
 describe('ApiKeyAuthService', () => {
@@ -27,7 +27,7 @@ describe('ApiKeyAuthService', () => {
       providers: [
         ApiKeyAuthService,
         {
-          provide: getModelToken(ApiKeyEntity),
+          provide: getModelToken(ApiKey),
           useValue: mockApiKeyModel,
         },
         {
@@ -377,7 +377,7 @@ describe('ApiKeyAuthService', () => {
     it('should return true if API key has wildcard scope', () => {
       const mockApiKey = {
         scopes: ['api:*'],
-      } as ApiKeyEntity;
+      } as ApiKey;
 
       const result = service.hasScope(mockApiKey, 'api:read');
 
@@ -387,7 +387,7 @@ describe('ApiKeyAuthService', () => {
     it('should return true if API key has specific scope', () => {
       const mockApiKey = {
         scopes: ['api:read', 'api:write'],
-      } as ApiKeyEntity;
+      } as ApiKey;
 
       const result = service.hasScope(mockApiKey, 'api:read');
 
@@ -397,7 +397,7 @@ describe('ApiKeyAuthService', () => {
     it('should return false if API key does not have scope', () => {
       const mockApiKey = {
         scopes: ['api:read'],
-      } as ApiKeyEntity;
+      } as ApiKey;
 
       const result = service.hasScope(mockApiKey, 'api:write');
 
@@ -407,7 +407,7 @@ describe('ApiKeyAuthService', () => {
     it('should return false if API key has no scopes', () => {
       const mockApiKey = {
         scopes: null,
-      } as ApiKeyEntity;
+      } as ApiKey;
 
       const result = service.hasScope(mockApiKey, 'api:read');
 

@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ApiKeyAuthService } from './api-key-auth.service';
 import { ApiKeyAuthController } from './api-key-auth.controller';
 import { ApiKeyGuard } from './guards/api-key.guard';
-import { ApiKeyEntity } from './entities/api-key.entity';
+import { ApiKey } from '@/database/models';
 
 /**
  * API Key Authentication Module
@@ -22,7 +22,7 @@ import { ApiKeyEntity } from './entities/api-key.entity';
  * @module ApiKeyAuthModule
  */
 @Module({
-  imports: [SequelizeModule.forFeature([ApiKeyEntity]), ConfigModule],
+  imports: [SequelizeModule.forFeature([ApiKey]), ConfigModule],
   controllers: [ApiKeyAuthController],
   providers: [ApiKeyAuthService, ApiKeyGuard],
   exports: [ApiKeyAuthService, ApiKeyGuard],

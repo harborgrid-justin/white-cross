@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
-import { SessionEntity } from '../entities/session.entity';
+import { Session } from '@/database/models';
 import { randomBytes } from 'crypto';
 
 import { BaseService } from '@/common/base';
@@ -15,7 +15,7 @@ export class SessionManagementService extends BaseService {
   private readonly SESSION_DURATION_HOURS = 24;
 
   constructor(
-    @InjectModel(SessionEntity)
+    @InjectModel(Session)
     private readonly sessionModel: typeof SessionEntity,
   ) {
     super("SessionManagementService");

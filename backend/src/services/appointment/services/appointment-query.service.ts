@@ -12,10 +12,10 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import {
-  AppointmentEntity,
-} from '../entities/appointment.entity';
-import {
   Appointment,
+} from '@/database/models';
+import {
+  Appointment as ModelAppointment,
   AppointmentStatus as ModelAppointmentStatus,
 } from '@/database/models';
 import { User } from '@/database/models';
@@ -46,7 +46,7 @@ export class AppointmentQueryService extends BaseService {
   /**
    * Get appointments by a specific date
    */
-  async getAppointmentsByDate(dateStr: string): Promise<{ data: AppointmentEntity[] }> {
+  async getAppointmentsByDate(dateStr: string): Promise<{ data: Appointment[] }> {
     this.logInfo(`Fetching appointments for date: ${dateStr}`);
 
     try {
@@ -93,7 +93,7 @@ export class AppointmentQueryService extends BaseService {
   /**
    * Get upcoming appointments for a specific nurse
    */
-  async getUpcomingAppointments(nurseId: string, limit: number = 10): Promise<AppointmentEntity[]> {
+  async getUpcomingAppointments(nurseId: string, limit: number = 10): Promise<Appointment[]> {
     this.logInfo(`Fetching upcoming appointments for nurse: ${nurseId}`);
 
     try {
@@ -132,7 +132,7 @@ export class AppointmentQueryService extends BaseService {
    */
   async getGeneralUpcomingAppointments(
     limit: number = 50,
-  ): Promise<{ data: AppointmentEntity[] }> {
+  ): Promise<{ data: Appointment[] }> {
     this.logInfo(`Fetching general upcoming appointments`);
 
     try {
@@ -180,7 +180,7 @@ export class AppointmentQueryService extends BaseService {
     startTime: Date,
     duration: number,
     excludeAppointmentId?: string,
-  ): Promise<AppointmentEntity[]> {
+  ): Promise<Appointment[]> {
     return this.schedulingService.checkAvailability(nurseId, startTime, duration, excludeAppointmentId);
   }
 

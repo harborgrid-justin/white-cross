@@ -1,8 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Document } from './entities/document.entity';
-import { DocumentAuditTrail } from './entities/document-audit-trail.entity';
-import { DocumentSignature } from './entities/document-signature.entity';
+import { Document, DocumentAuditTrail, DocumentSignature } from '@/database/models';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { SignDocumentDto } from './dto/sign-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';

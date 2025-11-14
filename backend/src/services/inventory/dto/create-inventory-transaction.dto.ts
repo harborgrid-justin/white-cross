@@ -1,6 +1,6 @@
 import { IsDateString, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { InventoryTransactionType } from '../entities/inventory-transaction.entity';
+import { InventoryTransactionType } from '@/database/models';
 
 export class CreateInventoryTransactionDto {
   @ApiProperty({ description: 'Inventory item UUID' })

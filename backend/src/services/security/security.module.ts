@@ -9,10 +9,7 @@ import {
 } from './services';
 import { IpRestrictionGuard, SecurityPolicyGuard } from './guards';
 import { SecurityLoggingInterceptor } from './interceptors';
-import { IpRestrictionEntity } from './entities/ip-restriction.entity';
-import { LoginAttemptEntity } from './entities/login-attempt.entity';
-import { SecurityIncidentEntity } from './entities/security-incident.entity';
-import { SessionEntity } from './entities/session.entity';
+import { IpRestriction, LoginAttempt, SecurityIncident, Session } from '@/database/models';
 
 /**
  * Security Module
@@ -22,10 +19,10 @@ import { SessionEntity } from './entities/session.entity';
 @Module({
   imports: [
     SequelizeModule.forFeature([
-      IpRestrictionEntity,
-      SecurityIncidentEntity,
-      LoginAttemptEntity,
-      SessionEntity,
+      IpRestriction,
+      SecurityIncident,
+      LoginAttempt,
+      Session,
     ]),
   ],
   controllers: [SecurityController],

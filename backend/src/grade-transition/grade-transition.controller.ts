@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import { JwtAuthGuard } from '@/services/auth/guards/jwt-auth.guard';
 import { GradeTransitionService } from './grade-transition.service';
 import { BulkTransitionDto, BulkTransitionResultDto, TransitionStudentDto } from './dto';
-import { Student } from '../services/student/entities/student.entity';
+import { Student } from '@/database/models';
 
 import { BaseController } from '@/common/base';
 /**

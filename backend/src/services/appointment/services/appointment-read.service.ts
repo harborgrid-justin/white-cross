@@ -8,7 +8,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
-import { AppointmentEntity, PaginatedResponse } from '../entities/appointment.entity';
+import { PaginatedResponse } from '../entities/appointment.entity';
 import { Appointment } from '@/database/models';
 import { User } from '@/database/models';
 
@@ -36,7 +36,7 @@ export class AppointmentReadService extends BaseService {
    */
   async getAppointments(
     filters: AppointmentFiltersDto,
-  ): Promise<PaginatedResponse<AppointmentEntity>> {
+  ): Promise<PaginatedResponse<Appointment>> {
     this.logInfo(`Getting appointments with filters: ${JSON.stringify(filters)}`);
 
     try {
@@ -125,7 +125,7 @@ export class AppointmentReadService extends BaseService {
   /**
    * Get appointment by ID
    */
-  async getAppointmentById(id: string): Promise<AppointmentEntity> {
+  async getAppointmentById(id: string): Promise<Appointment> {
     this.logInfo(`Getting appointment by ID: ${id}`);
 
     try {
@@ -162,7 +162,7 @@ export class AppointmentReadService extends BaseService {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private mapToEntity(appointment: Appointment): AppointmentEntity {
+  private mapToEntity(appointment: Appointment): Appointment {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return {
       id: appointment.id,

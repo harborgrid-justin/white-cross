@@ -1,6 +1,6 @@
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DataRetentionCategory, RetentionStatus } from '../entities/data-retention-policy.entity';
+import { DataRetentionCategory, RetentionStatus } from '@/database/models';
 
 export class CreateDataRetentionDto {
   @ApiProperty({ enum: DataRetentionCategory, description: 'Data category' })

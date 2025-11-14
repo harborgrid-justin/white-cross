@@ -1,5 +1,5 @@
 /**
- * DocumentSignature Entity
+ * DocumentSignature Model
  * Tracks digital signatures on documents for compliance with 21 CFR Part 11
  * Used for consent forms, medical records, policies, and other documents requiring acknowledgment
  *
@@ -24,7 +24,7 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import type { Document } from './document.entity';
+import type { Document } from './document.model';
 
 @Table({
   tableName: 'document_signatures',

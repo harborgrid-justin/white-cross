@@ -7,8 +7,7 @@ import { CreateMedicationDto } from '../dto/create-medication.dto';
 import { DeactivateMedicationDto } from '../dto/deactivate-medication.dto';
 import { ListMedicationsQueryDto } from '../dto/list-medications-query.dto';
 import { UpdateMedicationDto } from '../dto/update-medication.dto';
-import { PaginatedMedicationResponse } from '../entities/medication.entity';
-import { StudentMedication } from '../entities/student-medication.entity';
+import { PaginatedMedicationResponse, StudentMedication } from '@/database/models';
 
 /**
  * Medication Service

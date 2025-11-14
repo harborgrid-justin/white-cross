@@ -31,7 +31,7 @@ import {
   StatisticsFiltersDto,
 } from './dto/statistics.dto';
 import { CreateRecurringAppointmentDto } from './dto/recurring.dto';
-import { AppointmentEntity, AvailabilitySlot, PaginatedResponse } from './entities/appointment.entity';
+import { Appointment, AvailabilitySlot, PaginatedResponse } from '@/database/models';
 import { AppointmentType as ModelAppointmentType } from '@/database/models';
 
 // Import all specialized services
@@ -117,21 +117,21 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
    */
   async getAppointments(
     filters: AppointmentFiltersDto = {},
-  ): Promise<PaginatedResponse<AppointmentEntity>> {
+  ): Promise<PaginatedResponse<Appointment>> {
     return this.readService.getAppointments(filters);
   }
 
   /**
    * Get a single appointment by ID
    */
-  async getAppointmentById(id: string): Promise<AppointmentEntity> {
+  async getAppointmentById(id: string): Promise<Appointment> {
     return this.readService.getAppointmentById(id);
   }
 
   /**
    * Create a new appointment with comprehensive validation
    */
-  async createAppointment(createDto: CreateAppointmentDto): Promise<AppointmentEntity> {
+  async createAppointment(createDto: CreateAppointmentDto): Promise<Appointment> {
     return this.writeService.createAppointment(createDto);
   }
 
@@ -141,14 +141,14 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
   async updateAppointment(
     id: string,
     updateDto: UpdateAppointmentDto,
-  ): Promise<AppointmentEntity> {
+  ): Promise<Appointment> {
     return this.writeService.updateAppointment(id, updateDto);
   }
 
   /**
    * Cancel an appointment
    */
-  async cancelAppointment(id: string, reason?: string): Promise<AppointmentEntity> {
+  async cancelAppointment(id: string, reason?: string): Promise<Appointment> {
     return this.writeService.cancelAppointment(id, reason);
   }
 
@@ -157,7 +157,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
   /**
    * Start an appointment (transition to IN_PROGRESS)
    */
-  async startAppointment(id: string): Promise<AppointmentEntity> {
+  async startAppointment(id: string): Promise<Appointment> {
     return this.statusService.startAppointment(id);
   }
 
@@ -172,14 +172,14 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
       followUpRequired?: boolean;
       followUpDate?: Date;
     },
-  ): Promise<AppointmentEntity> {
+  ): Promise<Appointment> {
     return this.statusService.completeAppointment(id, completionData);
   }
 
   /**
    * Mark appointment as no-show
    */
-  async markNoShow(id: string): Promise<AppointmentEntity> {
+  async markNoShow(id: string): Promise<Appointment> {
     return this.statusService.markNoShow(id);
   }
 
@@ -191,14 +191,14 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
   async getUpcomingAppointments(
     nurseId: string,
     limit: number = 10,
-  ): Promise<AppointmentEntity[]> {
+  ): Promise<Appointment[]> {
     return this.queryService.getUpcomingAppointments(nurseId, limit);
   }
 
   /**
    * Get appointments by a specific date
    */
-  async getAppointmentsByDate(dateStr: string): Promise<{ data: AppointmentEntity[] }> {
+  async getAppointmentsByDate(dateStr: string): Promise<{ data: Appointment[] }> {
     return this.queryService.getAppointmentsByDate(dateStr);
   }
 
@@ -208,14 +208,14 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
   async getGeneralUpcomingAppointments(
     days: number = 7,
     limit: number = 50,
-  ): Promise<{ data: AppointmentEntity[] }> {
+  ): Promise<{ data: Appointment[] }> {
     return this.queryService.getGeneralUpcomingAppointments(days, limit);
   }
 
   /**
    * Get appointment history for a student
    */
-  async getAppointmentHistory(studentId: string, limit: number = 50): Promise<AppointmentEntity[]> {
+  async getAppointmentHistory(studentId: string, limit: number = 50): Promise<Appointment[]> {
     return this.queryService.getAppointmentHistory(studentId, limit);
   }
 
@@ -224,7 +224,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
    */
   async getAppointmentsByDateRange(
     dateRange: DateRangeDto,
-  ): Promise<{ appointments: AppointmentEntity[] }> {
+  ): Promise<{ appointments: Appointment[] }> {
     return this.queryService.getAppointmentsByDateRange(dateRange);
   }
 
@@ -234,7 +234,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
   async getAppointmentsForStudents(
     studentIds: string[],
     filters?: Partial<AppointmentFiltersDto>,
-  ): Promise<{ appointments: AppointmentEntity[] }> {
+  ): Promise<{ appointments: Appointment[] }> {
     return this.queryService.getAppointmentsForStudents(studentIds, filters);
   }
 
@@ -243,7 +243,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
    */
   async searchAppointments(
     searchDto: SearchAppointmentsDto,
-  ): Promise<PaginatedResponse<AppointmentEntity>> {
+  ): Promise<PaginatedResponse<Appointment>> {
     return this.queryService.searchAppointments(searchDto);
   }
 
@@ -257,7 +257,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
     startTime: Date,
     duration: number,
     excludeAppointmentId?: string,
-  ): Promise<AppointmentEntity[]> {
+  ): Promise<Appointment[]> {
     return this.schedulingService.checkAvailability(
       nurseId,
       startTime,
@@ -287,7 +287,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
     excludeAppointmentId?: string,
   ): Promise<{
     hasConflict: boolean;
-    conflicts: AppointmentEntity[];
+    conflicts: Appointment[];
     availableSlots: AvailabilitySlot[];
   }> {
     return this.schedulingService.checkConflicts(
@@ -439,7 +439,7 @@ export class AppointmentService extends BaseService implements OnModuleDestroy {
    */
   async createRecurringAppointments(
     createDto: CreateRecurringAppointmentDto,
-  ): Promise<{ appointments: AppointmentEntity[]; count: number }> {
+  ): Promise<{ appointments: Appointment[]; count: number }> {
     return this.recurringService.createRecurringAppointments(
       createDto,
       this.createAppointment.bind(this),

@@ -9,7 +9,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { AppointmentValidation } from '../validators/appointment-validation';
 import { StatisticsFiltersDto, DateRangeDto } from '../dto/statistics.dto';
-import { AppointmentEntity } from '../entities/appointment.entity';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,
@@ -399,9 +398,9 @@ export class AppointmentStatisticsService extends BaseService {
    * Map Sequelize model to entity
    *
    * @param appointment Sequelize appointment model
-   * @returns AppointmentEntity
+   * @returns Appointment
    */
-  private mapToEntity(appointment: Appointment): AppointmentEntity {
+  private mapToEntity(appointment: Appointment): Appointment {
     return {
       id: appointment.id,
       studentId: appointment.studentId,

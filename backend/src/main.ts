@@ -340,7 +340,7 @@ async function bootstrap() {
   // Swagger API Documentation
   // SECURITY: Only enable Swagger in non-production environments by default
   const isProduction = configService.get('NODE_ENV') === 'production';
-  const swaggerEnabledInProduction = configService.get('SWAGGER_ENABLED_IN_PRODUCTION') === 'true';
+  const swaggerEnabledInProduction = configService.get('SWAGGER_ENABLED_IN_PRODUCTION', 'false') === 'true';
   const enableSwagger = !isProduction || swaggerEnabledInProduction;
 
   if (enableSwagger) {

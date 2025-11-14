@@ -18,7 +18,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Gender } from '../entities/student.entity';
+import { Gender } from '@/database/models';
 
 /**
  * Create Student DTO

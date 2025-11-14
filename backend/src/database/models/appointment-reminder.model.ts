@@ -12,6 +12,7 @@ import {
   Scopes,
   Table,
 } from 'sequelize-typescript';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 export enum MessageType {
   EMAIL = 'EMAIL',
@@ -76,7 +77,11 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   })
   appointmentId: string;
 
-  @BelongsTo(() => require('./appointment.model').Appointment)
+  @BelongsTo(() => require('./appointment.model').Appointment, {
+    foreignKey: 'appointmentId',
+    as: 'appointment'
+  })
+  @ApiHideProperty()
   declare appointment: any;
 
   @Column({

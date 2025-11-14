@@ -1,5 +1,5 @@
 /**
- * Document Entity
+ * Document Model
  * Comprehensive document management with HIPAA compliance, versioning, and access control
  *
  * Features:
@@ -31,9 +31,9 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import type { DocumentSignature } from './document-signature.entity';
-import type { DocumentAuditTrail } from './document-audit-trail.entity';
-import { DocumentAccessLevel, DocumentCategory, DocumentStatus } from '../enums/document.enums';
+import type { DocumentSignature } from './document-signature.model';
+import type { DocumentAuditTrail } from './document-audit-trail.model';
+import { DocumentAccessLevel, DocumentCategory, DocumentStatus } from '../../document/enums/document.enums';
 
 @Table({
   tableName: 'documents',

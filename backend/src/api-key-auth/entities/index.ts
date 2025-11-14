@@ -1,7 +1,7 @@
 /**
  * Barrel file for entities
- * Auto-generated exports for clean public API
+ * Re-export Sequelize models for backward compatibility
  */
 
-export * from './api-key.entity';
+export { ApiKey } from '@/database/models';
 

@@ -4,8 +4,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryTransaction, InventoryTransactionType } from '../entities/inventory-transaction.entity';
+import { InventoryItem, InventoryTransaction, InventoryTransactionType } from '@/database/models';
 import { StockAdjustmentDto } from '../dto/stock-adjustment.dto';
 
 export interface StockAdjustmentResult {

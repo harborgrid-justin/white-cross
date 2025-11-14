@@ -1,8 +1,8 @@
 import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
-import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
+import { IpRestrictionType } from '../../services/security/enums/ip-restriction-type.enum';
 
 /**
- * IP Restriction Entity
+ * IP Restriction Model
  * Manages IP whitelisting, blacklisting, and geolocation-based access control
  */
 @Table({
@@ -10,15 +10,18 @@ import { IpRestrictionType } from '../enums/ip-restriction-type.enum';
   timestamps: true,
   indexes: [{ fields: ['type', 'isActive'] }, { fields: ['ipAddress'] }],
 })
-export class IpRestrictionEntity extends Model {
+export class IpRestriction extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.STRING)
   declare id: string;
 
   @Column({
-    type: DataType.ENUM(...(Object.values(IpRestrictionType) as string[])),
+    type: DataType.STRING(20),
     allowNull: false,
+    validate: {
+      isIn: [['whitelist', 'blacklist', 'geo_restriction']],
+    },
   })
   type!: IpRestrictionType;
 

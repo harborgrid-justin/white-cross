@@ -13,6 +13,7 @@ import {
   Scopes,
   Table,
 } from 'sequelize-typescript';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { Op, Optional } from 'sequelize';
 import type { User } from './user.model';
 import type { Student } from './student.model';
@@ -327,8 +328,12 @@ export class Appointment extends Model<
   })
   recurringEndDate?: Date;
 
-  @HasMany(() => require('./appointment-reminder.model').AppointmentReminder)
-  declare reminders?: AppointmentReminder[];
+  @HasMany(() => require('./appointment-reminder.model').AppointmentReminder, {
+    foreignKey: 'appointmentId',
+    as: 'reminders'
+  })
+  @ApiHideProperty()
+  declare reminders?: any[];
 
   @Column({
     type: DataType.DATE,

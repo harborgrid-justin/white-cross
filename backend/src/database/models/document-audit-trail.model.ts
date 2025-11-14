@@ -1,5 +1,5 @@
 /**
- * DocumentAuditTrail Entity
+ * DocumentAuditTrail Model
  * Maintains comprehensive audit trail of all document operations
  * Required for HIPAA compliance and security monitoring
  *
@@ -24,8 +24,8 @@ import {
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
-import type { Document } from './document.entity';
-import { DocumentAction } from '../enums/document.enums';
+import type { Document } from './document.model';
+import { DocumentAction } from '../../document/enums/document.enums';
 
 @Table({
   tableName: 'document_audit_trails',

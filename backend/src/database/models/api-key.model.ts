@@ -1,12 +1,19 @@
-import { Column, CreatedAt, DataType, Default, Model, PrimaryKey, Table, UpdatedAt } from 'sequelize-typescript';
+import {
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  Model,
+  PrimaryKey,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
 
 /**
- * API Key Entity
+ * API Key Model
  *
  * Stores hashed API keys for service-to-service authentication.
  * Keys are hashed using SHA-256 for security.
- *
- * @entity ApiKeyEntity
  */
 @Table({
   tableName: 'api_keys',
@@ -19,7 +26,7 @@ import { Column, CreatedAt, DataType, Default, Model, PrimaryKey, Table, Updated
     { fields: ['expiresAt'] },
   ],
 })
-export class ApiKeyEntity extends Model {
+export class ApiKey extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)

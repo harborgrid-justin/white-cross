@@ -1,7 +1,7 @@
 import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-typescript';
 
 /**
- * Login Attempt Entity
+ * Login Attempt Model
  * Tracks successful and failed login attempts for brute force detection
  */
 @Table({
@@ -13,7 +13,7 @@ import { Column, DataType, Default, Model, PrimaryKey, Table } from 'sequelize-t
     { fields: ['success', 'createdAt'] },
   ],
 })
-export class LoginAttemptEntity extends Model {
+export class LoginAttempt extends Model {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.STRING)

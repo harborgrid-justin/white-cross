@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { HttpModule } from '@nestjs/axios';
 
 // Models
 import {
@@ -160,6 +161,8 @@ import { VitalSignsController } from './controllers/vital-signs.controller';
       ClinicalNote,
       FollowUpAppointment,
     ]),
+    // HttpModule for HTTP requests in PrescriptionAliasController
+    HttpModule,
   ],
   controllers: [
     // Existing controllers

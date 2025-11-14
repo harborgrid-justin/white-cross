@@ -20,7 +20,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../user.service';
 import { getModelToken } from '@nestjs/sequelize';
-import { User } from '../entities/user.entity';
+import { User } from '@/database/models';
 import { UserRole } from '../enums/user-role.enum';
 import { QueryCacheService } from '@/database/services/query-cache.service';
 import { ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';

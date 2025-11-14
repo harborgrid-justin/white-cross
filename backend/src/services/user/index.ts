@@ -13,7 +13,7 @@ export { UserService } from './user.service';
 export { UserController } from './user.controller';
 
 // Entity
-export { User } from './entities/user.entity';
+export { User } from '@/database/models';
 
 // DTOs
 export * from './dto';

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { InventoryTransaction } from '../entities/inventory-transaction.entity';
+import { InventoryTransaction } from '@/database/models';
 import { CreateInventoryTransactionDto } from '../dto/create-inventory-transaction.dto';
 
 @Injectable()

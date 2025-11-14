@@ -112,13 +112,13 @@ export interface AppointmentEntity {
     role: string;
   };
 
-  /** Appointment reminders */
-  reminders?: Array<{
-    id: string;
-    scheduledFor: Date;
-    sent: boolean;
-    method: string;
-  }>;
+  // /** Appointment reminders - commented out to avoid circular dependency in Swagger */
+  // reminders?: Array<{
+  //   id: string;
+  //   scheduledFor: Date;
+  //   sent: boolean;
+  //   method: string;
+  // }>;
 
   /** Creation timestamp */
   createdAt: Date;

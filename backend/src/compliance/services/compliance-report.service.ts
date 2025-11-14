@@ -6,7 +6,7 @@ import {
   QueryComplianceReportDto,
   UpdateComplianceReportDto,
 } from '../dto/compliance-report.dto';
-import { ComplianceStatus } from '../entities/compliance-report.entity';
+import { ComplianceStatus } from '@/database/models';
 import { ExecutionContext } from '../../database/types';
 
 import { BaseService } from '@/common/base';

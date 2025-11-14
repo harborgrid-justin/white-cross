@@ -4,7 +4,7 @@
  * @description Type definitions and interfaces for student module
  */
 
-import { Student } from '../entities/student.entity';
+import { Student } from '@/database/models';
 
 /**
  * Paginated Response Interface
