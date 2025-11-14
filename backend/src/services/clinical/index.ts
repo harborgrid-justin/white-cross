@@ -10,7 +10,18 @@ export { ClinicalModule } from './clinical.module';
 export * from './dto';
 
 // Entities
-export * from './entities';
+export {
+  ClinicVisit,
+  ClinicalNote,
+  ClinicalProtocol,
+  DrugCatalog,
+  DrugInteraction,
+  FollowUpAppointment,
+  Prescription,
+  StudentDrugAllergy,
+  TreatmentPlan,
+  VitalSigns,
+} from '@/database/models';
 
 // Controllers
 export * from './controllers';

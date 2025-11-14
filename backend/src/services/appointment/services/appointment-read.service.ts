@@ -8,7 +8,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
-import { PaginatedResponse } from '../entities/appointment.entity';
+import { PaginatedResponse } from '@/database/models';
 import { Appointment } from '@/database/models';
 import { User } from '@/database/models';
 

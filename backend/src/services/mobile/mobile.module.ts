@@ -15,7 +15,7 @@ import { OfflineSyncWatermarkService } from './services/offline-sync-watermark.s
 import { OfflineSyncQueueService } from './services/offline-sync-queue.service';
 import { OfflineSyncConflictService } from './services/offline-sync-conflict.service';
 import { DeviceController, NotificationController, SyncController } from './controllers';
-import { DeviceToken, PushNotification, SyncConflict, SyncQueueItem } from './entities';
+import { DeviceToken, PushNotification, SyncConflict, SyncQueueItem } from '@/database/models';
 import { AuthModule } from '../auth';
 
 /**

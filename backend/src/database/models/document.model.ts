@@ -31,9 +31,13 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import type { DocumentSignature } from './document-signature.model';
-import type { DocumentAuditTrail } from './document-audit-trail.model';
-import { DocumentAccessLevel, DocumentCategory, DocumentStatus } from '../../document/enums/document.enums';
+import { DocumentSignature } from './document-signature.model';
+import { DocumentAuditTrail } from './document-audit-trail.model';
+import {
+  DocumentAccessLevel,
+  DocumentCategory,
+  DocumentStatus,
+} from '../../document/enums/document.enums';
 
 @Table({
   tableName: 'documents',
@@ -262,8 +266,7 @@ export class Document extends Model {
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: false,
-    comment:
-      'Indicates if document contains Protected Health Information (HIPAA)',
+    comment: 'Indicates if document contains Protected Health Information (HIPAA)',
   })
   @Index
   containsPHI: boolean;
@@ -371,19 +374,12 @@ export class Document extends Model {
     }
 
     // Ensure PHI documents have appropriate access level
-    if (
-      instance.containsPHI &&
-      instance.accessLevel === DocumentAccessLevel.PUBLIC
-    ) {
+    if (instance.containsPHI && instance.accessLevel === DocumentAccessLevel.PUBLIC) {
       instance.accessLevel = DocumentAccessLevel.STAFF_ONLY;
     }
 
     // Validate HTTPS for PHI documents
-    if (
-      instance.containsPHI &&
-      instance.fileUrl &&
-      !instance.fileUrl.startsWith('https://')
-    ) {
+    if (instance.containsPHI && instance.fileUrl && !instance.fileUrl.startsWith('https://')) {
       throw new Error(
         'PHI documents must use HTTPS protocol for secure transmission (HIPAA requirement)',
       );
@@ -398,9 +394,7 @@ export class Document extends Model {
     if (instance.containsPHI && instance.changed('accessLevel')) {
       const newAccessLevel = instance.getDataValue('accessLevel');
       if (newAccessLevel === DocumentAccessLevel.PUBLIC) {
-        throw new Error(
-          'Cannot change access level to PUBLIC for documents containing PHI',
-        );
+        throw new Error('Cannot change access level to PUBLIC for documents containing PHI');
       }
     }
 

@@ -10,5 +10,5 @@ export * from './chronic-condition.service';
 
 // Submodules
 export * from './dto';
-export * from './entities';
+export { ChronicCondition } from '@/database/models';
 

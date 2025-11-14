@@ -8,7 +8,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import { AppointmentValidation } from '../validators/appointment-validation';
-import { AvailabilitySlot } from '../entities/appointment.entity';
+import { AvailabilitySlot } from '@/database/models';
 import {
   Appointment,
   AppointmentStatus as ModelAppointmentStatus,

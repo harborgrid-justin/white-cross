@@ -10,7 +10,13 @@ export { MedicationModule } from './medication.module';
 export * from './dto';
 
 // Entities
-export * from './entities';
+export {
+  Medication,
+  Medication as MedicationEntity,
+  StudentMedication,
+  MedicationWithStudentContext,
+  PaginatedMedicationResponse,
+} from '@/database/models';
 
 // Services
 export * from './services';

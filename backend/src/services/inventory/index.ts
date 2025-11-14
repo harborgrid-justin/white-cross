@@ -9,6 +9,17 @@ export * from './inventory.service';
 
 // Submodules
 export * from './dto';
-export * from './entities';
+export {
+  InventoryItem,
+  InventoryItemAttributes,
+  InventoryTransaction,
+  InventoryTransactionType,
+  MaintenanceLog,
+  MaintenanceType,
+  PurchaseOrderItem,
+  PurchaseOrder,
+  PurchaseOrderStatus,
+  Vendor,
+} from '@/database/models';
 export * from './services';
 

@@ -13,4 +13,4 @@ export * from './services';
 export { AllergyController } from './allergy.controller';
 
 // Entities
-export * from './entities';
+export { Allergy, AllergyType, AllergySeverity } from '@/database/models';

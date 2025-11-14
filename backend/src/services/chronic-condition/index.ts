@@ -16,7 +16,7 @@ export { ChronicConditionController } from './chronic-condition.controller';
 export * from './dto';
 
 // Entities
-export * from './entities';
+export { ChronicCondition } from '@/database/models';
 
 // Enums
 export * from './enums';

@@ -102,20 +102,30 @@ export { Conversation } from './conversation.model';
 export type { ConversationAttributes, ConversationCreationAttributes } from './conversation.model';
 export { ConversationType } from './conversation.model';
 export { ConversationParticipant } from './conversation-participant.model';
-export type { ConversationParticipantAttributes, ConversationParticipantCreationAttributes } from './conversation-participant.model';
+export type {
+  ConversationParticipantAttributes,
+  ConversationParticipantCreationAttributes,
+} from './conversation-participant.model';
 export { ParticipantRole } from './conversation-participant.model';
 export { Message } from './message.model';
 export { MessageDelivery } from './message-delivery.model';
 export { MessageRead } from './message-read.model';
 export type { MessageReadAttributes, MessageReadCreationAttributes } from './message-read.model';
 export { MessageReaction } from './message-reaction.model';
-export type { MessageReactionAttributes, MessageReactionCreationAttributes } from './message-reaction.model';
+export type {
+  MessageReactionAttributes,
+  MessageReactionCreationAttributes,
+} from './message-reaction.model';
 
 // Compliance and audit
 export * from './audit-log.model';
 export { PhiDisclosure } from './phi-disclosure.model';
 export * from './phi-disclosure-audit.model';
-export { ComplianceReport, ComplianceReportType, ComplianceStatus } from './compliance-report.model';
+export {
+  ComplianceReport,
+  ComplianceReportType,
+  ComplianceStatus,
+} from './compliance-report.model';
 export * from './compliance-checklist-item.model';
 export * from './compliance-violation.model';
 export * from './policy-acknowledgment.model';
@@ -172,9 +182,9 @@ export * from './training-module.model';
 export * from './license.model';
 
 // Document management
-export * from './document.model';
 export * from './document-signature.model';
 export * from './document-audit-trail.model';
+export * from './document.model';
 
 // Consent management
 export * from './consent-form.model';
@@ -186,7 +196,7 @@ export * from './remediation-action.model';
 /**
  * Re-export commonly used types and enums with explicit disambiguation
  */
-export { UserRole } from './user.model';
+export { UserRole } from '../types/user-role.enum';
 export { Gender } from './student.model';
 export { AppointmentType, AppointmentStatus } from './appointment.model';
 export { AlertSeverity, AlertStatus, AlertCategory } from './alert.model';

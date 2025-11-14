@@ -8,5 +8,5 @@ export * from './vitals.module';
 export * from './vitals.service';
 
 // Submodules
-export * from './entities';
+export { VitalSigns } from '@/database/models';
 

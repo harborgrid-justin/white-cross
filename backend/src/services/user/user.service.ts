@@ -12,7 +12,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { RequestContextService } from '@/common/context/request-context.service';
 import { BaseService } from '@/common/base';
-import { User } from './entities';
+import { User } from '@/database/models';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserChangePasswordDto } from './dto/change-password.dto';

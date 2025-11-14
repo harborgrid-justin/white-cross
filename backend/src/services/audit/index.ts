@@ -16,10 +16,10 @@ export { AuditController } from './audit.controller';
 export * from './dto';
 
 // Entities (excluding conflicting enums)
-export { AuditLog, ComplianceType, AuditSeverity } from './entities';
+export { AuditLog, ComplianceType, AuditSeverity } from '@/database/models';
 
 // Enums
-export { AuditAction } from './entities';
+export { AuditAction } from '../administration/enums/administration.enums';
 export * from './enums';
 
 // Interfaces

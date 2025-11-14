@@ -9,7 +9,14 @@ export * from './mobile.module';
 // Submodules
 export * from './controllers';
 export * from './dto';
-export * from './entities';
+export {
+  DeviceToken,
+  PushNotification,
+  SyncConflict,
+  SyncQueueItem,
+  NotificationAction,
+  NotificationDeliveryResult,
+} from '@/database/models';
 export * from './enums';
 export * from './services';
 
