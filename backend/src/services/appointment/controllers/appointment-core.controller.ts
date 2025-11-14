@@ -4,7 +4,19 @@
  * @description HTTP endpoints for core appointment CRUD operations
  */
 
-import { Body, Controller, Delete, Get, Logger, Param, ParseUUIDPipe, Patch, Post, Query, Version } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  Version,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -19,6 +31,10 @@ import { AppointmentWriteService } from '../services/appointment-write.service';
 import { CreateAppointmentDto } from '../dto/create-appointment.dto';
 import { UpdateAppointmentDto } from '../dto/update-appointment.dto';
 import { AppointmentFiltersDto } from '../dto/appointment-filters.dto';
+import {
+  AppointmentResponseDto,
+  AppointmentListResponseDto,
+} from '../dto/appointment-response.dto';
 
 import { BaseController } from '@/common/base';
 /**
@@ -33,7 +49,6 @@ import { BaseController } from '@/common/base';
  */
 @ApiTags('appointments-core')
 @ApiBearerAuth()
-
 @Controller('appointments')
 export class AppointmentCoreController extends BaseController {
   private readonly logger = new Logger(AppointmentCoreController.name);
@@ -57,6 +72,7 @@ export class AppointmentCoreController extends BaseController {
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved appointments',
+    type: AppointmentListResponseDto,
   })
   getAppointments(@Query() filters: AppointmentFiltersDto) {
     this.logger.log('GET /appointments');
@@ -72,7 +88,7 @@ export class AppointmentCoreController extends BaseController {
     description: 'Retrieve detailed information about a specific appointment',
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
-  @ApiResponse({ status: 200, description: 'Appointment found' })
+  @ApiResponse({ status: 200, description: 'Appointment found', type: AppointmentResponseDto })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   getAppointmentById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
@@ -92,6 +108,7 @@ export class AppointmentCoreController extends BaseController {
   @ApiResponse({
     status: 201,
     description: 'Appointment created successfully',
+    type: AppointmentResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -112,7 +129,7 @@ export class AppointmentCoreController extends BaseController {
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
   @ApiBody({ type: UpdateAppointmentDto })
-  @ApiResponse({ status: 200, description: 'Appointment updated successfully' })
+  @ApiResponse({ status: 200, description: 'Appointment updated successfully', type: AppointmentResponseDto })
   @ApiResponse({
     status: 400,
     description: 'Validation failed or invalid transition or invalid UUID',

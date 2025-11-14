@@ -6,18 +6,13 @@ import {
   DataType,
   Default,
   ForeignKey,
-  HasMany,
   Index,
   Model,
   PrimaryKey,
   Scopes,
   Table,
 } from 'sequelize-typescript';
-import { ApiHideProperty } from '@nestjs/swagger';
 import { Op, Optional } from 'sequelize';
-import type { User } from './user.model';
-import type { Student } from './student.model';
-import type { AppointmentReminder } from './appointment-reminder.model';
 
 export enum AppointmentType {
   ROUTINE_CHECKUP = 'ROUTINE_CHECKUP',
@@ -171,17 +166,17 @@ export interface AppointmentCreationAttributes
     },
   ],
 })
-export class Appointment extends Model<
-  AppointmentAttributes,
-  AppointmentCreationAttributes
-> {
+export class Appointment extends Model<AppointmentAttributes, AppointmentCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column(DataType.UUID)
   declare id: string;
 
   @Index
-  @ForeignKey(() => require('./student.model').Student)
+  @ForeignKey(() => {
+    const { Student } = require('./student.model');
+    return Student;
+  })
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -196,7 +191,10 @@ export class Appointment extends Model<
   studentId: string;
 
   @Index
-  @ForeignKey(() => require('./user.model').User)
+  @ForeignKey(() => {
+    const { User } = require('./user.model');
+    return User;
+  })
   @Column({
     type: DataType.UUID,
     allowNull: true,
@@ -210,19 +208,25 @@ export class Appointment extends Model<
   })
   nurseId: string;
 
-  @BelongsTo(() => require('./user.model').User, {
+  @BelongsTo(() => {
+    const { User } = require('./user.model');
+    return User;
+  }, {
     foreignKey: 'nurseId',
     as: 'nurse',
     constraints: true,
   })
-  declare nurse?: User;
+  declare nurse?: any;
 
-  @BelongsTo(() => require('./student.model').Student, {
+  @BelongsTo(() => {
+    const { Student } = require('./student.model');
+    return Student;
+  }, {
     foreignKey: 'studentId',
     as: 'student',
     constraints: true,
   })
-  declare student?: Student;
+  declare student?: any;
 
   @Index
   @Column({
@@ -328,12 +332,7 @@ export class Appointment extends Model<
   })
   recurringEndDate?: Date;
 
-  @HasMany(() => require('./appointment-reminder.model').AppointmentReminder, {
-    foreignKey: 'appointmentId',
-    as: 'reminders'
-  })
-  @ApiHideProperty()
-  declare reminders?: any[];
+
 
   @Column({
     type: DataType.DATE,
@@ -353,9 +352,7 @@ export class Appointment extends Model<
   get isUpcoming(): boolean {
     return (
       this.scheduledAt > new Date() &&
-      [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS].includes(
-        this.status,
-      )
+      [AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS].includes(this.status)
     );
   }
 
@@ -398,10 +395,7 @@ export class Appointment extends Model<
   @BeforeCreate
   @BeforeUpdate
   static async validateScheduledDate(instance: Appointment) {
-    if (
-      instance.status === AppointmentStatus.SCHEDULED &&
-      instance.scheduledAt < new Date()
-    ) {
+    if (instance.status === AppointmentStatus.SCHEDULED && instance.scheduledAt < new Date()) {
       throw new Error('Cannot schedule appointment in the past');
     }
   }
@@ -412,10 +406,7 @@ export class Appointment extends Model<
     if (instance.recurringGroupId && !instance.recurringFrequency) {
       throw new Error('Recurring appointments must have a frequency');
     }
-    if (
-      instance.recurringEndDate &&
-      instance.recurringEndDate < instance.scheduledAt
-    ) {
+    if (instance.recurringEndDate && instance.recurringEndDate < instance.scheduledAt) {
       throw new Error('Recurring end date must be after scheduled date');
     }
   }
@@ -511,13 +502,7 @@ export interface AppointmentEntity {
     role: string;
   };
 
-  // /** Appointment reminders - commented out to avoid circular dependency in Swagger */
-  // reminders?: Array<{
-  //   id: string;
-  //   scheduledFor: Date;
-  //   sent: boolean;
-  //   method: string;
-  // }>;
+
 
   /** Creation timestamp */
   createdAt: Date;

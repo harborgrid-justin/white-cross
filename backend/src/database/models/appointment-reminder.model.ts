@@ -12,7 +12,7 @@ import {
   Scopes,
   Table,
 } from 'sequelize-typescript';
-import { ApiHideProperty } from '@nestjs/swagger';
+import { createModelAuditHook } from '../services/model-audit-hooks.service';
 
 export enum MessageType {
   EMAIL = 'EMAIL',
@@ -70,19 +70,23 @@ export class AppointmentReminder extends Model<AppointmentReminderAttributes> {
   declare id?: string;
 
   @Index
-  @ForeignKey(() => require('./appointment.model').Appointment)
+  @ForeignKey(() => {
+    const { Appointment } = require('./appointment.model');
+    return Appointment;
+  })
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
   appointmentId: string;
 
-  @BelongsTo(() => require('./appointment.model').Appointment, {
+  @BelongsTo(() => {
+    const { Appointment } = require('./appointment.model');
+    return Appointment;
+  }, {
     foreignKey: 'appointmentId',
-    as: 'appointment'
+    as: 'appointment',
   })
-  @ApiHideProperty()
-  declare appointment: any;
 
   @Column({
     type: DataType.STRING(50),

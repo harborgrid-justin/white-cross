@@ -14,6 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AppointmentStatusService } from '../services/appointment-status.service';
+import { AppointmentResponseDto } from '../dto/appointment-response.dto';
 
 import { BaseController } from '@/common/base';
 /**
@@ -44,7 +45,7 @@ export class AppointmentStatusController extends BaseController {
     description: 'Mark appointment as in progress when student arrives',
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
-  @ApiResponse({ status: 200, description: 'Appointment started successfully' })
+  @ApiResponse({ status: 200, description: 'Appointment started successfully', type: AppointmentResponseDto })
   @ApiResponse({
     status: 400,
     description: 'Cannot start appointment in current state or invalid UUID',
@@ -78,7 +79,7 @@ export class AppointmentStatusController extends BaseController {
       },
     },
   })
-  @ApiResponse({ status: 200, description: 'Appointment completed successfully' })
+  @ApiResponse({ status: 200, description: 'Appointment completed successfully', type: AppointmentResponseDto })
   @ApiResponse({
     status: 400,
     description: 'Cannot complete appointment in current state or invalid UUID',
@@ -101,7 +102,7 @@ export class AppointmentStatusController extends BaseController {
     description: 'Mark a scheduled appointment as no-show when student does not arrive',
   })
   @ApiParam({ name: 'id', description: 'Appointment UUID' })
-  @ApiResponse({ status: 200, description: 'Appointment marked as no-show successfully' })
+  @ApiResponse({ status: 200, description: 'Appointment marked as no-show successfully', type: AppointmentResponseDto })
   @ApiResponse({
     status: 400,
     description: 'Cannot mark appointment as no-show in current state or invalid UUID',
