@@ -72,31 +72,22 @@ export async function createAuditLogAction(
     // Create audit log entry with automatic hash generation
     const auditLogEntry = createAuditLogEntry(context, input, previousHash);
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/audit-logs`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID(),
-        'X-Source': 'compliance-actions'
-      },
-      body: JSON.stringify(auditLogEntry),
-      next: {
-        revalidate: 60,
-        tags: ['audit-logs']
+    // Use serverPost from nextjs-client
+    const createdLog = await serverPost<AuditLog>(
+      COMPLIANCE_ENDPOINTS.AUDIT_LOGS,
+      auditLogEntry,
+      {
+        cache: 'no-store',
+        next: {
+          revalidate: 60,
+          tags: ['audit-logs']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const createdLog = await response.json() as AuditLog;
+    );
 
     // Revalidate caches
-    revalidateTag('audit-logs', 'compliance');
-    revalidateTag('compliance-metrics', 'compliance');
+    revalidateTag('audit-logs', 'default');
+    revalidateTag('compliance-metrics', 'default');
     revalidatePath('/compliance/audits');
 
     // Fire-and-forget secondary logging (never fails the operation)
@@ -127,34 +118,33 @@ export async function getAuditLogsAction(
   filters: Partial<AuditLogFilter>
 ): Promise<ActionResult<PaginatedResult<AuditLog> & { chainStatus: { valid: boolean; firstInvalidIndex?: number } }>> {
   try {
-    // Build query parameters
-    const params = new URLSearchParams();
+    // Convert filters to query params - handle arrays properly
+    const params: Record<string, string | number | boolean> = {};
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        params.append(key, String(value));
+        // Convert arrays to comma-separated strings
+        if (Array.isArray(value)) {
+          params[key] = value.join(',');
+        } else {
+          params[key] = value as string | number | boolean;
+        }
       }
     });
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/audit-logs?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID(),
-        'X-Cache-Control': 'max-age=120'
-      },
-      next: {
-        revalidate: 120,
-        tags: ['audit-logs']
+    // Use serverGet from nextjs-client
+    const result = await serverGet<PaginatedResult<AuditLog>>(
+      COMPLIANCE_ENDPOINTS.AUDIT_LOGS,
+      params,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 120,
+          tags: ['audit-logs']
+        }
       }
-    });
+    );
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-
-            // Verify audit chain integrity
+    // Verify audit chain integrity
     const chainResult = verifyAuditChain(result.data);
     const chainStatus = typeof chainResult === 'object' ? chainResult : { valid: chainResult, firstInvalidIndex: undefined };
 

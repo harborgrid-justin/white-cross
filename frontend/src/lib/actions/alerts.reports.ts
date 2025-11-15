@@ -8,7 +8,7 @@
 
 'use server';
 
-import { apiClient } from '@/services/core/ApiClient';
+import { serverGet, nextFetch } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ActionResult, StockLevelReport, ReportType } from './alerts.types';
@@ -25,22 +25,25 @@ export async function generateStockLevelReport(
     if (locationId) params.locationId = locationId;
     if (category) params.category = category;
 
-    const response = await apiClient.get<StockLevelReport>(
+    const data = await serverGet<StockLevelReport>(
       `${API_ENDPOINTS.INVENTORY.REPORTS}/stock-level`,
-      { params }
+      params,
+      {
+        cache: 'no-store', // Report generation should not be cached
+      }
     );
 
     await auditLogWithContext({
       userId: 'system',
       action: AUDIT_ACTIONS.GENERATE_REPORT,
       resource: 'inventory_report',
-      resourceId: response.data.reportDate.toString(),
+      resourceId: data.reportDate.toString(),
       details: JSON.stringify({ locationId, category }),
     });
 
     return {
       success: true,
-      data: response.data,
+      data,
     };
   } catch (error) {
     console.error('Failed to generate stock level report:', error);
@@ -53,6 +56,10 @@ export async function generateStockLevelReport(
 
 /**
  * Export report to CSV with audit logging
+ *
+ * Note: Uses nextFetch for blob response handling.
+ * The nextFetch core function returns text for non-JSON responses,
+ * so we need to handle CSV export specially.
  */
 export async function exportReportToCSV(
   reportType: ReportType,
@@ -71,21 +78,21 @@ export async function exportReportToCSV(
       }
     });
 
-    // Use fetch directly for blob response
-    const response = await fetch(
-      `${API_ENDPOINTS.INVENTORY.REPORTS}/${reportType}/export?${new URLSearchParams(params).toString()}`,
-      {
-        headers: {
-          Accept: 'text/csv',
-        },
-      }
-    );
+    // Build query string
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = `${API_ENDPOINTS.INVENTORY.REPORTS}/${reportType}/export${queryString ? `?${queryString}` : ''}`;
 
-    if (!response.ok) {
-      throw new Error('Failed to export report');
-    }
+    // For blob responses, we get the CSV text and convert to Blob
+    const csvText = await nextFetch<string>(endpoint, {
+      method: 'GET',
+      cache: 'no-store', // CSV exports should not be cached
+      headers: {
+        Accept: 'text/csv',
+      },
+    });
 
-    const blob = await response.blob();
+    // Convert CSV text to Blob
+    const blob = new Blob([csvText], { type: 'text/csv' });
 
     await auditLogWithContext({
       userId,

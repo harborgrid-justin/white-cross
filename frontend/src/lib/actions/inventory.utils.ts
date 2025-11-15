@@ -11,9 +11,6 @@ import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
 import { extractIPAddress, extractUserAgent } from '@/lib/audit';
 
-// Use server-side or fallback to public env variable or default
-export const BACKEND_URL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
 /**
  * Get auth token from cookies
  */
@@ -45,24 +42,4 @@ export async function createAuditContext() {
     ipAddress: extractIPAddress(request),
     userAgent: extractUserAgent(request)
   };
-}
-
-/**
- * Enhanced fetch with Next.js v16 capabilities
- */
-export async function enhancedFetch(url: string, options: RequestInit = {}) {
-  const token = await getAuthToken();
-
-  return fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
-      ...options.headers,
-    },
-    next: {
-      revalidate: 300, // 5 minute cache
-      tags: ['inventory', 'stock']
-    }
-  });
 }

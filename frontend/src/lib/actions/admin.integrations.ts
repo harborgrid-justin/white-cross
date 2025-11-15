@@ -6,7 +6,7 @@
  */
 
 'use server'
-import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache'
+import { serverGet, serverPost, serverPut } from '@/lib/api/nextjs-client'
 import { CACHE_TTL } from '@/lib/cache/constants'
 
 export interface Integration {
@@ -38,23 +38,19 @@ export interface IntegrationConfig {
  * Get all available integrations with their current status
  */
 export async function getIntegrations(): Promise<Integration[]> {
-  cacheLife({ revalidate: CACHE_TTL.STATS }) // 120s for integration status
-  cacheTag('admin-integrations')
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/integrations`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverGet<{ integrations: Integration[] }>(
+      `${process.env.API_BASE_URL}/api/integrations`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: CACHE_TTL.STATS,
+          tags: ['admin-integrations']
+        }
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return data.integrations || getDefaultIntegrations()
   } catch (error) {
     console.error('Error fetching integrations:', error)
@@ -70,26 +66,20 @@ export async function toggleIntegration(
   enabled: boolean
 ): Promise<{ success: boolean; message: string; integration?: Integration }> {
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/integrations/${id}/toggle`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-      body: JSON.stringify({ enabled }),
-    })
+    const data = await serverPost<{ integration: Integration }>(
+      `${process.env.API_BASE_URL}/api/integrations/${id}/toggle`,
+      { enabled },
+      {
+        cache: 'no-store'
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    
     // Revalidate cache
-    await fetch(`${process.env.API_BASE_URL}/api/revalidate?tag=admin-integrations`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.API_TOKEN}` },
-    })
+    await serverPost(
+      `${process.env.API_BASE_URL}/api/revalidate`,
+      { tag: 'admin-integrations' },
+      { cache: 'no-store' }
+    )
 
     return {
       success: true,
@@ -113,26 +103,20 @@ export async function updateIntegrationConfig(
   config: IntegrationConfig
 ): Promise<{ success: boolean; message: string; integration?: Integration }> {
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/integrations/${id}/config`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-      body: JSON.stringify(config),
-    })
+    const data = await serverPut<{ integration: Integration }>(
+      `${process.env.API_BASE_URL}/api/integrations/${id}/config`,
+      config,
+      {
+        cache: 'no-store'
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    
     // Revalidate cache
-    await fetch(`${process.env.API_BASE_URL}/api/revalidate?tag=admin-integrations`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.API_TOKEN}` },
-    })
+    await serverPost(
+      `${process.env.API_BASE_URL}/api/revalidate`,
+      { tag: 'admin-integrations' },
+      { cache: 'no-store' }
+    )
 
     return {
       success: true,
@@ -153,19 +137,14 @@ export async function updateIntegrationConfig(
  */
 export async function testIntegration(id: string): Promise<{ success: boolean; message: string; details?: unknown }> {
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/integrations/${id}/test`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverPost<{ testResults: unknown }>(
+      `${process.env.API_BASE_URL}/api/integrations/${id}/test`,
+      undefined,
+      {
+        cache: 'no-store'
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return {
       success: true,
       message: 'Integration test completed successfully',
@@ -193,23 +172,27 @@ export async function getIntegrationLogs(
   message: string
   details?: Record<string, unknown>
 }>> {
-  cacheLife({ revalidate: CACHE_TTL.REALTIME }) // 10s for logs
-  cacheTag(`admin-integration-logs-${id}`)
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/integrations/${id}/logs?limit=${limit}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverGet<{
+      logs: Array<{
+        id: string
+        timestamp: Date
+        level: 'info' | 'warn' | 'error'
+        message: string
+        details?: Record<string, unknown>
+      }>
+    }>(
+      `${process.env.API_BASE_URL}/api/integrations/${id}/logs`,
+      { limit },
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: CACHE_TTL.REALTIME,
+          tags: [`admin-integration-logs-${id}`]
+        }
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return data.logs || []
   } catch (error) {
     console.error('Error fetching integration logs:', error)
@@ -222,23 +205,20 @@ export async function getIntegrationLogs(
  */
 export async function syncIntegration(id: string): Promise<{ success: boolean; message: string }> {
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/integrations/${id}/sync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
+    await serverPost(
+      `${process.env.API_BASE_URL}/api/integrations/${id}/sync`,
+      undefined,
+      {
+        cache: 'no-store'
+      }
+    )
 
     // Revalidate cache
-    await fetch(`${process.env.API_BASE_URL}/api/revalidate?tag=admin-integrations`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.API_TOKEN}` },
-    })
+    await serverPost(
+      `${process.env.API_BASE_URL}/api/revalidate`,
+      { tag: 'admin-integrations' },
+      { cache: 'no-store' }
+    )
 
     return {
       success: true,
@@ -261,23 +241,25 @@ export async function getIntegrationCategories(): Promise<Array<{
   label: string
   count: number
 }>> {
-  cacheLife({ revalidate: CACHE_TTL.STATIC }) // 300s for categories
-  cacheTag('admin-integration-categories')
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/integrations/categories`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverGet<{
+      categories: Array<{
+        id: string
+        label: string
+        count: number
+      }>
+    }>(
+      `${process.env.API_BASE_URL}/api/integrations/categories`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: CACHE_TTL.STATIC,
+          tags: ['admin-integration-categories']
+        }
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return data.categories || getDefaultCategories()
   } catch (error) {
     console.error('Error fetching integration categories:', error)

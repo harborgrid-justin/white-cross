@@ -101,7 +101,5 @@ export {
   getCurrentUserId,
   createAuditContext,
   getAuthUser,
-  verifyCurrentPassword,
-  enhancedFetch,
-  BACKEND_URL
+  verifyCurrentPassword
 } from './settings.utils';

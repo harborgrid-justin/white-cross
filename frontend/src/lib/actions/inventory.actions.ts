@@ -28,7 +28,7 @@
 export type { ActionResult, PaginatedResult, InventoryStats } from './inventory.types';
 
 // Re-export utility functions
-export { BACKEND_URL, getAuthToken, getCurrentUserId, createAuditContext, enhancedFetch } from './inventory.utils';
+export { getAuthToken, getCurrentUserId, createAuditContext } from './inventory.utils';
 
 // Re-export inventory item operations
 export {

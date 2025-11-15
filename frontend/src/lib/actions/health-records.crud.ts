@@ -11,7 +11,7 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z, type ZodIssue } from 'zod';
-import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut, serverDelete, getAuthToken } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types';
 
@@ -25,10 +25,6 @@ import {
 } from '@/schemas/health-record.schemas';
 
 // Import shared utilities and types
-import {
-  getAuthToken,
-  createAuditContextFromServer
-} from './health-records.utils';
 import type { ActionResult } from './health-records.types';
 
 /**

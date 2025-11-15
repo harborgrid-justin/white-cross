@@ -10,14 +10,12 @@
 
 import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
+import { serverGet, serverPost } from '@/lib/api/nextjs-client';
 import type { AuthenticatedUser, AuditContext } from './settings.types';
 import {
   extractIPAddress,
   extractUserAgent
 } from '@/lib/audit';
-
-// Use server-side or fallback to public env variable or default
-export const BACKEND_URL = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 /**
  * Get auth token from cookies
@@ -51,34 +49,11 @@ export async function createAuditContext(): Promise<AuditContext> {
   const userId = await getCurrentUserId();
   return {
     userId,
-    ipAddress: extractIPAddress(request),
-    userAgent: extractUserAgent(request)
+    ipAddress: extractIPAddress(request) ?? null,
+    userAgent: extractUserAgent(request) ?? null
   };
 }
 
-/**
- * Enhanced fetch with Next.js v16 capabilities
- * Automatically adds authentication headers and caching configuration
- * @param url - The URL to fetch
- * @param options - Additional fetch options
- * @returns Fetch response
- */
-export async function enhancedFetch(url: string, options: RequestInit = {}) {
-  const token = await getAuthToken();
-
-  return fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
-      ...options.headers,
-    },
-    next: {
-      revalidate: 300, // 5 minute cache
-      tags: ['user-settings', 'user-data']
-    }
-  });
-}
 
 /**
  * Get authenticated user from session
@@ -92,15 +67,19 @@ export async function getAuthUser(): Promise<AuthenticatedUser | null> {
       return null;
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/auth/verify`, {
-      method: 'GET'
-    });
+    const response = await serverGet<AuthenticatedUser>(
+      '/auth/verify',
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 300, // 5 minute cache
+          tags: ['user-settings', 'user-data']
+        }
+      }
+    );
 
-    if (!response.ok) {
-      return null;
-    }
-
-    return await response.json();
+    return response;
   } catch (error) {
     console.error('Failed to get authenticated user:', error);
     return null;
@@ -119,12 +98,18 @@ export async function verifyCurrentPassword(
   password: string
 ): Promise<boolean> {
   try {
-    const response = await enhancedFetch(`${BACKEND_URL}/auth/verify-password`, {
-      method: 'POST',
-      body: JSON.stringify({ userId, password })
-    });
+    await serverPost<{ success: boolean }>(
+      '/auth/verify-password',
+      { userId, password },
+      {
+        cache: 'no-store',
+        next: {
+          tags: ['user-settings']
+        }
+      }
+    );
 
-    return response.ok;
+    return true;
   } catch (error) {
     console.error('Password verification failed:', error);
     return false;

@@ -37,35 +37,27 @@ export async function recordTrainingCompletionAction(
   try {
     const context = await getCurrentUserContext();
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/training/complete`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      body: JSON.stringify({
+    // Use serverPost from nextjs-client
+    const trainingRecord = await serverPost<Record<string, unknown>>(
+      `${COMPLIANCE_ENDPOINTS.TRAINING}/complete`,
+      {
         userId,
         courseId,
         completedAt,
         verifiedBy: context.userId,
-      }),
-      next: {
-        revalidate: 1800,
-        tags: ['training', `user-training-${userId}`]
+      },
+      {
+        cache: 'no-store',
+        next: {
+          revalidate: 1800,
+          tags: ['training', `user-training-${userId}`]
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const trainingRecord = await response.json();
+    );
 
     // Revalidate training caches
-    revalidateTag('training', 'compliance');
-    revalidateTag(`user-training-${userId}`, 'compliance');
+    revalidateTag('training', 'default');
+    revalidateTag(`user-training-${userId}`, 'default');
     revalidatePath('/compliance/training');
 
     // Log training completion
@@ -103,23 +95,18 @@ export async function getUserTrainingStatusAction(
   userId: string
 ): Promise<ActionResult<Record<string, unknown>>> {
   try {
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/training/user/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 900,
-        tags: ['training', `user-training-${userId}`]
+    // Use serverGet from nextjs-client
+    const trainingStatus = await serverGet<Record<string, unknown>>(
+      `${COMPLIANCE_ENDPOINTS.TRAINING}/user/${userId}`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 900,
+          tags: ['training', `user-training-${userId}`]
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const trainingStatus = await response.json();
+    );
 
     return {
       success: true,
@@ -140,23 +127,18 @@ export async function getUserTrainingStatusAction(
  */
 export async function getOverdueTrainingAction(): Promise<ActionResult<Record<string, unknown>[]>> {
   try {
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/training/overdue`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 600,
-        tags: ['training', 'overdue-training']
+    // Use serverGet from nextjs-client
+    const overdueTraining = await serverGet<Record<string, unknown>[]>(
+      `${COMPLIANCE_ENDPOINTS.TRAINING}/overdue`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 600,
+          tags: ['training', 'overdue-training']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const overdueTraining = await response.json() as Record<string, unknown>[];
+    );
 
     return {
       success: true,
@@ -214,28 +196,15 @@ export async function getTrainingRecordsAction(
   }>;
 }>> {
   try {
-    // Build query parameters
-    const params = new URLSearchParams();
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, String(value));
-        }
-      });
-    }
-
-    // Fetch training stats
-    const statsResponse = await fetch(`${BACKEND_URL}/compliance/training/stats`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 600,
-        tags: ['training', 'training-stats']
+    // Convert filters to query params
+    const params = filters ? Object.entries(filters).reduce((acc, [key, value]) => {
+      if (value !== undefined && value !== null) {
+        acc[key] = value;
       }
-    });
+      return acc;
+    }, {} as Record<string, string | number | boolean>) : undefined;
 
+    // Fetch training stats using serverGet
     let stats = {
       total: 0,
       completed: 0,
@@ -246,22 +215,23 @@ export async function getTrainingRecordsAction(
       expiringSoon: 0,
     };
 
-    if (statsResponse.ok) {
-      stats = await statsResponse.json();
+    try {
+      stats = await serverGet<typeof stats>(
+        `${COMPLIANCE_ENDPOINTS.TRAINING}/stats`,
+        undefined,
+        {
+          cache: 'force-cache',
+          next: {
+            revalidate: 600,
+            tags: ['training', 'training-stats']
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Failed to fetch training stats:', error);
     }
 
-    // Fetch training courses
-    const coursesResponse = await fetch(`${BACKEND_URL}/compliance/training/courses?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 600,
-        tags: ['training', 'training-courses']
-      }
-    });
-
+    // Fetch training courses using serverGet
     let courses: Array<{
       id: string;
       title: string;
@@ -270,22 +240,23 @@ export async function getTrainingRecordsAction(
       stats: { completed: number; inProgress: number; overdue: number };
     }> = [];
 
-    if (coursesResponse.ok) {
-      courses = await coursesResponse.json();
+    try {
+      courses = await serverGet<typeof courses>(
+        `${COMPLIANCE_ENDPOINTS.TRAINING}/courses`,
+        params,
+        {
+          cache: 'force-cache',
+          next: {
+            revalidate: 600,
+            tags: ['training', 'training-courses']
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Failed to fetch training courses:', error);
     }
 
-    // Fetch user training status
-    const usersResponse = await fetch(`${BACKEND_URL}/compliance/training/users?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 600,
-        tags: ['training', 'user-training']
-      }
-    });
-
+    // Fetch user training status using serverGet
     let users: Array<{
       id: string;
       name: string;
@@ -298,8 +269,20 @@ export async function getTrainingRecordsAction(
       };
     }> = [];
 
-    if (usersResponse.ok) {
-      users = await usersResponse.json();
+    try {
+      users = await serverGet<typeof users>(
+        `${COMPLIANCE_ENDPOINTS.TRAINING}/users`,
+        params,
+        {
+          cache: 'force-cache',
+          next: {
+            revalidate: 600,
+            tags: ['training', 'user-training']
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Failed to fetch user training:', error);
     }
 
     return {

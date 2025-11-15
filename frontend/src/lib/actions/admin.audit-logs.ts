@@ -6,7 +6,7 @@
  */
 
 'use server'
-import { unstable_cacheTag as cacheTag, unstable_cacheLife as cacheLife } from 'next/cache'
+import { serverGet, serverPost } from '@/lib/api/nextjs-client'
 import { CACHE_TTL } from '@/lib/cache/constants'
 
 export interface AuditLog {
@@ -51,31 +51,32 @@ export async function getAuditLogs(params: AuditLogSearchParams = {}): Promise<{
   page: number
   totalPages: number
 }> {
-  cacheLife({ revalidate: CACHE_TTL.PHI_STANDARD }) // 60s for audit data
-  cacheTag('admin-audit-logs')
-
   try {
-    const searchParams = new URLSearchParams()
-    if (params.search) searchParams.append('search', params.search)
-    if (params.action && params.action !== 'all') searchParams.append('action', params.action)
-    if (params.resource && params.resource !== 'all') searchParams.append('resource', params.resource)
-    if (params.range) searchParams.append('range', params.range)
-    if (params.page) searchParams.append('page', params.page.toString())
-    if (params.limit) searchParams.append('limit', params.limit.toString())
+    const queryParams: Record<string, string | number | boolean> = {}
+    if (params.search) queryParams.search = params.search
+    if (params.action && params.action !== 'all') queryParams.action = params.action
+    if (params.resource && params.resource !== 'all') queryParams.resource = params.resource
+    if (params.range) queryParams.range = params.range
+    if (params.page) queryParams.page = params.page
+    if (params.limit) queryParams.limit = params.limit
 
-    const response = await fetch(`${process.env.API_BASE_URL}/api/audit-logs?${searchParams.toString()}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverGet<{
+      logs: AuditLog[]
+      total: number
+      page: number
+      totalPages: number
+    }>(
+      `${process.env.API_BASE_URL}/api/audit-logs`,
+      queryParams,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: CACHE_TTL.PHI_STANDARD,
+          tags: ['admin-audit-logs']
+        }
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return {
       logs: data.logs || [],
       total: data.total || 0,
@@ -103,23 +104,25 @@ export async function getAuditLogStats(): Promise<{
   topActions: Array<{ action: string; count: number }>
   topUsers: Array<{ userName: string; count: number }>
 }> {
-  cacheLife({ revalidate: CACHE_TTL.STATS }) // 120s for stats
-  cacheTag('admin-audit-logs-stats')
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/audit-logs/stats`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverGet<{
+      totalLogs: number
+      todayLogs: number
+      failedActions: number
+      topActions: Array<{ action: string; count: number }>
+      topUsers: Array<{ userName: string; count: number }>
+    }>(
+      `${process.env.API_BASE_URL}/api/audit-logs/stats`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: CACHE_TTL.STATS,
+          tags: ['admin-audit-logs-stats']
+        }
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return {
       totalLogs: data.totalLogs || 0,
       todayLogs: data.todayLogs || 0,
@@ -143,23 +146,19 @@ export async function getAuditLogStats(): Promise<{
  * Get audit log details by ID
  */
 export async function getAuditLogById(id: string): Promise<AuditLog | null> {
-  cacheLife({ revalidate: CACHE_TTL.PHI_STANDARD }) // 60s for specific log
-  cacheTag(`admin-audit-log-${id}`)
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/audit-logs/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverGet<{ log: AuditLog }>(
+      `${process.env.API_BASE_URL}/api/audit-logs/${id}`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: CACHE_TTL.PHI_STANDARD,
+          tags: [`admin-audit-log-${id}`]
+        }
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return data.log
   } catch (error) {
     console.error('Error fetching audit log details:', error)
@@ -175,28 +174,23 @@ export async function exportAuditLogs(
   format: 'csv' | 'json' | 'pdf' = 'csv'
 ): Promise<{ success: boolean; url?: string; message: string }> {
   try {
-    const searchParams = new URLSearchParams()
-    if (filters.action) searchParams.append('action', filters.action)
-    if (filters.resource) searchParams.append('resource', filters.resource)
-    if (filters.userId) searchParams.append('userId', filters.userId)
-    if (filters.dateRange) searchParams.append('range', filters.dateRange)
-    if (filters.startDate) searchParams.append('startDate', filters.startDate)
-    if (filters.endDate) searchParams.append('endDate', filters.endDate)
-    searchParams.append('format', format)
+    const queryParams: Record<string, string | number | boolean> = {}
+    if (filters.action) queryParams.action = filters.action
+    if (filters.resource) queryParams.resource = filters.resource
+    if (filters.userId) queryParams.userId = filters.userId
+    if (filters.dateRange) queryParams.range = filters.dateRange
+    if (filters.startDate) queryParams.startDate = filters.startDate
+    if (filters.endDate) queryParams.endDate = filters.endDate
+    queryParams.format = format
 
-    const response = await fetch(`${process.env.API_BASE_URL}/api/audit-logs/export?${searchParams.toString()}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverPost<{ downloadUrl: string }>(
+      `${process.env.API_BASE_URL}/api/audit-logs/export`,
+      queryParams,
+      {
+        cache: 'no-store'
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return {
       success: true,
       url: data.downloadUrl,
@@ -219,23 +213,23 @@ export async function getAuditLogFilterOptions(): Promise<{
   resources: string[]
   users: Array<{ id: string; name: string }>
 }> {
-  cacheLife({ revalidate: CACHE_TTL.STATIC }) // 300s for filter options
-  cacheTag('admin-audit-logs-filters')
-
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/audit-logs/filters`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-    })
+    const data = await serverGet<{
+      actions: string[]
+      resources: string[]
+      users: Array<{ id: string; name: string }>
+    }>(
+      `${process.env.API_BASE_URL}/api/audit-logs/filters`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: CACHE_TTL.STATIC,
+          tags: ['admin-audit-logs-filters']
+        }
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
     return {
       actions: data.actions || ['CREATE', 'UPDATE', 'DELETE', 'VIEW', 'EXPORT'],
       resources: data.resources || ['user', 'student', 'medication', 'appointment'],
@@ -258,26 +252,20 @@ export async function archiveAuditLogs(
   olderThanDays: number
 ): Promise<{ success: boolean; archivedCount: number; message: string }> {
   try {
-    const response = await fetch(`${process.env.API_BASE_URL}/api/audit-logs/archive`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.API_TOKEN}`,
-      },
-      body: JSON.stringify({ olderThanDays }),
-    })
+    const data = await serverPost<{ archivedCount: number }>(
+      `${process.env.API_BASE_URL}/api/audit-logs/archive`,
+      { olderThanDays },
+      {
+        cache: 'no-store'
+      }
+    )
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    const data = await response.json()
-    
     // Revalidate cache
-    await fetch(`${process.env.API_BASE_URL}/api/revalidate?tag=admin-audit-logs`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.API_TOKEN}` },
-    })
+    await serverPost(
+      `${process.env.API_BASE_URL}/api/revalidate`,
+      { tag: 'admin-audit-logs' },
+      { cache: 'no-store' }
+    )
 
     return {
       success: true,
