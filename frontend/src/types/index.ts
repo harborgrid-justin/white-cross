@@ -127,6 +127,29 @@ export {
 } from './core/api';
 
 // ============================================================================
+// GUI BUILDER TYPES
+// ============================================================================
+
+/**
+ * GUI Builder types include comprehensive type definitions for the
+ * Next.js drag-and-drop page builder system:
+ * - Core types (brands, utilities, validation)
+ * - Component definitions and registry
+ * - Property schemas and bindings
+ * - Layout and responsive design
+ * - Editor state and history
+ * - Workflows and routing
+ * - Code generation and templates
+ * - Versioning and collaboration
+ *
+ * @example
+ * ```typescript
+ * import type { ComponentDefinition, PropertySchema } from '@/types/gui-builder';
+ * ```
+ */
+export * from './gui-builder';
+
+// ============================================================================
 // MODULE AUGMENTATIONS
 // ============================================================================
 

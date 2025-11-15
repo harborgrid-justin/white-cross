@@ -1,0 +1,414 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2025-11-14T10:30:00Z",
+  "exportedBy": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "John Doe",
+    "email": "john.doe@whitecross.com"
+  },
+  "project": {
+    "id": "650e8400-e29b-41d4-a716-446655440001",
+    "name": "School Website 2025",
+    "description": "Main website for Lincoln Elementary School",
+    "slug": "school-website-2025",
+    "status": "published",
+    "visibility": "public",
+    "settings": {
+      "theme": {
+        "primaryColor": "#1e40af",
+        "secondaryColor": "#dc2626",
+        "fontFamily": "Inter, sans-serif",
+        "customCSS": "body { font-feature-settings: 'kern' 1; }"
+      },
+      "seo": {
+        "titleTemplate": "%s | Lincoln Elementary",
+        "defaultDescription": "Welcome to Lincoln Elementary School - Building Tomorrow's Leaders",
+        "defaultKeywords": ["elementary school", "education", "Lincoln"],
+        "ogImage": "https://cdn.whitecross.com/projects/650e8400/og-image.jpg"
+      },
+      "responsive": {
+        "breakpoints": {
+          "mobile": 640,
+          "tablet": 1024,
+          "desktop": 1280
+        }
+      },
+      "integrations": {
+        "googleAnalytics": "G-XXXXXXXXXX",
+        "customScripts": [
+          "<!-- Accessibility widget -->\n<script src=\"https://cdn.accessibilitywidget.com/widget.js\"></script>"
+        ]
+      }
+    },
+    "thumbnailUrl": "https://cdn.whitecross.com/projects/650e8400/thumbnail.jpg",
+    "version": 12,
+    "createdAt": "2025-09-01T08:00:00Z",
+    "updatedAt": "2025-11-14T10:25:00Z",
+    "publishedAt": "2025-10-15T14:00:00Z"
+  },
+  "pages": [
+    {
+      "id": "750e8400-e29b-41d4-a716-446655440001",
+      "name": "Home",
+      "path": "/",
+      "status": "published",
+      "order": 0,
+      "parentId": null,
+      "settings": {
+        "layout": {
+          "type": "fluid",
+          "maxWidth": 1280,
+          "columns": 12,
+          "gap": 16
+        },
+        "seo": {
+          "title": "Welcome to Lincoln Elementary",
+          "description": "Lincoln Elementary School provides exceptional education for students in grades K-5",
+          "keywords": ["elementary school", "K-5 education", "Lincoln school"],
+          "ogTitle": "Lincoln Elementary School - Home",
+          "ogDescription": "Building tomorrow's leaders through exceptional education",
+          "ogImage": "https://cdn.whitecross.com/projects/650e8400/pages/home-og.jpg",
+          "canonicalUrl": "https://lincoln-elementary.edu",
+          "noindex": false,
+          "nofollow": false
+        },
+        "requireAuth": false
+      },
+      "isHomePage": true,
+      "components": [
+        {
+          "id": "850e8400-e29b-41d4-a716-446655440001",
+          "type": "hero",
+          "name": "Main Hero Section",
+          "order": 0,
+          "parentId": null,
+          "props": {
+            "heading": "Welcome to Lincoln Elementary",
+            "subheading": "Building Tomorrow's Leaders",
+            "ctaText": "Learn More",
+            "ctaUrl": "/about",
+            "backgroundImage": "https://cdn.whitecross.com/projects/650e8400/hero-bg.jpg"
+          },
+          "styles": {
+            "height": "600px",
+            "padding": {
+              "top": 80,
+              "right": 40,
+              "bottom": 80,
+              "left": 40
+            },
+            "background": {
+              "color": "#1e40af",
+              "image": "url('https://cdn.whitecross.com/projects/650e8400/hero-bg.jpg')",
+              "size": "cover",
+              "position": "center",
+              "repeat": "no-repeat"
+            },
+            "display": "flex",
+            "flexbox": {
+              "direction": "column",
+              "justify": "center",
+              "align": "center"
+            },
+            "typography": {
+              "fontFamily": "Inter, sans-serif",
+              "color": "#ffffff"
+            }
+          },
+          "responsive": {
+            "mobile": {
+              "height": "400px",
+              "padding": {
+                "top": 40,
+                "right": 20,
+                "bottom": 40,
+                "left": 20
+              }
+            },
+            "tablet": {
+              "height": "500px",
+              "padding": {
+                "top": 60,
+                "right": 30,
+                "bottom": 60,
+                "left": 30
+              }
+            }
+          },
+          "isVisible": true,
+          "isLocked": false,
+          "elements": [
+            {
+              "id": "950e8400-e29b-41d4-a716-446655440001",
+              "type": "heading",
+              "order": 0,
+              "content": {
+                "text": "Welcome to Lincoln Elementary",
+                "level": 1
+              },
+              "styles": {
+                "typography": {
+                  "fontSize": 48,
+                  "fontWeight": 700,
+                  "lineHeight": 1.2,
+                  "color": "#ffffff",
+                  "textAlign": "center"
+                },
+                "margin": {
+                  "bottom": 16
+                }
+              },
+              "isVisible": true
+            },
+            {
+              "id": "960e8400-e29b-41d4-a716-446655440001",
+              "type": "paragraph",
+              "order": 1,
+              "content": {
+                "text": "Building Tomorrow's Leaders"
+              },
+              "styles": {
+                "typography": {
+                  "fontSize": 24,
+                  "fontWeight": 400,
+                  "lineHeight": 1.5,
+                  "color": "#e5e7eb",
+                  "textAlign": "center"
+                },
+                "margin": {
+                  "bottom": 32
+                }
+              },
+              "isVisible": true
+            },
+            {
+              "id": "970e8400-e29b-41d4-a716-446655440001",
+              "type": "button",
+              "order": 2,
+              "content": {
+                "text": "Learn More",
+                "url": "/about"
+              },
+              "styles": {
+                "padding": {
+                  "top": 16,
+                  "right": 32,
+                  "bottom": 16,
+                  "left": 32
+                },
+                "background": {
+                  "color": "#dc2626"
+                },
+                "border": {
+                  "radius": 8
+                },
+                "typography": {
+                  "fontSize": 18,
+                  "fontWeight": 600,
+                  "color": "#ffffff"
+                }
+              },
+              "events": {
+                "onClick": "navigateTo('/about')"
+              },
+              "isVisible": true
+            }
+          ]
+        },
+        {
+          "id": "850e8400-e29b-41d4-a716-446655440002",
+          "type": "section",
+          "name": "Features Section",
+          "order": 1,
+          "parentId": null,
+          "props": {
+            "title": "Why Choose Lincoln Elementary"
+          },
+          "styles": {
+            "padding": {
+              "top": 80,
+              "right": 40,
+              "bottom": 80,
+              "left": 40
+            },
+            "background": {
+              "color": "#f9fafb"
+            }
+          },
+          "isVisible": true,
+          "isLocked": false,
+          "children": [
+            {
+              "id": "850e8400-e29b-41d4-a716-446655440003",
+              "type": "grid",
+              "name": "Features Grid",
+              "order": 0,
+              "parentId": "850e8400-e29b-41d4-a716-446655440002",
+              "props": {},
+              "styles": {
+                "grid": {
+                  "columns": 3,
+                  "gap": 24
+                }
+              },
+              "responsive": {
+                "mobile": {
+                  "grid": {
+                    "columns": 1,
+                    "gap": 16
+                  }
+                },
+                "tablet": {
+                  "grid": {
+                    "columns": 2,
+                    "gap": 20
+                  }
+                }
+              },
+              "isVisible": true,
+              "isLocked": false,
+              "children": [
+                {
+                  "id": "850e8400-e29b-41d4-a716-446655440004",
+                  "type": "card",
+                  "name": "Feature Card 1",
+                  "order": 0,
+                  "props": {
+                    "icon": "academic-cap",
+                    "title": "Academic Excellence",
+                    "description": "Rigorous curriculum aligned with state standards"
+                  },
+                  "styles": {
+                    "padding": {
+                      "top": 24,
+                      "right": 24,
+                      "bottom": 24,
+                      "left": 24
+                    },
+                    "background": {
+                      "color": "#ffffff"
+                    },
+                    "border": {
+                      "width": 1,
+                      "style": "solid",
+                      "color": "#e5e7eb",
+                      "radius": 8
+                    },
+                    "shadow": {
+                      "x": 0,
+                      "y": 2,
+                      "blur": 8,
+                      "spread": 0,
+                      "color": "rgba(0, 0, 0, 0.1)"
+                    }
+                  },
+                  "isVisible": true,
+                  "isLocked": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "a50e8400-e29b-41d4-a716-446655440001",
+      "name": "Hero Background",
+      "filename": "hero-bg.jpg",
+      "type": "image",
+      "mimeType": "image/jpeg",
+      "size": 2457600,
+      "url": "assets/images/hero-bg.jpg",
+      "thumbnailUrl": "assets/images/thumbnails/hero-bg-thumb.jpg",
+      "metadata": {
+        "width": 1920,
+        "height": 1080,
+        "format": "jpeg",
+        "alt": "Lincoln Elementary School Building"
+      },
+      "tags": ["hero", "background", "school"]
+    },
+    {
+      "id": "a50e8400-e29b-41d4-a716-446655440002",
+      "name": "School Logo",
+      "filename": "logo.svg",
+      "type": "icon",
+      "mimeType": "image/svg+xml",
+      "size": 15360,
+      "url": "assets/icons/logo.svg",
+      "metadata": {
+        "format": "svg",
+        "alt": "Lincoln Elementary Logo"
+      },
+      "tags": ["logo", "branding"]
+    }
+  ],
+  "componentLibrary": [
+    {
+      "id": "c50e8400-e29b-41d4-a716-446655440001",
+      "name": "School Feature Card",
+      "description": "Reusable feature card with icon, title, and description",
+      "category": "cards",
+      "definition": {
+        "type": "card",
+        "props": {
+          "icon": "academic-cap",
+          "title": "Feature Title",
+          "description": "Feature description"
+        },
+        "styles": {
+          "padding": {
+            "top": 24,
+            "right": 24,
+            "bottom": 24,
+            "left": 24
+          },
+          "background": {
+            "color": "#ffffff"
+          },
+          "border": {
+            "width": 1,
+            "style": "solid",
+            "color": "#e5e7eb",
+            "radius": 8
+          }
+        }
+      },
+      "thumbnailUrl": "https://cdn.whitecross.com/library/feature-card-thumb.jpg",
+      "tags": ["card", "feature", "reusable"]
+    }
+  ],
+  "workflows": [
+    {
+      "id": "w50e8400-e29b-41d4-a716-446655440001",
+      "name": "Nightly Auto-Backup",
+      "description": "Automatically backup project every night at 2 AM",
+      "type": "auto_backup",
+      "status": "active",
+      "config": {
+        "trigger": {
+          "type": "schedule",
+          "cron": "0 2 * * *"
+        },
+        "actions": [
+          {
+            "type": "create_backup",
+            "config": {
+              "includeAssets": true,
+              "compression": "gzip"
+            },
+            "order": 1
+          }
+        ],
+        "notifications": {
+          "onSuccess": ["john.doe@whitecross.com"],
+          "onFailure": ["admin@whitecross.com"],
+          "channels": ["email"]
+        }
+      },
+      "isActive": true
+    }
+  ]
+}

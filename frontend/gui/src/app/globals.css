@@ -1,0 +1,127 @@
+/**
+ * Global Styles - Next.js GUI Builder
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-start-rgb));
+}
+
+/* ============================================================================
+   CUSTOM UTILITIES
+   ============================================================================ */
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Custom scrollbar styles */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-gray-900;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-700 rounded;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-600;
+  }
+}
+
+/* ============================================================================
+   REACT RESIZABLE PANELS CUSTOM STYLES
+   ============================================================================ */
+
+[data-panel-resize-handle-enabled] {
+  position: relative;
+}
+
+[data-panel-resize-handle-enabled]:hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.5);
+  z-index: 10;
+}
+
+[data-panel-resize-handle-active]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.8);
+  z-index: 10;
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT
+   ============================================================================ */
+
+.dark {
+  color-scheme: dark;
+}
+
+/* ============================================================================
+   SELECTION & FOCUS STYLES
+   ============================================================================ */
+
+::selection {
+  background-color: rgba(59, 130, 246, 0.3);
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   TRANSITIONS
+   ============================================================================ */
+
+@layer base {
+  * {
+    @apply transition-colors duration-150;
+  }
+}

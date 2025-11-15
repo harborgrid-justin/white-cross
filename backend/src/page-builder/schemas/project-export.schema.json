@@ -1,0 +1,533 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://whitecross.com/schemas/page-builder/project-export.json",
+  "title": "Page Builder Project Export",
+  "description": "JSON schema for exported page builder projects",
+  "type": "object",
+  "required": [
+    "version",
+    "exportedAt",
+    "project",
+    "pages"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version for compatibility checking",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when project was exported"
+    },
+    "exportedBy": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "name", "slug", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string",
+          "maxLength": 100,
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "published", "archived"]
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["private", "school", "district", "public"]
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "theme": {
+              "type": "object",
+              "properties": {
+                "primaryColor": { "type": "string" },
+                "secondaryColor": { "type": "string" },
+                "fontFamily": { "type": "string" },
+                "customCSS": { "type": "string" }
+              }
+            },
+            "seo": {
+              "type": "object",
+              "properties": {
+                "titleTemplate": { "type": "string" },
+                "defaultDescription": { "type": "string" },
+                "defaultKeywords": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "ogImage": { "type": "string", "format": "uri" }
+              }
+            },
+            "responsive": {
+              "type": "object",
+              "properties": {
+                "breakpoints": {
+                  "type": "object",
+                  "properties": {
+                    "mobile": { "type": "number" },
+                    "tablet": { "type": "number" },
+                    "desktop": { "type": "number" }
+                  }
+                }
+              }
+            },
+            "integrations": {
+              "type": "object",
+              "properties": {
+                "googleAnalytics": { "type": "string" },
+                "facebookPixel": { "type": "string" },
+                "customScripts": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/page"
+      }
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/asset"
+      }
+    },
+    "componentLibrary": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/libraryComponent"
+      }
+    },
+    "workflows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/workflow"
+      }
+    }
+  },
+  "definitions": {
+    "page": {
+      "type": "object",
+      "required": ["id", "name", "path", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^/.*"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "published", "archived"]
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "layout": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["fixed", "fluid", "custom"]
+                },
+                "maxWidth": { "type": "number" },
+                "columns": { "type": "number" },
+                "gap": { "type": "number" }
+              }
+            },
+            "seo": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string" },
+                "description": { "type": "string" },
+                "keywords": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "ogTitle": { "type": "string" },
+                "ogDescription": { "type": "string" },
+                "ogImage": { "type": "string" },
+                "canonicalUrl": { "type": "string", "format": "uri" },
+                "noindex": { "type": "boolean" },
+                "nofollow": { "type": "boolean" }
+              }
+            },
+            "customCSS": { "type": "string" },
+            "customJS": { "type": "string" },
+            "requireAuth": { "type": "boolean" },
+            "allowedRoles": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "isHomePage": {
+          "type": "boolean"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/component"
+          }
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "required": ["id", "type", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "container",
+            "section",
+            "header",
+            "footer",
+            "navigation",
+            "hero",
+            "text",
+            "image",
+            "video",
+            "button",
+            "form",
+            "card",
+            "grid",
+            "list",
+            "table",
+            "custom"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "libraryComponentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "props": {
+          "type": "object"
+        },
+        "styles": {
+          "$ref": "#/definitions/styles"
+        },
+        "responsive": {
+          "type": "object",
+          "properties": {
+            "mobile": { "$ref": "#/definitions/styles" },
+            "tablet": { "$ref": "#/definitions/styles" },
+            "desktop": { "$ref": "#/definitions/styles" }
+          }
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "isLocked": {
+          "type": "boolean"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/element"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/component"
+          }
+        }
+      }
+    },
+    "element": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "text",
+            "heading",
+            "paragraph",
+            "image",
+            "icon",
+            "button",
+            "link",
+            "input",
+            "textarea",
+            "select",
+            "checkbox",
+            "radio",
+            "divider",
+            "spacer",
+            "embed"
+          ]
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "content": {
+          "type": "object"
+        },
+        "styles": {
+          "$ref": "#/definitions/styles"
+        },
+        "events": {
+          "type": "object"
+        },
+        "isVisible": {
+          "type": "boolean"
+        }
+      }
+    },
+    "styles": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "string" },
+        "height": { "type": "string" },
+        "margin": {
+          "type": "object",
+          "properties": {
+            "top": { "type": "number" },
+            "right": { "type": "number" },
+            "bottom": { "type": "number" },
+            "left": { "type": "number" }
+          }
+        },
+        "padding": {
+          "type": "object",
+          "properties": {
+            "top": { "type": "number" },
+            "right": { "type": "number" },
+            "bottom": { "type": "number" },
+            "left": { "type": "number" }
+          }
+        },
+        "background": {
+          "type": "object",
+          "properties": {
+            "color": { "type": "string" },
+            "image": { "type": "string" },
+            "size": { "type": "string" },
+            "position": { "type": "string" },
+            "repeat": { "type": "string" }
+          }
+        },
+        "border": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number" },
+            "style": { "type": "string" },
+            "color": { "type": "string" },
+            "radius": { "type": "number" }
+          }
+        },
+        "typography": {
+          "type": "object",
+          "properties": {
+            "fontFamily": { "type": "string" },
+            "fontSize": { "type": "number" },
+            "fontWeight": { "type": "number" },
+            "lineHeight": { "type": "number" },
+            "color": { "type": "string" },
+            "textAlign": { "type": "string" }
+          }
+        },
+        "customCSS": { "type": "string" }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "required": ["id", "name", "filename", "type", "url"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "filename": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "type": {
+          "type": "string",
+          "enum": ["image", "video", "audio", "document", "font", "icon", "other"]
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "url": {
+          "type": "string"
+        },
+        "thumbnailUrl": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "libraryComponent": {
+      "type": "object",
+      "required": ["id", "name", "definition"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "definition": {
+          "type": "object"
+        },
+        "thumbnailUrl": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "required": ["id", "name", "type", "config"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "scheduled_publish",
+            "auto_backup",
+            "auto_save",
+            "approval_workflow",
+            "notification",
+            "custom"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "paused", "completed", "failed", "cancelled"]
+        },
+        "config": {
+          "type": "object"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
