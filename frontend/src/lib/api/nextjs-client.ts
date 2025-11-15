@@ -96,6 +96,49 @@ export {
 export { buildCacheTags, buildResourceTag } from './nextjs-client.utils';
 
 // ==========================================
+// SERVER QUERIES EXPORTS
+// ==========================================
+
+export {
+  // Query functions
+  getStudent,
+  getStudentsList,
+  getMedication,
+  getMedicationsList,
+  getAppointment,
+  getAppointmentsList,
+  getDashboardStats,
+  getUsersList,
+  getCurrentUser,
+
+  // Prefetch functions
+  prefetchStudentsList,
+  prefetchStudent,
+  prefetchDashboardPage,
+
+  // Types
+  type QueryParams,
+  type PaginatedResponse,
+  type Student,
+  type Medication,
+  type Appointment,
+  type DashboardStats,
+  type User,
+} from './nextjs-client.queries';
+
+// ==========================================
+// CACHE ACTIONS EXPORTS
+// ==========================================
+
+export {
+  invalidateAppointmentsCacheAction,
+  invalidateAppointmentCacheAction,
+  invalidateStudentCacheAction,
+  invalidatePageCacheAction,
+  emergencyCacheClearAction,
+} from './nextjs-client.cache-actions';
+
+// ==========================================
 // LEGACY EXPORTS
 // ==========================================
 
@@ -114,6 +157,24 @@ import {
   serverDelete,
 } from './nextjs-client.methods';
 import { buildCacheTags, buildResourceTag } from './nextjs-client.utils';
+import {
+  getStudent,
+  getStudentsList,
+  getMedication,
+  getMedicationsList,
+  getAppointment,
+  getAppointmentsList,
+  getDashboardStats,
+  getUsersList,
+  getCurrentUser,
+} from './nextjs-client.queries';
+import {
+  invalidateAppointmentsCacheAction,
+  invalidateAppointmentCacheAction,
+  invalidateStudentCacheAction,
+  invalidatePageCacheAction,
+  emergencyCacheClearAction,
+} from './nextjs-client.cache-actions';
 import { apiClient, fetchApi } from './nextjs-client.legacy';
 
 /**
@@ -124,6 +185,8 @@ import { apiClient, fetchApi } from './nextjs-client.legacy';
  * import nextjsClient from '@/lib/api/nextjs-client';
  *
  * const data = await nextjsClient.serverGet('/api/students');
+ * const students = await nextjsClient.getStudentsList();
+ * await nextjsClient.invalidateStudentCacheAction('123');
  * ```
  */
 const nextjsClient = {
@@ -140,6 +203,24 @@ const nextjsClient = {
   // Utilities
   buildCacheTags,
   buildResourceTag,
+
+  // Server Queries
+  getStudent,
+  getStudentsList,
+  getMedication,
+  getMedicationsList,
+  getAppointment,
+  getAppointmentsList,
+  getDashboardStats,
+  getUsersList,
+  getCurrentUser,
+
+  // Cache Actions
+  invalidateAppointmentsCacheAction,
+  invalidateAppointmentCacheAction,
+  invalidateStudentCacheAction,
+  invalidatePageCacheAction,
+  emergencyCacheClearAction,
 
   // Legacy
   apiClient,

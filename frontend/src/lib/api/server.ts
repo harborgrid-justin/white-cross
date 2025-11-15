@@ -48,7 +48,34 @@ export {
   serverDelete,
   buildCacheTags,
   buildResourceTag,
-  NextApiClientError
+  NextApiClientError,
+
+  // Server Queries
+  getStudent,
+  getStudentsList,
+  getMedication,
+  getMedicationsList,
+  getAppointment,
+  getAppointmentsList,
+  getDashboardStats,
+  getUsersList,
+  getCurrentUser,
+
+  // Cache Actions
+  invalidateAppointmentsCacheAction,
+  invalidateAppointmentCacheAction,
+  invalidateStudentCacheAction,
+  invalidatePageCacheAction,
+  emergencyCacheClearAction,
+
+  // Query Types
+  type QueryParams,
+  type PaginatedResponse,
+  type Student,
+  type Medication,
+  type Appointment,
+  type DashboardStats,
+  type User,
 } from './nextjs-client';
 
 // Export Next.js server types

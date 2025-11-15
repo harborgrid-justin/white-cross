@@ -187,6 +187,12 @@ export const COMPLIANCE_ENDPOINTS = {
   ACCESS_LOG: `/api/v1/compliance/access-log`,
   DATA_RETENTION: `/api/v1/compliance/data-retention`,
   EXPORT: `/api/v1/compliance/export`,
+  POLICIES: `/api/v1/compliance/policies`,
+  POLICIES_STATS: `/api/v1/compliance/policies/stats`,
+  METRICS: `/api/v1/compliance/metrics`,
+  ALERTS: `/api/v1/compliance/alerts`,
+  VIOLATIONS: `/api/v1/compliance/violations`,
+  TRAINING: `/api/v1/compliance/training`,
 } as const;
 
 export const AUDIT_ENDPOINTS = {

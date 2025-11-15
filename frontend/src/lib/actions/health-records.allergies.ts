@@ -25,12 +25,8 @@ import {
 } from '@/lib/audit';
 
 // Import shared utilities and types
-import {
-  getAuthToken,
-  createAuditContext,
-  enhancedFetch,
-  BACKEND_URL
-} from './health-records.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverGet, serverPost } from '@/lib/api/nextjs-client';
 import type { ActionResult } from './health-records.types';
 
 /**
@@ -57,17 +53,6 @@ export async function createAllergyAction(
   _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
     const rawData = {
       studentId: formData.get('studentId'),
@@ -92,21 +77,12 @@ export async function createAllergyAction(
 
     const validatedData = allergyCreateSchema.parse(rawData);
 
-    const response = await enhancedFetch(`${BACKEND_URL}/allergies`, {
-      method: 'POST',
-      body: JSON.stringify(validatedData)
+    const result = await serverPost(API_ENDPOINTS.ALLERGIES.BASE, validatedData, {
+      tags: ['health-records', 'allergies', `student-${validatedData.studentId}-allergies`, `student-${validatedData.studentId}-health-records`, 'emergency-phi-data', 'phi-data']
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create allergy record');
-    }
-
-    const result = await response.json();
 
     // HIPAA AUDIT LOG - CRITICAL: Emergency information
     await auditLog({
-      ...auditContext,
       action: AUDIT_ACTIONS.CREATE_HEALTH_RECORD,
       resource: 'Allergy',
       resourceId: result.data.id,
@@ -146,7 +122,6 @@ export async function createAllergyAction(
     }
 
     await auditLog({
-      ...auditContext,
       action: AUDIT_ACTIONS.CREATE_HEALTH_RECORD,
       resource: 'Allergy',
       details: 'Failed to create allergy record',
@@ -179,29 +154,14 @@ export async function createAllergyAction(
  */
 export async function getStudentAllergiesAction(studentId: string) {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
+    const url = `${API_ENDPOINTS.ALLERGIES.BASE}?studentId=${studentId}`;
 
-    const response = await enhancedFetch(`${BACKEND_URL}/allergies?studentId=${studentId}`, {
-      method: 'GET',
-      next: {
-        revalidate: 60, // 1-minute cache for emergency data
-        tags: ['allergies', `student-${studentId}-allergies`, 'emergency-phi-data']
-      }
+    const result = await serverGet(url, {
+      tags: ['allergies', `student-${studentId}-allergies`, 'emergency-phi-data']
     });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch student allergies');
-    }
-
-    const result = await response.json();
-
     // HIPAA AUDIT LOG - Emergency PHI access
-    const auditContext = await createAuditContext();
     await auditLog({
-      ...auditContext,
       action: AUDIT_ACTIONS.VIEW_HEALTH_RECORD,
       resource: 'Allergy',
       details: `Accessed emergency allergy information for student ${studentId}`,

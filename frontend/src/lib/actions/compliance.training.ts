@@ -10,8 +10,13 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 
 import type { ActionResult } from './compliance.types';
 import {
-  BACKEND_URL,
-  getAuthToken,
+  COMPLIANCE_ENDPOINTS,
+} from '@/constants/api/admin';
+import {
+  serverPost,
+  serverGet,
+} from '@/lib/api/nextjs-client';
+import {
   logHIPAAAuditEntry,
   getCurrentUserContext,
 } from './compliance.cache';

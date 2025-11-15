@@ -24,12 +24,8 @@ import {
 } from '@/lib/audit';
 
 // Import shared utilities and types
-import {
-  getAuthToken,
-  createAuditContext,
-  enhancedFetch,
-  BACKEND_URL
-} from './health-records.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverPost } from '@/lib/api/nextjs-client';
 import type { ActionResult } from './health-records.types';
 
 /**
@@ -55,17 +51,6 @@ export async function createImmunizationAction(
   _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
     const rawData = {
       studentId: formData.get('studentId'),
@@ -102,21 +87,12 @@ export async function createImmunizationAction(
 
     const validatedData = immunizationCreateSchema.parse(rawData);
 
-    const response = await enhancedFetch(`${BACKEND_URL}/vaccinations`, {
-      method: 'POST',
-      body: JSON.stringify(validatedData)
+    const result = await serverPost(API_ENDPOINTS.IMMUNIZATIONS.BASE, validatedData, {
+      tags: ['health-records', 'immunizations', `student-${validatedData.studentId}-health-records`, 'phi-data']
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create immunization record');
-    }
-
-    const result = await response.json();
 
     // HIPAA AUDIT LOG - Mandatory for immunization PHI
     await auditLog({
-      ...auditContext,
       action: AUDIT_ACTIONS.CREATE_HEALTH_RECORD,
       resource: 'Vaccination',
       resourceId: result.data.id,
@@ -154,7 +130,6 @@ export async function createImmunizationAction(
     }
 
     await auditLog({
-      ...auditContext,
       action: AUDIT_ACTIONS.CREATE_HEALTH_RECORD,
       resource: 'Vaccination',
       details: 'Failed to create immunization record',

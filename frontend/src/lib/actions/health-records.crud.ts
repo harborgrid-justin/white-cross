@@ -12,10 +12,11 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z, type ZodIssue } from 'zod';
 import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types';
 
 // Import audit logging functions
-import { auditLog, createAuditContext, AUDIT_ACTIONS } from '@/lib/audit';
+import { auditLog, createAuditContextFromServer, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Import schemas
 import {
@@ -26,8 +27,7 @@ import {
 // Import shared utilities and types
 import {
   getAuthToken,
-  enhancedFetch,
-  BACKEND_URL
+  createAuditContextFromServer
 } from './health-records.utils';
 import type { ActionResult } from './health-records.types';
 
@@ -56,7 +56,7 @@ export async function createHealthRecordAction(
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
-  const auditContext = await createAuditContext();
+  const auditContext = await createAuditContextFromServer();
 
   if (!token) {
     return {
@@ -91,18 +91,15 @@ export async function createHealthRecordAction(
 
     const validatedData = healthRecordCreateSchema.parse(rawData);
 
-    // Create health record via backend API with enhanced fetch (backend uses /api/v1/health-records)
-    const response = await enhancedFetch(`${BACKEND_URL}/api/v1/health-records`, {
-      method: 'POST',
-      body: JSON.stringify(validatedData)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create health record');
-    }
-
-    const result = await response.json();
+    // Create health record via backend API
+    const response = await serverPost(
+      API_ENDPOINTS.HEALTH_RECORDS.BASE,
+      validatedData,
+      {
+        cache: 'no-store',
+        next: { tags: ['health-records', 'phi-data'] }
+      }
+    );
 
     // HIPAA AUDIT LOG - Mandatory for PHI creation
     await auditLog({
@@ -123,7 +120,7 @@ export async function createHealthRecordAction(
 
     return {
       success: true,
-      data: result.data,
+      data: response,
       message: 'Health record created successfully'
     };
   } catch (error) {
@@ -201,42 +198,43 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
 
     console.log('[Health Records] Fetching from:', endpoint, params);
 
-    const wrappedResponse = await serverGet<ApiResponse<{ data: unknown[] }>>(
+    const response = await serverGet(
       endpoint,
       params,
       {
         cache: 'no-store', // Fresh data for health records
+        next: { tags: ['health-records', 'phi-data'] }
       }
     );
 
     console.log('[Health Records] Response structure:', {
-      hasData: !!wrappedResponse.data,
-      dataType: typeof wrappedResponse.data,
-      isArray: Array.isArray(wrappedResponse.data)
+      hasData: !!response,
+      dataType: typeof response,
+      isArray: Array.isArray(response)
     });
 
     // HIPAA AUDIT LOG - PHI access (frontend API proxy already handles this)
     // No need to duplicate audit logging here since the API proxy handles it
 
     // Backend wraps response in ApiResponse format: { success, statusCode, data: {...} }
-    // The actual health records might be in wrappedResponse.data.data or wrappedResponse.data
+    // The actual health records might be in response.data or response
     let healthRecords: unknown[] = [];
 
-    if (wrappedResponse.data) {
-      // If wrappedResponse.data is an array, use it directly
-      if (Array.isArray(wrappedResponse.data)) {
-        healthRecords = wrappedResponse.data;
+    if (response) {
+      // If response is an array, use it directly
+      if (Array.isArray(response)) {
+        healthRecords = response;
       }
-      // If wrappedResponse.data has a data property (double-wrapped), extract it
-      else if (typeof wrappedResponse.data === 'object' && wrappedResponse.data !== null && 'data' in wrappedResponse.data) {
-        const nested = wrappedResponse.data as { data?: unknown[] };
+      // If response has a data property (wrapped), extract it
+      else if (typeof response === 'object' && response !== null && 'data' in response) {
+        const nested = response as { data?: unknown[] };
         if (nested.data && Array.isArray(nested.data)) {
           healthRecords = nested.data;
         }
       }
-      // If wrappedResponse.data is an object with records property
-      else if (typeof wrappedResponse.data === 'object' && wrappedResponse.data !== null && 'records' in wrappedResponse.data) {
-        const nested = wrappedResponse.data as { records?: unknown[] };
+      // If response has a records property
+      else if (typeof response === 'object' && response !== null && 'records' in response) {
+        const nested = response as { records?: unknown[] };
         if (nested.records && Array.isArray(nested.records)) {
           healthRecords = nested.records;
         }
@@ -246,7 +244,7 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
     console.log('[Health Records] Successfully fetched records:', healthRecords.length);
 
     // HIPAA AUDIT LOG - PHI access
-    const auditContext = await createAuditContext();
+    const auditContext = await createAuditContextFromServer();
     await auditLog({
       ...auditContext,
       action: AUDIT_ACTIONS.VIEW_HEALTH_RECORD,
@@ -300,7 +298,7 @@ export async function updateHealthRecordAction(
   formData: FormData
 ): Promise<ActionResult> {
   const token = await getAuthToken();
-  const auditContext = await createAuditContext();
+  const auditContext = await createAuditContextFromServer();
 
   if (!token) {
     return {
@@ -332,17 +330,14 @@ export async function updateHealthRecordAction(
 
     const validatedData = healthRecordUpdateSchema.parse(rawData);
 
-    const response = await enhancedFetch(`${BACKEND_URL}/api/v1/health-records/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(validatedData)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update health record');
-    }
-
-    const result = await response.json();
+    const response = await serverPut(
+      API_ENDPOINTS.HEALTH_RECORDS.BY_ID(id),
+      validatedData,
+      {
+        cache: 'no-store',
+        next: { tags: ['health-records', `health-record-${id}`, 'phi-data'] }
+      }
+    );
 
     // HIPAA AUDIT LOG - Mandatory for PHI modification
     await auditLog({
@@ -364,7 +359,7 @@ export async function updateHealthRecordAction(
 
     return {
       success: true,
-      data: result.data,
+      data: response,
       message: 'Health record updated successfully'
     };
   } catch (error) {
@@ -418,7 +413,7 @@ export async function updateHealthRecordAction(
  */
 export async function deleteHealthRecordAction(id: string): Promise<ActionResult> {
   const token = await getAuthToken();
-  const auditContext = await createAuditContext();
+  const auditContext = await createAuditContextFromServer();
 
   if (!token) {
     return {
@@ -429,14 +424,13 @@ export async function deleteHealthRecordAction(id: string): Promise<ActionResult
   }
 
   try {
-    const response = await enhancedFetch(`${BACKEND_URL}/api/v1/health-records/${id}`, {
-      method: 'DELETE'
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to delete health record');
-    }
+    await serverDelete(
+      API_ENDPOINTS.HEALTH_RECORDS.BY_ID(id),
+      {
+        cache: 'no-store',
+        next: { tags: ['health-records', `health-record-${id}`, 'phi-data'] }
+      }
+    );
 
     // HIPAA AUDIT LOG - Mandatory for PHI deletion
     await auditLog({

@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import AdministrationRules from '@/components/medications/AdministrationRules';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { getAdministrationRules } from '@/lib/actions/medications.actions';
 import { API_ENDPOINTS } from '@/constants/api';
 
 export const metadata: Metadata = {
@@ -24,16 +24,7 @@ export const metadata: Metadata = {
  */
 async function getAdministrationRules() {
   try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/administration-rules`,
-      { next: { tags: ['administration-rules'], revalidate: 600 } }
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch administration rules');
-    }
-
-    return (response as Response).json();
+    return await getAdministrationRules();
   } catch (error) {
     console.error('Error fetching administration rules:', error);
     return { rules: [], defaults: {} };

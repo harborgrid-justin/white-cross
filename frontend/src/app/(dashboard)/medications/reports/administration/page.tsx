@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import AdministrationReport from '@/components/medications/reports/AdministrationReport';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getAdministrationReports } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Administration Report | White Cross',
@@ -30,39 +29,10 @@ interface AdministrationReportPageProps {
 }
 
 /**
- * Fetch administration report data
- */
-async function getAdministrationReportData(searchParams: any) {
-  const params = new URLSearchParams({
-    startDate: searchParams.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: searchParams.endDate || new Date().toISOString().split('T')[0],
-    ...(searchParams.studentId && { studentId: searchParams.studentId }),
-    ...(searchParams.medicationId && { medicationId: searchParams.medicationId }),
-    ...(searchParams.administeredBy && { administeredBy: searchParams.administeredBy })
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/reports/administration?${params}`,
-      { next: { revalidate: 600 } } // 10 min cache
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch administration report');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching administration report:', error);
-    return { records: [], stats: {}, charts: {} };
-  }
-}
-
-/**
  * Administration Report Page
  */
 export default async function AdministrationReportPage({ searchParams }: AdministrationReportPageProps) {
-  const reportData = await getAdministrationReportData(searchParams);
+  const reportData = await getAdministrationReports(searchParams);
 
   return (
     <div className="space-y-6">

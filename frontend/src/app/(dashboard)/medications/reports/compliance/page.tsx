@@ -10,8 +10,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import ComplianceReport from '@/components/medications/reports/ComplianceReport';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getComplianceReports } from '@/lib/actions/medications';
 import { Shield, Activity } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
@@ -31,39 +30,12 @@ interface ComplianceReportPageProps {
 }
 
 /**
- * Fetch compliance report data
- */
-async function getComplianceReportData(searchParams: any) {
-  const params = new URLSearchParams({
-    startDate: searchParams.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: searchParams.endDate || new Date().toISOString().split('T')[0],
-    ...(searchParams.studentId && { studentId: searchParams.studentId })
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/reports/compliance?${params}`,
-      { next: { revalidate: 900 } } // 15 min cache
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch compliance report');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching compliance report:', error);
-    return { complianceScore: 0, adherence: {}, violations: [], auditLog: [] };
-  }
-}
-
-/**
  * Compliance Report Page
  *
  * Critical report for HIPAA audit compliance and medication adherence.
  */
 export default async function ComplianceReportPage({ searchParams }: ComplianceReportPageProps) {
-  const reportData = await getComplianceReportData(searchParams);
+  const reportData = await getComplianceReports(searchParams);
 
   return (
     <div className="space-y-6">

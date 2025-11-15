@@ -10,8 +10,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import EmergencyMedicationsList from '@/components/medications/EmergencyMedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getEmergencyMedications } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Emergency Medications | White Cross',
@@ -19,27 +18,6 @@ export const metadata: Metadata = {
 };
 
 
-
-/**
- * Fetch emergency medications
- */
-async function getEmergencyMedications() {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}?type=emergency`,
-      { next: { tags: ['medications-emergency'], revalidate: 180 } }
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch emergency medications');
-    }
-
-    return (response as Response).json();
-  } catch (error) {
-    console.error('Error fetching emergency medications:', error);
-    return { medications: [], total: 0, expirationAlerts: [] };
-  }
-}
 
 /**
  * Emergency Medications Page

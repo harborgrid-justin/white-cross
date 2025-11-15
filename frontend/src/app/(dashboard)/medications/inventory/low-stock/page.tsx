@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import LowStockList from '@/components/medications/LowStockList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getLowStockInventory } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Low Stock Alerts | White Cross',
@@ -20,31 +19,10 @@ export const metadata: Metadata = {
 
 
 /**
- * Fetch low stock items
- */
-async function getLowStockItems() {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/inventory/low-stock`,
-      { next: { tags: ['inventory-low-stock'], revalidate: 300 } }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch low stock items');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching low stock items:', error);
-    return { items: [], total: 0, criticalCount: 0 };
-  }
-}
-
-/**
  * Low Stock Page
  */
 export default async function LowStockPage() {
-  const { items, total, criticalCount } = await getLowStockItems();
+  const { items, total, criticalCount } = await getLowStockInventory();
 
   return (
     <div className="space-y-6">

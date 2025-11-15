@@ -26,10 +26,10 @@ import type { ActionResult } from './settings.types';
 import {
   getAuthUser,
   createAuditContext,
-  enhancedFetch,
-  verifyCurrentPassword,
-  BACKEND_URL
+  verifyCurrentPassword
 } from './settings.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverPost } from '@/lib/api/nextjs-client';
 import {
   changePasswordSchema,
 } from '@/schemas/settings.schemas';
@@ -105,15 +105,10 @@ export async function changePasswordAction(
       };
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/password`, {
-      method: 'POST',
-      body: JSON.stringify({ currentPassword, newPassword })
+    const result = await serverPost(`${API_ENDPOINTS.USERS.BASE}/${user.id}/password`, {
+      currentPassword,
+      newPassword
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to change password');
-    }
 
     await auditLog({
       ...auditContext,
@@ -155,16 +150,7 @@ export async function setupMFAAction(): Promise<ActionResult> {
       };
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/mfa/setup`, {
-      method: 'POST'
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to setup MFA');
-    }
-
-    const mfaData = await response.json();
+    const result = await serverPost(`${API_ENDPOINTS.USERS.BASE}/${user.id}/mfa/setup`);
 
     await auditLog({
       ...auditContext,
@@ -176,7 +162,7 @@ export async function setupMFAAction(): Promise<ActionResult> {
 
     return {
       success: true,
-      data: mfaData,
+      data: result,
       message: 'MFA setup initiated successfully'
     };
   } catch (error) {

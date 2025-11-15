@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import DueMedicationsDashboard from '@/components/medications/DueMedicationsDashboard';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getDueMedications } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Medications Due Now | White Cross',
@@ -18,27 +17,6 @@ export const metadata: Metadata = {
 };
 
 
-
-/**
- * Fetch due medications
- */
-async function getDueMedications() {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/due-now`,
-      { next: { revalidate: 60 } } // 1 min cache - frequent updates
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch due medications');
-    }
-
-    return (response as Response).json();
-  } catch (error) {
-    console.error('Error fetching due medications:', error);
-    return { due: [], upcoming: [], stats: {} };
-  }
-}
 
 /**
  * Due Medications Page

@@ -6,7 +6,8 @@
 
 'use server';
 
-import { fetchApi } from './communications.utils';
+import { serverGet, serverPost, serverPut, serverDelete, nextFetch } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import type { ActionResult } from './communications.types';
 import {
   CreateMessageSchema,
@@ -32,24 +33,14 @@ export async function getMessages(
   try {
     const validatedFilter = filter ? MessageFilterSchema.parse(filter) : {};
 
-    const response = await fetchApi<{ messages: Message[]; total: number }>(
-      '/communications/messages',
-      {
-        method: 'GET',
-        params: validatedFilter
-      }
+    const response = await serverGet<{ messages: Message[]; total: number }>(
+      API_ENDPOINTS.MESSAGES.BASE,
+      validatedFilter as Record<string, string | number | boolean>
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch messages'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching messages:', error);
@@ -67,21 +58,13 @@ export async function getMessageById(
   messageId: string
 ): Promise<ActionResult<Message>> {
   try {
-    const response = await fetchApi<Message>(
-      `/communications/messages/${messageId}`,
-      { method: 'GET' }
+    const response = await serverGet<Message>(
+      API_ENDPOINTS.MESSAGES.BY_ID(messageId)
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch message'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching message:', error);
@@ -101,24 +84,14 @@ export async function getMessageThreads(
   try {
     const validatedFilter = filter ? MessageFilterSchema.parse(filter) : {};
 
-    const response = await fetchApi<{ threads: MessageThread[]; total: number }>(
-      '/communications/messages/threads',
-      {
-        method: 'GET',
-        params: validatedFilter
-      }
+    const response = await serverGet<{ threads: MessageThread[]; total: number }>(
+      API_ENDPOINTS.MESSAGES.BASE + '/threads',
+      validatedFilter as Record<string, string | number | boolean>
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch threads'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching threads:', error);
@@ -138,24 +111,14 @@ export async function createMessage(
   try {
     const validatedData = CreateMessageSchema.parse(data);
 
-    const response = await fetchApi<Message>(
-      '/communications/messages',
-      {
-        method: 'POST',
-        body: validatedData
-      }
+    const response = await serverPost<Message>(
+      API_ENDPOINTS.MESSAGES.BASE,
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to create message'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error creating message:', error);
@@ -175,24 +138,14 @@ export async function updateMessage(
   try {
     const validatedData = UpdateMessageSchema.parse(data);
 
-    const response = await fetchApi<Message>(
-      `/communications/messages/${validatedData.id}`,
-      {
-        method: 'PUT',
-        body: validatedData
-      }
+    const response = await serverPut<Message>(
+      API_ENDPOINTS.MESSAGES.BY_ID(validatedData.id),
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to update message'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error updating message:', error);
@@ -213,20 +166,10 @@ export async function markMessageAsRead(
   try {
     const validatedData = MarkAsReadSchema.parse({ messageId, threadId });
 
-    const response = await fetchApi(
-      `/communications/messages/${messageId}/read`,
-      {
-        method: 'POST',
-        body: validatedData
-      }
+    await serverPost(
+      API_ENDPOINTS.MESSAGES.BY_ID(messageId) + '/read',
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to mark message as read'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -247,20 +190,10 @@ export async function archiveMessages(
   try {
     const validatedData = ArchiveMessageSchema.parse({ messageIds });
 
-    const response = await fetchApi(
-      '/communications/messages/archive',
-      {
-        method: 'POST',
-        body: validatedData
-      }
+    await serverPost(
+      API_ENDPOINTS.MESSAGES.BASE + '/archive',
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to archive messages'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -282,20 +215,10 @@ export async function deleteMessages(
   try {
     const validatedData = DeleteMessageSchema.parse({ messageIds, permanent });
 
-    const response = await fetchApi(
-      '/communications/messages',
-      {
-        method: 'DELETE',
-        body: validatedData
-      }
+    await serverDelete(
+      API_ENDPOINTS.MESSAGES.BASE,
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to delete messages'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -321,27 +244,21 @@ export async function uploadAttachment(
       formData.append('messageId', messageId);
     }
 
-    const response = await fetchApi<{ id: string; fileName: string; fileUrl: string }>(
-      '/communications/messages/attachments',
+    const response = await nextFetch<{ id: string; fileName: string; fileUrl: string }>(
+      API_ENDPOINTS.MESSAGES.BASE + '/attachments',
       {
         method: 'POST',
         body: formData,
         headers: {
-          // Let browser set Content-Type for multipart/form-data
-        }
+          // Don't set Content-Type - let browser set it for multipart/form-data
+        },
+        cache: 'no-store'
       }
     );
 
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to upload file'
-      };
-    }
-
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error uploading file:', error);

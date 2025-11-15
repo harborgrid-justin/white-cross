@@ -19,8 +19,13 @@ import type {
   UIPolicy
 } from './compliance.types';
 import {
-  BACKEND_URL,
-  getAuthToken,
+  COMPLIANCE_ENDPOINTS,
+} from '@/constants/api/admin';
+import {
+  serverPost,
+  serverGet,
+} from '@/lib/api/nextjs-client';
+import {
   logHIPAAAuditEntry,
   getCurrentUserContext,
 } from './compliance.cache';
@@ -37,26 +42,16 @@ export async function createPolicyAction(
   policyData: Omit<PolicyDocument, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<ActionResult<PolicyDocument>> {
   try {
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/policies`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      body: JSON.stringify(policyData),
-      next: {
-        revalidate: 300,
-        tags: ['policies']
+    const createdPolicy = await serverPost<PolicyDocument>(
+      COMPLIANCE_ENDPOINTS.POLICIES,
+      policyData,
+      {
+        next: {
+          revalidate: 300,
+          tags: ['policies']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const createdPolicy = await response.json() as PolicyDocument;
+    );
 
     // Revalidate policy caches
     revalidateTag('policies', 'compliance');
@@ -100,30 +95,20 @@ export async function acknowledgePolicyAction(
   try {
     const context = await getCurrentUserContext();
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/policies/${policyId}/acknowledge`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      body: JSON.stringify({
+    const acknowledgment = await serverPost<PolicyAcknowledgment>(
+      `${COMPLIANCE_ENDPOINTS.POLICIES}/${policyId}/acknowledge`,
+      {
         userId,
         acknowledgedAt: new Date().toISOString(),
         ipAddress: context.ipAddress,
-      }),
-      next: {
-        revalidate: 600,
-        tags: ['policies', `policy-${policyId}`]
+      },
+      {
+        next: {
+          revalidate: 600,
+          tags: ['policies', `policy-${policyId}`]
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const acknowledgment = await response.json() as PolicyAcknowledgment;
+    );
 
     // Revalidate related caches
     revalidateTag('policies', 'compliance');
@@ -161,23 +146,16 @@ export async function getPolicyAcknowledgmentsAction(
   policyId: string
 ): Promise<ActionResult<PolicyAcknowledgment[]>> {
   try {
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/policies/${policyId}/acknowledgments`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 300,
-        tags: ['policies', `policy-${policyId}`]
+    const acknowledgments = await serverGet<PolicyAcknowledgment[]>(
+      `${COMPLIANCE_ENDPOINTS.POLICIES}/${policyId}/acknowledgments`,
+      undefined,
+      {
+        next: {
+          revalidate: 300,
+          tags: ['policies', `policy-${policyId}`]
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const acknowledgments = await response.json() as PolicyAcknowledgment[];
+    );
 
     return {
       success: true,
@@ -217,24 +195,19 @@ export async function getPoliciesAction(
       });
     }
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/policies?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID(),
-        'X-Cache-Control': 'max-age=300'
-      },
-      next: {
-        revalidate: 300,
-        tags: ['policies']
+    const queryString = params.toString();
+    const endpoint = queryString ? `${COMPLIANCE_ENDPOINTS.POLICIES}?${queryString}` : COMPLIANCE_ENDPOINTS.POLICIES;
+
+    const result = await serverGet<PaginatedResult<PolicyDocument>>(
+      endpoint,
+      undefined,
+      {
+        next: {
+          revalidate: 300,
+          tags: ['policies']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const result = await response.json() as PaginatedResult<PolicyDocument>;
+    );
 
     // Transform policies to match UI expectations
     const transformedPolicies: UIPolicy[] = result.data.map((policy: PolicyDocument) => ({
@@ -253,30 +226,24 @@ export async function getPoliciesAction(
     }));
 
     // Get policy statistics
-    const statsResponse = await fetch(`${BACKEND_URL}/compliance/policies/stats`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 300,
-        tags: ['policies', 'compliance-stats']
+    const stats = await serverGet<{
+      active: number;
+      total: number;
+      acknowledgmentRate: number;
+      acknowledged: number;
+      required: number;
+      pending: number;
+      reviewDue: number;
+    }>(
+      COMPLIANCE_ENDPOINTS.POLICIES_STATS,
+      undefined,
+      {
+        next: {
+          revalidate: 300,
+          tags: ['policies', 'compliance-stats']
+        }
       }
-    });
-
-    let stats = {
-      active: 0,
-      total: 0,
-      acknowledgmentRate: 0,
-      acknowledged: 0,
-      required: 0,
-      pending: 0,
-      reviewDue: 0,
-    };
-
-    if (statsResponse.ok) {
-      stats = await statsResponse.json();
-    }
+    );
 
     return {
       success: true,

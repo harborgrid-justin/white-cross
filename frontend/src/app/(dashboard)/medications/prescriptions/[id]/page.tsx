@@ -11,8 +11,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import PrescriptionDetails from '@/components/medications/PrescriptionDetails';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getPrescription } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Prescription Details | White Cross',
@@ -25,28 +24,6 @@ interface PrescriptionDetailPageProps {
   params: {
     id: string;
   };
-}
-
-/**
- * Fetch prescription
- */
-async function getPrescription(id: string) {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions/${id}`,
-      { next: { tags: [`prescription-${id}`] } }
-    );
-
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      throw new Error('Failed to fetch prescription');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching prescription:', error);
-    return null;
-  }
 }
 
 /**

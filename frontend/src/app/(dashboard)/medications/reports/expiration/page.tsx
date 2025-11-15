@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import ExpirationReport from '@/components/medications/reports/ExpirationReport';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getExpirationReports } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Expiration Report | White Cross',
@@ -26,35 +25,10 @@ interface ExpirationReportPageProps {
 }
 
 /**
- * Fetch expiration report data
- */
-async function getExpirationReportData(searchParams: any) {
-  const params = new URLSearchParams({
-    days: searchParams.days || '90' // Default 90-day look ahead
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/reports/expiration?${params}`,
-      { next: { revalidate: 3600 } } // 1 hour cache
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch expiration report');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching expiration report:', error);
-    return { expired: [], expiringSoon: [], byMonth: {}, stats: {} };
-  }
-}
-
-/**
  * Expiration Report Page
  */
 export default async function ExpirationReportPage({ searchParams }: ExpirationReportPageProps) {
-  const reportData = await getExpirationReportData(searchParams);
+  const reportData = await getExpirationReports(searchParams);
 
   return (
     <div className="space-y-6">

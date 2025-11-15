@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import RefillsReport from '@/components/medications/reports/RefillsReport';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getRefillReports } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Refills Report | White Cross',
@@ -20,31 +19,10 @@ export const metadata: Metadata = {
 
 
 /**
- * Fetch refills report data
- */
-async function getRefillsReportData() {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/reports/refills`,
-      { next: { revalidate: 300 } } // 5 min cache
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch refills report');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching refills report:', error);
-    return { neededSoon: [], pending: [], noRefillsRemaining: [], stats: {} };
-  }
-}
-
-/**
  * Refills Report Page
  */
 export default async function RefillsReportPage() {
-  const reportData = await getRefillsReportData();
+  const reportData = await getRefillReports();
 
   return (
     <div className="space-y-6">

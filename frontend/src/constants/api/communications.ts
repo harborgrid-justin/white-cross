@@ -10,17 +10,17 @@
 // MESSAGES
 // ==========================================
 export const MESSAGES_ENDPOINTS = {
-  BASE: `/api/v1/messages`,
-  BY_ID: (id: string) => `/api/v1/messages/${id}`,
-  SEND: `/api/v1/messages/send`,
-  INBOX: `/api/v1/messages/inbox`,
-  SENT: `/api/v1/messages/sent`,
-  UNREAD: `/api/v1/messages/unread`,
-  MARK_READ: (id: string) => `/api/v1/messages/${id}/mark-read`,
-  MARK_UNREAD: (id: string) => `/api/v1/messages/${id}/mark-unread`,
-  DELETE: (id: string) => `/api/v1/messages/${id}`,
-  THREAD: (id: string) => `/api/v1/messages/thread/${id}`,
-  ATTACHMENTS: (id: string) => `/api/v1/messages/${id}/attachments`,
+  BASE: `/api/v1/communications/messages`,
+  BY_ID: (id: string) => `/api/v1/communications/messages/${id}`,
+  SEND: `/api/v1/communications/messages/send`,
+  INBOX: `/api/v1/communications/messages/inbox`,
+  SENT: `/api/v1/communications/messages/sent`,
+  UNREAD: `/api/v1/communications/messages/unread`,
+  MARK_READ: (id: string) => `/api/v1/communications/messages/${id}/mark-read`,
+  MARK_UNREAD: (id: string) => `/api/v1/communications/messages/${id}/mark-unread`,
+  DELETE: (id: string) => `/api/v1/communications/messages/${id}`,
+  THREAD: (id: string) => `/api/v1/communications/messages/thread/${id}`,
+  ATTACHMENTS: (id: string) => `/api/v1/communications/messages/${id}/attachments`,
 } as const;
 
 // ==========================================

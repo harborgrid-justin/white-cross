@@ -21,6 +21,7 @@ export {
   useMedicationsList,
   useStudentMedications,
   useMedicationDetails,
+  useOTCMedications,
 } from './useMedicationCoreQueries';
 
 // Schedule and reminder queries

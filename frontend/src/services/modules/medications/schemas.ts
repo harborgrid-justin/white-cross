@@ -349,6 +349,11 @@ export const medicationFiltersSchema = z.object({
     .trim()
     .optional(),
 
+  type: z.string()
+    .max(50, 'Type cannot exceed 50 characters')
+    .trim()
+    .optional(),
+
   isActive: z.boolean().optional(),
 
   controlledSubstance: z.boolean().optional(),

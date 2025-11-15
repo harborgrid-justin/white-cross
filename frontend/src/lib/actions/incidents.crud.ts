@@ -7,9 +7,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import type { IncidentReport, IncidentsResponse } from './incidents.types';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // ==========================================
 // INCIDENT CRUD OPERATIONS
@@ -37,11 +36,13 @@ export async function getIncidents(filters?: {
     if (filters?.dateFrom) queryParams.append('dateFrom', filters.dateFrom);
     if (filters?.dateTo) queryParams.append('dateTo', filters.dateTo);
 
-    const url = `${API_BASE}/api/incident-report?${queryParams.toString()}`;
-
-    const response = await serverGet<IncidentsResponse>(url, {
-      cache: 'no-store'
-    });
+    const response = await serverGet<IncidentsResponse>(
+      API_ENDPOINTS.INCIDENTS.BASE,
+      Object.fromEntries(queryParams.entries()) as Record<string, string | number | boolean>,
+      {
+        cache: 'no-store'
+      }
+    );
 
     return response;
   } catch (error) {
@@ -60,11 +61,13 @@ export async function getIncidents(filters?: {
 
 export async function getIncident(id: string): Promise<IncidentReport | null> {
   try {
-    const url = `${API_BASE}/api/incident-report/${id}`;
-
-    const response = await serverGet<IncidentReport>(url, {
-      cache: 'no-store'
-    });
+    const response = await serverGet<IncidentReport>(
+      API_ENDPOINTS.INCIDENTS.BY_ID(id),
+      undefined,
+      {
+        cache: 'no-store'
+      }
+    );
 
     return response;
   } catch (error) {
@@ -75,11 +78,13 @@ export async function getIncident(id: string): Promise<IncidentReport | null> {
 
 export async function createIncident(data: Partial<IncidentReport>): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
-    const url = `${API_BASE}/api/incident-report`;
-
-    const response = await serverPost<IncidentReport>(url, data, {
-      cache: 'no-store'
-    });
+    const response = await serverPost<IncidentReport>(
+      API_ENDPOINTS.INCIDENTS.BASE,
+      data,
+      {
+        cache: 'no-store'
+      }
+    );
 
     revalidatePath('/incidents');
 
@@ -96,11 +101,13 @@ export async function createIncident(data: Partial<IncidentReport>): Promise<{ s
 
 export async function updateIncident(id: string, data: Partial<IncidentReport>): Promise<{ success: boolean; error?: string }> {
   try {
-    const url = `${API_BASE}/api/incident-report/${id}`;
-
-    await serverPut(url, data, {
-      cache: 'no-store'
-    });
+    await serverPut(
+      API_ENDPOINTS.INCIDENTS.BY_ID(id),
+      data,
+      {
+        cache: 'no-store'
+      }
+    );
 
     revalidatePath('/incidents');
     revalidatePath(`/incidents/${id}`);
@@ -118,11 +125,12 @@ export async function updateIncident(id: string, data: Partial<IncidentReport>):
 
 export async function deleteIncident(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const url = `${API_BASE}/api/incident-report/${id}`;
-
-    await serverDelete(url, {
-      cache: 'no-store'
-    });
+    await serverDelete(
+      API_ENDPOINTS.INCIDENTS.BY_ID(id),
+      {
+        cache: 'no-store'
+      }
+    );
 
     revalidatePath('/incidents');
 
@@ -143,10 +151,13 @@ export async function deleteIncident(id: string): Promise<{ success: boolean; er
 
 export async function getIncidentsRequiringFollowUp(): Promise<IncidentReport[]> {
   try {
-    const url = `${API_BASE}/api/incident-report/follow-up/required`;
-    const response = await serverGet<IncidentReport[]>(url, {
-      cache: 'no-store'
-    });
+    const response = await serverGet<IncidentReport[]>(
+      `${API_ENDPOINTS.INCIDENTS.BASE}/follow-up/required`,
+      undefined,
+      {
+        cache: 'no-store'
+      }
+    );
     return response;
   } catch (error) {
     console.error('Error fetching incidents requiring follow-up:', error);
@@ -156,10 +167,13 @@ export async function getIncidentsRequiringFollowUp(): Promise<IncidentReport[]>
 
 export async function getStudentRecentIncidents(studentId: string, limit: number = 5): Promise<IncidentReport[]> {
   try {
-    const url = `${API_BASE}/api/incident-report/student/${studentId}/recent?limit=${limit}`;
-    const response = await serverGet<IncidentReport[]>(url, {
-      cache: 'no-store'
-    });
+    const response = await serverGet<IncidentReport[]>(
+      API_ENDPOINTS.INCIDENTS.BY_STUDENT(studentId) + `/recent?limit=${limit}`,
+      undefined,
+      {
+        cache: 'no-store'
+      }
+    );
     return response;
   } catch (error) {
     console.error(`Error fetching recent incidents for student ${studentId}:`, error);

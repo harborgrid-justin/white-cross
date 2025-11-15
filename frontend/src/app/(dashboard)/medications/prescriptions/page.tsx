@@ -10,8 +10,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import PrescriptionsList from '@/components/medications/PrescriptionsList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getPrescriptions } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Prescriptions | White Cross',
@@ -26,34 +25,6 @@ interface PrescriptionsPageProps {
     studentId?: string;
     page?: string;
   };
-}
-
-/**
- * Fetch prescriptions
- */
-async function getPrescriptions(searchParams: any) {
-  const params = new URLSearchParams({
-    ...(searchParams.status && { status: searchParams.status }),
-    ...(searchParams.studentId && { studentId: searchParams.studentId }),
-    page: searchParams.page || '1',
-    limit: '25'
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/prescriptions?${params}`,
-      { next: { tags: ['prescriptions'], revalidate: 300 } }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch prescriptions');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching prescriptions:', error);
-    return { prescriptions: [], total: 0, stats: {} };
-  }
 }
 
 /**

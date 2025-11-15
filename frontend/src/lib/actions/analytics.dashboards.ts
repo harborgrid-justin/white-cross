@@ -7,7 +7,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { serverPost, serverGet } from '@/lib/server/fetch';
+import { serverPost, serverGet } from '@/lib/api/nextjs-client';
 import {
   type DashboardConfig,
   dashboardConfigSchema,

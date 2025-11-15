@@ -83,7 +83,7 @@ export class PHIAccessLogger implements OnModuleDestroy {
       const auditEntry = {
         action: this.mapOperationToAuditAction(entry.operation),
         entityType: 'PHI_ACCESS',
-        entityId: entry.studentId || entry.correlationId,
+        entityId: entry.studentId || null, // Only use UUID, not correlationId
         userId: entry.userId || null,
         userName: null, // Would need to be populated from user service
         changes: {

@@ -26,10 +26,10 @@ import { type ZodIssue } from 'zod';
 import type { ActionResult } from './settings.types';
 import {
   getAuthUser,
-  createAuditContext,
-  enhancedFetch,
-  BACKEND_URL
+  createAuditContext
 } from './settings.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverGet, serverPost, serverPut } from '@/lib/api/nextjs-client';
 import {
   updatePrivacySettingsSchema,
 } from '@/schemas/settings.schemas';
@@ -83,15 +83,9 @@ export async function updatePrivacySettingsAction(
       };
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/privacy-settings`, {
-      method: 'PATCH',
-      body: JSON.stringify(validation.data)
+    const result = await serverPut(`${API_ENDPOINTS.USERS.BASE}/${user.id}/privacy-settings`, validation.data, {
+      tags: ['user-settings', `user-${user.id}`]
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update privacy settings');
-    }
 
     await auditLog({
       ...auditContext,
@@ -139,16 +133,7 @@ export async function exportUserDataAction(): Promise<ActionResult> {
       };
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/export`, {
-      method: 'POST'
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to export user data');
-    }
-
-    const { exportUrl } = await response.json();
+    const result = await serverPost(`${API_ENDPOINTS.USERS.BASE}/${user.id}/export`);
 
     await auditLog({
       ...auditContext,
@@ -160,7 +145,7 @@ export async function exportUserDataAction(): Promise<ActionResult> {
 
     return {
       success: true,
-      data: { exportUrl },
+      data: { exportUrl: result.exportUrl },
       message: 'User data export initiated successfully'
     };
   } catch (error) {
@@ -185,19 +170,9 @@ export async function getUserSettingsAction() {
       throw new Error('Authentication required');
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/settings`, {
-      method: 'GET',
-      next: {
-        revalidate: 300, // 5 minute cache
-        tags: ['user-settings', `user-${user.id}`]
-      }
+    const result = await serverGet(`${API_ENDPOINTS.USERS.BASE}/${user.id}/settings`, {
+      tags: ['user-settings', `user-${user.id}`]
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch user settings');
-    }
-
-    const result = await response.json();
 
     return {
       success: true,

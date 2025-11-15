@@ -10,7 +10,8 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
-import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './inventory.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverGet, serverPost } from '@/lib/api/nextjs-client';
 
 // ==========================================
 // STOCK LEVEL OPERATIONS
@@ -25,11 +26,6 @@ export async function getStockLevelsAction(filter?: {
   belowReorderPoint?: boolean;
 }) {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const params = new URLSearchParams();
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -39,15 +35,11 @@ export async function getStockLevelsAction(filter?: {
       });
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/stock?${params.toString()}`, {
-      method: 'GET'
+    const url = params.toString() ? `${API_ENDPOINTS.INVENTORY.BASE}/stock?${params.toString()}` : `${API_ENDPOINTS.INVENTORY.BASE}/stock`;
+
+    const result = await serverGet(url, {
+      tags: ['inventory', 'stock-levels']
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch stock levels');
-    }
-
-    const result = await response.json();
 
     return {
       success: true,
@@ -68,17 +60,6 @@ export async function createStockLevelAction(
   _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
     const rawData = {
       itemId: formData.get('itemId'),
@@ -90,21 +71,12 @@ export async function createStockLevelAction(
       lastCountDate: formData.get('lastCountDate') || undefined
     };
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/stock`, {
-      method: 'POST',
-      body: JSON.stringify(rawData)
+    const result = await serverPost(`${API_ENDPOINTS.INVENTORY.BASE}/stock`, rawData, {
+      tags: ['inventory', 'stock-levels', `stock-item-${rawData.itemId}`, `stock-location-${rawData.locationId}`]
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create stock level');
-    }
-
-    const result = await response.json();
 
     // Audit logging
     await auditLog({
-      ...auditContext,
       action: 'CREATE_STOCK_LEVEL',
       resource: 'Inventory',
       details: `Initialized stock level for item ${rawData.itemId} at location ${rawData.locationId}`,

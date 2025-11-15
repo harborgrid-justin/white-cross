@@ -8,7 +8,7 @@
 
 'use server';
 
-import { apiClient } from '@/services/core/ApiClient';
+import { serverGet } from '@/lib/api/nextjs-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ActionResult, LowStockAlert, ExpirationAlert } from './alerts.types';
@@ -21,21 +21,18 @@ export async function getLowStockAlerts(
 ): Promise<ActionResult<LowStockAlert[]>> {
   try {
     const params = locationId ? { locationId } : {};
-    const response = await apiClient.get<LowStockAlert[]>(
+    const response = await serverGet<LowStockAlert[]>(
       API_ENDPOINTS.INVENTORY.LOW_STOCK,
-      { params }
+      params,
+      {
+        cache: 'no-store',
+        next: { tags: ['inventory-alerts', 'low-stock'] }
+      }
     );
-
-    await auditLogWithContext({
-      userId: 'system', // In production, get from session
-      action: AUDIT_ACTIONS.VIEW_APPOINTMENT, // Use existing audit actions
-      resource: 'inventory_alerts',
-      details: JSON.stringify({ locationId }),
-    });
 
     return {
       success: true,
-      data: response.data,
+      data: response,
     };
   } catch (error) {
     console.error('Failed to fetch low stock alerts:', error);
@@ -57,21 +54,18 @@ export async function getExpirationAlerts(
     const params: Record<string, string | number> = { daysAhead };
     if (locationId) params.locationId = locationId;
 
-    const response = await apiClient.get<ExpirationAlert[]>(
+    const response = await serverGet<ExpirationAlert[]>(
       API_ENDPOINTS.INVENTORY.EXPIRING,
-      { params }
+      params,
+      {
+        cache: 'no-store',
+        next: { tags: ['inventory-alerts', 'expiring'] }
+      }
     );
-
-    await auditLogWithContext({
-      userId: 'system',
-      action: AUDIT_ACTIONS.VIEW_APPOINTMENT,
-      resource: 'inventory_alerts',
-      details: JSON.stringify({ daysAhead, locationId }),
-    });
 
     return {
       success: true,
-      data: response.data,
+      data: response,
     };
   } catch (error) {
     console.error('Failed to fetch expiration alerts:', error);
@@ -90,21 +84,18 @@ export async function getInventoryDashboardStats(
 ): Promise<ActionResult<import('./alerts.types').InventoryDashboardStats>> {
   try {
     const params = locationId ? { locationId } : {};
-    const response = await apiClient.get<import('./alerts.types').InventoryDashboardStats>(
+    const response = await serverGet<import('./alerts.types').InventoryDashboardStats>(
       API_ENDPOINTS.INVENTORY.DASHBOARD,
-      { params }
+      params,
+      {
+        cache: 'no-store',
+        next: { tags: ['inventory-dashboard', 'inventory-stats'] }
+      }
     );
-
-    await auditLogWithContext({
-      userId: 'system',
-      action: AUDIT_ACTIONS.GENERATE_REPORT,
-      resource: 'inventory_dashboard',
-      details: JSON.stringify({ locationId }),
-    });
 
     return {
       success: true,
-      data: response.data,
+      data: response,
     };
   } catch (error) {
     console.error('Failed to fetch dashboard stats:', error);

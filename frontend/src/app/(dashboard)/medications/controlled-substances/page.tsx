@@ -10,7 +10,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import ControlledSubstancesList from '@/components/medications/ControlledSubstancesList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { getControlledSubstances } from '@/lib/actions/medications.actions';
 import { API_ENDPOINTS } from '@/constants/api';
 
 export const metadata: Metadata = {
@@ -25,16 +25,15 @@ export const metadata: Metadata = {
  */
 async function getControlledSubstances() {
   try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}?type=controlled_substance`,
-      { next: { tags: ['medications-controlled'], revalidate: 180 } }
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch controlled substances');
+    const result = await getControlledSubstances();
+    if (!result) {
+      return { medications: [], total: 0, inventoryStats: {} };
     }
-
-    return (response as Response).json();
+    return {
+      medications: result.data || [],
+      total: result.total || 0,
+      inventoryStats: {} // TODO: Add inventory stats to action
+    };
   } catch (error) {
     console.error('Error fetching controlled substances:', error);
     return { medications: [], total: 0, inventoryStats: {} };

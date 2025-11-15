@@ -11,8 +11,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import InventoryItemDetail from '@/components/medications/InventoryItemDetail';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getInventoryItem } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Inventory Details | White Cross',
@@ -25,28 +24,6 @@ interface InventoryItemPageProps {
   params: {
     id: string;
   };
-}
-
-/**
- * Fetch inventory item
- */
-async function getInventoryItem(id: string) {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/inventory/${id}`,
-      { next: { tags: [`inventory-${id}`] } }
-    );
-
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      throw new Error('Failed to fetch inventory item');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching inventory item:', error);
-    return null;
-  }
 }
 
 /**

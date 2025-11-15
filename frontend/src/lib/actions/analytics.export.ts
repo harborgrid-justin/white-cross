@@ -7,7 +7,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { serverPost, serverPut, serverDelete } from '@/lib/server/fetch';
+import { serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
 import {
   type ExportRequest,
   type ScheduledReport,

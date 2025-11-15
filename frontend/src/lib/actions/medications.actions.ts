@@ -55,7 +55,28 @@ export {
   getPaginatedMedications,
   getMedicationHistory,
   getMedicationStats,
-  getOverdueMedications
+  getOverdueMedications,
+  getOTCMedications,
+  getControlledSubstances,
+  getCategories,
+  getCompletedAdministrations,
+  getAdministrationRules,
+  getAdministrationSchedule,
+  getPrescriptions,
+  getPrescription,
+  getPrescriptionRefill,
+  getInventoryReports,
+  getExpirationReports,
+  getComplianceReports,
+  getRefillReports,
+  getAdministrationReports,
+  getLowStockInventory,
+  getExpiringInventory,
+  getInventoryItem,
+  getMissedDoses,
+  getMedicationSettings,
+  getEmergencyMedications,
+  getRecentAdministrations
 } from './medications.cache';
 
 // ==========================================

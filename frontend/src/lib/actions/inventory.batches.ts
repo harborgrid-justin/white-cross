@@ -10,7 +10,8 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
-import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './inventory.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverGet, serverPost } from '@/lib/api/nextjs-client';
 
 // ==========================================
 // BATCH OPERATIONS
@@ -21,29 +22,16 @@ import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './
  */
 export async function getExpiringBatchesAction(daysAhead: number = 90, locationId?: string) {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const params = new URLSearchParams({ daysAhead: String(daysAhead) });
     if (locationId) {
       params.append('locationId', locationId);
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/batches/expiring?${params.toString()}`, {
-      method: 'GET',
-      next: {
-        revalidate: 3600, // 1 hour cache for expiration alerts
-        tags: ['expiring-batches', 'inventory']
-      }
+    const url = `${API_ENDPOINTS.INVENTORY.BASE}/batches/expiring?${params.toString()}`;
+
+    const result = await serverGet(url, {
+      tags: ['expiring-batches', 'inventory']
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch expiring batches');
-    }
-
-    const result = await response.json();
 
     return {
       success: true,
@@ -64,17 +52,6 @@ export async function createBatchAction(
   _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
     const rawData = {
       itemId: formData.get('itemId'),
@@ -88,21 +65,12 @@ export async function createBatchAction(
       notes: formData.get('notes') || undefined
     };
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/batches`, {
-      method: 'POST',
-      body: JSON.stringify(rawData)
+    const result = await serverPost(`${API_ENDPOINTS.INVENTORY.BASE}/batches`, rawData, {
+      tags: ['inventory', 'inventory-batches', `item-batches-${rawData.itemId}`]
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create batch');
-    }
-
-    const result = await response.json();
 
     // Audit logging
     await auditLog({
-      ...auditContext,
       action: 'CREATE_BATCH',
       resource: 'Inventory',
       resourceId: result.data.id,

@@ -10,6 +10,7 @@
 
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverPost, serverPut, NextApiClientError, type ApiResponse } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { NOTIFICATION_CACHE_TAGS } from './notifications.cache';
 import type {
@@ -38,7 +39,7 @@ export async function createNotificationAction(data: CreateNotificationData): Pr
     }
 
     const response = await serverPost<ApiResponse<Notification>>(
-      `/api/notifications`,
+      API_ENDPOINTS.NOTIFICATIONS.BASE,
       data,
       {
         cache: 'no-store',
@@ -109,7 +110,7 @@ export async function updateNotificationAction(
     }
 
     const response = await serverPut<ApiResponse<Notification>>(
-      `/api/notifications/${notificationId}`,
+      API_ENDPOINTS.NOTIFICATIONS.BY_ID(notificationId),
       data,
       {
         cache: 'no-store',
@@ -160,7 +161,7 @@ export async function markNotificationReadAction(notificationId: string): Promis
     }
 
     const response = await serverPost<ApiResponse<Notification>>(
-      `/api/notifications/${notificationId}/read`,
+      API_ENDPOINTS.NOTIFICATIONS.MARK_READ(notificationId),
       {},
       {
         cache: 'no-store',
@@ -211,8 +212,8 @@ export async function markAllNotificationsReadAction(userId: string): Promise<Ac
     }
 
     const response = await serverPost<ApiResponse<void>>(
-      `/api/users/${userId}/notifications/mark-all-read`,
-      {},
+      API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ,
+      { userId },
       {
         cache: 'no-store',
         next: { tags: [NOTIFICATION_CACHE_TAGS.NOTIFICATIONS] }

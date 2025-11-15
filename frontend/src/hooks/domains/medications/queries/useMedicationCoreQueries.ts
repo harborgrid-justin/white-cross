@@ -92,34 +92,33 @@ export function useStudentMedications(
 }
 
 /**
- * Get individual medication details
+ * Get OTC medications
  */
-export function useMedicationDetails(
-  medicationId: string,
-  options?: Omit<UseQueryOptions<{ medication: Medication }>, 'queryKey' | 'queryFn'>
+export function useOTCMedications(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Medication>>, 'queryKey' | 'queryFn'>
 ) {
   const { handleApiError } = useApiError();
   const { logCompliantAccess } = useHealthcareCompliance();
 
   return useQuery({
-    queryKey: medicationQueryKeys.details.byId(medicationId),
+    queryKey: medicationQueryKeys.lists.all({ type: 'over_the_counter' }),
     queryFn: async () => {
       try {
         await logCompliantAccess(
-          'view_medication_details',
+          'view_otc_medications',
           'medication',
           'phi',
-          { medicationId }
+          { type: 'over_the_counter' }
         );
 
-        return await medicationsApi.getById(medicationId);
+        const result = await medicationsApi.getAll({ type: 'over_the_counter' });
+        return result;
       } catch (error: any) {
-        throw handleApiError(error, 'fetch_medication_details');
+        throw handleApiError(error, 'fetch_otc_medications');
       }
     },
     staleTime: MEDICATION_CACHE_CONFIG.catalog.staleTime,
     gcTime: MEDICATION_CACHE_CONFIG.catalog.gcTime,
-    enabled: !!medicationId,
     ...options,
   });
 }

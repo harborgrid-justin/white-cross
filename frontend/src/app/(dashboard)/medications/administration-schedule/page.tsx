@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import AdministrationSchedule from '@/components/medications/AdministrationSchedule';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getAdministrationSchedule } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Administration Schedule | White Cross',
@@ -27,39 +26,13 @@ interface SchedulePageProps {
 }
 
 /**
- * Fetch scheduled medications
- */
-async function getScheduledMedications(searchParams: any) {
-  const params = new URLSearchParams({
-    date: searchParams.date || new Date().toISOString().split('T')[0],
-    ...(searchParams.studentId && { studentId: searchParams.studentId })
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/schedule?${params}`,
-      { next: { revalidate: 300 } } // 5 min cache
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch schedule');
-    }
-
-    return (response as Response).json();
-  } catch (error) {
-    console.error('Error fetching schedule:', error);
-    return { scheduled: [], byTimeSlot: {} };
-  }
-}
-
-/**
  * Administration Schedule Page
  *
  * Server Component displaying daily medication schedule organized by time slots.
  * Critical for daily nurse operations.
  */
 export default async function AdministrationSchedulePage({ searchParams }: SchedulePageProps) {
-  const schedule = await getScheduledMedications(searchParams);
+  const schedule = await getAdministrationSchedule(searchParams);
   const selectedDate = searchParams.date || new Date().toISOString().split('T')[0];
 
   return (

@@ -16,6 +16,7 @@
 
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverPut, serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ApiResponse } from '@/types/core/api/responses';
 import type {
@@ -65,7 +66,7 @@ export async function updateProfileAction(
     }
 
     const response = await serverPut<ApiResponse<UserProfile>>(
-      `/api/users/${userId}/profile`,
+      API_ENDPOINTS.USERS.PROFILE,
       data,
       {
         cache: 'no-store',
@@ -143,7 +144,7 @@ export async function uploadAvatarAction(
     }
 
     const response = await serverPost<ApiResponse<{ avatarUrl: string }>>(
-      `/api/users/${userId}/avatar`,
+      `${API_ENDPOINTS.USERS.BASE}/avatar`,
       formData,
       {
         cache: 'no-store',

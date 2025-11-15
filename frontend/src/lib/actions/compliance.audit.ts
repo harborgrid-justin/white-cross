@@ -22,8 +22,13 @@ import type {
   PaginatedResult
 } from './compliance.types';
 import {
-  BACKEND_URL,
-  getAuthToken,
+  COMPLIANCE_ENDPOINTS,
+} from '@/constants/api/admin';
+import {
+  serverPost,
+  serverGet,
+} from '@/lib/api/nextjs-client';
+import {
   getLatestAuditLog,
   logHIPAAAuditEntry,
   logToSecondaryStore,

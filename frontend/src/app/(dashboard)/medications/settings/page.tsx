@@ -10,8 +10,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import MedicationSettings from '@/components/medications/MedicationSettings';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getMedicationSettings } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Medication Settings | White Cross',
@@ -21,31 +20,10 @@ export const metadata: Metadata = {
 
 
 /**
- * Fetch settings
- */
-async function getSettings() {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/settings`,
-      { next: { tags: ['medication-settings'], revalidate: 600 } }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch settings');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching settings:', error);
-    return { settings: {}, defaults: {} };
-  }
-}
-
-/**
  * Medication Settings Page
  */
 export default async function MedicationSettingsPage() {
-  const { settings, defaults } = await getSettings();
+  const { settings, defaults } = await getMedicationSettings();
 
   const settingsLinks = [
     {

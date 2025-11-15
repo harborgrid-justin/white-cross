@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import InventoryReport from '@/components/medications/reports/InventoryReport';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getInventoryReports } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Inventory Report | White Cross',
@@ -20,31 +19,10 @@ export const metadata: Metadata = {
 
 
 /**
- * Fetch inventory report data
- */
-async function getInventoryReportData() {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/reports/inventory`,
-      { next: { revalidate: 300 } } // 5 min cache
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch inventory report');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching inventory report:', error);
-    return { inventory: [], lowStock: [], expiringSoon: [], usageStats: {} };
-  }
-}
-
-/**
  * Inventory Report Page
  */
 export default async function InventoryReportPage() {
-  const reportData = await getInventoryReportData();
+  const reportData = await getInventoryReports();
 
   return (
     <div className="space-y-6">

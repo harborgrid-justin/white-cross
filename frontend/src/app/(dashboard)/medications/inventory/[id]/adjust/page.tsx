@@ -10,8 +10,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import StockAdjustmentForm from '@/components/medications/forms/StockAdjustmentForm';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getInventoryItem } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Adjust Stock | White Cross',
@@ -27,32 +26,10 @@ interface StockAdjustmentPageProps {
 }
 
 /**
- * Fetch medication for stock adjustment
- */
-async function getMedicationForAdjustment(id: string) {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/inventory/${id}`,
-      { next: { tags: [`inventory-${id}`] } }
-    );
-
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      throw new Error('Failed to fetch medication');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching medication:', error);
-    return null;
-  }
-}
-
-/**
  * Stock Adjustment Page
  */
 export default async function StockAdjustmentPage({ params }: StockAdjustmentPageProps) {
-  const item = await getMedicationForAdjustment(params.id);
+  const item = await getInventoryItem(params.id);
 
   if (!item) {
     notFound();

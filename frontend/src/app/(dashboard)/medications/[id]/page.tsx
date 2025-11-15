@@ -99,8 +99,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getMedication, getRecentAdministrations } from '@/lib/actions/medications';
 import MedicationDetails from '@/components/medications/core/MedicationDetails';
 import {
   MedicationActionButtons,
@@ -166,166 +165,6 @@ export async function generateMetadata({
     title: medication.name,
     description: `${medication.name} medication details and administration history`
   };
-}
-
-/**
- * Fetches comprehensive medication details including safety warnings and metadata
- *
- * @async
- * @function getMedication
- * @param {string} id - Medication UUID
- * @returns {Promise<Medication | null>} Complete medication object or null if not found
- *
- * @description
- * Retrieves full medication profile with all associated data including:
- * - Basic medication info (name, generic, NDC, dosage, route, frequency)
- * - Prescriber information with NPI verification
- * - Student demographics and allergy profile
- * - Active prescription details and expiration dates
- * - Controlled substance classification (DEA schedule)
- * - Storage requirements and lot numbers
- * - Administration schedule and next due time
- * - Safety warnings and contraindications
- *
- * **Medication Verification:**
- * - NDC code validation against FDA database
- * - Prescriber NPI verification
- * - Prescription expiration checking
- * - Controlled substance authorization validation
- * - Student allergy cross-reference
- *
- * **HIPAA Compliance:**
- * - PHI data (student name, DOB, medication details) protected
- * - Audit log entry created for access
- * - Encrypted transmission (TLS 1.3)
- * - Returns null on 404 to prevent information disclosure
- *
- * **Caching:**
- * - 1-minute cache for balance between freshness and performance
- * - Invalidated on medication updates
- * - Tagged for precise cache invalidation
- *
- * @example
- * ```typescript
- * const medication = await getMedication('abc-123');
- * // Returns:
- * // {
- * //   id: 'abc-123',
- * //   name: 'Albuterol HFA',
- * //   genericName: 'Albuterol Sulfate',
- * //   ndc: '12345-6789-01',
- * //   dosage: '90 mcg',
- * //   route: 'Inhalation',
- * //   frequency: 'As needed for wheezing',
- * //   student: { firstName: 'John', ... },
- * //   allergies: [...],
- * //   ...
- * // }
- * ```
- */
-async function getMedication(id: string) {
-  try {
-    const response = await fetchWithAuth(
-      API_ENDPOINTS.MEDICATIONS.DETAIL(id),
-      { next: { revalidate: 60 } } // 1 min cache
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      if ((response as Response).status === 404) {
-        return null;
-      }
-      throw new Error('Failed to fetch medication');
-    }
-
-    return (response as Response).json();
-  } catch (error) {
-    console.error('Error fetching medication:', error);
-    return null;
-  }
-}
-
-/**
- * Fetches recent medication administration records for timeline display
- *
- * @async
- * @function getRecentAdministrations
- * @param {string} medicationId - Medication UUID
- * @returns {Promise<AdminstrationsResponse>} Last 10 administration records with metadata
- *
- * @description
- * Retrieves most recent medication administration entries to display in the
- * medication detail page's administration timeline. Limited to 10 entries for
- * performance with link to full log.
- *
- * **Administration Record Includes:**
- * - Administration timestamp (date/time with timezone)
- * - Administering nurse name and credentials
- * - Dosage given (may differ from prescribed for weight-based)
- * - Administration status (given, refused, missed, held)
- * - Student signature/acknowledgment (age-appropriate)
- * - Witness signature (for controlled substances)
- * - Side effects noted or "none observed"
- * - Next scheduled dose calculation
- *
- * **Five Rights Verification Data:**
- * - Right Patient: Student ID verification method
- * - Right Medication: NDC code scanned/verified
- * - Right Dose: Calculated dose confirmation
- * - Right Route: Administration method used
- * - Right Time: Schedule compliance (on-time/late)
- *
- * **Special Scenarios:**
- * - **Student Refusal**: Documented with reason and parent notification
- * - **Held Dose**: Medical reason documented (illness, absence)
- * - **Partial Dose**: Waste documentation for controlled substances
- * - **PRN Administration**: Symptom assessment and effectiveness tracking
- * - **Emergency Use**: Protocol followed and outcome documented
- *
- * **HIPAA Compliance:**
- * - Administration records are PHI requiring audit logging
- * - Only authorized personnel can view (VIEW_ADMINISTRATION_LOG)
- * - Encrypted transmission and storage
- *
- * **Caching:**
- * - 30-second cache for near real-time updates
- * - More aggressive than medication details due to frequent changes
- * - Invalidated after new administration entry
- *
- * @example
- * ```typescript
- * const administrations = await getRecentAdministrations('med-uuid');
- * // Returns:
- * // {
- * //   data: [
- * //     {
- * //       id: 'admin-123',
- * //       administeredAt: '2025-10-27T09:00:00Z',
- * //       administeredBy: 'Jane Doe, RN',
- * //       dosageGiven: '90 mcg/2 puffs',
- * //       status: 'given',
- * //       notes: 'Patient tolerated well, no side effects'
- * //     },
- * //     ...
- * //   ]
- * // }
- * ```
- */
-async function getRecentAdministrations(medicationId: string) {
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.ADMINISTRATION_LOG.BY_MEDICATION(medicationId)}?limit=10`,
-      { next: { revalidate: 30 } } // 30 sec cache
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch administrations');
-    }
-
-    return (response as Response).json();
-  } catch (error) {
-    console.error('Error fetching administrations:', error);
-    return { data: [] };
-  }
 }
 
 /**
@@ -433,7 +272,7 @@ export default async function MedicationDetailPage({
   }
 
   // Fetch recent administrations
-  const administrations = await getRecentAdministrations(params.id);
+  const administrations = await getRecentAdministrations(params.id, 10);
 
   return (
     <div className="space-y-6">
@@ -458,7 +297,7 @@ export default async function MedicationDetailPage({
           {/* Recent Administration Log Section */}
           <RecentAdministrationsSection
             medicationId={params.id}
-            initialData={administrations.data}
+            initialData={administrations}
             limit={10}
           />
         </div>

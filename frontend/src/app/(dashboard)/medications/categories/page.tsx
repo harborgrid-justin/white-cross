@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import MedicationCategories from '@/components/medications/MedicationCategories';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { getCategories } from '@/lib/actions/medications.actions';
 import { API_ENDPOINTS } from '@/constants/api';
 
 export const metadata: Metadata = {
@@ -24,16 +24,7 @@ export const metadata: Metadata = {
  */
 async function getCategories() {
   try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/categories`,
-      { next: { tags: ['medication-categories'], revalidate: 600 } }
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch categories');
-    }
-
-    return (response as Response).json();
+    return await getCategories();
   } catch (error) {
     console.error('Error fetching categories:', error);
     return { categories: [], stats: {} };

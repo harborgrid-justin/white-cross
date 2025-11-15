@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import CompletedMedicationsList from '@/components/medications/CompletedMedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { getCompletedAdministrations } from '@/lib/actions/medications.actions';
 import { API_ENDPOINTS } from '@/constants/api';
 
 export const metadata: Metadata = {
@@ -30,23 +30,12 @@ interface CompletedPageProps {
  * Fetch completed administrations
  */
 async function getCompletedAdministrations(searchParams: any) {
-  const params = new URLSearchParams({
-    date: searchParams.date || new Date().toISOString().split('T')[0],
-    page: searchParams.page || '1',
-    limit: '50'
-  });
-
   try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/completed?${params}`,
-      { next: { revalidate: 180 } } // 3 min cache
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch completed administrations');
-    }
-
-    return (response as Response).json();
+    return await getCompletedAdministrations({
+      date: searchParams.date,
+      page: searchParams.page,
+      limit: '50'
+    });
   } catch (error) {
     console.error('Error fetching completed administrations:', error);
     return { completed: [], stats: {}, total: 0 };

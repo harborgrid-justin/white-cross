@@ -10,7 +10,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import MedicationsList from '@/components/medications/MedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { getOTCMedications } from '@/lib/actions/medications.actions';
 import { API_ENDPOINTS } from '@/constants/api';
 
 export const metadata: Metadata = {
@@ -25,19 +25,10 @@ export const metadata: Metadata = {
  */
 async function getOTCMedications() {
   try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}?type=over_the_counter`,
-      { next: { tags: ['medications-otc'], revalidate: 300 } }
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch OTC medications');
-    }
-
-    return (response as Response).json();
+    return await getOTCMedications();
   } catch (error) {
     console.error('Error fetching OTC medications:', error);
-    return { medications: [], total: 0 };
+    return null;
   }
 }
 
@@ -45,7 +36,25 @@ async function getOTCMedications() {
  * OTC Medications Page
  */
 export default async function OTCMedicationsPage() {
-  const { medications, total } = await getOTCMedications();
+  const result = await getOTCMedications();
+
+  if (!result) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Over-the-Counter Medications"
+          description="Manage OTC medications and parental consent forms"
+          backLink="/medications"
+          backLabel="Back to Medications"
+        />
+        <div className="text-center py-8">
+          <p className="text-gray-500">Unable to load OTC medications. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { data: medications, page, limit, total, totalPages } = result;
 
   return (
     <div className="space-y-6">

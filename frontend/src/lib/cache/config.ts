@@ -244,6 +244,26 @@ export const RESOURCE_CACHE_CONFIG = {
     description: 'School information',
     pprHint: 'static' as const,
     edgeCompatible: true
+  },
+
+  // Billing - Medium cache (financial data)
+  billing: {
+    strategy: 'medium' as CacheStrategy,
+    revalidate: 60,
+    tags: ['billing', 'financial-data'] as string[],
+    description: 'Billing and financial records',
+    pprHint: 'static' as const,
+    edgeCompatible: true
+  },
+
+  // Settings - Long cache (user preferences)
+  settings: {
+    strategy: 'long' as CacheStrategy,
+    revalidate: 600,
+    tags: ['settings', 'user-preferences'] as string[],
+    description: 'User settings and preferences',
+    pprHint: 'static' as const,
+    edgeCompatible: true
   }
 } as const;
 

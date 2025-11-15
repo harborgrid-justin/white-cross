@@ -8,7 +8,8 @@
 'use server';
 import type { InventoryItem, StockLevel } from '@/schemas/inventory.schemas';
 import type { InventoryStats } from './inventory.types';
-import { getAuthToken, enhancedFetch, BACKEND_URL } from './inventory.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverGet } from '@/lib/api/nextjs-client';
 import { getInventoryItemsAction } from './inventory.items';
 import { getStockLevelsAction } from './inventory.stock';
 import { getExpiringBatchesAction } from './inventory.batches';
@@ -22,24 +23,11 @@ import { getExpiringBatchesAction } from './inventory.batches';
  */
 export async function getInventoryCategoriesAction() {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
+    const url = `${API_ENDPOINTS.INVENTORY.ITEMS}/categories`;
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/items/categories`, {
-      method: 'GET',
-      next: {
-        revalidate: 3600, // 1 hour cache for categories
-        tags: ['inventory-categories', 'inventory']
-      }
+    const result = await serverGet(url, {
+      tags: ['inventory-categories', 'inventory']
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch categories');
-    }
-
-    const result = await response.json();
 
     return {
       success: true,

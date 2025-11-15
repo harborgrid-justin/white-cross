@@ -10,7 +10,8 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
-import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './inventory.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverGet, serverPost } from '@/lib/api/nextjs-client';
 
 // ==========================================
 // LOCATION OPERATIONS
@@ -21,20 +22,11 @@ import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './
  */
 export async function getInventoryLocationsAction(includeInactive = false) {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
+    const url = `${API_ENDPOINTS.INVENTORY.BASE}/locations?includeInactive=${includeInactive}`;
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/locations?includeInactive=${includeInactive}`, {
-      method: 'GET'
+    const result = await serverGet(url, {
+      tags: ['inventory', 'inventory-locations']
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch locations');
-    }
-
-    const result = await response.json();
 
     return {
       success: true,
@@ -55,17 +47,6 @@ export async function createInventoryLocationAction(
   _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
     const rawData = {
       name: formData.get('name'),
@@ -83,21 +64,12 @@ export async function createInventoryLocationAction(
       notes: formData.get('notes') || undefined
     };
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/locations`, {
-      method: 'POST',
-      body: JSON.stringify(rawData)
+    const result = await serverPost(`${API_ENDPOINTS.INVENTORY.BASE}/locations`, rawData, {
+      tags: ['inventory', 'inventory-locations']
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create location');
-    }
-
-    const result = await response.json();
 
     // Audit logging
     await auditLog({
-      ...auditContext,
       action: 'CREATE_INVENTORY_LOCATION',
       resource: 'Inventory',
       resourceId: result.data.id,

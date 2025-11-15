@@ -80,6 +80,7 @@ export type {
 export interface MedicationFilters {
   search?: string;
   category?: string;
+  type?: string; // Add type filter for OTC, prescription, etc.
   isActive?: boolean;
   controlledSubstance?: boolean;
   page?: number;

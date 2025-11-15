@@ -26,10 +26,10 @@ import { type ZodIssue } from 'zod';
 import type { ActionResult } from './settings.types';
 import {
   getAuthUser,
-  createAuditContext,
-  enhancedFetch,
-  BACKEND_URL
+  createAuditContext
 } from './settings.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverPut } from '@/lib/api/nextjs-client';
 import {
   updateNotificationPreferencesSchema,
 } from '@/schemas/settings.schemas';
@@ -84,15 +84,9 @@ export async function updateNotificationPreferencesAction(
       };
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/notification-preferences`, {
-      method: 'PATCH',
-      body: JSON.stringify(validation.data)
+    const result = await serverPut(`${API_ENDPOINTS.USERS.BASE}/${user.id}/notification-preferences`, validation.data, {
+      tags: ['user-settings', `user-${user.id}`]
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update notification preferences');
-    }
 
     await auditLog({
       ...auditContext,

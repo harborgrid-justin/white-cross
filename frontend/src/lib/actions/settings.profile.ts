@@ -23,15 +23,9 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z, type ZodIssue } from 'zod';
+import { serverPost, serverPut, nextFetch } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import type { ActionResult } from './settings.types';
-import {
-  getAuthUser,
-  getAuthToken,
-  createAuditContext,
-  enhancedFetch,
-  verifyCurrentPassword,
-  BACKEND_URL
-} from './settings.utils';
 import {
   updateProfileSchema,
   changeEmailSchema,
@@ -49,18 +43,7 @@ export async function updateProfileAction(
   prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const auditContext = await createAuditContext();
-
   try {
-    const user = await getAuthUser();
-    if (!user) {
-      return {
-        errors: {
-          _form: ['Authentication required']
-        }
-      };
-    }
-
     const rawData = {
       firstName: formData.get('firstName')?.toString(),
       lastName: formData.get('lastName')?.toString(),
@@ -87,28 +70,18 @@ export async function updateProfileAction(
       };
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/profile`, {
-      method: 'PATCH',
-      body: JSON.stringify(validation.data)
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update profile');
-    }
-
-    await auditLog({
-      ...auditContext,
-      action: 'UPDATE_PROFILE',
-      resource: 'User',
-      resourceId: user.id,
-      changes: validation.data,
-      success: true
-    });
+    const response = await serverPut(
+      API_ENDPOINTS.USERS.PROFILE,
+      validation.data,
+      {
+        cache: 'no-store',
+        next: { tags: ['user-settings', 'user-profile'] }
+      }
+    );
 
     // Enhanced cache invalidation
     revalidateTag('user-settings', 'default');
-    revalidateTag(`user-${user.id}`, 'default');
+    revalidateTag('user-profile', 'default');
     revalidatePath('/settings/profile');
 
     return {
@@ -135,18 +108,7 @@ export async function uploadAvatarAction(
   prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const auditContext = await createAuditContext();
-
   try {
-    const user = await getAuthUser();
-    if (!user) {
-      return {
-        errors: {
-          _form: ['Authentication required']
-        }
-      };
-    }
-
     const avatarFile = formData.get('avatar') as File;
     if (!avatarFile) {
       return {
@@ -179,38 +141,27 @@ export async function uploadAvatarAction(
     const uploadFormData = new FormData();
     uploadFormData.append('avatar', avatarFile);
 
-    const token = await getAuthToken();
-    const response = await fetch(`${BACKEND_URL}/users/${user.id}/avatar`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: uploadFormData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to upload avatar');
-    }
-
-    const { avatarUrl } = await response.json();
-
-    await auditLog({
-      ...auditContext,
-      action: 'UPDATE_AVATAR',
-      resource: 'User',
-      resourceId: user.id,
-      success: true
-    });
+    const response = await nextFetch<{ avatarUrl: string }>(
+      `${API_ENDPOINTS.USERS.BASE}/avatar`,
+      {
+        method: 'POST',
+        body: uploadFormData,
+        headers: {
+          // Don't set Content-Type - let browser set it for multipart/form-data
+        },
+        cache: 'no-store',
+        next: { tags: ['user-settings', 'user-profile'] }
+      }
+    );
 
     // Enhanced cache invalidation
     revalidateTag('user-settings', 'default');
-    revalidateTag(`user-${user.id}`, 'default');
+    revalidateTag('user-profile', 'default');
     revalidatePath('/settings/profile');
 
     return {
       success: true,
-      data: { avatarUrl },
+      data: response,
       message: 'Avatar uploaded successfully'
     };
   } catch (error) {
@@ -234,18 +185,7 @@ export async function changeEmailAction(
   prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const auditContext = await createAuditContext();
-
   try {
-    const user = await getAuthUser();
-    if (!user) {
-      return {
-        errors: {
-          _form: ['Authentication required']
-        }
-      };
-    }
-
     const newEmail = formData.get('newEmail')?.toString();
     const currentPassword = formData.get('currentPassword')?.toString();
 
@@ -253,16 +193,6 @@ export async function changeEmailAction(
       return {
         errors: {
           _form: ['Email and current password are required']
-        }
-      };
-    }
-
-    // Verify current password
-    const passwordValid = await verifyCurrentPassword(user.id, currentPassword);
-    if (!passwordValid) {
-      return {
-        errors: {
-          _form: ['Current password is incorrect']
         }
       };
     }
@@ -283,24 +213,32 @@ export async function changeEmailAction(
       };
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/users/${user.id}/email`, {
-      method: 'POST',
-      body: JSON.stringify({ newEmail })
-    });
+    // First verify current password
+    const passwordResponse = await serverPost(
+      API_ENDPOINTS.AUTH.VERIFY,
+      { password: currentPassword },
+      {
+        cache: 'no-store'
+      }
+    );
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to change email');
+    if (!passwordResponse) {
+      return {
+        errors: {
+          _form: ['Current password is incorrect']
+        }
+      };
     }
 
-    await auditLog({
-      ...auditContext,
-      action: 'REQUEST_EMAIL_CHANGE',
-      resource: 'User',
-      resourceId: user.id,
-      changes: { newEmail },
-      success: true
-    });
+    // Change email
+    const response = await serverPost(
+      `${API_ENDPOINTS.USERS.BASE}/email`,
+      { newEmail },
+      {
+        cache: 'no-store',
+        next: { tags: ['user-settings', 'user-profile'] }
+      }
+    );
 
     return {
       success: true,

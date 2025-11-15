@@ -172,6 +172,7 @@ export interface MedicationListFilters {
   limit?: number;
   search?: string;
   category?: string;
+  type?: string; // Add type filter for OTC, prescription, etc.
   status?: 'active' | 'inactive' | 'discontinued';
   studentId?: string;
   sortBy?: 'name' | 'category' | 'dateAdded' | 'lastAdministered';

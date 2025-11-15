@@ -82,6 +82,7 @@ export class MedicationMainApi {
       if (validatedFilters.limit) queryString.append('limit', String(validatedFilters.limit));
       if (validatedFilters.search) queryString.append('search', validatedFilters.search);
       if (validatedFilters.category) queryString.append('category', validatedFilters.category);
+      if (validatedFilters.type) queryString.append('type', validatedFilters.type);
       if (typeof validatedFilters.isActive === 'boolean') {
         queryString.append('isActive', String(validatedFilters.isActive));
       }

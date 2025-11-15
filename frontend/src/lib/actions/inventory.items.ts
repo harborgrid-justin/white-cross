@@ -25,7 +25,8 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import type { InventoryItemFilter } from '@/schemas/inventory.schemas';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
-import { getAuthToken, createAuditContext, enhancedFetch, BACKEND_URL } from './inventory.utils';
+import { API_ENDPOINTS } from '@/constants/api';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
 
 // ==========================================
 // INVENTORY ITEM OPERATIONS
@@ -38,17 +39,6 @@ export async function createInventoryItemAction(
   _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
     const rawData = {
       name: formData.get('name'),
@@ -72,22 +62,13 @@ export async function createInventoryItemAction(
       notes: formData.get('notes') || undefined
     };
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/items`, {
-      method: 'POST',
-      body: JSON.stringify(rawData)
+    const result = await serverPost(API_ENDPOINTS.INVENTORY.ITEMS, rawData, {
+      tags: ['inventory', 'inventory-items']
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create inventory item');
-    }
-
-    const result = await response.json();
 
     // Audit logging for controlled substances
     if (rawData.isControlledSubstance) {
       await auditLog({
-        ...auditContext,
         action: 'CREATE_CONTROLLED_SUBSTANCE',
         resource: 'Inventory',
         resourceId: result.data.id,
@@ -120,11 +101,6 @@ export async function createInventoryItemAction(
  */
 export async function getInventoryItemsAction(filter?: InventoryItemFilter) {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const params = new URLSearchParams();
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -134,15 +110,11 @@ export async function getInventoryItemsAction(filter?: InventoryItemFilter) {
       });
     }
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/items?${params.toString()}`, {
-      method: 'GET'
+    const url = params.toString() ? `${API_ENDPOINTS.INVENTORY.ITEMS}?${params.toString()}` : API_ENDPOINTS.INVENTORY.ITEMS;
+
+    const result = await serverGet(url, {
+      tags: ['inventory', 'inventory-items']
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch inventory items');
-    }
-
-    const result = await response.json();
 
     return {
       success: true,
@@ -161,24 +133,11 @@ export async function getInventoryItemsAction(filter?: InventoryItemFilter) {
  */
 export async function getInventoryItemAction(itemId: string, includeStock = true) {
   try {
-    const token = await getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
+    const url = includeStock ? `${API_ENDPOINTS.INVENTORY.BY_ID(itemId)}?includeStock=true` : API_ENDPOINTS.INVENTORY.BY_ID(itemId);
 
-    const url = `${BACKEND_URL}/inventory/items/${itemId}${
-      includeStock ? '?includeStock=true' : ''
-    }`;
-
-    const response = await enhancedFetch(url, {
-      method: 'GET'
+    const result = await serverGet(url, {
+      tags: ['inventory', `inventory-item-${itemId}`]
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch inventory item');
-    }
-
-    const result = await response.json();
 
     return {
       success: true,
@@ -200,17 +159,6 @@ export async function updateInventoryItemAction(
   _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
     const rawData = {
       name: formData.get('name') || undefined,
@@ -233,22 +181,13 @@ export async function updateInventoryItemAction(
       notes: formData.get('notes') || undefined
     };
 
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/items/${itemId}`, {
-      method: 'PUT',
-      body: JSON.stringify(rawData)
+    const result = await serverPut(API_ENDPOINTS.INVENTORY.BY_ID(itemId), rawData, {
+      tags: ['inventory', 'inventory-items', `inventory-item-${itemId}`]
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update inventory item');
-    }
-
-    const result = await response.json();
 
     // Audit logging for controlled substances
     if (rawData.isControlledSubstance) {
       await auditLog({
-        ...auditContext,
         action: 'UPDATE_CONTROLLED_SUBSTANCE',
         resource: 'Inventory',
         resourceId: itemId,
@@ -283,30 +222,13 @@ export async function updateInventoryItemAction(
  * Delete inventory item (soft delete)
  */
 export async function deleteInventoryItemAction(itemId: string): Promise<ActionResult> {
-  const token = await getAuthToken();
-  const auditContext = await createAuditContext();
-
-  if (!token) {
-    return {
-      errors: {
-        _form: ['Authentication required']
-      }
-    };
-  }
-
   try {
-    const response = await enhancedFetch(`${BACKEND_URL}/inventory/items/${itemId}`, {
-      method: 'DELETE'
+    await serverDelete(API_ENDPOINTS.INVENTORY.BY_ID(itemId), {
+      tags: ['inventory', 'inventory-items', `inventory-item-${itemId}`]
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to delete inventory item');
-    }
 
     // Audit logging
     await auditLog({
-      ...auditContext,
       action: 'DELETE_INVENTORY_ITEM',
       resource: 'Inventory',
       resourceId: itemId,

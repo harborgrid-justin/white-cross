@@ -12,6 +12,7 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 
 // Core API integrations
 import { serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Types
@@ -42,7 +43,7 @@ export async function createReportAction(data: CreateReportData): Promise<Action
     }
 
     const response = await serverPost<{ success: boolean; data: Report; message?: string }>(
-      `/api/reports`,
+      `/api/v1/reports`,
       data,
       {
         cache: 'no-store',
@@ -117,7 +118,7 @@ export async function updateReportAction(
     }
 
     const response = await serverPut<{ success: boolean; data: Report; message?: string }>(
-      `/api/reports/${reportId}`,
+      `/api/v1/reports/${reportId}`,
       data,
       {
         cache: 'no-store',
@@ -193,7 +194,7 @@ export async function deleteReportAction(reportId: string): Promise<ActionResult
     }
 
     const response = await serverDelete<{ success: boolean; message?: string }>(
-      `/api/reports/${reportId}`,
+      `/api/v1/reports/${reportId}`,
       {
         cache: 'no-store',
         next: { tags: [REPORT_CACHE_TAGS.REPORTS, `report-${reportId}`] }

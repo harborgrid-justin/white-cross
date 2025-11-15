@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import ExpiringMedicationsList from '@/components/medications/ExpiringMedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getExpiringInventory } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Expiring Medications | White Cross',
@@ -26,35 +25,10 @@ interface ExpiringPageProps {
 }
 
 /**
- * Fetch expiring medications
- */
-async function getExpiringMedications(searchParams: any) {
-  const params = new URLSearchParams({
-    days: searchParams.days || '90' // Default 90-day look ahead
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/inventory/expiring?${params}`,
-      { next: { tags: ['inventory-expiring'], revalidate: 3600 } }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch expiring medications');
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching expiring medications:', error);
-    return { expired: [], expiring30: [], expiring60: [], expiring90: [], total: 0 };
-  }
-}
-
-/**
  * Expiring Medications Page
  */
 export default async function ExpiringMedicationsPage({ searchParams }: ExpiringPageProps) {
-  const { expired, expiring30, expiring60, expiring90, total } = await getExpiringMedications(searchParams);
+  const { expired, expiring30, expiring60, expiring90, total } = await getExpiringInventory(searchParams);
 
   return (
     <div className="space-y-6">

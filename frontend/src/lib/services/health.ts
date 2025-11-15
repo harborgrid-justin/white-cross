@@ -82,8 +82,32 @@ export interface HealthSummary {
  */
 export async function getStudentHealthSummary(studentId: string): Promise<HealthSummary> {
   try {
-    const response = await serverGet<HealthSummary>(`/api/v1/students/${studentId}/health-summary`);
-    return response;
+    // Fetch health records from the correct endpoint
+    const healthRecordsResponse = await serverGet<{data: HealthRecord[], pagination: Record<string, unknown>}>(
+      `/api/students/${studentId}/health-records`,
+      { page: 1, limit: 100 }
+    );
+
+    // For now, return a mock summary structure until other endpoints are available
+    // TODO: Integrate with actual allergy and medication endpoints when available
+    const healthSummary: HealthSummary = {
+      healthRecords: healthRecordsResponse.data || [],
+      allergies: [], // TODO: Fetch from allergies endpoint when available
+      medications: [], // TODO: Fetch from medications endpoint when available
+      summary: {
+        totalRecords: healthRecordsResponse.data?.length || 0,
+        totalAllergies: 0, // TODO: Update when allergies endpoint is available
+        totalMedications: 0, // TODO: Update when medications endpoint is available
+        recentVisits: healthRecordsResponse.data?.filter(record => {
+          const recordDate = new Date(record.recordDate);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return recordDate >= thirtyDaysAgo;
+        }).length || 0,
+      },
+    };
+
+    return healthSummary;
   } catch (error) {
     console.error('Error fetching student health summary:', error);
     throw new Error('Failed to fetch health summary');
@@ -104,7 +128,8 @@ export async function getStudentHealthRecords(
 ): Promise<{data: HealthRecord[], pagination: Record<string, unknown>}> {
   try {
     const response = await serverGet<{data: HealthRecord[], pagination: Record<string, unknown>}>(
-      `/api/v1/health-records/student/${studentId}?page=${page}&limit=${limit}`
+      `/api/students/${studentId}/health-records`,
+      { page, limit }
     );
     return response;
   } catch (error) {

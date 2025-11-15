@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import OverdueMedicationsList from '@/components/medications/OverdueMedicationsList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
+import { getOverdueMedications } from '@/lib/actions/medications.actions';
 import { API_ENDPOINTS } from '@/constants/api';
 
 export const metadata: Metadata = {
@@ -22,18 +22,10 @@ export const metadata: Metadata = {
 /**
  * Fetch overdue medications
  */
-async function getOverdueMedications() {
+async function getOverdueMedicationsData() {
   try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/overdue`,
-      { next: { revalidate: 60 } } // 1 min cache
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch overdue medications');
-    }
-
-    return (response as Response).json();
+    const medications = await getOverdueMedications();
+    return { overdue: medications, stats: {} }; // TODO: Add stats to action
   } catch (error) {
     console.error('Error fetching overdue medications:', error);
     return { overdue: [], stats: {} };
@@ -47,7 +39,7 @@ async function getOverdueMedications() {
  * Requires immediate attention and follow-up actions.
  */
 export default async function OverdueMedicationsPage() {
-  const { overdue, stats } = await getOverdueMedications();
+  const { overdue, stats } = await getOverdueMedicationsData();
 
   return (
     <div className="space-y-6">

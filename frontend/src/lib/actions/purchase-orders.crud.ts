@@ -10,6 +10,7 @@
 
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverPost, serverPut, NextApiClientError, type ApiResponse } from '@/lib/api/nextjs-client';
+import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import {
   PURCHASE_ORDER_CACHE_TAGS,
@@ -48,7 +49,7 @@ export async function createPurchaseOrderAction(data: CreatePurchaseOrderData): 
     }
 
     const response = await serverPost<ApiResponse<PurchaseOrder>>(
-      `/api/purchase-orders`,
+      API_ENDPOINTS.PURCHASE_ORDERS.BASE,
       data,
       {
         cache: 'no-store',

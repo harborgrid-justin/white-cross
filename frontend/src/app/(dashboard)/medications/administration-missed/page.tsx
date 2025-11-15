@@ -9,8 +9,7 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 import MissedDosesList from '@/components/medications/MissedDosesList';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { fetchWithAuth } from '@/lib/server/fetch';
-import { API_ENDPOINTS } from '@/constants/api';
+import { getMissedDoses } from '@/lib/actions/medications';
 
 export const metadata: Metadata = {
   title: 'Missed Doses | White Cross',
@@ -26,35 +25,6 @@ interface MissedDosesPageProps {
     studentId?: string;
     page?: string;
   };
-}
-
-/**
- * Fetch missed doses
- */
-async function getMissedDoses(searchParams: any) {
-  const params = new URLSearchParams({
-    startDate: searchParams.startDate || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    endDate: searchParams.endDate || new Date().toISOString().split('T')[0],
-    ...(searchParams.studentId && { studentId: searchParams.studentId }),
-    page: searchParams.page || '1',
-    limit: '50'
-  });
-
-  try {
-    const response = await fetchWithAuth(
-      `${API_ENDPOINTS.MEDICATIONS.BASE}/missed-doses?${params}`,
-      { next: { revalidate: 120 } } // 2 min cache
-    ) as Response;
-
-    if (!(response as Response).ok) {
-      throw new Error('Failed to fetch missed doses');
-    }
-
-    return (response as Response).json();
-  } catch (error) {
-    console.error('Error fetching missed doses:', error);
-    return { missedDoses: [], stats: {}, total: 0 };
-  }
 }
 
 /**

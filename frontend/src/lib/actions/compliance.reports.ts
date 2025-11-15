@@ -21,8 +21,13 @@ import type {
   UIReportTemplate
 } from './compliance.types';
 import {
-  BACKEND_URL,
-  getAuthToken,
+  COMPLIANCE_ENDPOINTS,
+} from '@/constants/api/admin';
+import {
+  serverPost,
+  serverGet,
+} from '@/lib/api/nextjs-client';
+import {
   logHIPAAAuditEntry,
   getCurrentUserContext,
 } from './compliance.cache';
@@ -48,31 +53,21 @@ export async function generateComplianceReportAction(
 
     const context = await getCurrentUserContext();
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/reports/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      body: JSON.stringify({
+    const report = await serverPost<HIPAAReport>(
+      `${COMPLIANCE_ENDPOINTS.REPORTS}/generate`,
+      {
         reportType,
         period,
         generatedBy: context.userId,
         metrics: metricsResult.data,
-      }),
-      next: {
-        revalidate: 900,
-        tags: ['compliance-reports']
+      },
+      {
+        next: {
+          revalidate: 900,
+          tags: ['compliance-reports']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const report = await response.json() as HIPAAReport;
+    );
 
     // Revalidate report caches
     revalidateTag('compliance-reports', 'compliance');
@@ -112,28 +107,18 @@ export async function getComplianceMetricsAction(
   period?: { start: string; end: string }
 ): Promise<ActionResult<ComplianceMetrics>> {
   try {
-    const params = period ? new URLSearchParams({
-      start: period.start,
-      end: period.end
-    }) : '';
+    const params = period ? { start: period.start, end: period.end } : undefined;
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/metrics${params ? `?${params}` : ''}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 600,
-        tags: ['compliance-metrics']
+    const metrics = await serverGet<ComplianceMetrics>(
+      COMPLIANCE_ENDPOINTS.METRICS,
+      params,
+      {
+        next: {
+          revalidate: 600,
+          tags: ['compliance-metrics']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const metrics = await response.json() as ComplianceMetrics;
+    );
 
     return {
       success: true,
@@ -156,27 +141,20 @@ export async function getComplianceAlertsAction(
   filters?: { severity?: string; status?: string }
 ): Promise<ActionResult<ComplianceAlert[]>> {
   try {
-    const params = filters ? new URLSearchParams(
+    const params = filters ? Object.fromEntries(
       Object.entries(filters).filter(([, value]) => value !== undefined)
-    ) : '';
+    ) : undefined;
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/alerts${params ? `?${params}` : ''}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 120,
-        tags: ['compliance-alerts']
+    const alerts = await serverGet<ComplianceAlert[]>(
+      COMPLIANCE_ENDPOINTS.ALERTS,
+      params,
+      {
+        next: {
+          revalidate: 120,
+          tags: ['compliance-alerts']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const alerts = await response.json() as ComplianceAlert[];
+    );
 
     return {
       success: true,
@@ -205,29 +183,19 @@ export async function resolveComplianceViolationAction(
   try {
     const context = await getCurrentUserContext();
 
-    // Enhanced fetch with Next.js v16 capabilities
-    const response = await fetch(`${BACKEND_URL}/compliance/violations/${violationId}/resolve`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      body: JSON.stringify({
+    const resolvedViolation = await serverPost<ComplianceViolation>(
+      `${COMPLIANCE_ENDPOINTS.VIOLATIONS}/${violationId}/resolve`,
+      {
         ...resolution,
         resolvedBy: context.userId,
         resolvedAt: new Date().toISOString(),
-      }),
-      next: {
-        tags: ['compliance-alerts', 'compliance-violations']
+      },
+      {
+        next: {
+          tags: ['compliance-alerts', 'compliance-violations']
+        }
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const resolvedViolation = await response.json() as ComplianceViolation;
+    );
 
     // Revalidate related caches
     revalidateTag('compliance-alerts', 'compliance');
@@ -278,49 +246,36 @@ export async function getComplianceReportsAction(
 }>> {
   try {
     // Build query parameters
-    const params = new URLSearchParams();
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params.append(key, String(value));
-        }
-      });
-    }
+    const params = filters ? Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value !== undefined && value !== null)
+    ) : undefined;
 
     // Fetch reports
-    const reportsResponse = await fetch(`${BACKEND_URL}/compliance/reports?${params}`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID(),
-        'X-Cache-Control': 'max-age=600'
-      },
-      next: {
-        revalidate: 600,
-        tags: ['compliance-reports']
+    const reports = await serverGet<PaginatedResult<UIComplianceReport>>(
+      COMPLIANCE_ENDPOINTS.REPORTS,
+      params,
+      {
+        next: {
+          revalidate: 600,
+          tags: ['compliance-reports']
+        }
       }
-    });
-
-    let reports: PaginatedResult<UIComplianceReport> = { data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } };
-    if (reportsResponse.ok) {
-      reports = await reportsResponse.json();
-    }
+    );
 
     // Fetch report templates
-    const templatesResponse = await fetch(`${BACKEND_URL}/compliance/reports/templates`, {
-      headers: {
-        'Authorization': `Bearer ${await getAuthToken()}`,
-        'X-Request-ID': crypto.randomUUID()
-      },
-      next: {
-        revalidate: 3600, // 1 hour for templates
-        tags: ['compliance-report-templates']
-      }
-    });
-
     let templates: UIReportTemplate[] = [];
-    if (templatesResponse.ok) {
-      templates = await templatesResponse.json();
-    } else {
+    try {
+      templates = await serverGet<UIReportTemplate[]>(
+        `${COMPLIANCE_ENDPOINTS.REPORTS}/templates`,
+        undefined,
+        {
+          next: {
+            revalidate: 3600, // 1 hour for templates
+            tags: ['compliance-report-templates']
+          }
+        }
+      );
+    } catch {
       // Fallback to default templates if API not available
       templates = [
         {
