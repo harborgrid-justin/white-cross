@@ -57,6 +57,10 @@ export const CanvasComponent: React.FC<CanvasComponentProps> = ({
     component.childIds.map((id) => state.canvas.components.byId[id]).filter(Boolean)
   );
 
+  // Subscribe to selection state for child components (reactive)
+  const selectedIds = usePageBuilderStore((state) => state.selection.selectedIds);
+  const hoveredId = usePageBuilderStore((state) => state.selection.hoveredId);
+
   // ============================================================================
   // DRAG AND DROP
   // ============================================================================
@@ -260,11 +264,9 @@ export const CanvasComponent: React.FC<CanvasComponentProps> = ({
         <div className="relative w-full h-full">
           <AnimatePresence>
             {childComponents.map((child) => {
-              const isChildSelected = usePageBuilderStore
-                .getState()
-                .selection.selectedIds.includes(child.id);
-              const isChildHovered =
-                usePageBuilderStore.getState().selection.hoveredId === child.id;
+              // Use reactive state instead of getState() to prevent stale state
+              const isChildSelected = selectedIds.includes(child.id);
+              const isChildHovered = hoveredId === child.id;
 
               return (
                 <CanvasComponent

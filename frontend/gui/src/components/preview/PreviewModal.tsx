@@ -82,6 +82,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
                 className="fixed inset-0 z-50 flex flex-col"
+                aria-describedby="preview-description"
               >
                 {/* Header Bar */}
                 <div className="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800">
@@ -89,11 +90,14 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                   <Dialog.Title className="text-lg font-semibold text-white">
                     Preview Mode
                   </Dialog.Title>
+                  <Dialog.Description id="preview-description" className="sr-only">
+                    Preview your page design in different device sizes. Use device buttons to switch between desktop, tablet, and mobile. Press Escape to exit preview mode.
+                  </Dialog.Description>
 
                   {/* Device Controls */}
                   <div className="flex items-center gap-4">
                     {/* Device Selector */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1" role="group" aria-label="Device selection">
                       {DEVICE_OPTIONS.map(({ value, label, icon: Icon }) => {
                         const isSelected = device === value;
 
@@ -102,6 +106,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                             key={value}
                             onClick={() => setDevice(value)}
                             aria-label={`${label} preview`}
+                            aria-pressed={isSelected}
                             className={`
                               flex items-center justify-center w-10 h-10 rounded transition-colors
                               ${
@@ -113,7 +118,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                             `}
                             title={label}
                           >
-                            <Icon className="w-5 h-5" />
+                            <Icon className="w-5 h-5" aria-hidden="true" />
                           </button>
                         );
                       })}

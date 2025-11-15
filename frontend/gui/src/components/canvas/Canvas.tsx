@@ -113,6 +113,71 @@ export const Canvas: React.FC<CanvasProps> = ({
   }, [handleKeyDown]);
 
   // ============================================================================
+  // KEYBOARD NAVIGATION FOR CANVAS
+  // ============================================================================
+
+  /**
+   * Handle keyboard navigation for zoom and pan
+   */
+  const handleCanvasKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+
+      // Zoom in: Ctrl/Cmd + Plus/Equal
+      if (cmdOrCtrl && (event.key === '+' || event.key === '=')) {
+        event.preventDefault();
+        handleZoomIn();
+        return;
+      }
+
+      // Zoom out: Ctrl/Cmd + Minus
+      if (cmdOrCtrl && event.key === '-') {
+        event.preventDefault();
+        handleZoomOut();
+        return;
+      }
+
+      // Reset zoom: Ctrl/Cmd + 0
+      if (cmdOrCtrl && event.key === '0') {
+        event.preventDefault();
+        handleResetViewport();
+        return;
+      }
+
+      // Pan with Ctrl/Cmd + Shift + Arrow keys
+      if (cmdOrCtrl && event.shiftKey && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        event.preventDefault();
+        const panStep = 50;
+
+        switch (event.key) {
+          case 'ArrowUp':
+            setPan(panX, panY + panStep);
+            break;
+          case 'ArrowDown':
+            setPan(panX, panY - panStep);
+            break;
+          case 'ArrowLeft':
+            setPan(panX + panStep, panY);
+            break;
+          case 'ArrowRight':
+            setPan(panX - panStep, panY);
+            break;
+        }
+        return;
+      }
+
+      // Toggle grid: G key
+      if (event.key === 'g' && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        toggleGrid();
+        return;
+      }
+    },
+    [handleZoomIn, handleZoomOut, handleResetViewport, setPan, panX, panY, toggleGrid]
+  );
+
+  // ============================================================================
   // DRAG AND DROP HANDLERS
   // ============================================================================
 
@@ -342,18 +407,18 @@ export const Canvas: React.FC<CanvasProps> = ({
           <button
             onClick={handleZoomOut}
             className="p-2 hover:bg-gray-100 rounded transition-colors"
-            title="Zoom Out (Ctrl + Mouse Wheel)"
+            title="Zoom Out (Ctrl+- or Ctrl+Mouse Wheel)"
             aria-label="Zoom out"
           >
             <ZoomOut className="w-4 h-4 text-gray-700" />
           </button>
-          <span className="text-sm font-medium text-gray-700 min-w-[4rem] text-center">
+          <span className="text-sm font-medium text-gray-700 min-w-[4rem] text-center" aria-live="polite" aria-atomic="true">
             {Math.round(zoom * 100)}%
           </span>
           <button
             onClick={handleZoomIn}
             className="p-2 hover:bg-gray-100 rounded transition-colors"
-            title="Zoom In (Ctrl + Mouse Wheel)"
+            title="Zoom In (Ctrl++ or Ctrl+Mouse Wheel)"
             aria-label="Zoom in"
           >
             <ZoomIn className="w-4 h-4 text-gray-700" />
@@ -364,8 +429,8 @@ export const Canvas: React.FC<CanvasProps> = ({
         <button
           onClick={handleResetViewport}
           className="p-2 hover:bg-gray-100 rounded transition-colors"
-          title="Reset Viewport"
-          aria-label="Reset viewport"
+          title="Reset Viewport (Ctrl+0)"
+          aria-label="Reset viewport to 100%"
         >
           <Maximize2 className="w-4 h-4 text-gray-700" />
         </button>
@@ -376,8 +441,9 @@ export const Canvas: React.FC<CanvasProps> = ({
           className={`p-2 rounded transition-colors ${
             gridEnabled ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-gray-700'
           }`}
-          title="Toggle Grid"
-          aria-label="Toggle grid"
+          title="Toggle Grid (G key)"
+          aria-label={gridEnabled ? 'Grid enabled' : 'Grid disabled'}
+          aria-pressed={gridEnabled}
         >
           <Grid3x3 className="w-4 h-4" />
         </button>
@@ -389,7 +455,8 @@ export const Canvas: React.FC<CanvasProps> = ({
             snapToGrid ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-gray-700'
           }`}
           title="Snap to Grid"
-          aria-label="Snap to grid"
+          aria-label={snapToGrid ? 'Snap to grid enabled' : 'Snap to grid disabled'}
+          aria-pressed={snapToGrid}
         >
           <Move className="w-4 h-4" />
         </button>
@@ -411,6 +478,10 @@ export const Canvas: React.FC<CanvasProps> = ({
           onMouseUp={handlePanEnd}
           onMouseLeave={handlePanEnd}
           onWheel={handleWheel}
+          onKeyDown={handleCanvasKeyDown}
+          tabIndex={0}
+          role="application"
+          aria-label="Canvas workspace - Use Ctrl+Plus/Minus to zoom, Ctrl+Shift+Arrows to pan, G to toggle grid"
           style={{
             cursor: isPanning ? 'grabbing' : 'default',
           }}

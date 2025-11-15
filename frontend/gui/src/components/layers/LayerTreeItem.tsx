@@ -39,6 +39,7 @@ interface LayerTreeItemProps {
   hasChildren: boolean;
   onToggleExpand: (id: ComponentId) => void;
   style?: React.CSSProperties;
+  totalCount?: number;
 }
 
 // ============================================================================
@@ -79,6 +80,7 @@ const LayerTreeItemComponent: React.FC<LayerTreeItemProps> = ({
   hasChildren,
   onToggleExpand,
   style,
+  totalCount,
 }) => {
   // Store hooks
   const component = usePageBuilderStore((state) => state.canvas.components.byId[id]);
@@ -214,7 +216,10 @@ const LayerTreeItemComponent: React.FC<LayerTreeItemProps> = ({
         aria-selected={isSelected}
         aria-expanded={hasChildren ? isExpanded : undefined}
         aria-level={depth + 1}
-        aria-label={component.name}
+        aria-posinset={index + 1}
+        aria-setsize={totalCount || 1}
+        aria-label={`${component.name}, ${component.type}${component.hidden ? ', hidden' : ''}${component.locked ? ', locked' : ''}`}
+        tabIndex={isSelected ? 0 : -1}
       >
         {/* Indentation spacer */}
         <div style={indentationStyle} />
@@ -259,26 +264,30 @@ const LayerTreeItemComponent: React.FC<LayerTreeItemProps> = ({
         {/* Visibility toggle */}
         <button
           onClick={handleToggleVisibility}
-          className="ml-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label={component.hidden ? 'Show' : 'Hide'}
+          className="ml-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100"
+          aria-label={component.hidden ? 'Show component' : 'Hide component'}
+          aria-pressed={!component.hidden}
+          tabIndex={-1}
         >
           {component.hidden ? (
-            <EyeOff className="w-3 h-3 text-gray-500" />
+            <EyeOff className="w-3 h-3 text-gray-500" aria-hidden="true" />
           ) : (
-            <Eye className="w-3 h-3 text-gray-500" />
+            <Eye className="w-3 h-3 text-gray-500" aria-hidden="true" />
           )}
         </button>
 
         {/* Lock toggle */}
         <button
           onClick={handleToggleLock}
-          className="ml-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-          aria-label={component.locked ? 'Unlock' : 'Lock'}
+          className="ml-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100"
+          aria-label={component.locked ? 'Unlock component' : 'Lock component'}
+          aria-pressed={component.locked}
+          tabIndex={-1}
         >
           {component.locked ? (
-            <Lock className="w-3 h-3 text-gray-500" />
+            <Lock className="w-3 h-3 text-gray-500" aria-hidden="true" />
           ) : (
-            <Unlock className="w-3 h-3 text-gray-500" />
+            <Unlock className="w-3 h-3 text-gray-500" aria-hidden="true" />
           )}
         </button>
       </div>
@@ -299,7 +308,8 @@ export const LayerTreeItem = React.memo(
       prev.index === next.index &&
       prev.isExpanded === next.isExpanded &&
       prev.hasChildren === next.hasChildren &&
-      prev.style === next.style
+      prev.style === next.style &&
+      prev.totalCount === next.totalCount
     );
   }
 );
