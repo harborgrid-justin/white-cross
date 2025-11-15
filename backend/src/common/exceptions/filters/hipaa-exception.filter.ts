@@ -54,6 +54,12 @@ export class HipaaExceptionFilter implements ExceptionFilter {
     { pattern: /\b\d{3}-\d{2}-\d{4}\b/g, replacement: '***-**-****', name: 'SSN' },
     { pattern: /\b\d{9}\b/g, replacement: '[REDACTED_SSN]', name: 'SSN_NO_DASH' },
 
+    // Prescription numbers (process before general MRN patterns)
+    { pattern: /\b(?:RX|Rx|rx)[:\s#-]*[A-Z0-9]{6,12}\b/g, replacement: 'RX:[REDACTED]', name: 'PRESCRIPTION' },
+
+    // Insurance policy numbers (process before general MRN patterns)
+    { pattern: /\b(?:policy|insurance)[:\s#-]*[A-Z0-9]{6,20}\b/gi, replacement: 'Policy:[REDACTED]', name: 'INSURANCE' },
+
     // Medical Record Numbers (MRN) - various formats
     { pattern: /\bMRN[:\s]*[A-Z0-9]{6,12}\b/gi, replacement: 'MRN:[REDACTED]', name: 'MRN' },
     { pattern: /\b[A-Z]{2,3}\d{6,10}\b/g, replacement: '[REDACTED_MRN]', name: 'MRN_ALPHA' },
@@ -63,7 +69,7 @@ export class HipaaExceptionFilter implements ExceptionFilter {
 
     // Phone numbers (various formats)
     { pattern: /\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, replacement: '[PHONE_REDACTED]', name: 'PHONE' },
-    { pattern: /\b\(\d{3}\)\s*\d{3}[-.\s]?\d{4}\b/g, replacement: '[PHONE_REDACTED]', name: 'PHONE_PAREN' },
+    { pattern: /\(\d{3}\)\s*\d{3}[-.\s]?\d{4}/g, replacement: '[PHONE_REDACTED]', name: 'PHONE_PAREN' },
     { pattern: /\b1[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, replacement: '[PHONE_REDACTED]', name: 'PHONE_INT' },
 
     // Dates (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD)
@@ -94,11 +100,6 @@ export class HipaaExceptionFilter implements ExceptionFilter {
     // Driver's license patterns (state + number)
     { pattern: /\b[A-Z]{2}[-\s]?\d{6,8}\b/g, replacement: '[DL_REDACTED]', name: 'DRIVERS_LICENSE' },
 
-    // Prescription numbers
-    { pattern: /\b(?:RX|Rx)[:\s#]*[A-Z0-9]{6,12}\b/gi, replacement: 'RX:[REDACTED]', name: 'PRESCRIPTION' },
-
-    // Insurance policy numbers
-    { pattern: /\b(?:policy|insurance)[:\s#]*[A-Z0-9]{6,20}\b/gi, replacement: 'Policy:[REDACTED]', name: 'INSURANCE' },
   ];
 
   constructor(

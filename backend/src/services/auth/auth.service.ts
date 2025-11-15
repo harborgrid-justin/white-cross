@@ -39,18 +39,7 @@ export class AuthService extends BaseService {
   ) {
     super('AuthService');
     // SECURITY UPDATE: Configurable salt rounds, default increased to 12 for healthcare security
-    this.saltRounds = parseInt(
-      this.configService.get<string>('BCRYPT_SALT_ROUNDS', '12'),
-      10,
-    );
-
-    // Validate salt rounds on startup
-    if (this.saltRounds < 10 || this.saltRounds > 14) {
-      throw new Error(
-        'SECURITY WARNING: bcrypt salt rounds must be between 10 and 14. ' +
-          `Current value: ${this.saltRounds}. Recommended for healthcare: 12.`,
-      );
-    }
+    this.saltRounds = this.resolveSaltRounds();
   }
 
   /**
@@ -203,6 +192,14 @@ export class AuthService extends BaseService {
 
       return user.toSafeObject();
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
+      if (error instanceof Error && error.message === 'JWT_SECRET not configured') {
+        throw new Error('JWT_SECRET not configured');
+      }
+
       throw new UnauthorizedException('Invalid or expired token');
     }
   }
@@ -244,6 +241,14 @@ export class AuthService extends BaseService {
         expiresIn: 900,
       };
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
+      if (error instanceof Error && error.message === 'JWT secrets not configured') {
+        throw new Error('JWT secrets not configured');
+      }
+
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
   }
@@ -417,6 +422,28 @@ export class AuthService extends BaseService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Resolve bcrypt salt rounds from configuration with validation
+   */
+  private resolveSaltRounds(): number {
+    const configuredValue = this.configService.get<string>('BCRYPT_SALT_ROUNDS', '12');
+    const saltValue = configuredValue ?? '12';
+    const parsedValue = parseInt(saltValue, 10);
+
+    if (Number.isNaN(parsedValue)) {
+      throw new Error('SECURITY WARNING: bcrypt salt rounds must be a valid integer');
+    }
+
+    if (parsedValue < 10 || parsedValue > 14) {
+      throw new Error(
+        'SECURITY WARNING: bcrypt salt rounds must be between 10 and 14. ' +
+          `Current value: ${parsedValue}. Recommended for healthcare: 12.`,
+      );
+    }
+
+    return parsedValue;
   }
 
   /**

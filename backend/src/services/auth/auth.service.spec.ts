@@ -45,6 +45,8 @@ describe('AuthService', () => {
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     userModel = {
       findOne: jest.fn(),
       findByPk: jest.fn(),
@@ -97,8 +99,6 @@ describe('AuthService', () => {
       };
       return config[key] || defaultValue;
     });
-
-    jest.clearAllMocks();
   });
 
   describe('constructor', () => {

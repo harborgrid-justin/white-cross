@@ -12,7 +12,7 @@
  * - Configuration versioning and rollback
  */
 
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
 import { EventEmitter } from 'events';
 import * as crypto from 'crypto';
 import { BaseService } from '@/common/base';
@@ -219,9 +219,18 @@ export class ProductionConfigurationManagementService extends EventEmitter {
   private configurationBackups: ConfigurationBackup[] = [];
   private encryptionKey: string;
   private watchTimers: NodeJS.Timeout[] = [];
+  private readonly serviceLogger: Logger | LoggerService;
 
-  constructor() {
+  constructor(
+    @Optional()
+    @Inject(LoggerService)
+    logger?: LoggerService,
+  ) {
     super();
+    this.serviceLogger = logger ?? new Logger(ProductionConfigurationManagementService.name);
+    if (logger?.setContext) {
+      logger.setContext(ProductionConfigurationManagementService.name);
+    }
     this.encryptionKey = process.env.CONFIG_ENCRYPTION_KEY || this.generateEncryptionKey();
     this.initializeDefaultEnvironments();
     this.setupDefaultProviders();
@@ -771,6 +780,62 @@ export class ProductionConfigurationManagementService extends EventEmitter {
     this.removeAllListeners();
   }
 }
+
+  private logInfo(message: string): void {
+    if (this.serviceLogger instanceof Logger) {
+      this.serviceLogger.log(message);
+      return;
+    }
+
+    if (typeof this.serviceLogger.info === 'function') {
+      this.serviceLogger.info(message, ProductionConfigurationManagementService.name);
+    } else if (typeof (this.serviceLogger as LoggerService).log === 'function') {
+      (this.serviceLogger as LoggerService).log(message, ProductionConfigurationManagementService.name);
+    }
+  }
+
+  private logError(message: string, error?: unknown): void {
+    if (this.serviceLogger instanceof Logger) {
+      const trace = error instanceof Error ? error.stack : this.serializeError(error);
+      this.serviceLogger.error(message, trace);
+      return;
+    }
+
+    const context = ProductionConfigurationManagementService.name;
+    const loggerService = this.serviceLogger as LoggerService;
+
+    if (error instanceof Error) {
+      loggerService.error(message, error, context);
+      return;
+    }
+
+    if (error) {
+      loggerService.error(`${message} ${this.serializeError(error)}`, undefined, context);
+      return;
+    }
+
+    loggerService.error(message, undefined, context);
+  }
+
+  private serializeError(error?: unknown): string {
+    if (!error) {
+      return '';
+    }
+
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return String(error);
+    }
+  }
 
 // Factory for easy instantiation
 export class ConfigurationFactory {
