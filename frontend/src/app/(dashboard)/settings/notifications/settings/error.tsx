@@ -12,7 +12,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Settings error:', error);
+    console.error('Notifications error:', error);
   }, [error]);
 
   return (
@@ -27,14 +27,14 @@ export default function Error({
           Something went wrong
         </h2>
         <p className="text-gray-600">
-          There was an error loading this settings page. Please try again.
+          There was an error loading notifications. Please try again.
         </p>
         <div className="flex gap-3 justify-center">
           <Button onClick={() => reset()}>
             Try again
           </Button>
-          <Button variant="outline" onClick={() => window.location.href = '/settings'}>
-            Back to Settings
+          <Button variant="outline" onClick={() => window.location.href = '/settings/notifications'}>
+            Back to Notifications
           </Button>
         </div>
       </div>

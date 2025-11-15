@@ -54,8 +54,8 @@ export default registerAs('security', (): SecurityConfig => {
 
   return {
     csrf: {
-      enabled: isProduction,
-      secret: process.env.CSRF_SECRET || null,
+      enabled: true, // Enable in all environments for consistency
+      secret: process.env.CSRF_SECRET || 'dev-csrf-secret-only-for-development',
       cookieName: 'XSRF-TOKEN',
       headerName: 'X-CSRF-Token',
       tokenLifetimeMs: 24 * 60 * 60 * 1000, // 24 hours

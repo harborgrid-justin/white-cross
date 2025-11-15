@@ -435,4 +435,40 @@ export class HealthRecordAuditInterceptor extends BaseInterceptor implements Nes
     // - Compliance reporting system
     // - Blockchain for tamper-proof audit trails
   }
+
+  /**
+   * Calculate request size in bytes
+   */
+  private calculateRequestSize(req: any): number {
+    let size = 0;
+
+    // Headers size
+    Object.entries(req.headers).forEach(([key, value]) => {
+      size +=
+        key.length +
+        (Array.isArray(value) ? value.join('').length : String(value).length);
+    });
+
+    // Body size (if available)
+    if (req.body && typeof req.body === 'string') {
+      size += Buffer.byteLength(req.body, 'utf8');
+    } else if (req.body && typeof req.body === 'object') {
+      size += Buffer.byteLength(JSON.stringify(req.body), 'utf8');
+    }
+
+    return size;
+  }
+
+  /**
+   * Calculate response size in bytes
+   */
+  private calculateResponseSize(data: any): number {
+    if (!data) return 0;
+
+    try {
+      return Buffer.byteLength(JSON.stringify(data), 'utf8');
+    } catch {
+      return 0;
+    }
+  }
 }

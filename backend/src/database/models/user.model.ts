@@ -101,7 +101,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     validate: { isEmail: true },
   })
-  email!: string;
+  declare email: string;
 
   @ApiProperty({
     description: 'Hashed password (bcrypt) - NEVER expose in API responses',
@@ -111,7 +111,7 @@ export class User extends Model<UserAttributes> {
     type: DataType.STRING,
     allowNull: false,
   })
-  password!: string;
+  declare password: string;
 
   @ApiProperty({
     description: 'User first name',
@@ -122,7 +122,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'firstName',
   })
-  firstName!: string;
+  declare firstName: string;
 
   @ApiProperty({
     description: 'User last name',
@@ -133,7 +133,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'lastName',
   })
-  lastName!: string;
+  declare lastName: string;
 
   @ApiProperty({
     description: 'User role for authorization',
@@ -145,7 +145,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     defaultValue: UserRole.ADMIN,
   })
-  role!: UserRole;
+  declare role: UserRole;
 
   @ApiProperty({
     description: 'Whether the user account is active',
@@ -157,7 +157,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'isActive',
   })
-  isActive!: boolean;
+  declare isActive: boolean;
 
   @ApiProperty({
     description: 'Timestamp of last successful login',
@@ -218,7 +218,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'emailVerified',
   })
-  emailVerified!: boolean;
+  declare emailVerified: boolean;
 
   @ApiProperty({
     description: 'Email verification token - NEVER expose in API responses',
@@ -285,7 +285,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'twoFactorEnabled',
   })
-  twoFactorEnabled!: boolean;
+  declare twoFactorEnabled: boolean;
 
   @ApiProperty({
     description: 'Legacy 2FA secret (deprecated - use mfaSecret) - NEVER expose in API responses',
@@ -308,7 +308,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'failedLoginAttempts',
   })
-  failedLoginAttempts!: number;
+  declare failedLoginAttempts: number;
 
   @ApiProperty({
     description: 'Account lockout expiration timestamp (set after 5 failed login attempts)',
@@ -342,7 +342,7 @@ export class User extends Model<UserAttributes> {
     allowNull: false,
     field: 'mustChangePassword',
   })
-  mustChangePassword!: boolean;
+  declare mustChangePassword: boolean;
 
   // MFA fields
   @ApiProperty({
@@ -356,7 +356,7 @@ export class User extends Model<UserAttributes> {
     field: 'mfaEnabled',
     comment: 'Whether multi-factor authentication is enabled',
   })
-  mfaEnabled!: boolean;
+  declare mfaEnabled: boolean;
 
   @ApiProperty({
     description: 'TOTP secret for MFA (encrypted) - NEVER expose in API responses',
@@ -445,7 +445,7 @@ export class User extends Model<UserAttributes> {
     field: 'isEmailVerified',
     comment: 'Whether email address has been verified',
   })
-  isEmailVerified!: boolean;
+  declare isEmailVerified: boolean;
 
   @ApiProperty({
     description: 'Timestamp when email was verified',

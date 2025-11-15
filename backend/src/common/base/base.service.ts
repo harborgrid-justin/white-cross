@@ -723,7 +723,37 @@ export abstract class BaseService {
   }
 
   /**
-   * Create paginated query with common options
+   * Create paginated query options (returns query config, doesn't execute)
+   */
+  protected createPaginatedQueryOptions(
+    page: number,
+    limit: number,
+    where: Record<string, any> = {},
+    order: any[] = [],
+    include: any[] = [],
+    additionalOptions: Record<string, any> = {},
+  ): any {
+    // Validate pagination
+    const validation = this.validatePagination({ page, limit });
+    if (!validation.isValid || !validation.normalizedParams) {
+      throw new Error(validation.errors?.[0]?.message || 'Invalid pagination parameters');
+    }
+
+    const { offset } = validation.normalizedParams;
+
+    return {
+      where,
+      include,
+      order,
+      offset,
+      limit,
+      distinct: true, // Important for proper counting with joins
+      ...additionalOptions,
+    };
+  }
+
+  /**
+   * Execute paginated query with common options
    */
   protected async createPaginatedQuery<T extends Model>(
     model: ModelStatic<T>,

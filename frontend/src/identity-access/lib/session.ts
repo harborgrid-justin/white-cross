@@ -31,7 +31,7 @@
  */
 
 import { cookies, headers } from 'next/headers';
-import { verifyAccessToken, type TokenPayload } from './auth';
+import { verifyAccessToken, type TokenPayload } from './server/auth';
 import {
   COOKIE_NAMES,
   getAccessTokenCookieOptions,

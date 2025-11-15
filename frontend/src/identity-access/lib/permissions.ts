@@ -19,7 +19,7 @@
 
 import { hasMinimumRole } from './config/roles';
 import { getServerSession, type SessionUser } from './session';
-import { apiClient } from '@/services/core/ApiClient';
+import { apiClient } from '@/services/core/ApiClient.instance';
 
 /**
  * Permission action types

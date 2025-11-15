@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 
-export default function Error({
+export default function ApiKeysError({
   error,
   reset,
 }: {
@@ -12,7 +12,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error('Settings error:', error);
+    console.error('API Keys error:', error);
   }, [error]);
 
   return (
@@ -24,10 +24,10 @@ export default function Error({
           </div>
         </div>
         <h2 className="text-2xl font-semibold text-gray-900">
-          Something went wrong
+          Failed to load API Keys
         </h2>
         <p className="text-gray-600">
-          There was an error loading this settings page. Please try again.
+          There was an error loading your API keys settings. Please try again.
         </p>
         <div className="flex gap-3 justify-center">
           <Button onClick={() => reset()}>

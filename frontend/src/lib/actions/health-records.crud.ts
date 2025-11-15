@@ -95,8 +95,8 @@ export async function createHealthRecordAction(
 
     const validatedData = healthRecordCreateSchema.parse(rawData);
 
-    // Create health record via backend API with enhanced fetch (backend uses /health-record singular)
-    const response = await enhancedFetch(`${BACKEND_URL}/health-record`, {
+    // Create health record via backend API with enhanced fetch (backend uses /api/v1/health-records)
+    const response = await enhancedFetch(`${BACKEND_URL}/api/v1/health-records`, {
       method: 'POST',
       body: JSON.stringify(validatedData)
     });
@@ -191,13 +191,13 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
 
     if (studentId) {
       // Get records for a specific student
-      endpoint = `/health-record/student/${studentId}`;
+      endpoint = `/api/v1/health-records/student/${studentId}`;
       if (recordType) {
         params.recordType = recordType;
       }
     } else {
       // Get all health records across all students
-      endpoint = '/health-record';
+      endpoint = '/api/v1/health-records';
       if (recordType) {
         params.type = recordType;
       }
@@ -333,7 +333,7 @@ export async function updateHealthRecordAction(
 
     const validatedData = healthRecordUpdateSchema.parse(rawData);
 
-    const response = await enhancedFetch(`${BACKEND_URL}/health-record/${id}`, {
+    const response = await enhancedFetch(`${BACKEND_URL}/api/v1/health-records/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(validatedData)
     });
@@ -430,7 +430,7 @@ export async function deleteHealthRecordAction(id: string): Promise<ActionResult
   }
 
   try {
-    const response = await enhancedFetch(`${BACKEND_URL}/health-record/${id}`, {
+    const response = await enhancedFetch(`${BACKEND_URL}/api/v1/health-records/${id}`, {
       method: 'DELETE'
     });
 

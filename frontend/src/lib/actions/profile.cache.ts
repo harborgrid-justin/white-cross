@@ -70,7 +70,7 @@ export const getUserProfile = cache(async (userId: string): Promise<UserProfile 
 export const getCurrentUserProfile = cache(async (): Promise<UserProfile | null> => {
   try {
     const response = await serverGet<ApiResponse<UserProfile>>(
-      `/api/profile`,
+      `/api/v1/auth/profile`,
       undefined,
       {
         cache: 'force-cache',
@@ -97,19 +97,20 @@ export const getCurrentUserProfile = cache(async (): Promise<UserProfile | null>
  */
 export const getProfileSettings = cache(async (userId: string): Promise<ProfileSettings | null> => {
   try {
-    const response = await serverGet<ApiResponse<ProfileSettings>>(
-      `/api/users/${userId}/settings`,
-      undefined,
-      {
-        cache: 'force-cache',
-        next: {
-          revalidate: CACHE_TTL.SESSION,
-          tags: [`profile-settings-${userId}`, 'profile-settings']
-        }
-      }
-    );
-
-    return response.data;
+    // TODO: Backend route doesn't exist - returning default settings for now
+    console.warn('Profile settings endpoint not implemented in backend - using defaults');
+    
+    // Return default settings until backend endpoint is implemented
+    return {
+      id: userId,
+      theme: 'light',
+      notifications: true,
+      language: 'en',
+      timezone: 'UTC',
+      emailNotifications: true,
+      pushNotifications: false,
+      securityAlerts: true,
+    } as ProfileSettings;
   } catch (error) {
     console.error('Failed to get profile settings:', error);
     return null;
@@ -126,19 +127,9 @@ export const getProfileSettings = cache(async (userId: string): Promise<ProfileS
  */
 export const getSecurityLogs = cache(async (userId: string, limit: number = 50): Promise<SecurityLog[]> => {
   try {
-    const response = await serverGet<ApiResponse<SecurityLog[]>>(
-      `/api/users/${userId}/security-logs`,
-      { limit: limit.toString() },
-      {
-        cache: 'force-cache',
-        next: {
-          revalidate: CACHE_TTL.PHI_FREQUENT,
-          tags: [`security-logs-${userId}`, 'profile-security']
-        }
-      }
-    );
-
-    return response.data || [];
+    // TODO: Backend route doesn't exist - returning empty array for now
+    console.warn('Security logs endpoint not implemented in backend');
+    return [];
   } catch (error) {
     console.error('Failed to get security logs:', error);
     return [];
@@ -154,19 +145,9 @@ export const getSecurityLogs = cache(async (userId: string, limit: number = 50):
  */
 export const getActiveSessions = cache(async (userId: string): Promise<ActiveSession[]> => {
   try {
-    const response = await serverGet<ApiResponse<ActiveSession[]>>(
-      `/api/proxy/security/sessions?userId=${userId}`,
-      undefined,
-      {
-        cache: 'force-cache',
-        next: {
-          revalidate: CACHE_TTL.PHI_FREQUENT,
-          tags: [`sessions-${userId}`, 'profile-sessions']
-        }
-      }
-    );
-
-    return response.data || [];
+    // TODO: Backend route doesn't exist - returning empty array for now
+    console.warn('Active sessions endpoint not implemented in backend');
+    return [];
   } catch (error) {
     console.error('Failed to get active sessions:', error);
     return [];

@@ -101,7 +101,7 @@ export async function createAuditContext() {
  *
  * @example
  * ```typescript
- * const response = await enhancedFetch(`${BACKEND_URL}/health-record`, {
+ * const response = await enhancedFetch(`${BACKEND_URL}/api/v1/health-records`, {
  *   method: 'POST',
  *   body: JSON.stringify(data)
  * });

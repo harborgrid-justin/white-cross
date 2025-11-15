@@ -117,8 +117,8 @@ export class MedicationRepository extends BaseService {
       },
     ];
 
-    // Use BaseService createPaginatedQuery method
-    const paginationOptions = this.createPaginatedQuery(
+    // Use BaseService createPaginatedQueryOptions method
+    const paginationOptions = this.createPaginatedQueryOptions(
       query.page || 1,
       query.limit || 20,
       where,
@@ -172,7 +172,7 @@ export class MedicationRepository extends BaseService {
   ): Promise<{ medications: StudentMedication[]; total: number }> {
     this.validateUUID(studentId, 'Student ID');
 
-    const paginationOptions = this.createPaginatedQuery(
+    const paginationOptions = this.createPaginatedQueryOptions(
       page,
       limit,
       { studentId },
