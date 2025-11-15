@@ -70,7 +70,7 @@ describe('DashboardService (Comprehensive)', () => {
       providers: [
         DashboardService,
         {
-          provide: 'SEQUELIZE_CONNECTION',
+          provide: 'SEQUELIZE',
           useValue: mockSequelize,
         },
       ],

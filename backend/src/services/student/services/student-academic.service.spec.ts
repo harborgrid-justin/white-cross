@@ -473,9 +473,9 @@ describe('StudentAcademicService', () => {
 
     it('should use current date if effectiveDate not provided', async () => {
       studentModel.findByPk.mockResolvedValue(mockStudent as Student);
-      const noDa teDto = { newGrade: '11', reason: 'Promotion' } as GradeTransitionDto;
+      const noDateDto = { newGrade: '11', reason: 'Promotion' } as GradeTransitionDto;
 
-      const result = await service.advanceStudentGrade(mockStudent.id, noDa teDto);
+      const result = await service.advanceStudentGrade(mockStudent.id, noDateDto);
 
       expect(result.effectiveDate).toBeInstanceOf(Date);
     });
