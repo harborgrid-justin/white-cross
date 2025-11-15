@@ -40,7 +40,8 @@
     "swagger:validate": "redocly lint swagger-spec.json",
     "swagger:build": "redocly build-docs swagger-spec.json --output=swagger-docs.html",
     "swagger:preview": "redocly preview-docs swagger-spec.json",
-    "test:auth-flow": "node scripts/test-auth-flow.js"
+    "test:auth-flow": "node scripts/test-auth-flow.js",
+    "unlock:users": "node scripts/unlock-users.js"
   },
   "dependencies": {
     "@apollo/server": "^5.1.0",
