@@ -368,6 +368,7 @@ export const LayerTree: React.FC<LayerTreeProps> = ({
           hasChildren={node.hasChildren}
           onToggleExpand={handleToggleExpand}
           style={style}
+          totalCount={flattenedTree.length}
         />
       );
     },

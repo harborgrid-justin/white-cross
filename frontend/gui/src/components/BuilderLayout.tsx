@@ -12,6 +12,7 @@ import { ComponentPalette } from './palette/ComponentPalette';
 import { Canvas } from './canvas/Canvas';
 import { PropertyEditor } from './properties/PropertyEditor';
 import { LayerTree } from './layers/LayerTree';
+import { LiveRegion } from './common/LiveRegion';
 
 export const BuilderLayout: React.FC = () => {
   return (
@@ -40,6 +41,9 @@ export const BuilderLayout: React.FC = () => {
 
       {/* Visually Hidden Main Heading for Screen Readers */}
       <h1 className="sr-only">Page Builder Application</h1>
+
+      {/* Live Region for Screen Reader Announcements */}
+      <LiveRegion />
 
       {/* Top Toolbar - Fixed Height */}
       <header className="flex-none" role="banner">
