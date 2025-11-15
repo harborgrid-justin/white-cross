@@ -57,15 +57,23 @@ export const PropertyEditor: React.FC = () => {
             </span>
           </div>
           <div className="mb-4">
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">
+            <label
+              htmlFor="component-name"
+              className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block"
+            >
               Name
             </label>
             <input
+              id="component-name"
               type="text"
               value={component.name}
-              onChange={(e) => updateComponent(component.id, { name: e.target.value })}
+              onChange={(e) => updateComponent(component.id, { name: e.target.value }, true)}
+              aria-describedby="component-name-description"
               className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+            <span id="component-name-description" className="sr-only">
+              Enter a name for the component
+            </span>
           </div>
         </div>
 
@@ -77,10 +85,11 @@ export const PropertyEditor: React.FC = () => {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
+                <label htmlFor="component-x" className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
                   X Position
                 </label>
                 <input
+                  id="component-x"
                   type="number"
                   value={Math.round(component.position.x)}
                   onChange={(e) =>
@@ -88,14 +97,16 @@ export const PropertyEditor: React.FC = () => {
                       position: { ...component.position, x: Number(e.target.value) },
                     })
                   }
+                  aria-label="Component X position in pixels"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
+                <label htmlFor="component-y" className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
                   Y Position
                 </label>
                 <input
+                  id="component-y"
                   type="number"
                   value={Math.round(component.position.y)}
                   onChange={(e) =>
@@ -103,16 +114,18 @@ export const PropertyEditor: React.FC = () => {
                       position: { ...component.position, y: Number(e.target.value) },
                     })
                   }
+                  aria-label="Component Y position in pixels"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
+                <label htmlFor="component-width" className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
                   Width
                 </label>
                 <input
+                  id="component-width"
                   type="number"
                   value={Math.round(component.size.width)}
                   onChange={(e) =>
@@ -120,14 +133,17 @@ export const PropertyEditor: React.FC = () => {
                       size: { ...component.size, width: Number(e.target.value) },
                     })
                   }
+                  aria-label="Component width in pixels"
+                  min="1"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
+                <label htmlFor="component-height" className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">
                   Height
                 </label>
                 <input
+                  id="component-height"
                   type="number"
                   value={Math.round(component.size.height)}
                   onChange={(e) =>
@@ -135,6 +151,8 @@ export const PropertyEditor: React.FC = () => {
                       size: { ...component.size, height: Number(e.target.value) },
                     })
                   }
+                  aria-label="Component height in pixels"
+                  min="1"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
                 />
               </div>

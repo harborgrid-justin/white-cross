@@ -24,6 +24,22 @@ import type {
 } from '../types';
 
 // ============================================================================
+// DEBOUNCE UTILITY
+// ============================================================================
+
+/**
+ * Debounce helper to prevent excessive history saves during typing
+ */
+let debounceTimer: NodeJS.Timeout | null = null;
+
+const debouncedSave = (callback: () => void, delay: number = 500) => {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+  debounceTimer = setTimeout(callback, delay);
+};
+
+// ============================================================================
 // INITIAL STATE
 // ============================================================================
 
@@ -102,7 +118,7 @@ const initialPreferencesState: PreferencesState = {
 interface PageBuilderActions {
   // Canvas actions
   addComponent: (component: Omit<ComponentInstance, 'id' | 'createdAt' | 'updatedAt'>) => ComponentId;
-  updateComponent: (id: ComponentId, updates: Partial<ComponentInstance>) => void;
+  updateComponent: (id: ComponentId, updates: Partial<ComponentInstance>, debounce?: boolean) => void;
   deleteComponent: (id: ComponentId) => void;
   moveComponent: (id: ComponentId, parentId: ComponentId | null, position: { x: number; y: number }) => void;
   duplicateComponent: (id: ComponentId) => ComponentId | null;
@@ -123,6 +139,7 @@ interface PageBuilderActions {
   undo: () => void;
   redo: () => void;
   saveToHistory: () => void;
+  saveToHistoryDebounced: () => void;
   clearHistory: () => void;
 
   // Preview actions
@@ -217,7 +234,7 @@ export const usePageBuilderStore = create<PageBuilderState & PageBuilderActions>
           return id;
         },
 
-        updateComponent: (id, updates) => {
+        updateComponent: (id, updates, debounce = false) => {
           set((state) => {
             const component = state.canvas.components.byId[id];
             if (component) {
@@ -225,7 +242,13 @@ export const usePageBuilderStore = create<PageBuilderState & PageBuilderActions>
               component.updatedAt = new Date().toISOString();
             }
           });
-          get().saveToHistory();
+
+          // Use debounced save for property changes (typing), immediate for structural changes
+          if (debounce) {
+            get().saveToHistoryDebounced();
+          } else {
+            get().saveToHistory();
+          }
         },
 
         deleteComponent: (id) => {
@@ -460,8 +483,8 @@ export const usePageBuilderStore = create<PageBuilderState & PageBuilderActions>
 
         saveToHistory: () => {
           set((state) => {
-            // Save current canvas state to history
-            const snapshot = JSON.parse(JSON.stringify(state.canvas)) as CanvasState;
+            // Save current canvas state to history using structuredClone (10-100x faster than JSON.parse/stringify)
+            const snapshot = structuredClone(state.canvas) as CanvasState;
 
             state.history.past.push(snapshot);
 
@@ -475,13 +498,20 @@ export const usePageBuilderStore = create<PageBuilderState & PageBuilderActions>
           });
         },
 
+        saveToHistoryDebounced: () => {
+          // Debounce history saves by 500ms to avoid saving on every keystroke
+          debouncedSave(() => {
+            get().saveToHistory();
+          }, 500);
+        },
+
         undo: () => {
           const pastState = get().history.past.at(-1);
           if (!pastState) return;
 
           set((state) => {
-            // Save current state to future
-            const currentSnapshot = JSON.parse(JSON.stringify(state.canvas)) as CanvasState;
+            // Save current state to future using structuredClone
+            const currentSnapshot = structuredClone(state.canvas) as CanvasState;
             state.history.future.push(currentSnapshot);
 
             // Restore past state
@@ -497,8 +527,8 @@ export const usePageBuilderStore = create<PageBuilderState & PageBuilderActions>
           if (!futureState) return;
 
           set((state) => {
-            // Save current state to past
-            const currentSnapshot = JSON.parse(JSON.stringify(state.canvas)) as CanvasState;
+            // Save current state to past using structuredClone
+            const currentSnapshot = structuredClone(state.canvas) as CanvasState;
             state.history.past.push(currentSnapshot);
 
             // Restore future state
@@ -549,7 +579,7 @@ export const usePageBuilderStore = create<PageBuilderState & PageBuilderActions>
               id,
               name,
               path,
-              canvasState: JSON.parse(JSON.stringify(initialCanvasState)),
+              canvasState: structuredClone(initialCanvasState),
             });
           });
           return id;
