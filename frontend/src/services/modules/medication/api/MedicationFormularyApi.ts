@@ -5,13 +5,54 @@
  * Downstream: Components, pages, app routing | Called by: React component tree
  * Related: Other components, hooks, services, types
  * Exports: constants, interfaces, types, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-11-15 | File Type: .ts
  * Critical Path: Component mount → Render → User interaction → State updates
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
 /**
  * Medication Formulary API Client
+ *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.cache
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Search formulary
+ * import { medicationFormularyApi } from '@/services/modules/medication/api';
+ * const result = await medicationFormularyApi.searchFormulary('aspirin', {
+ *   category: 'analgesic',
+ *   isActive: true
+ * });
+ * const medications = result.medications;
+ *
+ * // After: Use cached server action
+ * import { getMedications } from '@/lib/actions/medications.cache';
+ * const medications = await getMedications({
+ *   search: 'aspirin',
+ *   category: 'analgesic',
+ *   isActive: true
+ * });
+ *
+ * // Before: Get medication by ID
+ * const medication = await medicationFormularyApi.getMedicationById('id');
+ *
+ * // After: Use cached server action
+ * import { getMedicationById } from '@/lib/actions/medications.cache';
+ * const medication = await getMedicationById('id');
+ *
+ * // Before: Check drug interactions
+ * const interactions = await medicationFormularyApi.checkDrugInteractions(['id1', 'id2']);
+ *
+ * // After: Use server action (pending implementation)
+ * // Drug interaction checking will be added to server actions
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ Next.js cache integration (24-hour cache for formulary)
+ * ✓ Automatic cache invalidation
+ * ✓ Server-side data fetching (faster initial load)
+ * ✓ Type-safe with Zod validation
+ * ✓ Better error handling
  *
  * Purpose: Manages the system medication formulary (drug database)
  *

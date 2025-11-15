@@ -26,7 +26,7 @@ import {
 
 // Import shared utilities and types
 import { API_ENDPOINTS } from '@/constants/api';
-import { serverGet, serverPost } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost } from '@/lib/api/server';
 import type { ActionResult } from './health-records.types';
 
 /**

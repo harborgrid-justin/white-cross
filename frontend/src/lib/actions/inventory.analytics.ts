@@ -9,7 +9,7 @@
 import type { InventoryItem, StockLevel } from '@/schemas/inventory.schemas';
 import type { InventoryStats } from './inventory.types';
 import { API_ENDPOINTS } from '@/constants/api';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import { getInventoryItemsAction } from './inventory.items';
 import { getStockLevelsAction } from './inventory.stock';
 import { getExpiringBatchesAction } from './inventory.batches';

@@ -1,6 +1,28 @@
 /**
  * Administration API - Performance Metrics Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/admin.monitoring' server actions instead.
+ *
+ * Migration Path:
+ * 1. Replace ApiClient-based service with server actions
+ * 2. Update imports from '@/lib/actions/admin.monitoring'
+ * 3. Remove service instantiation code
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy approach
+ * import { createMetricsService } from '@/services/modules/administrationApi/monitoring';
+ * const service = createMetricsService(apiClient);
+ * const metrics = await service.getMetrics({ metricType: 'response_time' });
+ * const summary = await service.getMetricsSummary();
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getMetrics, getMetricsSummary } from '@/lib/actions/admin.monitoring';
+ * const metrics = await getMetrics({ metricType: 'response_time' });
+ * const summary = await getMetricsSummary();
+ * ```
+ *
  * Performance metrics tracking service providing:
  * - Metric recording
  * - Metric retrieval with filtering

@@ -1,9 +1,35 @@
 /**
  * Appointments API - Core CRUD Operations
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Migration example:
+ * ```typescript
+ * // OLD:
+ * import { AppointmentsCoreService } from '@/services/modules/appointmentsApi/appointments-core';
+ * const service = new AppointmentsCoreService(client);
+ * const appointment = await service.createAppointment(data);
+ *
+ * // NEW (Server Component):
+ * import { createAppointment } from '@/lib/actions/appointments.actions';
+ * const appointment = await createAppointment(data);
+ *
+ * // NEW (Client Component with React Query):
+ * import { useMutation } from '@tanstack/react-query';
+ * import { createAppointment } from '@/lib/actions/appointments.actions';
+ * const mutation = useMutation({
+ *   mutationFn: createAppointment,
+ *   onSuccess: () => queryClient.invalidateQueries(['appointments'])
+ * });
+ * ```
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles basic CRUD operations for appointments including creating, reading,
  * updating, and deleting appointments with validation and error handling.
- * 
+ *
  * @module services/modules/appointmentsApi/appointments-core
  */
 

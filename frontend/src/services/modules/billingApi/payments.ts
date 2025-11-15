@@ -1,6 +1,36 @@
 /**
  * Payment Management API
  *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/billing.* instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Using service module
+ * import { billingApi } from '@/services/modules/billingApi';
+ * const payments = await billingApi.payments.getPayments(1, 20);
+ * const result = await billingApi.payments.recordPayment(paymentData);
+ *
+ * // ✅ NEW: Using Server Actions
+ * import { getPayments } from '@/lib/actions/billing.cache';
+ * import { recordPaymentAction, processRefundAction } from '@/lib/actions/billing.payments';
+ *
+ * // In Server Component (queries)
+ * const payments = await getPayments({ page: 1, limit: 20 });
+ *
+ * // In Client Component (mutations)
+ * const result = await recordPaymentAction(paymentData);
+ * if (result.success) {
+ *   // Handle success
+ * }
+ * ```
+ *
+ * **REPLACEMENT ACTIONS**:
+ * - `getPayments()` → `@/lib/actions/billing.cache::getPayments()`
+ * - `recordPayment()` → `@/lib/actions/billing.payments::recordPaymentAction()`
+ * - `processRefund()` → `@/lib/actions/billing.payments::processRefundAction()`
+ * - `voidPayment()` → `@/lib/actions/billing.payments::voidPaymentAction()`
+ *
  * Handles all payment-related operations including recording payments,
  * processing refunds, and managing payment status.
  *

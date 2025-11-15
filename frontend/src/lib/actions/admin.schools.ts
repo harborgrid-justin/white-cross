@@ -7,7 +7,7 @@
 'use server';
 
 import { revalidateTag } from 'next/cache';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TAGS } from '@/lib/cache/constants';
 

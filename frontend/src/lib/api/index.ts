@@ -35,12 +35,21 @@
 // For now, we'll provide a minimal export to prevent build errors
 // Client components should use their own API client methods
 
-// Export types only (safe for both server and client)
+// ==========================================
+// TYPE EXPORTS (Safe for both server and client)
+// ==========================================
+
+// Type exports from server types module
 export type {
+  ApiClientOptions,
+  NextCacheConfig,
+  CacheLifeConfig,
   NextFetchOptions,
-  NextApiOptions,
-  NextApiResponse
-} from './nextjs-client';
+  ApiResponse,
+  ApiErrorResponse,
+} from './server/types';
+
+export { NextApiClientError } from './server/types';
 
 // ==========================================
 // SERVER-SIDE API EXPORTS
@@ -49,6 +58,34 @@ export type {
 // NOTE: Server-side API exports have been moved to './server' to prevent
 // client components from importing 'next/headers' which causes build errors.
 // Use: import { serverGet, serverPost, ... } from '@/lib/api/server'
+
+// ==========================================
+// CLIENT-SIDE EXPORTS (Safe for client components)
+// ==========================================
+
+// Re-export client-safe utilities from client directory
+export {
+  // Cache Actions (Server Actions safe for client components)
+  invalidateAppointmentsCacheAction,
+  invalidateAppointmentCacheAction,
+  invalidateStudentCacheAction,
+  invalidatePageCacheAction,
+  emergencyCacheClearAction,
+} from './client/cache-actions';
+
+// Query types from client directory
+export type {
+  QueryParams,
+  PaginatedResponse,
+  Student,
+  Medication,
+  Appointment,
+  DashboardStats,
+  User,
+} from './client/queries';
+
+// Legacy client support (generic, no server dependencies after our fix)
+export { apiClient, fetchApi } from './nextjs-client.legacy';
 
 
 /**
@@ -105,7 +142,8 @@ export async function centralizedApiRequest<T>(
     requiresAuth?: boolean;
   }
 ): Promise<T> {
-  const { operation, domain, cacheTags = [], requiresAuth = true } = context;
+  const { operation, domain } = context;
+  // Note: cacheTags and requiresAuth are reserved for future implementation
   
   try {
     console.log(`[API] ${domain}.${operation} - Starting request`);

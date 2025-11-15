@@ -1,6 +1,24 @@
 /**
+ * @deprecated - Migrated to Server Actions
+ *
+ * Please use:
+ * - Server: '@/lib/actions/broadcasts.actions'
+ * - Client: '@/lib/api/client' queries
+ *
+ * This file maintained for backward compatibility only.
+ * Will be removed in v2.0.0
+ */
+
+/**
  * Broadcasts API Module
  * Provides frontend access to broadcast messaging endpoints
+ *
+ * @deprecated Use Server Actions instead:
+ * - CRUD operations: @/lib/actions/broadcasts.crud
+ * - Delivery operations: @/lib/actions/broadcasts.delivery
+ * - Template operations: @/lib/actions/broadcasts.templates
+ * - Analytics: @/lib/actions/broadcasts.analytics
+ * - Cached reads: @/lib/actions/broadcasts.cache
  */
 
 import type { ApiClient } from '../core/ApiClient';

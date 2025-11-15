@@ -23,7 +23,7 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z, type ZodIssue } from 'zod';
-import { serverPost, serverPut, nextFetch } from '@/lib/api/nextjs-client';
+import { serverPost, serverPut, nextFetch } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ActionResult } from './settings.types';
 import {

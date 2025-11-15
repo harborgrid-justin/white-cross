@@ -1,10 +1,28 @@
 /**
  * @fileoverview System API Module Entry Point
- * 
+ *
+ * @deprecated This module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.monitoring and @/lib/actions/admin.settings instead.
+ *
+ * MIGRATION EXAMPLES:
+ * ```typescript
+ * // OLD: Using systemApi
+ * import { createSystemApi } from '@/services/modules/systemApi';
+ * const systemApi = createSystemApi(client);
+ * const health = await systemApi.getHealth();
+ * const config = await systemApi.getConfig();
+ *
+ * // NEW: Using Server Actions
+ * import { getSystemHealth } from '@/lib/actions/admin.monitoring';
+ * import { getSystemSettings } from '@/lib/actions/admin.settings';
+ * const health = await getSystemHealth();
+ * const config = await getSystemSettings();
+ * ```
+ *
  * Provides clean exports for all system administration functionality including
  * the main API service class, type definitions, validation schemas, and
  * individual operation modules.
- * 
+ *
  * @module systemApi
  * @version 1.0.0
  * @since 2025-11-11

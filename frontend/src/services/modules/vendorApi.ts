@@ -12,6 +12,22 @@
 
 /**
  * Vendor API Client
+ *
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/vendors.actions instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before:
+ * import { vendorApi } from '@/services/modules/vendorApi';
+ * const vendors = await vendorApi.getVendors({ activeOnly: true, minRating: 4 });
+ *
+ * // After:
+ * import { getVendors } from '@/lib/actions/vendors.actions';
+ * const vendors = await getVendors({ activeOnly: true, minRating: 4 });
+ * ```
+ *
  * Handles all vendor-related API operations including CRUD, performance metrics,
  * vendor comparisons, and rating management
  */

@@ -1,6 +1,11 @@
 /**
  * Appointments API - Utility Functions
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Provides utility functions for appointment validation, modification checks,
  * and data transformation operations.
  *

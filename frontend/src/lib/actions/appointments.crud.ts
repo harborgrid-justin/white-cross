@@ -13,7 +13,7 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
+import { serverPost, serverPut, serverDelete } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TAGS } from '@/lib/cache/constants';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';

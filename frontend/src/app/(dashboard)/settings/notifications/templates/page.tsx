@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { templateService, NotificationTemplate } from '@/features/notifications/services/TemplateService';
-import { NotificationType, NotificationPriority } from '@/features/notifications/types';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getNotificationTemplates } from '@/lib/actions/notifications.cache';
+import type { NotificationTemplate } from '@/lib/actions/notifications.types';
 
 /**
  * Notification Templates Page
@@ -10,25 +11,24 @@ import { NotificationType, NotificationPriority } from '@/features/notifications
  * Manage notification templates for common scenarios
  */
 export default function NotificationTemplatesPage() {
-  const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null);
 
-  useEffect(() => {
-    loadTemplates();
-  }, []);
+  // Use React Query for data fetching with caching
+  const {
+    data: templates = [],
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ['notification-templates'],
+    queryFn: getNotificationTemplates,
+  });
 
-  const loadTemplates = async () => {
-    setIsLoading(true);
-    try {
-      const allTemplates = await templateService.getAllTemplates();
-      setTemplates(allTemplates);
-    } catch (error) {
+  // Log errors to console
+  React.useEffect(() => {
+    if (error) {
       console.error('Failed to load templates:', error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [error]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -72,15 +72,20 @@ export default function NotificationTemplatesPage() {
                           <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
                             {template.type.replace(/_/g, ' ')}
                           </span>
-                          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full capitalize">
-                            {template.priority}
+                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full capitalize">
+                            {template.category}
                           </span>
                         </div>
+                        {template.description && (
+                          <p className="mt-2 text-sm text-gray-500">
+                            {template.description}
+                          </p>
+                        )}
                         <p className="mt-3 text-sm text-gray-600">
-                          <strong>Title:</strong> {template.titleTemplate}
+                          <strong>Title:</strong> {template.title}
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
-                          <strong>Message:</strong> {template.messageTemplate}
+                          <strong>Message:</strong> {template.message}
                         </p>
                         {template.variables.length > 0 && (
                           <div className="mt-3">
@@ -114,11 +119,17 @@ export default function NotificationTemplatesPage() {
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700">Priority</label>
+                    <label className="text-sm font-medium text-gray-700">Category</label>
                     <p className="mt-1 text-sm text-gray-900 capitalize">
-                      {selectedTemplate.priority}
+                      {selectedTemplate.category}
                     </p>
                   </div>
+                  {selectedTemplate.description && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Description</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedTemplate.description}</p>
+                    </div>
+                  )}
                   <div>
                     <label className="text-sm font-medium text-gray-700">
                       Variables ({selectedTemplate.variables.length})

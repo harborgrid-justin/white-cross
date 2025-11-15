@@ -56,9 +56,9 @@ export type {
   NextFetchOptions,
   ApiResponse,
   ApiErrorResponse,
-} from './nextjs-client.types';
+} from './server/types';
 
-export { NextApiClientError } from './nextjs-client.types';
+export { NextApiClientError } from './server/types';
 
 // ==========================================
 // CONFIGURATION EXPORTS
@@ -69,13 +69,13 @@ export {
   getAuthToken,
   getCsrfToken,
   generateRequestId,
-} from './nextjs-client.config';
+} from './server/config';
 
 // ==========================================
 // CORE EXPORTS
 // ==========================================
 
-export { nextFetch, handleErrorResponse } from './nextjs-client.core';
+export { nextFetch, handleErrorResponse } from './server/core';
 
 // ==========================================
 // HTTP METHOD EXPORTS
@@ -87,16 +87,16 @@ export {
   serverPut,
   serverPatch,
   serverDelete,
-} from './nextjs-client.methods';
+} from './server/methods';
 
 // ==========================================
 // UTILITY EXPORTS
 // ==========================================
 
-export { buildCacheTags, buildResourceTag } from './nextjs-client.utils';
+export { buildCacheTags, buildResourceTag } from './server/utils';
 
 // ==========================================
-// SERVER QUERIES EXPORTS
+// SERVER QUERIES EXPORTS (from client/ directory)
 // ==========================================
 
 export {
@@ -124,10 +124,10 @@ export {
   type Appointment,
   type DashboardStats,
   type User,
-} from './nextjs-client.queries';
+} from './client/queries';
 
 // ==========================================
-// CACHE ACTIONS EXPORTS
+// CACHE ACTIONS EXPORTS (from client/ directory)
 // ==========================================
 
 export {
@@ -136,7 +136,7 @@ export {
   invalidateStudentCacheAction,
   invalidatePageCacheAction,
   emergencyCacheClearAction,
-} from './nextjs-client.cache-actions';
+} from './client/cache-actions';
 
 // ==========================================
 // LEGACY EXPORTS
@@ -148,15 +148,15 @@ export { apiClient, fetchApi } from './nextjs-client.legacy';
 // DEFAULT EXPORT
 // ==========================================
 
-import { nextFetch } from './nextjs-client.core';
+import { nextFetch } from './server/core';
 import {
   serverGet,
   serverPost,
   serverPut,
   serverPatch,
   serverDelete,
-} from './nextjs-client.methods';
-import { buildCacheTags, buildResourceTag } from './nextjs-client.utils';
+} from './server/methods';
+import { buildCacheTags, buildResourceTag } from './server/utils';
 import {
   getStudent,
   getStudentsList,
@@ -167,14 +167,14 @@ import {
   getDashboardStats,
   getUsersList,
   getCurrentUser,
-} from './nextjs-client.queries';
+} from './client/queries';
 import {
   invalidateAppointmentsCacheAction,
   invalidateAppointmentCacheAction,
   invalidateStudentCacheAction,
   invalidatePageCacheAction,
   emergencyCacheClearAction,
-} from './nextjs-client.cache-actions';
+} from './client/cache-actions';
 import { apiClient, fetchApi } from './nextjs-client.legacy';
 
 /**

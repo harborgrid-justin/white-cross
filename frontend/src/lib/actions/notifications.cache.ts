@@ -9,7 +9,7 @@
 'use server';
 
 import { cache } from 'react';
-import { serverGet, type ApiResponse } from '@/lib/api/nextjs-client';
+import { serverGet, type ApiResponse } from '@/lib/api/server';
 import { CACHE_TTL } from '@/lib/cache/constants';
 import type {
   Notification,

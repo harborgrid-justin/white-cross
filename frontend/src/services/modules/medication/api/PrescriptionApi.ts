@@ -5,13 +5,67 @@
  * Downstream: Components, pages, app routing | Called by: React component tree
  * Related: Other components, hooks, services, types
  * Exports: constants, interfaces, types, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-11-15 | File Type: .ts
  * Critical Path: Component mount → Render → User interaction → State updates
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
 /**
  * Prescription API Client
+ *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.*
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Create prescription
+ * import { prescriptionApi } from '@/services/modules/medication/api';
+ * const prescription = await prescriptionApi.createPrescription({
+ *   studentId: 'student-id',
+ *   medicationId: 'med-id',
+ *   dosage: '500mg',
+ *   frequency: 'TWICE_DAILY',
+ *   route: 'oral',
+ *   startDate: '2025-11-15',
+ *   instructions: 'Take with food',
+ *   prescribedBy: 'Dr. Smith',
+ *   prescribedDate: '2025-11-15'
+ * });
+ *
+ * // After: Use server action
+ * import { createMedication } from '@/lib/actions/medications.crud';
+ * const result = await createMedication({
+ *   studentId: 'student-id',
+ *   name: 'Amoxicillin',
+ *   dosage: '500mg',
+ *   frequency: 'twice daily',
+ *   route: 'oral',
+ *   startDate: '2025-11-15',
+ *   instructions: 'Take with food',
+ *   prescribedBy: 'Dr. Smith'
+ * });
+ *
+ * // Before: Get student prescriptions
+ * const prescriptions = await prescriptionApi.getStudentPrescriptions('student-id');
+ *
+ * // After: Use cached server action
+ * import { getStudentMedications } from '@/lib/actions/medications.cache';
+ * const prescriptions = await getStudentMedications('student-id');
+ *
+ * // Before: Discontinue prescription
+ * await prescriptionApi.discontinuePrescription('id', 'Treatment completed');
+ *
+ * // After: Use server action
+ * import { updateMedicationStatus } from '@/lib/actions/medications.status';
+ * await updateMedicationStatus('id', 'inactive');
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ Automatic HIPAA audit logging for prescriptions
+ * ✓ Built-in allergy checking before prescription creation
+ * ✓ Server-side validation with Zod
+ * ✓ Type-safe ActionResult pattern
+ * ✓ Cache invalidation with revalidateTag
+ * ✓ Better error handling
  *
  * Purpose: Manages student medication prescriptions
  *

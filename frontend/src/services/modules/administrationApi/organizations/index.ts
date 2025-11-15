@@ -1,6 +1,26 @@
 /**
  * Organizations Management - Unified Interface
  *
+ * @deprecated This module is deprecated and will be removed in a future version.
+ * Migrate to server actions for better performance and type safety.
+ *
+ * Migration Guide:
+ * - Districts: Use '@/lib/actions/admin.districts' server actions
+ * - Schools: Use '@/lib/actions/admin.schools' server actions
+ * - API Client: Use '@/lib/api/server' for server-side operations
+ *
+ * @example Migration from legacy to server actions
+ * ```typescript
+ * // DEPRECATED: Legacy API client approach
+ * import { createDistrictsService } from '@/services/modules/administrationApi/organizations';
+ * const service = createDistrictsService(apiClient);
+ * const districts = await service.getDistricts();
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getDistricts } from '@/lib/actions/admin.districts';
+ * const districts = await getDistricts();
+ * ```
+ *
  * Comprehensive organizations management system with modular architecture.
  * This module provides a unified interface for all district and school operations
  * while maintaining clear separation of concerns.

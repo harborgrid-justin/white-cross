@@ -3,36 +3,104 @@
  * @module services/modules/appointmentsApi
  * @category Services
  *
- * @deprecated This file has been refactored into modular components for better maintainability.
- * New path: frontend/src/services/modules/appointments/
+ * @deprecated This module is deprecated. Use server actions or new API client instead:
+ *
+ * **Migration Paths:**
+ *
+ * 1. **For Server Components and Server Actions** (RECOMMENDED):
+ *    ```typescript
+ *    import {
+ *      getAppointments,
+ *      getAppointment,
+ *      createAppointment,
+ *      updateAppointment,
+ *      deleteAppointment,
+ *      scheduleAppointment,
+ *      rescheduleAppointment
+ *    } from '@/lib/actions/appointments.actions';
+ *
+ *    // In Server Component
+ *    const appointments = await getAppointments({ status: 'scheduled', nurseId });
+ *    const appointment = await getAppointment(appointmentId);
+ *
+ *    // In Server Action
+ *    const newAppt = await createAppointment({
+ *      studentId,
+ *      nurseId,
+ *      scheduledAt: new Date(),
+ *      type: 'checkup'
+ *    });
+ *    ```
+ *
+ * 2. **For Client Components** (with React Query):
+ *    ```typescript
+ *    import { useQuery, useMutation } from '@tanstack/react-query';
+ *    import { getAppointments, createAppointment } from '@/lib/actions/appointments.actions';
+ *
+ *    function AppointmentsList() {
+ *      const { data: appointments } = useQuery({
+ *        queryKey: ['appointments', filters],
+ *        queryFn: () => getAppointments(filters)
+ *      });
+ *
+ *      const createMutation = useMutation({
+ *        mutationFn: createAppointment,
+ *        onSuccess: () => {
+ *          queryClient.invalidateQueries({ queryKey: ['appointments'] });
+ *        }
+ *      });
+ *    }
+ *    ```
+ *
+ * 3. **For Direct API Calls** (client-side only):
+ *    ```typescript
+ *    import { apiClient } from '@/lib/api';
+ *
+ *    const appointments = await apiClient('/api/appointments', {
+ *      method: 'GET'
+ *    });
+ *    ```
+ *
+ * ## Why This Module is Deprecated
+ *
+ * - **Server Actions**: Appointment functionality has been migrated to server actions at `@/lib/actions/appointments.actions.ts`
+ * - **API Client**: New unified API client available at `@/lib/api/client` with better caching and type safety
+ * - **Architectural Shift**: Moving from service layer to Next.js App Router patterns (Server Components + Server Actions)
+ * - **Type Safety**: Server actions provide end-to-end type safety with React Server Components
+ * - **Performance**: Server actions reduce client bundle size and improve initial page load
+ * - **Caching**: Better integration with Next.js cache using React cache() and revalidation
+ *
+ * ## Migration Benefits
+ *
+ * - ✅ **Type Safety**: Full TypeScript inference from server to client
+ * - ✅ **Performance**: Reduced bundle size, server-side execution
+ * - ✅ **Caching**: Automatic request deduplication with React cache()
+ * - ✅ **Security**: Data fetching happens on server, protecting sensitive logic
+ * - ✅ **Simplicity**: No need for separate service layer abstractions
+ * - ✅ **Consistency**: Unified pattern across all domains
+ *
+ * ## Current Modular Structure (For Reference)
  *
  * This file now serves as a legacy compatibility layer that re-exports all functionality
- * from the new modular structure. All new development should import from the modular
- * structure directly for better tree-shaking and clearer dependencies.
- *
- * **Original Purpose**: Comprehensive appointment management API including scheduling,
- * availability tracking, waitlist management, and reminder processing.
+ * from the new modular structure:
  *
  * **New Structure**: Modular architecture with separation by domain:
- * - Core: CRUD operations (appointmentsApi.core.ts)
- * - Availability: Scheduling and nurse availability (appointmentsApi.availability.ts)
- * - Waitlist: Waitlist and reminder management (appointmentsApi.waitlist.ts)
- * - Analytics: Statistics and reporting (appointmentsApi.analytics.ts)
+ * - Core: CRUD operations (appointments-core.ts)
+ * - Scheduling: Appointment scheduling (appointments-scheduling.ts)
+ * - Status: Status management (appointments-status.ts)
+ * - Availability: Nurse availability (availability.ts)
+ * - Waitlist: Waitlist management (waitlist.ts)
+ * - Reminders: Reminder system (reminders.ts)
+ * - Validation: Input validation (validation-*.ts)
  * - Index: Unified API composition (index.ts)
  *
- * **Migration Path**:
- * ```typescript
- * // OLD (still works):
- * import { appointmentsApi } from '@/services/modules/appointmentsApi'
+ * **Type Safety Improvements**:
+ * - Replaced `notification: any` with `NotificationDeliveryStatus`
+ * - Replaced `trends: any[]` with `TrendDataPoint[]`
+ * - Replaced `byStudent: any[]` with `StudentNoShowStat[]`
+ * - Replaced `byDay: any[]` with `DailyUtilizationStat[]`
  *
- * // NEW (preferred):
- * import { appointmentsApi } from '@/services/modules/appointments'
- *
- * // OR for specific features:
- * import { AppointmentsCoreApiImpl } from '@/services/modules/appointments/appointmentsApi.core'
- * ```
- *
- * **Benefits of New Structure**:
+ * **Benefits of Refactored Structure**:
  * ✅ Each module under 400 lines (was 1085 lines total)
  * ✅ Better separation of concerns by domain
  * ✅ Improved maintainability and navigation
@@ -41,11 +109,18 @@
  * ✅ No TypeScript 'any' types (all properly typed)
  * ✅ Backward compatibility maintained
  *
- * **Type Safety Improvements**:
- * - Replaced `notification: any` with `NotificationDeliveryStatus`
- * - Replaced `trends: any[]` with `TrendDataPoint[]`
- * - Replaced `byStudent: any[]` with `StudentNoShowStat[]`
- * - Replaced `byDay: any[]` with `DailyUtilizationStat[]`
+ * ## Compatibility Guarantee
+ *
+ * All existing code using `appointmentsApi` will continue to work without changes.
+ * However, this is a legacy compatibility layer and should be migrated to the
+ * new patterns outlined above.
+ *
+ * **Scheduled for Removal**: v2.0.0 (Q2 2025)
+ *
+ * @see {@link @/lib/actions/appointments.actions} for server actions (RECOMMENDED)
+ * @see {@link @/lib/api/client} for client-side API utilities
+ * @see {@link appointmentsApi} for the unified API (legacy)
+ * @see {@link appointments/index} for the modular structure (legacy)
  */
 
 // ==================== RE-EXPORTS FROM MODULAR STRUCTURE ====================

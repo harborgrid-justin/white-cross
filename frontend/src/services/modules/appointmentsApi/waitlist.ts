@@ -1,10 +1,16 @@
 /**
  * Appointments API - Waitlist Management
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles appointment waitlist operations including adding students to waitlist,
  * managing waitlist priorities, processing waitlist entries, and converting
  * waitlist entries to appointments when slots become available.
- * 
+ *
  * @module services/modules/appointmentsApi/waitlist
  */
 

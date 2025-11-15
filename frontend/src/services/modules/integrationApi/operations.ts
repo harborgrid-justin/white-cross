@@ -3,6 +3,26 @@
  * @module services/modules/integrationApi/operations
  * @category Services - System Integration & External APIs
  *
+ * @deprecated This module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.integrations instead.
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // OLD: Integration CRUD
+ * import { getAll, getById, create, update } from '@/services/modules/integrationApi/operations';
+ * const integrations = await getAll(client, 'SIS');
+ * const integration = await getById(client, 'id');
+ * await create(client, data);
+ * await update(client, 'id', data);
+ *
+ * // NEW: Server Actions
+ * import { getIntegrations, getIntegration, createIntegration, updateIntegration } from '@/lib/actions/admin.integrations';
+ * const integrations = await getIntegrations(); // filter in action if needed
+ * const integration = await getIntegration('id');
+ * await createIntegration(data);
+ * await updateIntegration('id', data);
+ * ```
+ *
  * Core Create, Read, Update, Delete operations for integration management.
  * Provides type-safe methods for managing integration configurations with
  * comprehensive validation and error handling.

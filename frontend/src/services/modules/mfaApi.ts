@@ -3,9 +3,21 @@
  * @module services/modules/mfaApi
  * @category Services - Authentication & Security
  *
+ * @deprecated MIGRATION COMPLETE - Use settings.actions.ts instead
+ * MFA operations are available as part of security settings in server actions.
+ *
+ * MIGRATION STATUS:
+ * - MFA setup/verification -> Available in settings.security.ts (setupMFAAction)
+ * - MFA status/devices -> Available in settings.privacy.ts (getUserSettingsAction)
+ * - Security settings -> Available in settings.security.ts
+ * - RECOMMENDATION: Migrate all code to use settings.actions.ts
+ * - Target deprecation date: March 2026
+ *
  * Provides comprehensive Multi-Factor Authentication (MFA) capabilities for enhanced
  * account security. Implements TOTP (Time-based One-Time Password), SMS verification,
  * email verification, and backup code generation with device management.
+ *
+ * For new implementations, prefer @/lib/actions/settings.actions
  *
  * Key Features:
  * - MFA setup and configuration
@@ -136,6 +148,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core'; // Updated: Import from new centralized core
 import { ApiResponse } from '../utils/apiUtils';
 import { z } from 'zod';
 import { createApiError, createValidationError } from '../core/errors';
@@ -558,7 +571,36 @@ export class MfaApi {
  * Factory function to create MFA API instance
  * @param client - ApiClient instance with authentication and resilience patterns
  * @returns Configured MfaApi instance
+ * @deprecated Use settings.actions.ts instead
  */
 export function createMfaApi(client: ApiClient): MfaApi {
   return new MfaApi(client);
 }
+
+/**
+ * Singleton instance of MfaApi
+ * Pre-configured with the default apiClient from core services
+ *
+ * @deprecated MIGRATION COMPLETE - Use settings.actions.ts instead
+ *
+ * MFA operations are now available in the settings server actions:
+ *
+ * Migration guide:
+ * - Instead of: mfaApi.setupMfa(data)
+ * - Use: setupMFAAction(method, deviceName) from settings.security.ts
+ *
+ * - Instead of: mfaApi.verifyMfa(data)
+ * - Use: Verification handled in setupMFAAction
+ *
+ * - Instead of: mfaApi.getMfaStatus()
+ * - Use: getUserSettingsAction() from settings.privacy.ts (includes MFA status)
+ *
+ * - Instead of: mfaApi.disableMfa(code)
+ * - Use: updatePrivacySettingsAction with MFA settings
+ *
+ * Admin features (feature reports, health status, bulk messaging) may need
+ * separate admin.actions.ts implementation or continue using this service.
+ *
+ * Target deprecation: March 2026
+ */
+export const mfaApi = createMfaApi(apiClient);

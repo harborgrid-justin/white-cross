@@ -1,37 +1,92 @@
 /**
- * @fileoverview Communications API - Unified facade for all communication services
- * @module services/modules/communications
- * @version 2.0.0 - Refactored Edition
- * @category Services
+ * MIGRATION STATUS: DEPRECATED
  *
- * Unified communications API providing comprehensive access to broadcasts, direct
- * messaging, templates, delivery tracking, and statistics. This module has been
- * refactored into smaller, focused sub-modules for better maintainability.
+ * This service module has been replaced by Next.js Server Actions for improved
+ * performance, security, and Next.js App Router compatibility.
  *
- * ## Module Structure
+ * **New Implementation:**
+ * - Server Components: import from '@/lib/actions/communications.*'
+ * - Client Components: Use Server Actions with useActionState or React Query
  *
- * - **broadcastsApi.ts**: Mass communication management (10 methods)
- * - **directMessagesApi.ts**: Person-to-person messaging (12 methods)
- * - **templatesApi.ts**: Message template management (7 methods)
- * - **deliveryTrackingApi.ts**: Delivery status monitoring (2 methods)
+ * **Migration Guide:**
  *
- * ## Usage
- *
+ * OLD (Client API):
  * ```typescript
- * // Import the unified API
  * import { createCommunicationsApi } from '@/services/modules/communications';
- *
  * const api = createCommunicationsApi(apiClient);
  *
- * // Or import specific sub-APIs
- * import { createBroadcastsApi } from '@/services/modules/communications/broadcastsApi';
- * const broadcastsApi = createBroadcastsApi(apiClient);
+ * // Send broadcast
+ * await api.broadcasts.sendBroadcast(id);
+ *
+ * // Send direct message
+ * await api.messages.sendMessage({ subject, body, recipientId });
+ *
+ * // Get templates
+ * const templates = await api.templates.getActiveTemplates();
  * ```
  *
- * @see {@link BroadcastsApi} for broadcast operations
- * @see {@link DirectMessagesApi} for direct messaging
- * @see {@link TemplatesApi} for template management
- * @see {@link DeliveryTrackingApi} for delivery monitoring
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   sendBroadcastAction,
+ *   sendMessageAction,
+ *   getActiveTemplates,
+ *   trackDeliveryStatus
+ * } from '@/lib/actions/communications.actions';
+ *
+ * // In Server Components - direct call
+ * const templates = await getActiveTemplates();
+ *
+ * // In Client Components - with useActionState
+ * 'use client';
+ * import { useActionState } from 'react';
+ *
+ * function SendMessageForm() {
+ *   const [state, formAction, isPending] = useActionState(
+ *     sendMessageAction,
+ *     { errors: {} }
+ *   );
+ *   return <form action={formAction}>...</form>;
+ * }
+ * ```
+ *
+ * **Available Server Actions:**
+ * - Broadcasts: sendBroadcastAction, getBroadcasts, getBroadcastStatus
+ * - Messages: sendMessageAction, getInbox, markAsRead
+ * - Templates: getTemplates, createTemplate, getTemplateById
+ * - Notifications: sendNotification, getNotificationPreferences
+ * - Delivery: trackDeliveryStatus, getDeliveryReport
+ *
+ * **Real-time Notifications:**
+ * ```typescript
+ * // OLD: Client-side polling
+ * setInterval(() => api.messages.getInbox(), 30000);
+ *
+ * // NEW: Server-Sent Events with Server Actions
+ * import { subscribeToNotifications } from '@/lib/actions/communications.realtime';
+ *
+ * // In Client Component
+ * useEffect(() => {
+ *   const unsubscribe = subscribeToNotifications((notification) => {
+ *     console.log('New notification:', notification);
+ *   });
+ *   return unsubscribe;
+ * }, []);
+ * ```
+ *
+ * **See Also:**
+ * - @see {@link /lib/actions/communications.actions.ts} for all available Server Actions
+ * - @see {@link /lib/actions/communications.broadcasts.ts} for broadcast operations
+ * - @see {@link /lib/actions/communications.messages.ts} for messaging operations
+ * - @see {@link /lib/actions/communications.templates.ts} for template operations
+ * - @see {@link /lib/actions/communications.notifications.ts} for notification operations
+ * - @see {@link /lib/api/client} for client-side utilities if needed
+ *
+ * @deprecated Use Server Actions from @/lib/actions/communications.* instead
+ * @module services/modules/communications
+ * @category Healthcare - Communications
+ * @fileoverview Communications API - Unified facade for all communication services
+ * @version 2.0.0 - Refactored Edition (DEPRECATED)
  */
 
 import type { ApiClient, ApiResponse } from '../../core/ApiClient';

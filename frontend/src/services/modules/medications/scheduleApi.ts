@@ -1,6 +1,52 @@
 /**
  * @fileoverview Medication Schedule and Monitoring API
  *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.cache and @/lib/actions/medications.status
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Get medication schedule
+ * import { MedicationScheduleApi } from '@/services/modules/medications/scheduleApi';
+ * const api = new MedicationScheduleApi(client);
+ * const schedule = await api.getSchedule('2025-11-15', '2025-11-15', 'nurse-id');
+ *
+ * // After: Use cached server action
+ * import { getMedicationSchedule } from '@/lib/actions/medications.cache';
+ * const schedule = await getMedicationSchedule({
+ *   startDate: '2025-11-15',
+ *   endDate: '2025-11-15',
+ *   nurseId: 'nurse-id'
+ * });
+ *
+ * // Before: Get reminders
+ * const reminders = await api.getReminders('2025-11-15');
+ *
+ * // After: Use cached server action
+ * import { getMedicationReminders } from '@/lib/actions/medications.cache';
+ * const reminders = await getMedicationReminders('2025-11-15');
+ *
+ * // Before: Get medication statistics
+ * const stats = await api.getStats();
+ *
+ * // After: Use cached server action
+ * import { getMedicationStats } from '@/lib/actions/medications.cache';
+ * const stats = await getMedicationStats();
+ *
+ * // Before: Get alerts
+ * const alerts = await api.getAlerts();
+ *
+ * // After: Use cached server action
+ * import { getMedicationAlerts } from '@/lib/actions/medications.status';
+ * const alerts = await getMedicationAlerts();
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ Real-time schedule updates with Next.js cache
+ * ✓ Automatic cache invalidation on medication changes
+ * ✓ Server-side data aggregation (faster stats)
+ * ✓ Type-safe with Zod validation
+ * ✓ Better error handling
+ *
  * Handles medication scheduling, reminders, statistics, alerts, and form
  * options for the medication management system.
  *

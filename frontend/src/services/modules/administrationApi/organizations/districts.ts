@@ -1,6 +1,28 @@
 /**
  * Districts Management Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/admin.districts' server actions instead for better performance.
+ *
+ * Migration Path:
+ * 1. Replace ApiClient-based service with server actions
+ * 2. Update imports from '@/lib/actions/admin.districts'
+ * 3. Remove service instantiation code
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy approach
+ * import { createDistrictsService } from '@/services/modules/administrationApi/organizations';
+ * const service = createDistrictsService(apiClient);
+ * const district = await service.getDistrictById(id);
+ * const stats = await service.getDistrictStatistics(id);
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getDistrictById, getDistrictStatistics } from '@/lib/actions/admin.districts';
+ * const district = await getDistrictById(id);
+ * const stats = await getDistrictStatistics(id);
+ * ```
+ *
  * Provides comprehensive district management functionality including:
  * - CRUD operations for districts
  * - District statistics and reporting

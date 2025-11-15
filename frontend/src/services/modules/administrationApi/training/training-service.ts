@@ -1,6 +1,34 @@
 /**
  * Administration API - Combined Training Management Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/compliance.training' server actions instead.
+ *
+ * Migration Path:
+ * 1. Replace unified service with individual server actions
+ * 2. Update imports from '@/lib/actions/compliance.training'
+ * 3. Remove TrainingService instantiation
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy unified service
+ * import { createTrainingService } from '@/services/modules/administrationApi/training';
+ * const service = createTrainingService(apiClient);
+ * const modules = await service.modules.getTrainingModules();
+ * const dashboard = await service.getTrainingDashboard();
+ * const report = await service.getComplianceReport();
+ *
+ * // RECOMMENDED: Server actions approach
+ * import {
+ *   getTrainingModules,
+ *   getTrainingDashboard,
+ *   getComplianceReport
+ * } from '@/lib/actions/compliance.training';
+ * const modules = await getTrainingModules();
+ * const dashboard = await getTrainingDashboard();
+ * const report = await getComplianceReport();
+ * ```
+ *
  * Unified service providing:
  * - Module management (via TrainingModulesService)
  * - Completion tracking (via TrainingCompletionService)

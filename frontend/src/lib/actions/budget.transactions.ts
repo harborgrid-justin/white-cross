@@ -11,7 +11,7 @@
 import { revalidateTag, revalidatePath } from 'next/cache';
 
 // Core API integrations
-import { serverPost, serverPut, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverPost, serverPut, NextApiClientError } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 

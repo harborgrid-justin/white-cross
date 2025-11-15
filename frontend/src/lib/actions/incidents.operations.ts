@@ -6,7 +6,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { serverPost, serverPatch } from '@/lib/api/nextjs-client';
+import { serverPost, serverPatch } from '@/lib/api/server';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 

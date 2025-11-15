@@ -11,14 +11,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { getStudent } from '@/lib/actions/students.cache';
 import { useApiError } from '@/hooks/shared/useApiError';
 import { useCacheManager } from '@/hooks/shared/useCacheManager';
-import { useHealthcareCompliance } from '@/hooks/shared/useHealthcareCompliance';
-import { 
-  studentQueryKeys, 
+import {
+  studentQueryKeys,
   STUDENT_OPERATIONS,
-  STUDENT_ERROR_CODES 
+  STUDENT_ERROR_CODES
 } from '../config';
 import type { Student } from '@/types/student.types';
 
@@ -71,7 +70,6 @@ export function useStudentDetails(options: UseStudentDetailsOptions): StudentDet
   // Enterprise hooks
   const { handleError } = useApiError({ context: 'student_details' });
   const { getCacheStrategy, invalidateCache: invalidateCacheManager } = useCacheManager();
-  const { logCompliantAccess } = useHealthcareCompliance();
 
   // Determine data sensitivity based on what's being requested
   const dataSensitivity = useMemo(() => {
@@ -101,24 +99,12 @@ export function useStudentDetails(options: UseStudentDetailsOptions): StudentDet
     return studentQueryKeys.details.byId(studentId);
   }, [studentId, includeHealth, includeAcademics, includeFull]);
 
-  // Query function with compliance and error handling
+  // Query function using server cache action
+  // Note: Server action includes HIPAA audit logging automatically
   const queryFn = useCallback(async (): Promise<Student> => {
     try {
-      // Log compliant access
-      await logCompliantAccess(
-        'student_details',
-        'view',
-        { 
-          studentId, 
-          includeHealth, 
-          includeAcademics, 
-          includeFull 
-        },
-        studentId
-      );
-
-      // Fetch student data using getById method
-      const student: Student = await studentsApi.getById(studentId);
+      // Fetch student data from server cache action
+      const student = await getStudent(studentId);
 
       // Validate student exists
       if (!student) {
@@ -139,10 +125,6 @@ export function useStudentDetails(options: UseStudentDetailsOptions): StudentDet
     }
   }, [
     studentId,
-    includeHealth,
-    includeAcademics,
-    includeFull,
-    logCompliantAccess,
     handleError,
   ]);
 

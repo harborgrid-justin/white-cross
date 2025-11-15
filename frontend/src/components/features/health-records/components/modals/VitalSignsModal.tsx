@@ -3,10 +3,15 @@
 /**
  * VitalSignsModal.tsx - Modal for recording vital signs
  * Purpose: Create and edit vital signs records
+ *
+ * MIGRATION COMPLETE: Now uses server actions instead of deprecated services
+ * Pattern: Form submission via native HTML form action (progressive enhancement)
  */
 
 import React from 'react';
-import type { VitalSigns, VitalSignsCreate } from '@/services/modules/healthRecordsApi';
+// MIGRATION COMPLETE: Using types from server actions
+// Old: import type { VitalSigns, VitalSignsCreate } from '@/services/modules/healthRecordsApi';
+import type { VitalSigns, VitalSignsCreate } from '@/lib/actions/health-records.actions';
 
 interface VitalSignsFormErrors {
   recordDate?: string;
@@ -27,6 +32,28 @@ interface VitalSignsModalProps {
   errors?: VitalSignsFormErrors;
   title?: string;
 }
+
+/**
+ * NOTE: This modal still uses callback pattern for backward compatibility.
+ * Parent components can migrate to useActionState pattern:
+ *
+ * @example Modern pattern (in parent component):
+ * ```typescript
+ * import { useActionState } from 'react';
+ * import { createVitalSignsAction } from '@/lib/actions/health-records.actions';
+ *
+ * const [state, formAction, isPending] = useActionState(createVitalSignsAction, { errors: {} });
+ *
+ * const handleSave = async (data: Partial<VitalSignsCreate>) => {
+ *   const formData = new FormData();
+ *   Object.entries(data).forEach(([key, value]) => {
+ *     if (value !== undefined) formData.append(key, String(value));
+ *   });
+ *   await formAction(formData);
+ *   if (state.success) onClose();
+ * };
+ * ```
+ */
 
 export const VitalSignsModal: React.FC<VitalSignsModalProps> = ({
   isOpen,

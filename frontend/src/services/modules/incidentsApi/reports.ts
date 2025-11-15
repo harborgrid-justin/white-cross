@@ -1,8 +1,41 @@
 /**
  * Incidents API - Reports and Document Generation
- * 
+ *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/incidents.analytics instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Service Module Pattern
+ * import { Reports } from '@/services/modules/incidentsApi/reports';
+ * const reports = new Reports(apiClient);
+ *
+ * const document = await reports.generateReport(incidentId);
+ * const pdf = await reports.exportToPDF(incidentId);
+ *
+ * // ✅ NEW: Server Actions Pattern
+ * import { getIncidentAnalytics, getIncidentStats } from '@/lib/actions/incidents.analytics';
+ * import { generateReport } from '@/lib/actions/reports.generation';
+ *
+ * // Analytics and statistics
+ * const analytics = await getIncidentAnalytics({ dateFrom, dateTo });
+ * const stats = await getIncidentStats();
+ *
+ * // Document generation (if available in reports actions)
+ * const reportData = await generateReport({
+ *   type: 'incident',
+ *   id: incidentId,
+ *   format: 'pdf'
+ * });
+ * ```
+ *
+ * **METHOD MAPPING**:
+ * - `generateReport()` → `@/lib/actions/reports.generation::generateReport()`
+ * - `exportToPDF()` → `@/lib/actions/reports.generation` with format: 'pdf'
+ * - Analytics queries → `@/lib/actions/incidents.analytics`
+ *
  * Document generation, export functionality, and reporting
- * 
+ *
  * @module services/modules/incidentsApi/reports
  */
 

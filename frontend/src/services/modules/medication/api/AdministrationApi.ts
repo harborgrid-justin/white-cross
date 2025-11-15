@@ -5,13 +5,68 @@
  * Downstream: Components, pages, app routing | Called by: React component tree
  * Related: Other components, hooks, services, types
  * Exports: constants, interfaces, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-11-15 | File Type: .ts
  * Critical Path: Component mount → Render → User interaction → State updates
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
 /**
  * Administration API Client
+ *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.administration
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Initiate administration session
+ * import { administrationApi } from '@/services/modules/medication/api';
+ * const session = await administrationApi.initiateAdministration('prescription-id');
+ *
+ * // After: Use server action (session management pending)
+ * // Administration session workflow will be simplified in server actions
+ *
+ * // Before: Record medication administration
+ * const record: AdministrationRecord = {
+ *   sessionId: 'session-id',
+ *   prescriptionId: 'prescription-id',
+ *   studentId: 'student-id',
+ *   medicationId: 'med-id',
+ *   dosageAdministered: '500mg',
+ *   route: 'oral',
+ *   administeredAt: new Date().toISOString(),
+ *   administeredBy: 'nurse-id',
+ *   fiveRightsData: { ... },
+ *   notes: 'No issues'
+ * };
+ * const log = await administrationApi.recordAdministration(record);
+ *
+ * // After: Use server action (simplified)
+ * import { administerMedication } from '@/lib/actions/medications.administration';
+ * const result = await administerMedication({
+ *   medicationId: 'med-id',
+ *   studentId: 'student-id',
+ *   administeredBy: 'nurse-id',
+ *   administeredAt: new Date().toISOString(),
+ *   dosageGiven: '500mg',
+ *   notes: 'No issues'
+ * });
+ *
+ * // Before: Get administration history
+ * const history = await administrationApi.getAdministrationHistory({
+ *   studentId: 'student-id'
+ * });
+ *
+ * // After: Use cached server action
+ * import { getStudentMedicationLogs } from '@/lib/actions/medications.cache';
+ * const history = await getStudentMedicationLogs('student-id');
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ CRITICAL: Automatic HIPAA audit logging (mandatory for medication administration)
+ * ✓ Server-side Five Rights validation (safer)
+ * ✓ NO optimistic updates (prevents administration errors)
+ * ✓ Type-safe ActionResult pattern
+ * ✓ Better error handling and rollback
+ * ✓ Simplified workflow (no session management needed)
  *
  * Purpose: Medication administration and logging
  *

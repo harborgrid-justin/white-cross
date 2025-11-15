@@ -9,9 +9,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { getStudents } from '@/lib/actions/students.cache';
 import { studentQueryKeys } from '../queryKeys';
 import { cacheConfig } from '../cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
 import type { EnrollmentStats, TimeRange, CustomTimeRange } from './types';
 
 /**
@@ -43,9 +43,8 @@ export const useEnrollmentStats = (
   return useQuery({
     queryKey: studentQueryKeys.statistics.enrollment(timeRange as 'daily' | 'weekly' | 'monthly' | 'yearly'),
     queryFn: async (): Promise<EnrollmentStats> => {
-      // For now, calculate from student data since we don't have a dedicated endpoint
-      const response = await studentsApi.getAll({});
-      const students = response.students;
+      // Fetch students from server cache action
+      const students = await getStudents() || [];
 
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);

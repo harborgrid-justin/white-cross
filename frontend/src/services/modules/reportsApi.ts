@@ -3,6 +3,24 @@
  * @module services/modules/reportsApi
  * @category Services - Analytics & Reporting
  *
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/reports.actions and @/lib/actions/analytics.actions instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before:
+ * import { reportsApi } from '@/services/modules/reportsApi';
+ * const healthTrends = await reportsApi.getHealthTrends({ startDate, endDate });
+ * const dashboardMetrics = await reportsApi.getDashboard();
+ *
+ * // After:
+ * import { getHealthTrends } from '@/lib/actions/reports.actions';
+ * import { getDashboardMetrics } from '@/lib/actions/analytics.actions';
+ * const healthTrends = await getHealthTrends({ startDate, endDate });
+ * const dashboardMetrics = await getDashboardMetrics();
+ * ```
+ *
  * Provides comprehensive healthcare analytics, reporting, and data visualization
  * capabilities for the White Cross platform. Implements health trend analysis,
  * medication usage tracking, incident statistics, custom report generation, and

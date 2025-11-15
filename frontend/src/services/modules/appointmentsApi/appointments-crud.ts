@@ -1,6 +1,12 @@
 /**
  * Appointments API - CRUD Operations
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Core Create, Read, Update, Delete operations for appointments with
  * validation, conflict checking, and business rule enforcement.
  *

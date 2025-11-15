@@ -1,6 +1,11 @@
 /**
  * Appointments API - Advanced Operations
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles bulk operations, recurring appointments, and calendar integration
  * for appointment management.
  *

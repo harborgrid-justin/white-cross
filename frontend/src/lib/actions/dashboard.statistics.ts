@@ -10,7 +10,7 @@
 
 'use server';
 
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import type { ApiResponse } from '@/types';
 import type { DashboardStats, DashboardFilters } from './dashboard.types';
 

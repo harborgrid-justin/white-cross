@@ -1,6 +1,14 @@
 /**
  * Validation utility functions for organizations module
  *
+ * @deprecated This utility module is deprecated alongside the organizations services.
+ * Server actions handle validation internally using Zod schemas.
+ *
+ * Migration Note:
+ * - Server actions use built-in validation
+ * - No direct replacement needed
+ * - Validation errors are handled by server action framework
+ *
  * Provides shared validation error handling to reduce code duplication
  * across district and school services.
  *

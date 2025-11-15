@@ -1,9 +1,27 @@
 /**
- * Student Management API Module
- * Provides frontend access to student management endpoints
+ * @fileoverview Student Management API Module
+ * @module services/modules/studentManagementApi
+ * @category Services - Student Management
+ *
+ * @deprecated DUPLICATE FUNCTIONALITY - Use students.actions.ts instead
+ * This service duplicates functionality already available in students.actions.ts.
+ * Server actions are the recommended approach for student operations.
+ *
+ * MIGRATION STATUS:
+ * - Photo management -> Available in students.actions.ts
+ * - Transcripts -> Available in students.actions.ts
+ * - Grade transitions -> Available in students.actions.ts
+ * - Barcode operations -> Available in students.actions.ts
+ * - Waitlist management -> Available in students.actions.ts
+ * - RECOMMENDATION: Migrate all code to use students.actions.ts
+ * - Target deprecation date: April 2026
+ *
+ * Provides frontend access to student management endpoints.
+ * For new implementations, prefer @/lib/actions/students.actions
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
+import { apiClient } from '@/services/core'; // Updated: Import from new centralized core
 import { ApiResponse, PaginatedResponse } from '../utils/apiUtils';
 
 /**
@@ -295,11 +313,33 @@ export class StudentManagementApi {
   }
 }
 
-// Factory function for creating StudentManagementApi instances
+/**
+ * Factory function for creating StudentManagementApi instances
+ * @deprecated Use students.actions.ts instead
+ */
 export function createStudentManagementApi(client: ApiClient): StudentManagementApi {
   return new StudentManagementApi(client);
 }
 
-// Export singleton instance for registry
-import { apiClient } from '../core';
+/**
+ * Singleton instance for StudentManagementApi
+ * Pre-configured with the default apiClient from core services
+ *
+ * @deprecated DUPLICATE FUNCTIONALITY - Use students.actions.ts instead
+ *
+ * This service duplicates student management operations already available
+ * in the Next.js server actions at @/lib/actions/students.actions
+ *
+ * Migration guide:
+ * - Instead of: studentManagementApi.uploadPhoto(studentId, file)
+ * - Use: uploadPhotoAction from students.actions.ts
+ *
+ * - Instead of: studentManagementApi.getTranscripts(studentId)
+ * - Use: getStudentTranscripts from students.actions.ts
+ *
+ * All functionality in this service is available in students.actions.ts
+ * with better caching, type safety, and Next.js integration.
+ *
+ * Target deprecation: April 2026
+ */
 export const studentManagementApi = createStudentManagementApi(apiClient);

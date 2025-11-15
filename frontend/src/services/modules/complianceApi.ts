@@ -3,6 +3,24 @@
  * @module services/modules/complianceApi
  * @category Services - Compliance & Healthcare Regulations
  *
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/compliance.actions instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before:
+ * import { complianceApi } from '@/services/modules/complianceApi';
+ * const reports = await complianceApi.getReports({ status: 'SUBMITTED' });
+ *
+ * // After:
+ * import { getComplianceReports } from '@/lib/actions/compliance.actions';
+ * const result = await getComplianceReports({ status: 'SUBMITTED' });
+ * if (result.success) {
+ *   const reports = result.data;
+ * }
+ * ```
+ *
  * Provides comprehensive HIPAA (Health Insurance Portability and Accountability Act) and
  * FERPA (Family Educational Rights and Privacy Act) compliance management capabilities
  * for the White Cross healthcare platform. Implements compliance tracking, consent

@@ -6,7 +6,7 @@
  */
 
 'use server'
-import { serverGet, serverPost } from '@/lib/api/nextjs-client'
+import { serverGet, serverPost } from '@/lib/api/server'
 import { CACHE_TTL } from '@/lib/cache/constants'
 
 export interface AuditLog {

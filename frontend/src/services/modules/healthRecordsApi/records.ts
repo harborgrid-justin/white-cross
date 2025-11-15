@@ -1,14 +1,36 @@
 /**
- * Health Records API - Main Records Operations
- * 
- * Core CRUD operations for health records including:
- * - Health record management
- * - Health summary generation
- * - Search functionality
- * - Export capabilities
- * - Bulk import operations
- * - PHI access logging for HIPAA compliance
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.crud
+ *
+ * MIGRATION EXAMPLES:
+ *
+ * OLD: healthRecordsService.createRecord(data)
+ * NEW: await createHealthRecordAction(data)
+ *
+ * OLD: healthRecordsService.getRecords(studentId, filters)
+ * NEW: await getHealthRecordsAction({ studentId, ...filters })
+ *
+ * OLD: healthRecordsService.updateRecord(id, data)
+ * NEW: await updateHealthRecordAction({ id, ...data })
+ *
+ * OLD: healthRecordsService.deleteRecord(id)
+ * NEW: await deleteHealthRecordAction({ id })
+ *
+ * OLD: healthRecordsService.getSummary(studentId)
+ * NEW: Available in health-records.crud module
+ *
+ * OLD: healthRecordsService.bulkImportRecords(data)
+ * NEW: Use individual createHealthRecordAction calls or batch in Server Action
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.crud instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
+ * @see {@link ../index.ts} - Module migration guide
  * @module services/modules/healthRecordsApi/records
  */
 

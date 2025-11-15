@@ -1,10 +1,10 @@
 /**
- * @fileoverview Documents API Types and Interfaces
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use types from @/lib/actions/documents.types
+ * @see {@link /lib/actions/documents.types.ts}
  * @module services/modules/documentsApi/types
  * @category Healthcare - Documents
- *
- * Type definitions and interfaces for the Documents API including core types,
- * request/response schemas, and API interface definitions.
  */
 
 import type { ApiClient } from '../../core/ApiClient';

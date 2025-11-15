@@ -80,3 +80,35 @@ export {
   getHealthRecordsStats,
   getHealthRecordsDashboardData
 } from './health-records.stats';
+
+// ==========================================
+// VITAL SIGNS ACTIONS
+// ==========================================
+
+export {
+  createVitalSignsAction,
+  updateVitalSignsAction,
+  deleteVitalSignsAction
+} from './health-records.vital-signs';
+
+export type {
+  VitalSigns,
+  VitalSignsCreate
+} from './health-records.vital-signs';
+
+// ==========================================
+// SCREENING ACTIONS
+// ==========================================
+
+export {
+  ScreeningType,
+  ScreeningOutcome,
+  createScreeningAction,
+  updateScreeningAction,
+  deleteScreeningAction
+} from './health-records.screenings';
+
+export type {
+  Screening,
+  ScreeningCreate
+} from './health-records.screenings';

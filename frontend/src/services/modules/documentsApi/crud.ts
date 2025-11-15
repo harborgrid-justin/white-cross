@@ -1,10 +1,10 @@
 /**
- * @fileoverview Documents API CRUD Operations
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/documents.crud
+ * @see {@link /lib/actions/documents.crud.ts}
  * @module services/modules/documentsApi/crud
  * @category Healthcare - Documents
- *
- * Basic CRUD (Create, Read, Update, Delete) operations for document management.
- * Handles core document lifecycle operations with validation and PHI protection.
  */
 
 import type { ApiResponse } from '../../types';

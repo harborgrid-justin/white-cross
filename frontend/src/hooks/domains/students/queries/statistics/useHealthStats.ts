@@ -10,9 +10,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { getStudents } from '@/lib/actions/students.cache';
 import { studentQueryKeys } from '../queryKeys';
 import { cacheConfig } from '../cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
 import type { HealthStats, TimeRange } from './types';
 
 /**
@@ -39,9 +39,8 @@ export const useHealthStats = (timeRange: TimeRange = 'month') => {
   return useQuery({
     queryKey: studentQueryKeys.statistics.healthMetrics(),
     queryFn: async (): Promise<HealthStats> => {
-      // Get all students with health data
-      const response = await studentsApi.getAll({});
-      const students = response.students;
+      // Fetch students from server cache action
+      const students = await getStudents() || [];
 
       // Calculate health statistics
       const studentsWithAllergies = students.filter(s =>

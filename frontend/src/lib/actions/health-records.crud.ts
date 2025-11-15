@@ -11,7 +11,7 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z, type ZodIssue } from 'zod';
-import { serverGet, serverPost, serverPut, serverDelete, getAuthToken } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut, serverDelete, getAuthToken } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types';
 

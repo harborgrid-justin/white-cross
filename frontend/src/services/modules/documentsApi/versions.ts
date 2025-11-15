@@ -1,10 +1,10 @@
 /**
- * @fileoverview Documents API Version Management
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/documents.crud
+ * @see {@link /lib/actions/documents.crud.ts}
  * @module services/modules/documentsApi/versions
  * @category Healthcare - Documents
- *
- * Document version management operations including version creation, comparison,
- * and download capabilities with full audit trail support.
  */
 
 import type { ApiResponse } from '../../types';

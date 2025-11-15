@@ -1,18 +1,27 @@
 /**
  * @fileoverview Medications API Service
  *
- * **DEPRECATED**: This file is maintained for backward compatibility only.
- * All functionality has been refactored into modular services in the medications/ subdirectory.
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/medications.actions instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
  *
- * **New Import Path:**
+ * MIGRATION GUIDE:
  * ```typescript
- * import { medicationsApi } from '@/services/modules/medications';
+ * // Before:
+ * import { medicationsApi } from '@/services/modules/medicationsApi';
+ * await medicationsApi.logAdministration({ studentMedicationId, notes });
+ *
+ * // After:
+ * import { administerMedication } from '@/lib/actions/medications.actions';
+ * const result = await administerMedication({ studentMedicationId, notes });
  * ```
+ *
+ * **Legacy Note**: This file is maintained for backward compatibility only.
+ * All functionality has been refactored into modular services in the medications/ subdirectory.
  *
  * This file re-exports all functionality from the refactored modules to maintain
  * backward compatibility with existing code.
  *
- * @deprecated Import from '@/services/modules/medications' instead
  * @module services/modules/medicationsApi
  */
 

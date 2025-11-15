@@ -11,7 +11,7 @@
 import { cache } from 'react';
 
 // Core API integrations
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 

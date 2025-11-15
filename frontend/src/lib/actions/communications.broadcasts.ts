@@ -7,7 +7,7 @@
 
 'use server';
 
-import { fetchApi } from './communications.utils';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/server';
 import type { ActionResult } from './communications.types';
 import {
   CreateBroadcastSchema,
@@ -34,24 +34,14 @@ export async function getBroadcasts(
   try {
     const validatedFilter = filter ? BroadcastFilterSchema.parse(filter) : {};
 
-    const response = await fetchApi<{ broadcasts: Broadcast[]; total: number }>(
+    const response = await serverGet<{ broadcasts: Broadcast[]; total: number }>(
       '/communications/broadcasts',
-      {
-        method: 'GET',
-        params: validatedFilter
-      }
+      validatedFilter as Record<string, string | number | boolean>
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch broadcasts'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching broadcasts:', error);
@@ -69,21 +59,13 @@ export async function getBroadcastById(
   broadcastId: string
 ): Promise<ActionResult<Broadcast>> {
   try {
-    const response = await fetchApi<Broadcast>(
-      `/communications/broadcasts/${broadcastId}`,
-      { method: 'GET' }
+    const response = await serverGet<Broadcast>(
+      `/communications/broadcasts/${broadcastId}`
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch broadcast'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching broadcast:', error);
@@ -103,24 +85,14 @@ export async function createBroadcast(
   try {
     const validatedData = CreateBroadcastSchema.parse(data);
 
-    const response = await fetchApi<Broadcast>(
+    const response = await serverPost<Broadcast>(
       '/communications/broadcasts',
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to create broadcast'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error creating broadcast:', error);
@@ -140,24 +112,14 @@ export async function updateBroadcast(
   try {
     const validatedData = UpdateBroadcastSchema.parse(data);
 
-    const response = await fetchApi<Broadcast>(
+    const response = await serverPut<Broadcast>(
       `/communications/broadcasts/${validatedData.id}`,
-      {
-        method: 'PUT',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to update broadcast'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error updating broadcast:', error);
@@ -178,20 +140,10 @@ export async function cancelBroadcast(
   try {
     const validatedData = CancelBroadcastSchema.parse({ id: broadcastId, reason });
 
-    const response = await fetchApi(
+    await serverPost(
       `/communications/broadcasts/${broadcastId}/cancel`,
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to cancel broadcast'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -212,20 +164,10 @@ export async function acknowledgeBroadcast(
   try {
     const validatedData = AcknowledgeBroadcastSchema.parse({ broadcastId });
 
-    const response = await fetchApi(
+    await serverPost(
       `/communications/broadcasts/${broadcastId}/acknowledge`,
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to acknowledge broadcast'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -244,17 +186,9 @@ export async function deleteBroadcast(
   broadcastId: string
 ): Promise<ActionResult<void>> {
   try {
-    const response = await fetchApi(
-      `/communications/broadcasts/${broadcastId}`,
-      { method: 'DELETE' }
+    await serverDelete(
+      `/communications/broadcasts/${broadcastId}`
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to delete broadcast'
-      };
-    }
 
     return { success: true };
   } catch (error) {

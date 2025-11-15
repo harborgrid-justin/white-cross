@@ -10,7 +10,7 @@
 
 import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
-import { serverGet, serverPost } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost } from '@/lib/api/server';
 import type { AuthenticatedUser, AuditContext } from './settings.types';
 import {
   extractIPAddress,

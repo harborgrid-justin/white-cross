@@ -8,7 +8,7 @@
 
 'use server';
 
-import { apiClient } from '@/services/core/ApiClient';
+import { serverGet } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type {
@@ -36,9 +36,9 @@ export async function getStockUsageAnalytics(
       }
     });
 
-    const response = await apiClient.get<StockUsageAnalytics[]>(
+    const data = await serverGet<StockUsageAnalytics[]>(
       `${API_ENDPOINTS.INVENTORY.ANALYTICS}/usage`,
-      { params }
+      params
     );
 
     await auditLogWithContext({
@@ -50,7 +50,7 @@ export async function getStockUsageAnalytics(
 
     return {
       success: true,
-      data: response.data,
+      data,
     };
   } catch (error) {
     console.error('Failed to fetch usage analytics:', error);
@@ -68,10 +68,10 @@ export async function getInventoryValuation(
   locationId?: string
 ): Promise<ActionResult<TotalStockValuation>> {
   try {
-    const params = locationId ? { locationId } : {};
-    const response = await apiClient.get<TotalStockValuation>(
+    const params = locationId ? { locationId } : undefined;
+    const data = await serverGet<TotalStockValuation>(
       `${API_ENDPOINTS.INVENTORY.ANALYTICS}/valuation`,
-      { params }
+      params
     );
 
     await auditLogWithContext({
@@ -83,7 +83,7 @@ export async function getInventoryValuation(
 
     return {
       success: true,
-      data: response.data,
+      data,
     };
   } catch (error) {
     console.error('Failed to fetch inventory valuation:', error);

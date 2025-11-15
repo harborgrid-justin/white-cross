@@ -6,7 +6,7 @@
 
 'use server';
 
-import { serverGet, serverPost, serverPut, serverDelete, nextFetch } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut, serverDelete, nextFetch } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ActionResult } from './communications.types';
 import {

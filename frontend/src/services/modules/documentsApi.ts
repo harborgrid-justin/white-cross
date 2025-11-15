@@ -1,62 +1,76 @@
 /**
- * @fileoverview Documents API - Modular Implementation
- * @module services/modules/documentsApi
- * @category Healthcare - Documents
+ * MIGRATION STATUS: DEPRECATED
  *
- * Comprehensive document management API client for the White Cross healthcare platform.
- * Now implemented using modular architecture for better maintainability and focused development.
+ * This service module has been replaced by Next.js Server Actions for improved
+ * performance, security, and Next.js App Router compatibility.
  *
- * **Refactored Architecture:**
- * This file now serves as a backward-compatible wrapper around the modular services:
- * - `DocumentsCrudService` - CRUD operations (Create, Read, Update, Delete)
- * - `DocumentsVersionService` - Version management and comparison
- * - `DocumentsActionsService` - Actions (sign, share, download, templates)
- * - `DocumentsSearchService` - Search and filtering operations
- * - `DocumentsAuditService` - Audit trail and compliance management
+ * **New Implementation:**
+ * - Server Components: import from '@/lib/actions/documents.actions'
+ * - Client Components: Use Server Actions with useActionState or React Query
  *
- * Each module is focused on a specific functional area while maintaining
- * healthcare compliance and PHI protection throughout.
+ * **Migration Guide:**
  *
- * **Benefits of Modular Architecture:**
- * - **Focused Development**: Each service handles one concern
- * - **Easier Testing**: Isolated functionality can be tested independently
- * - **Better Maintainability**: Changes to one area don't affect others
- * - **Reduced File Size**: Individual modules are under 500 lines
- * - **Improved Performance**: Only load needed functionality
- *
- * **Backward Compatibility:**
- * All existing API methods remain available and work exactly the same.
- * Existing code using `documentsApi.methodName()` continues to work.
- *
- * @example Using the complete API (backward compatible)
+ * OLD (Client API):
  * ```typescript
  * import { documentsApi } from '@/services/modules/documentsApi';
  *
- * // All existing methods work exactly the same
+ * // Get documents
  * const { documents } = await documentsApi.getDocuments({
  *   studentId: 'student-123',
  *   category: 'CONSENT'
  * });
+ *
+ * // Upload document
+ * const doc = await documentsApi.createDocument(formData);
+ *
+ * // Sign document
+ * await documentsApi.signDocument(docId, signatureData);
  * ```
  *
- * @example Using individual services (new capability)
+ * NEW (Server Actions):
  * ```typescript
- * import { createDocumentsApiService } from '@/services/modules/documentsApi';
- * import { apiClient } from '@/services/core/ApiClient';
+ * import {
+ *   getDocuments,
+ *   uploadDocumentAction,
+ *   signDocumentAction,
+ *   shareDocumentAction
+ * } from '@/lib/actions/documents.actions';
  *
- * const documentsApi = createDocumentsApiService(apiClient);
+ * // In Server Components - direct call
+ * const documents = await getDocuments();
  *
- * // Use complete API
- * const { documents } = await documentsApi.getDocuments();
+ * // In Client Components - with useActionState
+ * 'use client';
+ * import { useActionState } from 'react';
  *
- * // Or access individual services for focused operations
- * const searchResults = await documentsApi.search.advancedSearch({
- *   filters: { category: 'MEDICAL_RECORD' },
- *   sort: { field: 'createdAt', order: 'desc' }
- * });
- *
- * const auditTrail = await documentsApi.audit.getDocumentAuditTrail('doc-id');
+ * function DocumentUploadForm() {
+ *   const [state, formAction, isPending] = useActionState(
+ *     uploadDocumentAction,
+ *     { errors: {} }
+ *   );
+ *   return <form action={formAction}>...</form>;
+ * }
  * ```
+ *
+ * **Available Server Actions:**
+ * - CRUD: getDocuments, getDocumentAction, updateDocumentAction, deleteDocumentAction
+ * - Upload: uploadDocumentAction, uploadDocumentFromForm
+ * - Sharing: shareDocumentAction
+ * - Signatures: signDocumentAction
+ * - Statistics: getDocumentStats, getDocumentsDashboardData
+ * - Utilities: documentExists, getDocumentCount
+ *
+ * **See Also:**
+ * - @see {@link /lib/actions/documents.actions.ts} for all available Server Actions
+ * - @see {@link /lib/actions/documents.crud.ts} for CRUD operations
+ * - @see {@link /lib/actions/documents.upload.ts} for upload operations
+ * - @see {@link /lib/actions/documents.sharing.ts} for sharing operations
+ * - @see {@link /lib/actions/documents.signatures.ts} for signature operations
+ * - @see {@link /lib/api/client} for client-side utilities if needed
+ *
+ * @deprecated Use Server Actions from @/lib/actions/documents.actions instead
+ * @module services/modules/documentsApi
+ * @category Healthcare - Documents
  */
 
 // Import the modular implementation

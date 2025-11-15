@@ -3,6 +3,32 @@
  * @module services/modules/appointments/appointmentsApi.waitlist
  * @category Services
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Migration example:
+ * ```typescript
+ * // OLD:
+ * import { AppointmentsWaitlistApiImpl } from '@/services/modules/appointments/appointmentsApi.waitlist';
+ * const api = new AppointmentsWaitlistApiImpl(client);
+ * const { entry } = await api.addToWaitlist(data);
+ *
+ * // NEW (Server Component):
+ * import { addToWaitlist } from '@/lib/actions/appointments.actions';
+ * const entry = await addToWaitlist(data);
+ *
+ * // NEW (Client Component with React Query):
+ * import { useMutation } from '@tanstack/react-query';
+ * import { addToWaitlist } from '@/lib/actions/appointments.actions';
+ * const mutation = useMutation({
+ *   mutationFn: addToWaitlist,
+ *   onSuccess: () => queryClient.invalidateQueries(['waitlist'])
+ * });
+ * ```
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Appointment waitlist and reminder management API providing waitlist operations,
  * reminder scheduling, and conflict detection.
  */

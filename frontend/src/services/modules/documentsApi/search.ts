@@ -1,10 +1,10 @@
 /**
- * @fileoverview Documents API Search and Filtering
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/documents.cache
+ * @see {@link /lib/actions/documents.cache.ts}
  * @module services/modules/documentsApi/search
  * @category Healthcare - Documents
- *
- * Advanced search and filtering operations for document discovery including
- * full-text search, metadata filtering, and expiration management.
  */
 
 import type { ApiResponse } from '../../types';

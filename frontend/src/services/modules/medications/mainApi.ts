@@ -1,6 +1,49 @@
 /**
  * @fileoverview Core Medication API Operations
  *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.crud
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Create medication
+ * import { MedicationMainApi } from '@/services/modules/medications/mainApi';
+ * const api = new MedicationMainApi(client);
+ * const result = await api.create({ name: 'Amoxicillin', ... });
+ *
+ * // After: Use server action
+ * import { createMedication } from '@/lib/actions/medications.crud';
+ * const result = await createMedication({ name: 'Amoxicillin', ... });
+ *
+ * // Before: Get all medications
+ * const response = await api.getAll({ search: 'aspirin' });
+ * const medications = response.medications;
+ *
+ * // After: Use cached query
+ * import { getMedications } from '@/lib/actions/medications.cache';
+ * const medications = await getMedications({ search: 'aspirin' });
+ *
+ * // Before: Update medication
+ * const updated = await api.update('id', { dosage: '250mg' });
+ *
+ * // After: Use server action
+ * import { updateMedication } from '@/lib/actions/medications.crud';
+ * const result = await updateMedication('id', { dosage: '250mg' });
+ *
+ * // Before: Delete medication
+ * await api.delete('id');
+ *
+ * // After: Use server action
+ * import { deleteMedication } from '@/lib/actions/medications.crud';
+ * await deleteMedication('id');
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ Automatic cache invalidation with revalidateTag
+ * ✓ Built-in HIPAA audit logging
+ * ✓ Type-safe with ActionResult pattern
+ * ✓ Server-side validation
+ * ✓ Better error handling
+ *
  * Handles core medication CRUD operations including medication management,
  * formulary operations, and basic medication data access. This module provides
  * the foundation for all medication-related operations in the system.

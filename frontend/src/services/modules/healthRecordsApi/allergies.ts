@@ -1,12 +1,38 @@
 /**
- * Health Records API - Allergies Management
- * 
- * Comprehensive allergies management including:
- * - Allergy CRUD operations
- * - Critical allergies identification
- * - Safety checks and verification
- * - PHI access logging for HIPAA compliance
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.allergies
+ *
+ * MIGRATION EXAMPLES:
+ *
+ * Create Allergy:
+ * OLD: await allergiesService.create({ studentId, allergen, severity, reaction })
+ * NEW: await createAllergyAction({ studentId, allergen, severity, reaction })
+ *
+ * Get Student Allergies:
+ * OLD: await allergiesService.getAllergies(studentId)
+ * NEW: await getStudentAllergiesAction({ studentId })
+ *
+ * Update Allergy:
+ * OLD: await allergiesService.update(id, data)
+ * NEW: await updateAllergyAction({ id, ...data })
+ *
+ * Delete Allergy:
+ * OLD: await allergiesService.delete(id)
+ * NEW: await deleteAllergyAction({ id })
+ *
+ * Get Critical Allergies:
+ * OLD: await allergiesService.getCriticalAllergies(studentId)
+ * NEW: Available through getStudentAllergiesAction with filtering
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.allergies instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.allergies.ts} - Allergy management Server Actions
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
+ * @see {@link ../index.ts} - Module migration guide
  * @module services/modules/healthRecordsApi/allergies
  */
 

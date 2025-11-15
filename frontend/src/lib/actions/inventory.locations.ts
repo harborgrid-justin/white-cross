@@ -11,7 +11,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
 import { API_ENDPOINTS } from '@/constants/api';
-import { serverGet, serverPost } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost } from '@/lib/api/server';
 
 // ==========================================
 // LOCATION OPERATIONS

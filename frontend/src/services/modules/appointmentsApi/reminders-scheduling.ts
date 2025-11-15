@@ -1,6 +1,11 @@
 /**
  * Appointments API - Reminder Scheduling
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles reminder scheduling, cancellation, and rescheduling operations.
  * Provides methods for creating single or multiple reminders for appointments.
  *

@@ -1,12 +1,24 @@
 /**
- * Allergies API Operations
- * 
- * Comprehensive allergy management operations:
- * - CRUD operations for allergies
- * - Critical allergies tracking
- * - Safety checks and alerts
- * - PHI access logging and compliance
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
  *
+ * Allergies API Operations
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.allergies
+ *
+ * MIGRATION GUIDE:
+ * OLD: allergiesApi.create(data)
+ * NEW: await createAllergyAction(data)
+ *
+ * OLD: allergiesApi.getAllergies(studentId)
+ * NEW: await getStudentAllergiesAction({ studentId })
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.allergies instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.allergies.ts}
+ * @see {@link ../healthRecordsApi.ts} - Detailed migration guide
  * @module services/modules/healthRecords/allergiesApi
  */
 

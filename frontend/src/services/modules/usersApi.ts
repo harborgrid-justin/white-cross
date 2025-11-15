@@ -3,6 +3,22 @@
  * @module services/modules/usersApi
  * @category Services - User Management & RBAC
  *
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.users instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before:
+ * import { usersApi } from '@/services/modules/usersApi';
+ * const users = await usersApi.getAll({ role: 'NURSE', isActive: true });
+ *
+ * // After:
+ * import { getUsers } from '@/lib/actions/admin.users';
+ * import { UserRole } from '@/lib/types';
+ * const users = await getUsers({ role: UserRole.NURSE, isActive: true });
+ * ```
+ *
  * Provides comprehensive user management capabilities for the White Cross healthcare
  * platform with Role-Based Access Control (RBAC), user lifecycle management, and
  * administrative operations.

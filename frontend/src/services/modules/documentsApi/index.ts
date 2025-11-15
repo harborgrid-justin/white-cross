@@ -1,11 +1,13 @@
 /**
- * @fileoverview Documents API Module Exports
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * This service module has been replaced by Next.js Server Actions.
+ * Please use '@/lib/actions/documents.actions' instead.
+ *
+ * @deprecated Use Server Actions from @/lib/actions/documents.actions
+ * @see {@link /lib/actions/documents.actions.ts}
  * @module services/modules/documentsApi
  * @category Healthcare - Documents
- *
- * Modular documents API with focused services for different functional areas.
- * Each service handles a specific aspect of document management while maintaining
- * healthcare compliance and PHI protection.
  */
 
 // Import all service classes and factory functions

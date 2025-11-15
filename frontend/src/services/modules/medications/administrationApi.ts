@@ -1,6 +1,48 @@
 /**
  * @fileoverview Medication Administration API
  *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.administration
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Log medication administration
+ * import { MedicationAdministrationApi } from '@/services/modules/medications/administrationApi';
+ * const api = new MedicationAdministrationApi(client);
+ * const log = await api.logAdministration({
+ *   studentMedicationId: 'id',
+ *   dosageGiven: '500mg',
+ *   timeGiven: new Date().toISOString(),
+ *   notes: 'No issues'
+ * });
+ *
+ * // After: Use server action
+ * import { administerMedication } from '@/lib/actions/medications.administration';
+ * const result = await administerMedication({
+ *   medicationId: 'med-id',
+ *   studentId: 'student-id',
+ *   administeredBy: 'nurse-id',
+ *   administeredAt: new Date().toISOString(),
+ *   dosageGiven: '500mg',
+ *   notes: 'No issues'
+ * });
+ *
+ * // Before: Get student logs
+ * const response = await api.getStudentLogs('student-id', 1, 20);
+ * const logs = response.medications;
+ *
+ * // After: Use cached query
+ * import { getStudentMedicationLogs } from '@/lib/actions/medications.cache';
+ * const logs = await getStudentMedicationLogs('student-id');
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ Automatic HIPAA audit logging (critical for medication administration)
+ * ✓ Server-side Five Rights validation
+ * ✓ Built-in cache invalidation
+ * ✓ Type-safe ActionResult pattern
+ * ✓ NO optimistic updates (safer for critical operations)
+ * ✓ Better error handling and rollback
+ *
  * Handles medication administration logging with Five Rights verification,
  * administration history retrieval, and real-time audit logging for HIPAA
  * compliance and patient safety.

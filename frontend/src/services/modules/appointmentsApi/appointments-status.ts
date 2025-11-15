@@ -1,9 +1,15 @@
 /**
  * Appointments API - Status and Workflow Management
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles appointment status updates, workflow transitions, and lifecycle
  * management including completion, no-shows, and bulk operations.
- * 
+ *
  * @module services/modules/appointmentsApi/appointments-status
  */
 

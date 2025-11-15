@@ -1,9 +1,15 @@
 /**
  * Appointments API - Scheduling and Conflict Management
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles appointment scheduling operations including conflict detection,
  * time slot management, recurring appointments, and availability checking.
- * 
+ *
  * @module services/modules/appointmentsApi/appointments-scheduling
  */
 

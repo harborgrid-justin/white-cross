@@ -1,10 +1,12 @@
 /**
- * @fileoverview Documents API Actions and Operations
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/documents.{sharing,signatures,upload}
+ * @see {@link /lib/actions/documents.sharing.ts}
+ * @see {@link /lib/actions/documents.signatures.ts}
+ * @see {@link /lib/actions/documents.upload.ts}
  * @module services/modules/documentsApi/actions
  * @category Healthcare - Documents
- *
- * Document actions and operations including signing, sharing, downloading,
- * templates, and student document management with healthcare compliance.
  */
 
 import type { ApiResponse } from '../../types';

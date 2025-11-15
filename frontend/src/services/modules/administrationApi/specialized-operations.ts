@@ -1,10 +1,15 @@
 /**
  * @fileoverview Specialized administration operations for advanced system management
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions from @/lib/actions/admin instead.
+ *
+ * This class-based API has been superseded by Next.js server actions.
+ * See MIGRATION.md for detailed migration instructions.
+ *
  * This module provides advanced administration operations including backup management,
  * license management, system configuration, performance metrics, training modules,
  * and audit logging capabilities.
- * 
+ *
  * @module services/modules/administrationApi/specialized-operations
  */
 

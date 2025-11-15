@@ -1,6 +1,11 @@
 /**
  * Appointments API - Query and Filtering Operations
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles appointment listing, filtering, date range queries, and
  * specialized query operations for appointments.
  *

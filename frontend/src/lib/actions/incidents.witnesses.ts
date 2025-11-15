@@ -6,7 +6,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { serverGet, serverPost, serverPatch, serverDelete } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPatch, serverDelete } from '@/lib/api/server';
 import type { WitnessStatement } from './incidents.types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';

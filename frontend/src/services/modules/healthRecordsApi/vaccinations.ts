@@ -1,13 +1,38 @@
 /**
- * Health Records API - Vaccinations Management
- * 
- * Comprehensive vaccinations management including:
- * - Vaccination CRUD operations
- * - Compliance tracking and reporting
- * - Vaccination schedule management
- * - Exemption handling
- * - PHI access logging for HIPAA compliance
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.immunizations
+ *
+ * MIGRATION EXAMPLES:
+ *
+ * Create Immunization/Vaccination:
+ * OLD: await vaccinationsService.create({ studentId, vaccineName, dateAdministered })
+ * NEW: await createImmunizationAction({ studentId, vaccineName, dateAdministered })
+ *
+ * Get Student Immunizations:
+ * OLD: await vaccinationsService.getVaccinations(studentId)
+ * NEW: await getStudentImmunizationsAction({ studentId })
+ *
+ * Update Immunization:
+ * OLD: await vaccinationsService.update(id, data)
+ * NEW: await updateImmunizationAction({ id, ...data })
+ *
+ * Delete Immunization:
+ * OLD: await vaccinationsService.delete(id)
+ * NEW: await deleteImmunizationAction({ id })
+ *
+ * Check Compliance:
+ * OLD: await vaccinationsService.checkCompliance(studentId)
+ * NEW: Available through getStudentImmunizationsAction with compliance logic
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.immunizations instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.immunizations.ts} - Immunization management Server Actions
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
+ * @see {@link ../index.ts} - Module migration guide
  * @module services/modules/healthRecordsApi/vaccinations
  */
 

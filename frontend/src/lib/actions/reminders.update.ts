@@ -9,7 +9,7 @@
 import { revalidateTag, revalidatePath } from 'next/cache';
 
 // Core API integrations
-import { serverPut, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverPut, NextApiClientError } from '@/lib/api/server';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Types

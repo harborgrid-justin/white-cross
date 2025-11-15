@@ -1,38 +1,101 @@
 /**
- * @fileoverview Direct Messages API Service - Person-to-person messaging
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/communications.messages
+ * @see {@link /lib/actions/communications.messages.ts}
  * @module services/modules/communications/directMessagesApi
- * @version 2.0.0
- * @category Services
+ * @category Healthcare - Communications
  *
- * Provides comprehensive direct messaging functionality for secure communication
- * between users. Supports inbox management, message threads, file attachments,
- * and read/unread status tracking.
+ * **Migration Guide:**
  *
- * ## Key Features
- *
- * **Direct Messaging** (12 methods):
- * - Send direct messages between users
- * - Manage inbox and sent messages
- * - Thread support with parent message tracking
- * - File attachments with secure storage
- * - Read/unread status management
- *
- * **PHI Compliance**:
- * - HIPAA-compliant message handling
- * - Secure message storage with encryption
- * - Audit logging for all communications
- * - Access control and RBAC enforcement
- *
- * @example
+ * OLD (Client API):
  * ```typescript
- * // Send urgent direct message
- * const message = await directMessagesApi.sendMessage({
+ * import { createDirectMessagesApi } from '@/services/modules/communications/directMessagesApi';
+ * const api = createDirectMessagesApi(apiClient);
+ *
+ * // Send message
+ * const message = await api.sendMessage({
  *   subject: 'Student Medication Needed',
  *   body: 'Student needs inhaler - see health record',
  *   recipientId: nurseUserId,
  *   priority: 'URGENT'
  * });
+ *
+ * // Get inbox
+ * const inbox = await api.getInbox(1, 20);
+ *
+ * // Mark as read
+ * await api.markAsRead(messageId);
  * ```
+ *
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   sendMessageAction,
+ *   getInbox,
+ *   markMessageAsReadAction,
+ *   replyToMessageAction
+ * } from '@/lib/actions/communications.messages';
+ *
+ * // In Server Component
+ * const inbox = await getInbox({ page: 1, limit: 20 });
+ *
+ * // In Client Component with form
+ * 'use client';
+ * import { useActionState } from 'react';
+ *
+ * function MessageForm({ recipientId }: { recipientId: string }) {
+ *   const [state, formAction, isPending] = useActionState(
+ *     sendMessageAction,
+ *     { errors: {} }
+ *   );
+ *
+ *   return (
+ *     <form action={formAction}>
+ *       <input type="hidden" name="recipientId" value={recipientId} />
+ *       <input name="subject" placeholder="Subject" required />
+ *       <textarea name="body" placeholder="Message" required />
+ *       <select name="priority">
+ *         <option value="NORMAL">Normal</option>
+ *         <option value="URGENT">Urgent</option>
+ *       </select>
+ *       <button type="submit" disabled={isPending}>
+ *         {isPending ? 'Sending...' : 'Send Message'}
+ *       </button>
+ *       {state.errors?.general && <p className="error">{state.errors.general}</p>}
+ *     </form>
+ *   );
+ * }
+ * ```
+ *
+ * **Real-time Inbox Updates:**
+ * ```typescript
+ * // OLD: Client-side polling
+ * useEffect(() => {
+ *   const interval = setInterval(() => api.getInbox(), 30000);
+ *   return () => clearInterval(interval);
+ * }, []);
+ *
+ * // NEW: Server-Sent Events
+ * import { useInboxSubscription } from '@/lib/hooks/useInboxSubscription';
+ *
+ * function InboxView() {
+ *   const { messages, unreadCount } = useInboxSubscription();
+ *   return <MessageList messages={messages} unreadCount={unreadCount} />;
+ * }
+ * ```
+ *
+ * **Available Server Actions:**
+ * - sendMessageAction: Send new message
+ * - replyToMessageAction: Reply to message
+ * - getInbox: Get inbox messages
+ * - getSentMessages: Get sent messages
+ * - markMessageAsReadAction: Mark as read
+ * - archiveMessageAction: Archive message
+ * - getUnreadCount: Get unread count
+ *
+ * @fileoverview Direct Messages API Service - Person-to-person messaging (DEPRECATED)
+ * @version 2.0.0
  */
 
 import type { ApiClient, ApiResponse, PaginatedResponse } from '../../core/ApiClient';

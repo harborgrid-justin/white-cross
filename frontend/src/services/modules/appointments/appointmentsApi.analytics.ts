@@ -3,6 +3,32 @@
  * @module services/modules/appointments/appointmentsApi.analytics
  * @category Services
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Migration example:
+ * ```typescript
+ * // OLD:
+ * import { AppointmentsAnalyticsApiImpl } from '@/services/modules/appointments/appointmentsApi.analytics';
+ * const api = new AppointmentsAnalyticsApiImpl(client);
+ * const { trends } = await api.getTrends(dateFrom, dateTo);
+ *
+ * // NEW (Server Component):
+ * import { getAppointmentTrends } from '@/lib/actions/appointments.actions';
+ * const trends = await getAppointmentTrends({ dateFrom, dateTo });
+ *
+ * // NEW (Client Component with React Query):
+ * import { useQuery } from '@tanstack/react-query';
+ * import { getAppointmentTrends } from '@/lib/actions/appointments.actions';
+ * const { data: trends } = useQuery({
+ *   queryKey: ['appointment-trends', dateFrom, dateTo],
+ *   queryFn: () => getAppointmentTrends({ dateFrom, dateTo })
+ * });
+ * ```
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Appointment analytics and reporting API providing statistics, trends,
  * bulk operations, and advanced filtering capabilities.
  */

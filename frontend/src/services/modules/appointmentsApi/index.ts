@@ -1,11 +1,60 @@
 /**
  * Appointments API - Unified Module Interface
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions or new API client instead.
+ *
+ * **MIGRATION NOTICE:**
+ *
+ * This legacy service layer is being phased out in favor of:
+ * 1. Server Actions (for Server Components) - RECOMMENDED
+ * 2. New API Client (for client-side code)
+ *
+ * See parent module `@/services/modules/appointmentsApi.ts` for detailed migration guide.
+ *
+ * **Quick Migration Examples:**
+ *
+ * ```typescript
+ * // OLD (this module):
+ * import { appointmentsApi } from '@/services/modules/appointments';
+ * const appointment = await appointmentsApi.getAppointment(id);
+ *
+ * // NEW (Server Actions - RECOMMENDED):
+ * import { getAppointment } from '@/lib/actions/appointments.actions';
+ * const appointment = await getAppointment(id);
+ *
+ * // NEW (Client Components with React Query):
+ * import { useQuery } from '@tanstack/react-query';
+ * import { getAppointment } from '@/lib/actions/appointments.actions';
+ * const { data: appointment } = useQuery({
+ *   queryKey: ['appointment', id],
+ *   queryFn: () => getAppointment(id)
+ * });
+ * ```
+ *
+ * **API Client Update:**
+ *
+ * If you need to use the legacy ApiClient pattern, update imports:
+ * ```typescript
+ * // OLD:
+ * import { apiClient } from '@/services/core/ApiClient';
+ *
+ * // NEW:
+ * import { apiClient } from '@/lib/api/client';
+ * // or for server-side:
+ * import { serverGet, serverPost } from '@/lib/api/server';
+ * ```
+ *
+ * ## Architecture (Legacy Reference)
+ *
  * Main entry point for the appointments API module. Provides a unified interface
  * for all appointment-related services including scheduling, availability management,
  * waitlist operations, status management, and reminder systems.
- * 
+ *
+ * **Scheduled for Removal**: v2.0.0 (Q2 2025)
+ *
  * @module services/modules/appointmentsApi
+ * @see {@link @/lib/actions/appointments.actions} for server actions (RECOMMENDED)
+ * @see {@link @/lib/api/client} for client-side API utilities
  */
 
 // ==========================================

@@ -15,7 +15,7 @@ import {
 import {
   serverPost,
   serverGet,
-} from '@/lib/api/nextjs-client';
+} from '@/lib/api/server';
 import {
   logHIPAAAuditEntry,
   getCurrentUserContext,

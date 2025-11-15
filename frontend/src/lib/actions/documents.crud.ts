@@ -12,7 +12,7 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 // Core API integrations
-import { serverGet, serverPut, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverGet, serverPut, serverDelete, NextApiClientError } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';

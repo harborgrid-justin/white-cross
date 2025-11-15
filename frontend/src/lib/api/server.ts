@@ -38,19 +38,62 @@
  * @since 2025-11-04
  */
 
-// Re-export Next.js server functions from nextjs-client
+// ==========================================
+// CORE SERVER EXPORTS (from server/ directory)
+// ==========================================
+
+// Re-export all server-side utilities from the server barrel modules
 export {
+  // Types
+  NextApiClientError,
+  type ApiClientOptions,
+  type NextCacheConfig,
+  type CacheLifeConfig,
+  type NextFetchOptions,
+  type ApiResponse,
+  type ApiErrorResponse,
+} from './server/types';
+
+export {
+  // Configuration
+  getApiBaseUrl,
+  getAuthToken,
+  getCsrfToken,
+  generateRequestId,
+} from './server/config';
+
+export {
+  // Core functionality
   nextFetch,
+  handleErrorResponse,
+} from './server/core';
+
+export {
+  // HTTP Methods
   serverGet,
   serverPost,
   serverPut,
   serverPatch,
   serverDelete,
+} from './server/methods';
+
+export {
+  // Utilities
   buildCacheTags,
   buildResourceTag,
-  NextApiClientError,
+} from './server/utils';
 
-  // Server Queries
+// Alias for backwards compatibility
+export type { ApiResponse as NextApiResponse } from './server/types';
+
+// ==========================================
+// SERVER QUERIES (from client/ directory)
+// ==========================================
+// Note: Despite being in client/, these are Server Component queries
+// The directory structure is being reorganized
+
+export {
+  // Query functions
   getStudent,
   getStudentsList,
   getMedication,
@@ -61,13 +104,6 @@ export {
   getUsersList,
   getCurrentUser,
 
-  // Cache Actions
-  invalidateAppointmentsCacheAction,
-  invalidateAppointmentCacheAction,
-  invalidateStudentCacheAction,
-  invalidatePageCacheAction,
-  emergencyCacheClearAction,
-
   // Query Types
   type QueryParams,
   type PaginatedResponse,
@@ -76,12 +112,17 @@ export {
   type Appointment,
   type DashboardStats,
   type User,
-} from './nextjs-client';
+} from './client/queries';
 
-// Export Next.js server types
-export type {
-  NextFetchOptions,
-  NextCacheConfig,
-  CacheLifeConfig,
-  ApiResponse as NextApiResponse
-} from './nextjs-client';
+// ==========================================
+// CACHE ACTIONS (from client/ directory)
+// ==========================================
+// Server Actions that can be called from client components
+
+export {
+  invalidateAppointmentsCacheAction,
+  invalidateAppointmentCacheAction,
+  invalidateStudentCacheAction,
+  invalidatePageCacheAction,
+  emergencyCacheClearAction,
+} from './client/cache-actions';

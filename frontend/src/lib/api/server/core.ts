@@ -15,13 +15,13 @@ import {
   NextFetchOptions,
   NextApiClientError,
   ApiErrorResponse,
-} from './nextjs-client.types';
+} from './types';
 import {
   getApiBaseUrl,
   getAuthToken,
   getCsrfToken,
   generateRequestId,
-} from './nextjs-client.config';
+} from './config';
 
 // ==========================================
 // CORE FETCH FUNCTION

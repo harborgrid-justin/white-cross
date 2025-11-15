@@ -11,11 +11,11 @@
  *
  * MIGRATION NOTE: This file previously contained enhancedFetch, getAuthToken,
  * createAuditContext, and BACKEND_URL. These have been migrated to use the
- * centralized @/lib/api/nextjs-client instead:
- * - Use serverGet, serverPost, serverPut, serverDelete from @/lib/api/nextjs-client
- * - Use getAuthToken from @/lib/api/nextjs-client
+ * centralized @/lib/api/server instead:
+ * - Use serverGet, serverPost, serverPut, serverDelete from @/lib/api/server
+ * - Use getAuthToken from @/lib/api/server
  * - Use createAuditContextFromServer from @/lib/audit
- * - Use getApiBaseUrl from @/lib/api/nextjs-client
+ * - Use getApiBaseUrl from @/lib/api/server
  */
 
 import { cookies } from 'next/headers';

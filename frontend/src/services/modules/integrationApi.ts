@@ -3,6 +3,78 @@
  * @module services/modules/integrationApi
  * @category Services - System Integration & External APIs
  *
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.integrations instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
+ *
+ * COMPREHENSIVE MIGRATION GUIDE:
+ *
+ * 1. CRUD Operations:
+ * ```typescript
+ * // OLD: Get all integrations
+ * import { integrationApi } from '@/services/modules/integrationApi';
+ * const integrations = await integrationApi.getAll('SIS');
+ * const integration = await integrationApi.getById('id');
+ * await integrationApi.create(data);
+ * await integrationApi.update('id', data);
+ * await integrationApi.delete('id');
+ *
+ * // NEW: Server Actions
+ * import { getIntegrations, getIntegration, createIntegration, updateIntegration, deleteIntegration } from '@/lib/actions/admin.integrations';
+ * const integrations = await getIntegrations(); // filter by type in action
+ * const integration = await getIntegration('id');
+ * await createIntegration(data);
+ * await updateIntegration('id', data);
+ * await deleteIntegration('id');
+ * ```
+ *
+ * 2. Sync Operations:
+ * ```typescript
+ * // OLD: Test and sync
+ * const { result: testResult } = await integrationApi.testConnection('id');
+ * const { result: syncResult } = await integrationApi.sync('id');
+ *
+ * // NEW: Server Actions
+ * import { testIntegration, syncIntegration } from '@/lib/actions/admin.integrations';
+ * const testResult = await testIntegration('id');
+ * const syncResult = await syncIntegration('id');
+ * ```
+ *
+ * 3. Monitoring & Logs:
+ * ```typescript
+ * // OLD: Logs and statistics
+ * const logs = await integrationApi.getLogs('id', { page: 1, limit: 50 });
+ * const stats = await integrationApi.getStatistics();
+ *
+ * // NEW: Server Actions
+ * import { getIntegrationLogs, getIntegrationStats } from '@/lib/actions/admin.integrations';
+ * const logs = await getIntegrationLogs('id'); // pagination handled by action
+ * const stats = await getIntegrationStats();
+ * ```
+ *
+ * 4. Batch Operations:
+ * ```typescript
+ * // OLD: Batch enable/disable
+ * await integrationApi.batchEnable(['id1', 'id2']);
+ * await integrationApi.batchDisable(['id3', 'id4']);
+ *
+ * // NEW: Server Actions (use toggleIntegration in loop or create batch action)
+ * import { toggleIntegration } from '@/lib/actions/admin.integrations';
+ * for (const id of ['id1', 'id2']) await toggleIntegration(id, true);
+ * for (const id of ['id3', 'id4']) await toggleIntegration(id, false);
+ * ```
+ *
+ * 5. Health Status:
+ * ```typescript
+ * // OLD: Get health status
+ * const health = await integrationApi.getHealthStatus();
+ *
+ * // NEW: Server Actions (integrated in getIntegrations)
+ * import { getIntegrations } from '@/lib/actions/admin.integrations';
+ * const integrations = await getIntegrations();
+ * // Health status is part of each integration object
+ * ```
+ *
  * Provides comprehensive enterprise integration management for external healthcare,
  * educational, and administrative systems. Implements secure authentication, data
  * synchronization, webhook management, and integration monitoring with support for
@@ -279,6 +351,9 @@ export function createIntegrationApi(client: ApiClient): IntegrationApi {
   return new IntegrationApi(client);
 }
 
-// Export singleton instance for registry
+/**
+ * @deprecated Use server actions from @/lib/actions/admin.integrations instead.
+ * This singleton will be removed on 2026-06-30.
+ */
 import { apiClient } from '../core';
 export const integrationApi = createIntegrationApi(apiClient);

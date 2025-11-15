@@ -1,4 +1,15 @@
 /**
+ * @deprecated - Migrated to Server Actions
+ *
+ * Please use:
+ * - Server: '@/lib/actions/budget.actions'
+ * - Client: '@/lib/api/client' queries
+ *
+ * This file maintained for backward compatibility only.
+ * Will be removed in v2.0.0
+ */
+
+/**
  * WF-COMP-272 | budgetApi.ts - React component or utility module
  * Purpose: react component or utility module
  * Upstream: ../config/apiConfig, ../types | Dependencies: ../config/apiConfig, ../types, zod
@@ -13,6 +24,12 @@
 /**
  * Budget Management API
  * Enterprise-grade API client for fiscal year budgeting, spending tracking, and financial analytics
+ *
+ * @deprecated Use Server Actions instead:
+ * - Category operations: @/lib/actions/budget.categories
+ * - Transaction operations: @/lib/actions/budget.transactions
+ * - Summary & analytics: @/lib/actions/budget.utils
+ * - Cached reads: @/lib/actions/budget.cache
  */
 
 import type { ApiClient } from '../core/ApiClient';

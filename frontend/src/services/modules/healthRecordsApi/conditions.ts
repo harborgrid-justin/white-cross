@@ -1,13 +1,29 @@
 /**
- * Health Records API - Chronic Conditions Management
- * 
- * Comprehensive chronic conditions management including:
- * - Chronic condition CRUD operations
- * - Care plan management
- * - Status tracking and reviews
- * - Emergency protocol management
- * - PHI access logging for HIPAA compliance
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.crud
+ *
+ * MIGRATION EXAMPLES:
+ *
+ * Create Chronic Condition:
+ * OLD: await conditionsService.create({ studentId, condition, severity, diagnosisDate })
+ * NEW: Available in health-records.crud module
+ *
+ * Get Student Conditions:
+ * OLD: await conditionsService.getConditions(studentId)
+ * NEW: Use health-records.crud actions with appropriate filters
+ *
+ * Update Condition:
+ * OLD: await conditionsService.update(id, data)
+ * NEW: Available in health-records.crud module
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.crud instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
  * @module services/modules/healthRecordsApi/conditions
  */
 

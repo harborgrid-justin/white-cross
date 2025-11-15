@@ -1,6 +1,44 @@
 /**
  * @fileoverview Adverse Reactions API
  *
+ * @deprecated This API is deprecated. Migrate to server actions (pending implementation).
+ *
+ * NOTE: Adverse reaction server actions are planned for future implementation.
+ * This is a CRITICAL patient safety module and will remain functional until
+ * the new server actions are thoroughly tested and validated.
+ *
+ * FUTURE MIGRATION PATH (when available):
+ * ```typescript
+ * // Before: Report adverse reaction
+ * import { AdverseReactionsApi } from '@/services/modules/medications/adverseReactionsApi';
+ * const api = new AdverseReactionsApi(client);
+ * const report = await api.reportAdverseReaction({
+ *   studentMedicationId: 'id',
+ *   severity: 'SEVERE',
+ *   reaction: 'Hives and swelling',
+ *   actionTaken: 'Administered EpiPen',
+ *   reportedAt: new Date().toISOString()
+ * });
+ *
+ * // After: Use server action (pending)
+ * import { reportAdverseReaction } from '@/lib/actions/adverse-reactions.crud';
+ * const result = await reportAdverseReaction({
+ *   medicationId: 'med-id',
+ *   studentId: 'student-id',
+ *   severity: 'SEVERE',
+ *   reaction: 'Hives and swelling',
+ *   actionTaken: 'Administered EpiPen'
+ * });
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS (when available):
+ * ✓ CRITICAL: Immediate HIPAA audit logging
+ * ✓ Automatic physician notification triggers
+ * ✓ Type-safe ActionResult pattern
+ * ✓ Server-side severity validation
+ * ✓ Better error handling for patient safety
+ * ✓ Real-time alert generation
+ *
  * Handles adverse reaction reporting and monitoring for medication safety.
  * Critical patient safety module requiring immediate documentation and
  * physician notification.

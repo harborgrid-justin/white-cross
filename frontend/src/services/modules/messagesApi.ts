@@ -1,102 +1,77 @@
 /**
- * @fileoverview Messages API Module - Direct messaging and communication management
- * @module services/modules/messagesApi
- * @category Services
+ * MIGRATION STATUS: DEPRECATED
  *
- * Provides comprehensive direct messaging functionality for secure communication
- * between users in the healthcare platform. Supports inbox management, message
- * threads, file attachments, templates, and delivery tracking.
+ * This service module has been replaced by Next.js Server Actions for improved
+ * performance, security, and Next.js App Router compatibility.
  *
- * **NOTE**: This module is deprecated in favor of `communicationsApi.ts` which
- * provides a unified API for both broadcasts and direct messaging. This module
- * is maintained for backward compatibility.
+ * **New Implementation:**
+ * - Server Components: import from '@/lib/actions/messages.actions'
+ * - Client Components: Use Server Actions with useActionState or React Query
  *
- * ## Key Features
+ * **Migration Guide:**
  *
- * **Direct Messaging**:
- * - Send secure messages between nurses, staff, administrators, and parents
- * - Thread support for conversation continuity
- * - Read/unread status tracking
- * - Priority levels (LOW, NORMAL, HIGH, URGENT)
- * - File attachments with secure storage
- *
- * **Inbox Management**:
- * - Retrieve inbox and sent messages
- * - Filter by status, priority, sender, recipient
- * - Pagination support for large message volumes
- * - Unread message count tracking
- *
- * **Message Templates**:
- * - Pre-defined templates for common communications
- * - Variable substitution for personalization
- * - Category-based organization
- * - Template usage tracking
- *
- * **Delivery Status**:
- * - Track message delivery across channels
- * - Retry logic for failed deliveries
- * - Delivery confirmation timestamps
- *
- * ## Healthcare-Specific Features
- *
- * **PHI Compliance**:
- * - HIPAA-compliant message encryption
- * - Secure attachment handling
- * - Audit logging for all message operations
- * - Access control enforcement
- * - No PHI in notification previews
- *
- * **Emergency Messaging**:
- * - URGENT priority for time-critical communications
- * - Multi-channel delivery for urgent messages
- * - Delivery confirmation requirements
- * - Escalation workflows
- *
- * **Real-time Updates** (Socket.io):
- * - Event: `message:received` for new messages
- * - Event: `message:read` for read receipts
- * - Live inbox updates
- * - Notification delivery status
- *
- * **TanStack Query Integration**:
- * - Query key: `['messages', 'inbox', filters]`
- * - Cache invalidation on send/receive
- * - Optimistic updates for instant UI
- * - Background refetching
- *
- * @example
+ * OLD (Client API):
  * ```typescript
- * // Send urgent message to nurse
+ * import { messagesApi } from '@/services/modules/messagesApi';
+ *
+ * // Send urgent message
  * const message = await messagesApi.create({
  *   subject: 'Student Needs Immediate Attention',
- *   body: 'Student experiencing severe allergic reaction symptoms. Please come to classroom 305 immediately.',
+ *   body: 'Please come to classroom 305 immediately.',
  *   recipientId: nurseUserId,
  *   priority: 'URGENT'
  * });
  *
- * // Get inbox with unread messages
- * const inbox = await messagesApi.getInbox({
- *   page: 1,
- *   limit: 20,
- *   unreadOnly: true
- * });
+ * // Get inbox
+ * const inbox = await messagesApi.getInbox({ unreadOnly: true });
  *
  * // Reply to message
- * const reply = await messagesApi.reply(originalMessageId, {
- *   body: 'On my way to classroom 305. ETA 2 minutes.'
- * });
- *
- * // Use with TanStack Query
- * const { data, isLoading } = useQuery({
- *   queryKey: ['messages', 'inbox'],
- *   queryFn: () => messagesApi.getInbox(),
- *   refetchInterval: 30000 // Poll every 30 seconds
- * });
+ * const reply = await messagesApi.reply(messageId, { body: 'On my way.' });
  * ```
  *
- * @see {@link CommunicationsApi} for the unified communications API (recommended)
- * @see {@link notificationsApi} for system notifications
- * @deprecated Use {@link CommunicationsApi} for new implementations
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   createMessageAction,
+ *   sendMessageAction,
+ *   markMessageReadAction,
+ *   getMessages
+ * } from '@/lib/actions/messages.actions';
+ *
+ * // In Server Components - direct call
+ * const messages = await getMessages();
+ *
+ * // In Client Components - with useActionState
+ * 'use client';
+ * import { useActionState } from 'react';
+ *
+ * function MessageForm() {
+ *   const [state, formAction, isPending] = useActionState(
+ *     createMessageAction,
+ *     { errors: {} }
+ *   );
+ *   return <form action={formAction}>...</form>;
+ * }
+ * ```
+ *
+ * **Available Server Actions:**
+ * - Messaging: createMessageAction, updateMessageAction, sendMessageAction, markMessageReadAction
+ * - Cached Data: getMessage, getMessages, getMessageThread, getMessageThreads
+ * - Templates: createMessageTemplateAction, getMessageTemplates
+ * - Statistics: getMessagesStats, getMessagesDashboardData
+ * - Utilities: messageExists, getMessageCount, getUnreadMessageCount
+ *
+ * **See Also:**
+ * - @see {@link /lib/actions/messages.actions.ts} for all available Server Actions
+ * - @see {@link /lib/actions/messages.send.ts} for messaging operations
+ * - @see {@link /lib/actions/messages.templates.ts} for template operations
+ * - @see {@link /lib/actions/messages.cache.ts} for cached data operations
+ * - @see {@link /lib/actions/communications.actions.ts} for unified communications API
+ * - @see {@link /lib/api/client} for client-side utilities if needed
+ *
+ * @deprecated Use Server Actions from @/lib/actions/messages.actions instead
+ * @module services/modules/messagesApi
+ * @category Services
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';

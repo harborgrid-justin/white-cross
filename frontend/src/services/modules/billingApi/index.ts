@@ -1,4 +1,47 @@
 /**
+ * @deprecated - Migrated to Server Actions (REMOVAL DATE: 2026-06-30)
+ *
+ * This service module is deprecated. Please migrate to Server Actions.
+ *
+ * **QUICK MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Service Module Pattern
+ * import { billingApi } from '@/services/modules/billingApi';
+ * const invoices = await billingApi.invoices.getInvoices(1, 20);
+ * const result = await billingApi.invoices.createInvoice(data);
+ * const payments = await billingApi.payments.getPayments(1, 20);
+ *
+ * // ✅ NEW: Server Actions Pattern
+ * import { getInvoices, getPayments } from '@/lib/actions/billing.cache';
+ * import { createInvoiceAction } from '@/lib/actions/billing.invoices';
+ * import { recordPaymentAction } from '@/lib/actions/billing.payments';
+ *
+ * // Server Component (cached queries)
+ * const invoices = await getInvoices({ page: 1, limit: 20 });
+ * const payments = await getPayments({ page: 1, limit: 20 });
+ *
+ * // Client Component (mutations)
+ * const invoiceResult = await createInvoiceAction(data);
+ * const paymentResult = await recordPaymentAction(data);
+ * ```
+ *
+ * **MIGRATION TARGETS**:
+ * - Invoice operations → `@/lib/actions/billing.invoices`
+ * - Payment operations → `@/lib/actions/billing.payments`
+ * - Analytics/queries → `@/lib/actions/billing.cache`
+ * - Utilities → `@/lib/actions/billing.utils`
+ *
+ * **BENEFITS**:
+ * - Server Actions with 'use server' directive
+ * - Automatic cache invalidation
+ * - Built-in audit logging
+ * - Type-safe error handling
+ *
+ * This file maintained for backward compatibility only.
+ * Will be removed on 2026-06-30.
+ */
+
+/**
  * Billing Management API - Unified Interface
  *
  * Complete billing management solution with modular architecture.
@@ -7,6 +50,12 @@
  *
  * @module services/modules/billingApi
  * @category Services
+ *
+ * @deprecated Use Server Actions instead:
+ * - Invoice operations: @/lib/actions/billing.invoices
+ * - Payment operations: @/lib/actions/billing.payments
+ * - Analytics: @/lib/actions/billing.utils
+ * - Cached reads: @/lib/actions/billing.cache
  */
 
 import { apiClient } from '../../core/ApiClient';

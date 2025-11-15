@@ -22,14 +22,14 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { type ZodIssue } from 'zod';
+import type { ZodError } from 'zod';
 import type { ActionResult } from './settings.types';
 import {
   getAuthUser,
   createAuditContext
 } from './settings.utils';
 import { API_ENDPOINTS } from '@/constants/api';
-import { serverGet, serverPost, serverPut } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut } from '@/lib/api/server';
 import {
   updatePrivacySettingsSchema,
 } from '@/schemas/settings.schemas';
@@ -44,7 +44,7 @@ import { auditLog } from '@/lib/audit';
  * @returns Action result with success status and any errors
  */
 export async function updatePrivacySettingsAction(
-  prevState: ActionResult,
+  _prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
   const auditContext = await createAuditContext();
@@ -70,7 +70,7 @@ export async function updatePrivacySettingsAction(
 
     if (!validation.success) {
       const fieldErrors: Record<string, string[]> = {};
-      validation.error.issues.forEach((err: ZodIssue) => {
+      validation.error.issues.forEach((err) => {
         const path = err.path.join('.');
         if (!fieldErrors[path]) {
           fieldErrors[path] = [];
@@ -83,17 +83,22 @@ export async function updatePrivacySettingsAction(
       };
     }
 
-    const result = await serverPut(`${API_ENDPOINTS.USERS.BASE}/${user.id}/privacy-settings`, validation.data, {
-      tags: ['user-settings', `user-${user.id}`]
+    await serverPut(`${API_ENDPOINTS.USERS.BASE}/${user.id}/privacy-settings`, validation.data, {
+      cache: 'no-store',
+      next: {
+        tags: ['user-settings', `user-${user.id}`]
+      }
     });
 
     await auditLog({
-      ...auditContext,
       action: 'UPDATE_PRIVACY_SETTINGS',
       resource: 'User',
       resourceId: user.id,
       changes: validation.data,
-      success: true
+      success: true,
+      userId: auditContext.userId ?? undefined,
+      ipAddress: auditContext.ipAddress ?? undefined,
+      userAgent: auditContext.userAgent ?? undefined
     });
 
     // Enhanced cache invalidation
@@ -133,14 +138,16 @@ export async function exportUserDataAction(): Promise<ActionResult> {
       };
     }
 
-    const result = await serverPost(`${API_ENDPOINTS.USERS.BASE}/${user.id}/export`);
+    const result = await serverPost<{ exportUrl: string }>(`${API_ENDPOINTS.USERS.BASE}/${user.id}/export`);
 
     await auditLog({
-      ...auditContext,
       action: 'EXPORT_USER_DATA',
       resource: 'User',
       resourceId: user.id,
-      success: true
+      success: true,
+      userId: auditContext.userId ?? undefined,
+      ipAddress: auditContext.ipAddress ?? undefined,
+      userAgent: auditContext.userAgent ?? undefined
     });
 
     return {
@@ -170,13 +177,21 @@ export async function getUserSettingsAction() {
       throw new Error('Authentication required');
     }
 
-    const result = await serverGet(`${API_ENDPOINTS.USERS.BASE}/${user.id}/settings`, {
-      tags: ['user-settings', `user-${user.id}`]
-    });
+    const result = await serverGet<{ data?: unknown }>(
+      `${API_ENDPOINTS.USERS.BASE}/${user.id}/settings`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 300, // 5 minutes
+          tags: ['user-settings', `user-${user.id}`]
+        }
+      }
+    );
 
     return {
       success: true,
-      data: result.data || result
+      data: result.data ?? result
     };
   } catch (error) {
     return {

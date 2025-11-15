@@ -3,6 +3,22 @@
  * @module services/modules/integrationApi/sync
  * @category Services - System Integration & External APIs
  *
+ * @deprecated This module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.integrations instead.
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // OLD: Sync operations
+ * import { testConnection, sync } from '@/services/modules/integrationApi/sync';
+ * const testResult = await testConnection(client, 'integration-id');
+ * const syncResult = await sync(client, 'integration-id');
+ *
+ * // NEW: Server Actions
+ * import { testIntegration, syncIntegration } from '@/lib/actions/admin.integrations';
+ * const testResult = await testIntegration('integration-id');
+ * const syncResult = await syncIntegration('integration-id');
+ * ```
+ *
  * Connection testing and data synchronization operations for integrations.
  * Provides methods to verify integration connectivity and trigger data syncs.
  *

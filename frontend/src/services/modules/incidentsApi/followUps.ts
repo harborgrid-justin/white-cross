@@ -1,8 +1,51 @@
 /**
  * Incidents API - Follow-up Actions and Notifications
- * 
+ *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/incidents.followup instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Service Module Pattern
+ * import { FollowUps } from '@/services/modules/incidentsApi/followUps';
+ * const followUps = new FollowUps(apiClient);
+ *
+ * const actions = await followUps.getFollowUpActions(incidentId);
+ * await followUps.createFollowUpAction(incidentId, data);
+ * await followUps.updateFollowUpAction(actionId, updates);
+ *
+ * // ✅ NEW: Server Actions Pattern
+ * import {
+ *   getFollowUpActions,
+ *   addFollowUpAction,
+ *   updateFollowUpAction,
+ *   deleteFollowUpAction,
+ *   getOverdueActions
+ * } from '@/lib/actions/incidents.followup';
+ *
+ * // Query follow-up actions
+ * const actions = await getFollowUpActions(incidentId);
+ * const overdueActions = await getOverdueActions();
+ *
+ * // Create follow-up action (returns { success, id?, error? })
+ * const result = await addFollowUpAction(incidentId, data);
+ * if (result.success) {
+ *   console.log('Created follow-up:', result.id);
+ * }
+ *
+ * // Update follow-up action
+ * const updateResult = await updateFollowUpAction(actionId, updates);
+ * ```
+ *
+ * **METHOD MAPPING**:
+ * - `getFollowUpActions()` → `getFollowUpActions()` from `@/lib/actions/incidents.followup`
+ * - `createFollowUpAction()` → `addFollowUpAction()` from `@/lib/actions/incidents.followup`
+ * - `updateFollowUpAction()` → `updateFollowUpAction()` from `@/lib/actions/incidents.followup`
+ * - `deleteFollowUpAction()` → `deleteFollowUpAction()` from `@/lib/actions/incidents.followup`
+ * - Parent notification → Use `addFollowUpNotes()` from `@/lib/actions/incidents.followup`
+ *
  * Follow-up action management and parent notification system
- * 
+ *
  * @module services/modules/incidentsApi/followUps
  */
 

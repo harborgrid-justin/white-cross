@@ -1,29 +1,99 @@
 /**
- * @fileoverview Delivery Tracking API Service - Communication delivery monitoring
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/communications.delivery
+ * @see {@link /lib/actions/communications.delivery.ts}
  * @module services/modules/communications/deliveryTrackingApi
- * @version 2.0.0
- * @category Services
+ * @category Healthcare - Communications
  *
- * Provides delivery status tracking and monitoring for messages and broadcasts.
- * Supports multi-channel delivery confirmation, retry tracking, and failure analysis.
+ * **Migration Guide:**
  *
- * ## Key Features
- *
- * **Delivery Tracking** (2 methods):
- * - Real-time delivery status monitoring
- * - Multi-channel delivery confirmation
- * - Retry and failure tracking
- * - Delivery confirmation helper methods
- *
- * @example
+ * OLD (Client API):
  * ```typescript
- * // Check if message was delivered
- * const isDelivered = await deliveryTrackingApi.isMessageDelivered(messageId);
+ * import { createDeliveryTrackingApi } from '@/services/modules/communications/deliveryTrackingApi';
+ * const api = createDeliveryTrackingApi(apiClient);
  *
- * // Get detailed delivery status
- * const status = await deliveryTrackingApi.getDeliveryStatus(messageId);
+ * // Check delivery status
+ * const isDelivered = await api.isMessageDelivered(messageId);
+ *
+ * // Get detailed status
+ * const status = await api.getDeliveryStatus(messageId);
  * console.log(`Status: ${status.status}, Attempts: ${status.attempts}`);
  * ```
+ *
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   getDeliveryStatus,
+ *   isMessageDelivered,
+ *   trackDeliveryWebhook
+ * } from '@/lib/actions/communications.delivery';
+ *
+ * // In Server Component
+ * const status = await getDeliveryStatus(messageId);
+ * const delivered = await isMessageDelivered(messageId);
+ *
+ * // Real-time delivery tracking with webhooks
+ * import { useDeliveryTracking } from '@/lib/hooks/useDeliveryTracking';
+ *
+ * function MessageStatus({ messageId }: { messageId: string }) {
+ *   const { status, isDelivered, attempts } = useDeliveryTracking(messageId);
+ *
+ *   return (
+ *     <div>
+ *       <span>Status: {status}</span>
+ *       {isDelivered ? (
+ *         <span className="success">✓ Delivered</span>
+ *       ) : (
+ *         <span>Attempts: {attempts}</span>
+ *       )}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * **Real-time Delivery Notifications:**
+ * ```typescript
+ * // OLD: Client-side polling
+ * useEffect(() => {
+ *   const interval = setInterval(async () => {
+ *     const status = await api.getDeliveryStatus(messageId);
+ *     setDeliveryStatus(status);
+ *   }, 5000);
+ *   return () => clearInterval(interval);
+ * }, [messageId]);
+ *
+ * // NEW: Server-Sent Events
+ * import { subscribeToDeliveryUpdates } from '@/lib/actions/communications.delivery';
+ *
+ * useEffect(() => {
+ *   const unsubscribe = subscribeToDeliveryUpdates(messageId, (status) => {
+ *     console.log('Delivery update:', status);
+ *     setDeliveryStatus(status);
+ *   });
+ *   return unsubscribe;
+ * }, [messageId]);
+ * ```
+ *
+ * **Multi-channel Delivery Tracking:**
+ * ```typescript
+ * import { getMultiChannelDeliveryReport } from '@/lib/actions/communications.delivery';
+ *
+ * const report = await getMultiChannelDeliveryReport(broadcastId);
+ * console.log('Email delivered:', report.email.delivered);
+ * console.log('SMS delivered:', report.sms.delivered);
+ * console.log('Push delivered:', report.push.delivered);
+ * ```
+ *
+ * **Available Server Actions:**
+ * - getDeliveryStatus: Get delivery status for message
+ * - isMessageDelivered: Check if delivered
+ * - getMultiChannelDeliveryReport: Get delivery by channel
+ * - subscribeToDeliveryUpdates: Real-time webhook subscription
+ * - retryFailedDelivery: Retry failed deliveries
+ *
+ * @fileoverview Delivery Tracking API Service - Communication delivery monitoring (DEPRECATED)
+ * @version 2.0.0
  */
 
 import type { ApiClient, ApiResponse } from '../../core/ApiClient';

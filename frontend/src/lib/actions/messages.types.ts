@@ -8,6 +8,9 @@
  * Note: Runtime values (constants) are in messages.constants.ts
  */
 
+// Re-export constants for convenience
+export { MESSAGE_CACHE_TAGS, CACHE_TTL } from './messages.constants';
+
 // ==========================================
 // CORE TYPE DEFINITIONS
 // ==========================================

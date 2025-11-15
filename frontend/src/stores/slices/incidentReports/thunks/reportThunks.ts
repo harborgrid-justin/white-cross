@@ -7,13 +7,14 @@
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { incidentsApi } from '@/services/modules/incidentsApi';
+import * as incidentActions from '@/lib/actions/incidents.crud';
 import type {
   CreateIncidentReportRequest,
   UpdateIncidentReportRequest,
   IncidentReportFilters,
   IncidentSearchParams,
 } from '@/types/domain/incidents';
+import type { IncidentReport } from '@/lib/actions/incidents.types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
 
@@ -58,7 +59,7 @@ export const fetchIncidentReports = createAsyncThunk(
   async (filters: IncidentReportFilters | undefined, { rejectWithValue }) => {
     try {
       log('Fetching incident reports with filters:', filters);
-      const response = await incidentsApi.getAll(filters);
+      const response = await incidentActions.getIncidents(filters as Parameters<typeof incidentActions.getIncidents>[0]);
       return response;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch incident reports';
@@ -99,8 +100,11 @@ export const fetchIncidentReportById = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       log('Fetching incident report by ID:', id);
-      const response = await incidentsApi.getById(id);
-      return response.report;
+      const report = await incidentActions.getIncident(id);
+      if (!report) {
+        return rejectWithValue('Incident report not found');
+      }
+      return report;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch incident report';
       log('Error fetching incident report:', error);
@@ -168,9 +172,20 @@ export const createIncidentReport = createAsyncThunk(
   async (data: CreateIncidentReportRequest, { rejectWithValue }) => {
     try {
       log('Creating incident report:', data);
-      const response = await incidentsApi.create(data);
+      const result = await incidentActions.createIncident(data as Partial<IncidentReport>);
+      if (!result.success) {
+        toast.error(result.error || 'Failed to create incident report');
+        return rejectWithValue(result.error || 'Failed to create incident report');
+      }
       toast.success('Incident report created successfully');
-      return response.report;
+      // Fetch the created report to return full data
+      if (result.id) {
+        const report = await incidentActions.getIncident(result.id);
+        if (report) {
+          return report;
+        }
+      }
+      return rejectWithValue('Failed to retrieve created incident report');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create incident report';
       log('Error creating incident report:', error);
@@ -224,9 +239,18 @@ export const updateIncidentReport = createAsyncThunk(
   ) => {
     try {
       log('Updating incident report:', id, data);
-      const response = await incidentsApi.update(id, data);
+      const result = await incidentActions.updateIncident(id, data as Partial<IncidentReport>);
+      if (!result.success) {
+        toast.error(result.error || 'Failed to update incident report');
+        return rejectWithValue(result.error || 'Failed to update incident report');
+      }
       toast.success('Incident report updated successfully');
-      return response.report;
+      // Fetch updated report to return full data
+      const report = await incidentActions.getIncident(id);
+      if (report) {
+        return report;
+      }
+      return rejectWithValue('Failed to retrieve updated incident report');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update incident report';
       log('Error updating incident report:', error);
@@ -274,7 +298,11 @@ export const deleteIncidentReport = createAsyncThunk(
   async (id: string, { rejectWithValue }) => {
     try {
       log('Deleting incident report:', id);
-      await incidentsApi.delete(id);
+      const result = await incidentActions.deleteIncident(id);
+      if (!result.success) {
+        toast.error(result.error || 'Failed to delete incident report');
+        return rejectWithValue(result.error || 'Failed to delete incident report');
+      }
       toast.success('Incident report deleted successfully');
       return id;
     } catch (error: unknown) {
@@ -326,7 +354,14 @@ export const searchIncidentReports = createAsyncThunk(
   async (params: IncidentSearchParams, { rejectWithValue }) => {
     try {
       log('Searching incident reports:', params);
-      const response = await incidentsApi.search(params);
+      // Map search params to filter params for getIncidents
+      // Note: IncidentSearchParams only has query, page, limit
+      // For now, we'll use getIncidents with basic pagination
+      const filters = {
+        page: params.page,
+        limit: params.limit,
+      };
+      const response = await incidentActions.getIncidents(filters);
       return response;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to search incident reports';

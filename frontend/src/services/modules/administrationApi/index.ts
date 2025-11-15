@@ -1,9 +1,30 @@
 /**
  * @fileoverview Entry point for the modular AdministrationApi
- * 
+ *
+ * @deprecated This service API is deprecated. Use server actions from @/lib/actions/admin instead.
+ *
+ * MIGRATION PATH:
+ * ===============
+ * This module has been superseded by Next.js server actions for better type safety,
+ * caching, and integration with the App Router.
+ *
+ * OLD:
+ * ```typescript
+ * import { administrationApi } from '@/services/modules/administrationApi';
+ * const districts = await administrationApi.getDistricts();
+ * ```
+ *
+ * NEW:
+ * ```typescript
+ * import { getAdminDistricts } from '@/lib/actions/admin';
+ * const districts = await getAdminDistricts();
+ * ```
+ *
+ * See @/lib/actions/admin for the complete list of available server actions.
+ *
  * This module provides clean exports for all administration functionality including
  * the main API service class, type definitions, validation schemas, and utility functions.
- * 
+ *
  * @module services/modules/administrationApi
  */
 

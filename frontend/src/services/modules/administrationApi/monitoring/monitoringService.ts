@@ -1,6 +1,28 @@
 /**
  * Administration API - Combined Monitoring Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/admin.monitoring' server actions instead.
+ *
+ * Migration Path:
+ * 1. Replace unified monitoring service with individual server actions
+ * 2. Update imports from '@/lib/actions/admin.monitoring'
+ * 3. Remove MonitoringService instantiation
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy unified service
+ * import { createMonitoringService } from '@/services/modules/administrationApi/monitoring';
+ * const service = createMonitoringService(apiClient);
+ * const overview = await service.getSystemOverview();
+ * const healthCheck = await service.performHealthCheck();
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getSystemOverview, performHealthCheck } from '@/lib/actions/admin.monitoring';
+ * const overview = await getSystemOverview();
+ * const healthCheck = await performHealthCheck();
+ * ```
+ *
  * Comprehensive system monitoring service that coordinates:
  * - System health monitoring
  * - Performance metrics tracking

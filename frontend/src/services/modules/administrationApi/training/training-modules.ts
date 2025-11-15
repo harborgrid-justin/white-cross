@@ -1,6 +1,28 @@
 /**
  * Administration API - Training Modules Management
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/compliance.training' server actions instead.
+ *
+ * Migration Path:
+ * 1. Replace ApiClient-based service with server actions
+ * 2. Update imports from '@/lib/actions/compliance.training'
+ * 3. Remove service instantiation code
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy approach
+ * import { createTrainingModulesService } from '@/services/modules/administrationApi/training';
+ * const service = createTrainingModulesService(apiClient);
+ * const modules = await service.getTrainingModules({ category: 'HIPAA' });
+ * const module = await service.createTrainingModule(data);
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getTrainingModules, createTrainingModule } from '@/lib/actions/compliance.training';
+ * const modules = await getTrainingModules({ category: 'HIPAA' });
+ * const module = await createTrainingModule(data);
+ * ```
+ *
  * Training module CRUD operations including:
  * - Module creation and updates
  * - Bulk operations and reordering

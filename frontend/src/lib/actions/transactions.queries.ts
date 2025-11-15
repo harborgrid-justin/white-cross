@@ -7,7 +7,7 @@
 
 'use server';
 
-import { apiClient } from '@/services/core/ApiClient';
+import { serverGet } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type {
@@ -29,8 +29,16 @@ export async function getTransaction(
   transactionId: string
 ): Promise<ActionResult<TransactionWithDetails>> {
   try {
-    const response = await apiClient.get<TransactionWithDetails>(
-      `${API_ENDPOINTS.INVENTORY.BASE}/transactions/${transactionId}`
+    const response = await serverGet<TransactionWithDetails>(
+      `${API_ENDPOINTS.INVENTORY.BASE}/transactions/${transactionId}`,
+      undefined,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 300, // 5 minutes
+          tags: [`transaction-${transactionId}`, 'inventory-transactions']
+        }
+      }
     );
 
     await auditLogWithContext({
@@ -42,7 +50,7 @@ export async function getTransaction(
 
     return {
       success: true,
-      data: response.data,
+      data: response,
     };
   } catch (error) {
     console.error('Failed to fetch transaction:', error);
@@ -73,9 +81,16 @@ export async function getTransactions(
       });
     }
 
-    const response = await apiClient.get<PaginatedResult<TransactionWithDetails>>(
+    const response = await serverGet<PaginatedResult<TransactionWithDetails>>(
       `${API_ENDPOINTS.INVENTORY.BASE}/transactions`,
-      { params }
+      params,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 300, // 5 minutes
+          tags: ['inventory-transactions', 'transaction-list']
+        }
+      }
     );
 
     await auditLogWithContext({
@@ -87,7 +102,7 @@ export async function getTransactions(
 
     return {
       success: true,
-      data: response.data,
+      data: response,
     };
   } catch (error) {
     console.error('Failed to fetch transactions:', error);
@@ -113,9 +128,16 @@ export async function getTransactionStatistics(
     };
     if (locationId) params.locationId = locationId;
 
-    const response = await apiClient.get<TransactionStatistics>(
+    const response = await serverGet<TransactionStatistics>(
       `${API_ENDPOINTS.INVENTORY.ANALYTICS}/transaction-statistics`,
-      { params }
+      params,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 600, // 10 minutes
+          tags: ['inventory-analytics', 'transaction-statistics']
+        }
+      }
     );
 
     await auditLogWithContext({
@@ -127,7 +149,7 @@ export async function getTransactionStatistics(
 
     return {
       success: true,
-      data: response.data,
+      data: response,
     };
   } catch (error) {
     console.error('Failed to fetch transaction statistics:', error);

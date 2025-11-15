@@ -8,7 +8,7 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { apiClient } from '@/services/core/ApiClient';
+import { serverPost } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type {
@@ -29,16 +29,20 @@ export async function createTransferOrder(
   data: CreateTransferOrder
 ): Promise<ActionResult<TransferOrder>> {
   try {
-    const response = await apiClient.post<TransferOrder>(
+    const transferOrder = await serverPost<TransferOrder>(
       `${API_ENDPOINTS.INVENTORY.BASE}/transfer-orders`,
-      data
+      data,
+      {
+        cache: 'no-store',
+        next: { tags: ['transfer-orders'] }
+      }
     );
 
     await auditLogWithContext({
       userId: data.requestedBy,
       action: AUDIT_ACTIONS.CREATE_APPOINTMENT,
       resource: 'transfer_order',
-      resourceId: response.data.id,
+      resourceId: transferOrder.id,
       details: JSON.stringify({
         fromLocationId: data.fromLocationId,
         toLocationId: data.toLocationId,
@@ -51,7 +55,7 @@ export async function createTransferOrder(
 
     return {
       success: true,
-      data: response.data,
+      data: transferOrder,
       message: 'Transfer order created successfully',
     };
   } catch (error) {
@@ -70,9 +74,18 @@ export async function approveTransferOrder(
   data: ApproveTransferOrder
 ): Promise<ActionResult<TransferOrder>> {
   try {
-    const response = await apiClient.post<TransferOrder>(
+    const transferOrder = await serverPost<TransferOrder>(
       `${API_ENDPOINTS.INVENTORY.BASE}/transfer-orders/${data.transferOrderId}/approve`,
-      data
+      data,
+      {
+        cache: 'no-store',
+        next: {
+          tags: [
+            'transfer-orders',
+            `transfer-order-${data.transferOrderId}`
+          ]
+        }
+      }
     );
 
     await auditLogWithContext({
@@ -89,7 +102,7 @@ export async function approveTransferOrder(
 
     return {
       success: true,
-      data: response.data,
+      data: transferOrder,
       message: 'Transfer order approved successfully',
     };
   } catch (error) {

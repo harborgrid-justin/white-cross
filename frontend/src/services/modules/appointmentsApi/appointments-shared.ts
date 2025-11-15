@@ -1,6 +1,11 @@
 /**
  * Appointments API - Shared Types and Utilities
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Contains shared types, interfaces, and base helper functions used across
  * all appointment service modules.
  *

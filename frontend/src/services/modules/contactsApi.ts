@@ -3,6 +3,16 @@
  * @module services/modules/contactsApi
  * @category Services
  *
+ * @deprecated MIGRATION PENDING - Server actions not yet available
+ * This service is planned to migrate to server actions in Q2 2026.
+ * For now, continue using this service with the new API client structure.
+ *
+ * MIGRATION STATUS:
+ * - Emergency contacts may migrate as part of students.actions.ts
+ * - Contact management may become separate contacts.actions.ts
+ * - Current recommendation: Continue using this API service
+ * - Next review: March 2026
+ *
  * Provides comprehensive contact management for students including parents, guardians,
  * emergency contacts, authorized pickups, medical providers, and other relationships.
  * Supports contact verification, emergency workflows, and notification delivery.
@@ -139,6 +149,7 @@
  */
 
 import type { ApiClient } from '../core/ApiClient';
+import { apiClient } from '../core'; // Updated: Import from new centralized core
 import { ApiResponse, PaginatedResponse, buildUrlParams } from '../utils/apiUtils';
 import { z } from 'zod';
 import { createApiError, createValidationError } from '../core/errors';
@@ -527,3 +538,14 @@ export class ContactsApi {
 export function createContactsApi(client: ApiClient): ContactsApi {
   return new ContactsApi(client);
 }
+
+/**
+ * Singleton instance of ContactsApi
+ * Pre-configured with the default apiClient from core services
+ *
+ * @deprecated Server actions migration pending. This service will be replaced with:
+ * - Emergency contact operations -> students.actions.ts
+ * - Contact management -> Future contacts.actions.ts (Q2 2026)
+ * Continue using this API service until migration is complete.
+ */
+export const contactsApi = createContactsApi(apiClient);

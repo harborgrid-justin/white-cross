@@ -1,31 +1,105 @@
 /**
- * @fileoverview Message Templates API Service - Communication template management
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/communications.templates
+ * @see {@link /lib/actions/communications.templates.ts}
  * @module services/modules/communications/templatesApi
- * @version 2.0.0
- * @category Services
+ * @category Healthcare - Communications
  *
- * Provides message template management for standardized communications.
- * Supports variable substitution, category-based organization, and usage tracking.
+ * **Migration Guide:**
  *
- * ## Key Features
- *
- * **Template Management** (7 methods):
- * - Pre-defined templates for common communications
- * - Variable substitution support
- * - Category-based organization (appointment, medication, incident, etc.)
- * - Template usage tracking
- * - Active/inactive status management
- *
- * @example
+ * OLD (Client API):
  * ```typescript
- * // Create appointment reminder template
- * const template = await templatesApi.createTemplate({
+ * import { createTemplatesApi } from '@/services/modules/communications/templatesApi';
+ * const api = createTemplatesApi(apiClient);
+ *
+ * // Create template
+ * const template = await api.createTemplate({
  *   name: 'Appointment Reminder',
  *   subject: 'Upcoming Appointment for {{studentName}}',
  *   body: 'Your child {{studentName}} has an appointment on {{appointmentDate}}.',
  *   category: 'APPOINTMENT'
  * });
+ *
+ * // Get templates
+ * const templates = await api.getActiveTemplates();
  * ```
+ *
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   createTemplateAction,
+ *   getTemplates,
+ *   getActiveTemplates,
+ *   renderTemplate
+ * } from '@/lib/actions/communications.templates';
+ *
+ * // In Server Component
+ * const templates = await getActiveTemplates();
+ *
+ * // Render template with variables
+ * const renderedMessage = await renderTemplate('template-id', {
+ *   studentName: 'John Doe',
+ *   appointmentDate: '2025-01-15 10:00 AM'
+ * });
+ *
+ * // In Client Component with form
+ * 'use client';
+ * import { useActionState } from 'react';
+ *
+ * function TemplateForm() {
+ *   const [state, formAction, isPending] = useActionState(
+ *     createTemplateAction,
+ *     { errors: {} }
+ *   );
+ *
+ *   return (
+ *     <form action={formAction}>
+ *       <input name="name" placeholder="Template Name" required />
+ *       <input name="subject" placeholder="Subject with {{variables}}" required />
+ *       <textarea name="body" placeholder="Body with {{variables}}" required />
+ *       <select name="category">
+ *         <option value="APPOINTMENT">Appointment</option>
+ *         <option value="MEDICATION">Medication</option>
+ *         <option value="INCIDENT">Incident</option>
+ *         <option value="EMERGENCY">Emergency</option>
+ *       </select>
+ *       <button type="submit" disabled={isPending}>
+ *         {isPending ? 'Creating...' : 'Create Template'}
+ *       </button>
+ *     </form>
+ *   );
+ * }
+ * ```
+ *
+ * **Template Variable Substitution:**
+ * ```typescript
+ * // OLD: Manual string replacement
+ * const body = template.body.replace('{{studentName}}', studentName);
+ *
+ * // NEW: Server-side rendering with validation
+ * import { renderTemplate } from '@/lib/actions/communications.templates';
+ *
+ * const rendered = await renderTemplate(templateId, {
+ *   studentName: 'Jane Smith',
+ *   appointmentDate: '2025-01-15',
+ *   appointmentTime: '10:00 AM',
+ *   nurseName: 'Nurse Johnson'
+ * });
+ * // Automatically validates required variables and escapes HTML
+ * ```
+ *
+ * **Available Server Actions:**
+ * - createTemplateAction: Create new template
+ * - updateTemplateAction: Update existing template
+ * - getTemplates: List all templates
+ * - getActiveTemplates: Get active templates only
+ * - getTemplatesByCategory: Filter by category
+ * - renderTemplate: Render with variables
+ * - deleteTemplateAction: Delete template
+ *
+ * @fileoverview Message Templates API Service - Communication template management (DEPRECATED)
+ * @version 2.0.0
  */
 
 import type { ApiClient, ApiResponse, PaginatedResponse } from '../../core/ApiClient';

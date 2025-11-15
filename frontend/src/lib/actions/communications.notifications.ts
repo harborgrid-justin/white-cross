@@ -7,7 +7,7 @@
 
 'use server';
 
-import { fetchApi } from './communications.utils';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/server';
 import type { ActionResult } from './communications.types';
 import {
   NotificationFilterSchema,
@@ -33,24 +33,14 @@ export async function getNotifications(
   try {
     const validatedFilter = filter ? NotificationFilterSchema.parse(filter) : {};
 
-    const response = await fetchApi<{ notifications: Notification[]; total: number }>(
+    const response = await serverGet<{ notifications: Notification[]; total: number }>(
       '/communications/notifications',
-      {
-        method: 'GET',
-        params: validatedFilter
-      }
+      validatedFilter as Record<string, string | number | boolean>
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch notifications'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching notifications:', error);
@@ -66,21 +56,13 @@ export async function getNotifications(
  */
 export async function getNotificationCount(): Promise<ActionResult<NotificationCount>> {
   try {
-    const response = await fetchApi<NotificationCount>(
-      '/communications/notifications/count',
-      { method: 'GET' }
+    const response = await serverGet<NotificationCount>(
+      '/communications/notifications/count'
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch notification count'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching notification count:', error);
@@ -100,20 +82,10 @@ export async function markNotificationsAsRead(
   try {
     const validatedData = MarkNotificationAsReadSchema.parse({ notificationIds });
 
-    const response = await fetchApi(
+    await serverPost(
       '/communications/notifications/read',
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to mark notifications as read'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -130,17 +102,9 @@ export async function markNotificationsAsRead(
  */
 export async function markAllNotificationsAsRead(): Promise<ActionResult<void>> {
   try {
-    const response = await fetchApi(
-      '/communications/notifications/read-all',
-      { method: 'POST' }
+    await serverPost(
+      '/communications/notifications/read-all'
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to mark all notifications as read'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -161,20 +125,10 @@ export async function archiveNotifications(
   try {
     const validatedData = ArchiveNotificationSchema.parse({ notificationIds });
 
-    const response = await fetchApi(
+    await serverPost(
       '/communications/notifications/archive',
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to archive notifications'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -195,20 +149,10 @@ export async function deleteNotifications(
   try {
     const validatedData = DeleteNotificationSchema.parse({ notificationIds });
 
-    const response = await fetchApi(
+    await serverDelete(
       '/communications/notifications',
-      {
-        method: 'DELETE',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to delete notifications'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -225,21 +169,13 @@ export async function deleteNotifications(
  */
 export async function getNotificationPreferences(): Promise<ActionResult<NotificationPreferences>> {
   try {
-    const response = await fetchApi<NotificationPreferences>(
-      '/communications/notifications/preferences',
-      { method: 'GET' }
+    const response = await serverGet<NotificationPreferences>(
+      '/communications/notifications/preferences'
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch notification preferences'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error fetching notification preferences:', error);
@@ -257,24 +193,14 @@ export async function updateNotificationPreferences(
   preferences: Partial<NotificationPreferences>
 ): Promise<ActionResult<NotificationPreferences>> {
   try {
-    const response = await fetchApi<NotificationPreferences>(
+    const response = await serverPut<NotificationPreferences>(
       '/communications/notifications/preferences',
-      {
-        method: 'PUT',
-        body: preferences
-      }
+      preferences
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to update notification preferences'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
   } catch (error) {
     console.error('Error updating notification preferences:', error);

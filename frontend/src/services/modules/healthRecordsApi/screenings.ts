@@ -1,13 +1,25 @@
 /**
- * Health Records API - Health Screenings Management
- * 
- * Comprehensive health screenings management including:
- * - Health screening CRUD operations
- * - Screening schedule management
- * - Referral tracking
- * - Due date monitoring
- * - PHI access logging for HIPAA compliance
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.crud
+ *
+ * MIGRATION EXAMPLES:
+ *
+ * Create Screening:
+ * OLD: await screeningsService.create({ studentId, screeningType, date, results })
+ * NEW: Available in health-records.crud module
+ *
+ * Get Student Screenings:
+ * OLD: await screeningsService.getScreenings(studentId)
+ * NEW: Use health-records.crud actions with screening type filters
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.crud instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
  * @module services/modules/healthRecordsApi/screenings
  */
 

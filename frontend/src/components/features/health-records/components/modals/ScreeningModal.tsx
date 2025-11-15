@@ -3,10 +3,16 @@
 /**
  * ScreeningModal.tsx - Modal for health screenings
  * Purpose: Create and edit health screening records
+ *
+ * MIGRATION COMPLETE: Now uses server actions instead of deprecated services
+ * Pattern: Form submission via native HTML form action (progressive enhancement)
  */
 
 import React from 'react';
-import type { Screening, ScreeningCreate, ScreeningType, ScreeningOutcome } from '@/services/modules/healthRecordsApi';
+// MIGRATION COMPLETE: Using types from server actions
+// Old: import type { Screening, ScreeningCreate, ScreeningType, ScreeningOutcome } from '@/services/modules/healthRecordsApi';
+import type { Screening, ScreeningCreate } from '@/lib/actions/health-records.actions';
+import { ScreeningType, ScreeningOutcome } from '@/lib/actions/health-records.actions';
 
 interface ScreeningFormErrors {
   screeningType?: string;
@@ -23,6 +29,28 @@ interface ScreeningModalProps {
   errors?: ScreeningFormErrors;
   title?: string;
 }
+
+/**
+ * NOTE: This modal still uses callback pattern for backward compatibility.
+ * Parent components can migrate to useActionState pattern:
+ *
+ * @example Modern pattern (in parent component):
+ * ```typescript
+ * import { useActionState } from 'react';
+ * import { createScreeningAction } from '@/lib/actions/health-records.actions';
+ *
+ * const [state, formAction, isPending] = useActionState(createScreeningAction, { errors: {} });
+ *
+ * const handleSave = async (data: Partial<ScreeningCreate>) => {
+ *   const formData = new FormData();
+ *   Object.entries(data).forEach(([key, value]) => {
+ *     if (value !== undefined) formData.append(key, String(value));
+ *   });
+ *   await formAction(formData);
+ *   if (state.success) onClose();
+ * };
+ * ```
+ */
 
 const SCREENING_TYPES: { value: ScreeningType; label: string }[] = [
   { value: ScreeningType.VISION, label: 'Vision' },

@@ -6,7 +6,7 @@
  */
 
 'use server'
-import { serverGet, serverPost, serverPut } from '@/lib/api/nextjs-client'
+import { serverGet, serverPost, serverPut } from '@/lib/api/server'
 
 export interface SystemConfiguration {
   id: string

@@ -1,12 +1,23 @@
 /**
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
  * @fileoverview Allergies API Service Module - Critical Student Allergy Management and Safety
  * @module services/modules/health/allergies
  * @category Services
  *
- * Comprehensive allergy management system designed for student safety in educational environments.
- * Tracks all types of allergies (food, medication, environmental, insect) with detailed reaction
- * information, severity classification, emergency protocols, and cross-referencing with medications
- * to prevent dangerous drug interactions.
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.allergies
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.allergies instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.allergies.ts}
+ * @see {@link ../healthRecordsApi.ts} - Complete migration guide
+ *
+ * This comprehensive allergy management system has been replaced by Next.js Server Actions.
+ * All critical safety features, medication conflict checking, and emergency protocols
+ * are maintained in the new Server Actions implementation.
  *
  * Core Features:
  * - Complete CRUD operations for allergy records

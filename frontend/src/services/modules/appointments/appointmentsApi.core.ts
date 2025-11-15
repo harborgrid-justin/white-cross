@@ -3,6 +3,32 @@
  * @module services/modules/appointments/appointmentsApi.core
  * @category Services
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Migration example:
+ * ```typescript
+ * // OLD:
+ * import { AppointmentsCoreApiImpl } from '@/services/modules/appointments/appointmentsApi.core';
+ * const api = new AppointmentsCoreApiImpl(client);
+ * const { appointment } = await api.getById(id);
+ *
+ * // NEW (Server Component):
+ * import { getAppointment } from '@/lib/actions/appointments.actions';
+ * const appointment = await getAppointment(id);
+ *
+ * // NEW (Client Component with React Query):
+ * import { useQuery } from '@tanstack/react-query';
+ * import { getAppointment } from '@/lib/actions/appointments.actions';
+ * const { data: appointment } = useQuery({
+ *   queryKey: ['appointment', id],
+ *   queryFn: () => getAppointment(id)
+ * });
+ * ```
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Core appointment management API providing essential CRUD operations
  * for scheduling and managing healthcare appointments with PHI protection
  * and HIPAA-compliant logging.

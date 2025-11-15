@@ -9,7 +9,7 @@
 'use server';
 
 import { revalidateTag, revalidatePath } from 'next/cache';
-import { serverPost, NextApiClientError, type ApiResponse } from '@/lib/api/nextjs-client';
+import { serverPost, NextApiClientError, type ApiResponse } from '@/lib/api/server';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { NOTIFICATION_CACHE_TAGS } from './notifications.cache';
 import type {

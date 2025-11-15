@@ -29,7 +29,7 @@ import {
   verifyCurrentPassword
 } from './settings.utils';
 import { API_ENDPOINTS } from '@/constants/api';
-import { serverPost } from '@/lib/api/nextjs-client';
+import { serverPost } from '@/lib/api/server';
 import {
   changePasswordSchema,
 } from '@/schemas/settings.schemas';

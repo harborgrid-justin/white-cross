@@ -1,13 +1,25 @@
 /**
- * Health Records API - Vital Signs Management
- * 
- * Comprehensive vital signs management including:
- * - Vital signs CRUD operations
- * - Trend analysis and alerts
- * - Normal range validation
- * - Emergency threshold monitoring
- * - PHI access logging for HIPAA compliance
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.crud
+ *
+ * MIGRATION EXAMPLES:
+ *
+ * Create Vital Signs Record:
+ * OLD: await vitalsService.create({ studentId, temperature, heartRate, bloodPressure, date })
+ * NEW: Available in health-records.crud module
+ *
+ * Get Student Vital Signs:
+ * OLD: await vitalsService.getVitals(studentId)
+ * NEW: Use health-records.crud actions with vitals type filters
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.crud instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
  * @module services/modules/healthRecordsApi/vitals
  */
 

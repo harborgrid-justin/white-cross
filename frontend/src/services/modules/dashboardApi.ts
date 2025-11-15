@@ -13,6 +13,21 @@
 /**
  * Dashboard API Module
  *
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/dashboard.actions instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before:
+ * import { dashboardApi } from '@/services/modules/dashboardApi';
+ * const stats = await dashboardApi.getDashboardStats();
+ *
+ * // After:
+ * import { getDashboardStats } from '@/lib/actions/dashboard.actions';
+ * const stats = await getDashboardStats();
+ * ```
+ *
  * Provides API methods for dashboard statistics, activity feeds, and analytics.
  * Implements enterprise-grade caching, error handling, and type safety.
  *

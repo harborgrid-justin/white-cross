@@ -1,6 +1,30 @@
 /**
  * Combined Organizations Management Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use server actions from '@/lib/actions/admin.districts' and '@/lib/actions/admin.schools'.
+ *
+ * Migration Path:
+ * 1. Split unified service calls into separate district and school actions
+ * 2. Update imports from appropriate server action modules
+ * 3. Remove OrganizationsService instantiation
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy unified service
+ * import { createOrganizationsService } from '@/services/modules/administrationApi/organizations';
+ * const service = createOrganizationsService(apiClient);
+ * const hierarchy = await service.getHierarchy();
+ * const stats = await service.getOrganizationStatistics();
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getDistricts } from '@/lib/actions/admin.districts';
+ * import { getSchools } from '@/lib/actions/admin.schools';
+ * // Build hierarchy from separate calls or use dedicated hierarchy action
+ * const districts = await getDistricts();
+ * const schools = await getSchools();
+ * ```
+ *
  * Provides unified access to both districts and schools management,
  * along with cross-organizational operations including:
  * - Organizational hierarchy management

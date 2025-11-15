@@ -1,6 +1,32 @@
 /**
  * Settings & Notifications API
  *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/billing.* instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Using service module
+ * import { billingApi } from '@/services/modules/billingApi';
+ * const settings = await billingApi.settings.getBillingSettings();
+ * await billingApi.settings.sendPaymentReminder(invoiceId);
+ *
+ * // ✅ NEW: Using Server Actions
+ * import { getBillingSettings } from '@/lib/actions/billing.cache';
+ * import { sendInvoiceAction } from '@/lib/actions/billing.invoices';
+ *
+ * // Queries in Server Component
+ * const settings = await getBillingSettings();
+ *
+ * // Mutations (reminders via invoice send)
+ * await sendInvoiceAction(invoiceId);
+ * ```
+ *
+ * **REPLACEMENT ACTIONS**:
+ * - `getBillingSettings()` → `@/lib/actions/billing.cache::getBillingSettings()`
+ * - `updateBillingSettings()` → `@/lib/actions/billing.invoices` or custom action
+ * - `sendPaymentReminder()` → `@/lib/actions/billing.invoices::sendInvoiceAction()`
+ *
  * Manages billing settings, configuration, and notification delivery.
  *
  * @module services/modules/billingApi/settings

@@ -3,6 +3,10 @@
  * @module services/modules/auditApi
  * @category Services - Audit & Security Monitoring
  *
+ * @deprecated This service is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.audit-logs instead.
+ * See: /src/services/modules/DEPRECATED.md for migration guide
+ *
  * Provides comprehensive audit logging, security monitoring, and compliance reporting
  * capabilities for the White Cross healthcare platform. Implements HIPAA-compliant
  * audit trails, PHI access tracking, security analysis, and anomaly detection.
@@ -10,6 +14,17 @@
  * NOTE: This file has been refactored. All implementation has moved to the
  * ./audit/ subdirectory for better organization. This file now serves as a
  * re-export barrel to maintain backward compatibility.
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before:
+ * import { auditApi } from '@/services/modules/auditApi';
+ * const logs = await auditApi.getPHIAccessLogs({ studentId: 'student-123' });
+ *
+ * // After:
+ * import { getPHIAccessLogs } from '@/lib/actions/admin.audit-logs';
+ * const logs = await getPHIAccessLogs({ studentId: 'student-123' });
+ * ```
  *
  * Key Features:
  * - Comprehensive audit log retrieval and filtering

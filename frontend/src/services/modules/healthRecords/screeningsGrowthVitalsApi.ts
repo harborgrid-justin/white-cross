@@ -1,12 +1,25 @@
 /**
- * Screenings, Growth & Vital Signs API Operations
- * 
- * Combined operations for:
- * - Health screenings management
- * - Growth measurements and trends
- * - Vital signs tracking and analysis
- * - PHI access logging and compliance
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
  *
+ * Screenings, Growth & Vital Signs API Operations
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.crud
+ *
+ * MIGRATION GUIDE:
+ * OLD: screeningsApi.create(data), growthApi.create(data), vitalsApi.create(data)
+ * NEW: Available in health-records.crud module with appropriate type filters
+ *
+ * OLD: screeningsApi.getScreenings(studentId)
+ * NEW: Use health-records.crud actions with screening type filters
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.crud instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.crud.ts}
+ * @see {@link /lib/actions/health-records.actions.ts}
+ * @see {@link ../healthRecordsApi.ts} - Detailed migration guide
  * @module services/modules/healthRecords/screeningsGrowthVitalsApi
  */
 

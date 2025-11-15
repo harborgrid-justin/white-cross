@@ -6,7 +6,7 @@
 
 'use server';
 
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import {
   type HealthMetricsFilters,
   type MedicationComplianceFilters,

@@ -1,6 +1,28 @@
 /**
  * Administration API - Training Completion Tracking
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/compliance.training' server actions instead.
+ *
+ * Migration Path:
+ * 1. Replace ApiClient-based service with server actions
+ * 2. Update imports from '@/lib/actions/compliance.training'
+ * 3. Remove service instantiation code
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy approach
+ * import { createTrainingCompletionService } from '@/services/modules/administrationApi/training';
+ * const service = createTrainingCompletionService(apiClient);
+ * const completion = await service.recordTrainingCompletion(userId, moduleId, data);
+ * const progress = await service.getUserTrainingProgress(userId);
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { recordTrainingCompletion, getUserTrainingProgress } from '@/lib/actions/compliance.training';
+ * const completion = await recordTrainingCompletion(userId, moduleId, data);
+ * const progress = await getUserTrainingProgress(userId);
+ * ```
+ *
  * Training completion and progress tracking including:
  * - Completion recording
  * - User progress monitoring

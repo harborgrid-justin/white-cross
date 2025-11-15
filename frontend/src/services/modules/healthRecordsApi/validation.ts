@@ -1,8 +1,8 @@
 /**
- * Health Records API - Validation Schemas
- * 
- * Zod validation schemas for health records data
- * 
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.utils
+ * @see {@link /lib/actions/health-records.utils.ts}
  * @module services/modules/healthRecordsApi/validation
  */
 

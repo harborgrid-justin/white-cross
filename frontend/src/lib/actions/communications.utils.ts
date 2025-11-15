@@ -6,7 +6,7 @@
 
 'use server';
 
-import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/server';
 
 // ============================================================================
 // HELPER FUNCTION - Wrapper for server fetch to match old API contract

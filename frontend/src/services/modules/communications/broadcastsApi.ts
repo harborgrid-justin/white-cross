@@ -1,39 +1,86 @@
 /**
- * @fileoverview Broadcasts API Service - Mass communication management
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/communications.broadcasts
+ * @see {@link /lib/actions/communications.broadcasts.ts}
  * @module services/modules/communications/broadcastsApi
- * @version 2.0.0
- * @category Services
+ * @category Healthcare - Communications
  *
- * Provides comprehensive broadcast management for mass communications to targeted
- * groups. Supports email, SMS, and push notifications with delivery tracking,
- * scheduling, and multi-channel delivery.
+ * **Migration Guide:**
  *
- * ## Key Features
- *
- * **Broadcast Management** (10 methods):
- * - Create and send mass communications to targeted groups
- * - Schedule broadcasts for future delivery
- * - Track delivery status and engagement metrics
- * - Cancel scheduled broadcasts
- * - Duplicate existing broadcasts
- *
- * **Multi-channel Support**:
- * - Email: SendGrid/AWS SES integration
- * - SMS: Twilio integration
- * - Push: Firebase Cloud Messaging
- * - Parallel delivery across all channels
- *
- * @example
+ * OLD (Client API):
  * ```typescript
- * // Emergency broadcast to all parents
- * const broadcast = await broadcastsApi.createBroadcast({
+ * import { createBroadcastsApi } from '@/services/modules/communications/broadcastsApi';
+ * const api = createBroadcastsApi(apiClient);
+ *
+ * // Create and send broadcast
+ * const broadcast = await api.createBroadcast({
  *   subject: 'School Closure - Weather Emergency',
  *   body: 'School is closed today due to severe weather.',
  *   channel: 'ALL',
  *   recipientType: 'ALL_PARENTS'
  * });
- * await broadcastsApi.sendBroadcast(broadcast.id);
+ * await api.sendBroadcast(broadcast.id);
+ *
+ * // Get delivery report
+ * const report = await api.getBroadcastDeliveryReport(broadcast.id);
  * ```
+ *
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   createBroadcastAction,
+ *   sendBroadcastAction,
+ *   getBroadcastDeliveryReport
+ * } from '@/lib/actions/communications.broadcasts';
+ *
+ * // In Server Component
+ * const broadcast = await createBroadcastAction({
+ *   subject: 'School Closure - Weather Emergency',
+ *   body: 'School is closed today due to severe weather.',
+ *   channel: 'ALL',
+ *   recipientType: 'ALL_PARENTS'
+ * });
+ * await sendBroadcastAction(broadcast.id);
+ *
+ * // In Client Component with form
+ * 'use client';
+ * import { useActionState } from 'react';
+ *
+ * function BroadcastForm() {
+ *   const [state, formAction, isPending] = useActionState(
+ *     createBroadcastAction,
+ *     { errors: {} }
+ *   );
+ *
+ *   return (
+ *     <form action={formAction}>
+ *       <input name="subject" required />
+ *       <textarea name="body" required />
+ *       <select name="channel">
+ *         <option value="EMAIL">Email</option>
+ *         <option value="SMS">SMS</option>
+ *         <option value="ALL">All Channels</option>
+ *       </select>
+ *       <button type="submit" disabled={isPending}>
+ *         {isPending ? 'Creating...' : 'Create Broadcast'}
+ *       </button>
+ *     </form>
+ *   );
+ * }
+ * ```
+ *
+ * **Available Server Actions:**
+ * - createBroadcastAction: Create new broadcast
+ * - sendBroadcastAction: Send broadcast immediately
+ * - scheduleBroadcastAction: Schedule for later
+ * - cancelBroadcastAction: Cancel scheduled broadcast
+ * - getBroadcasts: List all broadcasts
+ * - getBroadcastDeliveryReport: Get delivery statistics
+ * - duplicateBroadcastAction: Create copy of existing broadcast
+ *
+ * @fileoverview Broadcasts API Service - Mass communication management (DEPRECATED)
+ * @version 2.0.0
  */
 
 import type { ApiClient, ApiResponse, PaginatedResponse } from '../../core/ApiClient';

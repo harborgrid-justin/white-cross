@@ -3,16 +3,70 @@
  * @module services/modules/analyticsApi
  * @category Services
  *
+ * @deprecated This module is deprecated. Use server actions or new API client instead:
+ *
+ * **Migration Paths:**
+ *
+ * 1. **For Server Components and Server Actions** (RECOMMENDED):
+ *    ```typescript
+ *    import {
+ *      getHealthMetrics,
+ *      getMedicationCompliance,
+ *      getAppointmentAnalytics,
+ *      getIncidentTrends,
+ *      generateReport
+ *    } from '@/lib/actions/analytics.actions';
+ *
+ *    // In Server Component
+ *    const metrics = await getHealthMetrics({ schoolId: '123' });
+ *    const report = await generateReport({ type: 'health', dateRange: { start, end } });
+ *    ```
+ *
+ * 2. **For Client Components** (with React Query):
+ *    ```typescript
+ *    import { useQuery } from '@tanstack/react-query';
+ *    import { serverGet } from '@/lib/api/client';
+ *
+ *    function AnalyticsDashboard() {
+ *      const { data: metrics } = useQuery({
+ *        queryKey: ['analytics', 'health', schoolId],
+ *        queryFn: () => serverGet('/api/analytics/health', { schoolId })
+ *      });
+ *    }
+ *    ```
+ *
+ * 3. **For Direct API Calls** (client-side only):
+ *    ```typescript
+ *    import { apiClient } from '@/lib/api';
+ *
+ *    const metrics = await apiClient('/api/analytics/health', {
+ *      method: 'GET'
+ *    });
+ *    ```
+ *
+ * ## Why This Module is Deprecated
+ *
+ * - **Server Actions**: Analytics functionality has been migrated to server actions at `@/lib/actions/analytics.actions.ts`
+ * - **API Client**: New unified API client available at `@/lib/api/client` with better caching and type safety
+ * - **Architectural Shift**: Moving from service layer to Next.js App Router patterns (Server Components + Server Actions)
+ * - **Type Safety**: Server actions provide end-to-end type safety with React Server Components
+ * - **Performance**: Server actions reduce client bundle size and improve initial page load
+ * - **Caching**: Better integration with Next.js cache using React cache() and revalidation
+ *
+ * ## Migration Benefits
+ *
+ * - ✅ **Type Safety**: Full TypeScript inference from server to client
+ * - ✅ **Performance**: Reduced bundle size, server-side execution
+ * - ✅ **Caching**: Automatic request deduplication with React cache()
+ * - ✅ **Security**: Data fetching happens on server, protecting sensitive logic
+ * - ✅ **Simplicity**: No need for separate service layer abstractions
+ * - ✅ **Consistency**: Unified pattern across all domains
+ *
+ * ## Current Module Structure (For Reference)
+ *
  * This module maintains backward compatibility by re-exporting from the refactored
  * analytics subdirectory. All analytics functionality has been reorganized into
- * domain-specific modules for better maintainability.
- *
- * ## Migration Notice
- *
- * **Original File**: 1,023 LOC (exceeded 300 LOC threshold)
- * **Refactored**: Split into 8 domain-specific modules
- *
- * ### New Module Structure
+ * domain-specific modules:
  *
  * ```
  * services/modules/analytics/
@@ -27,44 +81,18 @@
  * └── index.ts                - Main aggregator (239 LOC)
  * ```
  *
- * ### Recommended Import Patterns
- *
- * **Option 1: Unified API (Backward Compatible)**
- * ```typescript
- * import { analyticsApi } from '@/services/modules/analyticsApi';
- * const dashboard = await analyticsApi.getNurseDashboard('nurse-123');
- * ```
- *
- * **Option 2: Direct Module Access (New Pattern)**
- * ```typescript
- * import { healthAnalytics, dashboardAnalytics } from '@/services/modules/analytics';
- * const metrics = await healthAnalytics.getHealthMetrics({ schoolId: '123' });
- * const dashboard = await dashboardAnalytics.getNurseDashboard('nurse-123');
- * ```
- *
- * **Option 3: Granular Imports**
- * ```typescript
- * import { createHealthAnalytics } from '@/services/modules/analytics/healthAnalytics';
- * import { apiClient } from '@/services/core/ApiClient';
- * const healthAnalytics = createHealthAnalytics(apiClient);
- * ```
- *
- * ## Benefits of Refactoring
- *
- * - **Modularity**: Each domain has its own focused module
- * - **Maintainability**: Easier to locate and update specific functionality
- * - **Type Safety**: Better TypeScript inference with smaller modules
- * - **Performance**: Tree-shaking can eliminate unused modules
- * - **Testing**: Simpler unit testing with isolated modules
- * - **No Circular Dependencies**: Unidirectional dependency flow
- *
  * ## Compatibility Guarantee
  *
  * All existing code using `analyticsApi` will continue to work without changes.
- * The unified API delegates to the new modular structure transparently.
+ * However, this is a legacy compatibility layer and should be migrated to the
+ * new patterns outlined above.
  *
- * @see {@link AnalyticsApi} for the unified API
- * @see {@link analytics/index} for the new modular structure
+ * **Scheduled for Removal**: v2.0.0 (Q2 2025)
+ *
+ * @see {@link @/lib/actions/analytics.actions} for server actions (RECOMMENDED)
+ * @see {@link @/lib/api/client} for client-side API utilities
+ * @see {@link AnalyticsApi} for the unified API (legacy)
+ * @see {@link analytics/index} for the modular structure (legacy)
  */
 
 // Re-export everything from the new analytics module structure

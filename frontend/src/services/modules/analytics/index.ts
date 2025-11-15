@@ -3,10 +3,53 @@
  * @module services/modules/analytics
  * @category Services
  *
+ * @deprecated This module is deprecated. Use server actions or new API client instead.
+ *
+ * **MIGRATION NOTICE:**
+ *
+ * This legacy service layer is being phased out in favor of:
+ * 1. Server Actions (for Server Components) - RECOMMENDED
+ * 2. New API Client (for client-side code)
+ *
+ * See parent module `@/services/modules/analyticsApi.ts` for detailed migration guide.
+ *
+ * **Quick Migration Examples:**
+ *
+ * ```typescript
+ * // OLD (this module):
+ * import { analyticsApi } from '@/services/modules/analytics';
+ * const metrics = await analyticsApi.getHealthMetrics({ schoolId: '123' });
+ *
+ * // NEW (Server Actions - RECOMMENDED):
+ * import { getHealthMetrics } from '@/lib/actions/analytics.actions';
+ * const metrics = await getHealthMetrics({ schoolId: '123' });
+ *
+ * // NEW (Client Components with React Query):
+ * import { useQuery } from '@tanstack/react-query';
+ * import { getHealthMetrics } from '@/lib/actions/analytics.actions';
+ * const { data: metrics } = useQuery({
+ *   queryKey: ['analytics', 'health', schoolId],
+ *   queryFn: () => getHealthMetrics({ schoolId })
+ * });
+ * ```
+ *
+ * **API Client Update:**
+ *
+ * If you need to use the legacy ApiClient pattern, update imports:
+ * ```typescript
+ * // OLD:
+ * import { apiClient } from '@/services/core/ApiClient';
+ *
+ * // NEW:
+ * import { apiClient } from '@/lib/api/client';
+ * // or for server-side:
+ * import { serverGet, serverPost } from '@/lib/api/server';
+ * ```
+ *
+ * ## Architecture (Legacy Reference)
+ *
  * Comprehensive analytics, reporting, and dashboard capabilities for healthcare
  * metrics, trends, and insights. Aggregates all analytics modules into a unified API.
- *
- * ## Architecture
  *
  * This module aggregates domain-specific analytics modules:
  * - **Health Analytics**: Health metrics and trends
@@ -17,33 +60,6 @@
  * - **Reports Analytics**: Custom report generation and scheduling
  * - **Advanced Analytics**: Real-time updates, forecasting, drill-down
  *
- * ## Usage Patterns
- *
- * ### Direct Module Access
- * ```typescript
- * import { healthAnalytics, incidentAnalytics } from '@/services/modules/analytics';
- *
- * const metrics = await healthAnalytics.getHealthMetrics({ schoolId: '123' });
- * const trends = await incidentAnalytics.getIncidentTrends({ period: 'weekly' });
- * ```
- *
- * ### Unified API Access
- * ```typescript
- * import { analyticsApi } from '@/services/modules/analytics';
- *
- * const metrics = await analyticsApi.getHealthMetrics({ schoolId: '123' });
- * const dashboard = await analyticsApi.getNurseDashboard('nurse-123');
- * ```
- *
- * ### TanStack Query Integration
- * ```typescript
- * const { data } = useQuery({
- *   queryKey: ['analytics', 'nurse-dashboard', nurseId],
- *   queryFn: () => analyticsApi.getNurseDashboard(nurseId),
- *   staleTime: 180000
- * });
- * ```
- *
  * ## Performance Optimization
  *
  * All modules share a centralized cache with intelligent TTL:
@@ -52,10 +68,14 @@
  * - Trends: 10-minute cache
  * - Reports: 1-minute cache
  *
- * @see {@link HealthAnalytics} for health metrics
- * @see {@link IncidentAnalytics} for incident analytics
- * @see {@link DashboardAnalytics} for dashboard data
- * @see {@link ReportsAnalytics} for custom reports
+ * **Scheduled for Removal**: v2.0.0 (Q2 2025)
+ *
+ * @see {@link @/lib/actions/analytics.actions} for server actions (RECOMMENDED)
+ * @see {@link @/lib/api/client} for client-side API utilities
+ * @see {@link HealthAnalytics} for health metrics (legacy)
+ * @see {@link IncidentAnalytics} for incident analytics (legacy)
+ * @see {@link DashboardAnalytics} for dashboard data (legacy)
+ * @see {@link ReportsAnalytics} for custom reports (legacy)
  */
 
 import type { ApiClient } from '../../core/ApiClient';

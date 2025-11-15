@@ -1,8 +1,44 @@
 /**
  * Incidents API - Evidence Management and Compliance
- * 
+ *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/incidents.operations instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Service Module Pattern
+ * import { Evidence } from '@/services/modules/incidentsApi/evidence';
+ * const evidence = new Evidence(apiClient);
+ *
+ * await evidence.addEvidence(incidentId, data);
+ * await evidence.updateInsuranceClaim(incidentId, claimData);
+ *
+ * // ✅ NEW: Server Actions Pattern
+ * // Note: Evidence operations may be in incidents.operations or documents.upload
+ * import { updateIncident } from '@/lib/actions/incidents.crud';
+ * import { uploadDocument } from '@/lib/actions/documents.upload';
+ *
+ * // Evidence is typically attached to incidents via updates
+ * const result = await updateIncident(incidentId, {
+ *   evidenceDocuments: [...existingDocs, newDoc]
+ * });
+ *
+ * // For file uploads, use documents.upload actions
+ * const uploadResult = await uploadDocument(file, {
+ *   relatedTo: 'incident',
+ *   relatedId: incidentId,
+ *   category: 'evidence'
+ * });
+ * ```
+ *
+ * **METHOD MAPPING**:
+ * - `addEvidence()` → Use `updateIncident()` from `@/lib/actions/incidents.crud` or `uploadDocument()`
+ * - `updateInsuranceClaim()` → Use `updateIncident()` with insurance claim data
+ * - `updateComplianceStatus()` → Use `updateIncident()` with compliance data
+ * - Insurance/compliance → Consider `@/lib/actions/incidents.operations` for specialized operations
+ *
  * Evidence handling, insurance claims, and compliance tracking
- * 
+ *
  * @module services/modules/incidentsApi/evidence
  */
 

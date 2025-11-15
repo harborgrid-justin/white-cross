@@ -9,7 +9,7 @@
 'use server';
 
 import { cache } from 'react';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import type {
   Message,
   MessageThread,

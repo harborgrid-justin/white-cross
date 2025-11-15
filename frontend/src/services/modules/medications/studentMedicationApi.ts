@@ -1,6 +1,51 @@
 /**
  * @fileoverview Student Medication API
  *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.crud and @/lib/actions/medications.status
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Assign medication to student
+ * import { StudentMedicationApi } from '@/services/modules/medications/studentMedicationApi';
+ * const api = new StudentMedicationApi(client);
+ * const assignment = await api.assignToStudent({
+ *   studentId: 'student-id',
+ *   medicationId: 'med-id',
+ *   dosage: '500mg',
+ *   frequency: 'twice daily',
+ *   route: 'Oral',
+ *   startDate: '2025-11-15',
+ *   prescribedBy: 'Dr. Smith'
+ * });
+ *
+ * // After: Use server action
+ * import { createMedication } from '@/lib/actions/medications.crud';
+ * const result = await createMedication({
+ *   studentId: 'student-id',
+ *   name: 'Amoxicillin',
+ *   dosage: '500mg',
+ *   frequency: 'twice daily',
+ *   route: 'Oral',
+ *   startDate: '2025-11-15',
+ *   prescribedBy: 'Dr. Smith'
+ * });
+ *
+ * // Before: Deactivate student medication
+ * const deactivated = await api.deactivateStudentMedication('id', 'Treatment completed');
+ *
+ * // After: Use server action
+ * import { updateMedicationStatus } from '@/lib/actions/medications.status';
+ * const result = await updateMedicationStatus('id', 'inactive');
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ Automatic Five Rights validation
+ * ✓ Built-in HIPAA audit logging
+ * ✓ Type-safe with ActionResult pattern
+ * ✓ Server-side PHI protection
+ * ✓ Better error handling
+ * ✓ Cache invalidation with revalidateTag
+ *
  * Handles student medication assignments (prescriptions), tracking, and
  * management with Five Rights validation and comprehensive audit logging.
  *

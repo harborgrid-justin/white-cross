@@ -1,6 +1,28 @@
 /**
  * Administration API - Backup Management Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/admin.monitoring' server actions instead.
+ *
+ * Migration Path:
+ * 1. Replace ApiClient-based service with server actions
+ * 2. Update imports from '@/lib/actions/admin.monitoring'
+ * 3. Remove service instantiation code
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy approach
+ * import { createBackupService } from '@/services/modules/administrationApi/monitoring';
+ * const service = createBackupService(apiClient);
+ * const backup = await service.createBackup();
+ * const logs = await service.getBackupLogs();
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { createBackup, getBackupLogs } from '@/lib/actions/admin.monitoring';
+ * const backup = await createBackup();
+ * const logs = await getBackupLogs();
+ * ```
+ *
  * Backup management service providing:
  * - Backup creation and scheduling
  * - Backup retrieval and listing

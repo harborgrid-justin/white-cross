@@ -1,12 +1,38 @@
 /**
  * @fileoverview Main AdministrationApi service class for system administration
- * 
+ *
+ * @deprecated This service class is deprecated. Use server actions from @/lib/actions/admin instead.
+ *
+ * MIGRATION GUIDE:
+ * ================
+ * This class-based service API has been replaced by Next.js server actions which provide:
+ * - Better type inference and TypeScript support
+ * - Automatic Next.js cache integration
+ * - Built-in revalidation support
+ * - HIPAA-compliant audit logging
+ * - No need to manage ApiClient instances
+ *
+ * EXAMPLE MIGRATIONS:
+ * ```typescript
+ * // OLD: Class-based service
+ * const adminApi = new AdministrationApi(apiClient);
+ * const users = await adminApi.getUsers({ isActive: true });
+ * const district = await adminApi.createDistrict({ name: 'District 1' });
+ *
+ * // NEW: Server actions
+ * import { getAdminUsers, createDistrictAction } from '@/lib/actions/admin';
+ * const users = await getAdminUsers({ isActive: true });
+ * const district = await createDistrictAction({ name: 'District 1' });
+ * ```
+ *
+ * See @/lib/actions/admin.actions.ts for the complete server actions API.
+ *
  * This module provides a unified interface for all administration operations by combining
  * core operations and specialized operations into a single, cohesive API service.
- * 
+ *
  * This class serves as the main entry point for system administration functionality,
  * maintaining backward compatibility while providing a clean, modular architecture.
- * 
+ *
  * @module services/modules/administrationApi/administrationApi
  */
 

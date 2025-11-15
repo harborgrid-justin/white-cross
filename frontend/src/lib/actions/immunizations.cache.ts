@@ -10,7 +10,7 @@
 
 import { cache } from 'react';
 import { revalidateTag, revalidatePath } from 'next/cache';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 import type { ApiResponse } from '@/types';
 import type {

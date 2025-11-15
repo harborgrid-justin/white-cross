@@ -1,8 +1,50 @@
 /**
  * Incidents API - Witness Statements
- * 
+ *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/incidents.witnesses instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Service Module Pattern
+ * import { WitnessStatements } from '@/services/modules/incidentsApi/witnesses';
+ * const witnesses = new WitnessStatements(apiClient);
+ *
+ * const statements = await witnesses.getWitnessStatements(incidentId);
+ * await witnesses.addWitnessStatement(data);
+ * await witnesses.verifyWitnessStatement(statementId);
+ *
+ * // ✅ NEW: Server Actions Pattern
+ * import {
+ *   getWitnessStatements,
+ *   addWitnessStatement,
+ *   updateWitnessStatement,
+ *   deleteWitnessStatement,
+ *   verifyWitnessStatement
+ * } from '@/lib/actions/incidents.witnesses';
+ *
+ * // Query witness statements
+ * const statements = await getWitnessStatements(incidentId);
+ *
+ * // Add witness statement (returns { success, id?, error? })
+ * const result = await addWitnessStatement(incidentId, data);
+ * if (result.success) {
+ *   console.log('Created statement:', result.id);
+ * }
+ *
+ * // Verify witness statement
+ * const verifyResult = await verifyWitnessStatement(statementId, verifiedBy);
+ * ```
+ *
+ * **METHOD MAPPING**:
+ * - `getWitnessStatements()` → `getWitnessStatements()` from `@/lib/actions/incidents.witnesses`
+ * - `addWitnessStatement()` → `addWitnessStatement()` from `@/lib/actions/incidents.witnesses`
+ * - `updateWitnessStatement()` → `updateWitnessStatement()` from `@/lib/actions/incidents.witnesses`
+ * - `verifyWitnessStatement()` → `verifyWitnessStatement()` from `@/lib/actions/incidents.witnesses`
+ * - `getUnverifiedStatements()` → `getUnverifiedStatements()` from `@/lib/actions/incidents.witnesses`
+ *
  * Witness statement management with verification workflow
- * 
+ *
  * @module services/modules/incidentsApi/witnesses
  */
 

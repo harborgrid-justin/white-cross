@@ -1,10 +1,102 @@
 /**
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * This service module has been replaced by Next.js Server Actions for improved
+ * performance, security, and Next.js App Router compatibility.
+ *
+ * **New Implementation:**
+ * - Server Components: import from '@/lib/actions/communications.*'
+ * - Client Components: Use Server Actions with useActionState
+ *
+ * **Migration Guide:**
+ *
+ * OLD (This file):
+ * ```typescript
+ * import { communicationApi } from '@/services/modules/communicationApi';
+ *
+ * // Send message
+ * await communicationApi.sendMessage({
+ *   recipientId: 'parent-123',
+ *   subject: 'Appointment Reminder',
+ *   body: 'Your child has an appointment tomorrow',
+ *   type: 'EMAIL'
+ * });
+ *
+ * // Send broadcast
+ * await communicationApi.sendBroadcast({
+ *   recipientIds: ['parent-1', 'parent-2'],
+ *   templateId: 'template-123',
+ *   type: 'EMAIL'
+ * });
+ *
+ * // Get templates
+ * const { templates } = await communicationApi.getTemplates();
+ * ```
+ *
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   sendMessageAction,
+ *   sendBroadcastAction,
+ *   getTemplates
+ * } from '@/lib/actions/communications.actions';
+ *
+ * // In Server Components
+ * const templates = await getTemplates();
+ * const result = await sendMessageAction({
+ *   recipientId: 'parent-123',
+ *   subject: 'Appointment Reminder',
+ *   body: 'Your child has an appointment tomorrow'
+ * });
+ *
+ * // In Client Components
+ * 'use client';
+ * import { useActionState } from 'react';
+ *
+ * function MessageForm() {
+ *   const [state, formAction] = useActionState(sendMessageAction, {});
+ *
+ *   return (
+ *     <form action={formAction}>
+ *       <input name="recipientId" type="hidden" />
+ *       <input name="subject" required />
+ *       <textarea name="body" required />
+ *       <button type="submit">Send</button>
+ *     </form>
+ *   );
+ * }
+ * ```
+ *
+ * **NOTE**: This module duplicates functionality from communicationsApi.ts.
+ * Both are deprecated. Use Server Actions from @/lib/actions/communications.* instead.
+ *
+ * **See Also:**
+ * - @see {@link /lib/actions/communications.actions.ts} - All Server Actions
+ * - @see {@link /lib/actions/communications.messages.ts} - Message operations
+ * - @see {@link /lib/actions/communications.broadcasts.ts} - Broadcast operations
+ * - @see {@link /lib/actions/communications.templates.ts} - Template operations
+ * - @see {@link /lib/actions/communications.notifications.ts} - Notification operations
+ *
+ * @deprecated Use Server Actions from @/lib/actions/communications.* instead
+ * @module services/modules/communicationApi
+ * @category Healthcare - Communications
+ * @fileoverview Communication API service for messaging and notifications (DEPRECATED)
+ * @version Will be removed in v3.0.0
+ */
+
+/**
  * @fileoverview Communication API service for messaging and notifications
  * @module services/modules/communicationApi
  * @category Services
- * 
+ *
  * Comprehensive communication API for message templates, direct messaging,
  * broadcast messages, emergency alerts, and multi-language support.
+ *
+ * @deprecated Use Server Actions instead:
+ * - Message operations: @/lib/actions/communications.messages
+ * - Broadcast operations: @/lib/actions/communications.broadcasts
+ * - Template operations: @/lib/actions/communications.templates
+ * - Notification operations: @/lib/actions/communications.notifications
  * 
  * Key Features:
  * - **Message Templates**: Reusable templates for common communications

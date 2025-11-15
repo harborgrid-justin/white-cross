@@ -12,7 +12,7 @@ import { cache } from 'react';
 import { revalidateTag, revalidatePath } from 'next/cache';
 
 // Core API integrations
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import { CACHE_TTL } from '@/lib/cache/constants';
 
 // Types

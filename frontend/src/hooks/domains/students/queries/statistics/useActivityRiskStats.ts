@@ -11,7 +11,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentQueryKeys } from '../queryKeys';
 import { cacheConfig } from '../cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
 import type { ActivityStats, RiskStats, TimeRange } from './types';
 
 /**

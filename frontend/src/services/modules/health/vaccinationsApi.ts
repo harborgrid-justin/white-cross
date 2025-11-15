@@ -1,9 +1,21 @@
 /**
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
  * Vaccinations API Service Module
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.immunizations
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.immunizations instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.immunizations.ts}
+ * @see {@link ../healthRecordsApi.ts} - Complete migration guide
  *
  * Purpose: Manages immunization records and compliance tracking
  *
- * Features:
+ * Features (now available in Server Actions):
  * - Vaccination record management
  * - Immunization schedule tracking
  * - Compliance monitoring

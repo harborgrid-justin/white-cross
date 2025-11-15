@@ -118,57 +118,16 @@
  */
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiActions } from '@/lib/api';
-import { CreateEmergencyContactData, UpdateEmergencyContactData } from '@/services/modules/emergencyContactsApi';
-import {
+import * as emergencyContactActions from '@/lib/actions/emergency-contacts.actions';
+import type {
   EmergencyContact,
   EmergencyNotificationData,
   EmergencyNotificationResult,
   ContactVerificationResponse,
   EmergencyContactStatistics,
-} from '../../types/student.types';
-
-// Contacts API Service Adapter
-export class ContactsApiService {
-  // Emergency contacts
-  async getContactsByStudent(studentId: string) {
-    return apiActions.emergencyContacts.getByStudent(studentId);
-  }
-
-  async createEmergencyContact(data: CreateEmergencyContactData) {
-    return apiActions.emergencyContacts.create(data);
-  }
-
-  async updateEmergencyContact(id: string, data: UpdateEmergencyContactData) {
-    return apiActions.emergencyContacts.update(id, data);
-  }
-
-  async deleteEmergencyContact(id: string) {
-    return apiActions.emergencyContacts.delete(id);
-  }
-
-  // Notifications
-  async notifyStudent(studentId: string, notification: Omit<EmergencyNotificationData, 'studentId'>) {
-    return apiActions.emergencyContacts.notifyStudent(studentId, notification);
-  }
-
-  async notifyContact(contactId: string, notification: Omit<EmergencyNotificationData, 'studentId'>) {
-    return apiActions.emergencyContacts.notifyContact(contactId, notification);
-  }
-
-  // Verification
-  async verifyContact(contactId: string, method: 'sms' | 'email' | 'voice') {
-    return apiActions.emergencyContacts.verify(contactId, method);
-  }
-
-  // Statistics
-  async getStatistics() {
-    return apiActions.emergencyContacts.getStatistics();
-  }
-}
-
-// Create contacts API service instance
-export const contactsApiService = new ContactsApiService();
+  CreateEmergencyContactData,
+  UpdateEmergencyContactData,
+} from '@/lib/actions/emergency-contacts.actions';
 
 // State interface
 export interface ContactsState {
@@ -222,65 +181,89 @@ const initialState: ContactsState = {
 // Async thunks
 export const fetchContactsByStudent = createAsyncThunk(
   'contacts/fetchByStudent',
-  async (studentId: string) => {
-    const response = await contactsApiService.getContactsByStudent(studentId);
-    return { studentId, contacts: response.contacts };
+  async (studentId: string, { rejectWithValue }) => {
+    const response = await emergencyContactActions.getContactsByStudent(studentId);
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to fetch contacts');
+    }
+    return { studentId, contacts: response.data?.contacts || [] };
   }
 );
 
 export const createEmergencyContact = createAsyncThunk(
   'contacts/create',
-  async (data: CreateEmergencyContactData) => {
-    const response = await contactsApiService.createEmergencyContact(data);
-    return response.contact;
+  async (data: CreateEmergencyContactData, { rejectWithValue }) => {
+    const response = await emergencyContactActions.createEmergencyContact(data);
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to create contact');
+    }
+    return response.data!.contact;
   }
 );
 
 export const updateEmergencyContact = createAsyncThunk(
   'contacts/update',
-  async ({ id, data }: { id: string; data: UpdateEmergencyContactData }) => {
-    const response = await contactsApiService.updateEmergencyContact(id, data);
-    return response.contact;
+  async ({ id, data }: { id: string; data: UpdateEmergencyContactData }, { rejectWithValue }) => {
+    const response = await emergencyContactActions.updateEmergencyContact(id, data);
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to update contact');
+    }
+    return response.data!.contact;
   }
 );
 
 export const deleteEmergencyContact = createAsyncThunk(
   'contacts/delete',
-  async (id: string) => {
-    await contactsApiService.deleteEmergencyContact(id);
+  async (id: string, { rejectWithValue }) => {
+    const response = await emergencyContactActions.deleteEmergencyContact(id);
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to delete contact');
+    }
     return id;
   }
 );
 
 export const notifyStudent = createAsyncThunk(
   'contacts/notifyStudent',
-  async ({ studentId, notification }: { studentId: string; notification: Omit<EmergencyNotificationData, 'studentId'> }) => {
-    const response = await contactsApiService.notifyStudent(studentId, notification);
-    return response.results;
+  async ({ studentId, notification }: { studentId: string; notification: EmergencyNotificationData }, { rejectWithValue }) => {
+    const response = await emergencyContactActions.notifyStudent(studentId, notification);
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to send notifications');
+    }
+    return response.data?.results || [];
   }
 );
 
 export const notifyContact = createAsyncThunk(
   'contacts/notifyContact',
-  async ({ contactId, notification }: { contactId: string; notification: Omit<EmergencyNotificationData, 'studentId'> }) => {
-    const response = await contactsApiService.notifyContact(contactId, notification);
-    return response.result;
+  async ({ contactId, notification }: { contactId: string; notification: EmergencyNotificationData }, { rejectWithValue }) => {
+    const response = await emergencyContactActions.notifyContact(contactId, notification);
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to send notification');
+    }
+    return response.data!.result;
   }
 );
 
 export const verifyContact = createAsyncThunk(
   'contacts/verify',
-  async ({ contactId, method }: { contactId: string; method: 'sms' | 'email' | 'voice' }) => {
-    const response = await contactsApiService.verifyContact(contactId, method);
-    return response;
+  async ({ contactId, method }: { contactId: string; method: 'sms' | 'email' | 'voice' }, { rejectWithValue }) => {
+    const response = await emergencyContactActions.verifyContact(contactId, method);
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to verify contact');
+    }
+    return response.data!;
   }
 );
 
 export const fetchContactStatistics = createAsyncThunk(
   'contacts/fetchStatistics',
-  async () => {
-    const statistics = await contactsApiService.getStatistics();
-    return statistics;
+  async (_, { rejectWithValue }) => {
+    const response = await emergencyContactActions.getStatistics();
+    if (!response.success) {
+      return rejectWithValue(response.error || 'Failed to fetch statistics');
+    }
+    return response.data!;
   }
 );
 

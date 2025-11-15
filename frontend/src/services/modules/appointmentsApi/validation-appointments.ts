@@ -1,6 +1,11 @@
 /**
  * Appointments API - Appointment Validation Schemas
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Zod validation schemas for appointment scheduling and management operations.
  * Provides comprehensive input validation with healthcare-specific rules and
  * business logic validation for appointments.

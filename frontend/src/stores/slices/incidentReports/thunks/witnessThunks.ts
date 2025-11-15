@@ -7,8 +7,9 @@
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { incidentsApi } from '@/services/modules/incidentsApi';
+import * as witnessActions from '@/lib/actions/incidents.witnesses';
 import type { CreateWitnessStatementRequest } from '@/types/domain/incidents';
+import type { WitnessStatement } from '@/lib/actions/incidents.types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
 
@@ -44,8 +45,8 @@ export const fetchWitnessStatements = createAsyncThunk(
   async (incidentReportId: string, { rejectWithValue }) => {
     try {
       log('Fetching witness statements for incident:', incidentReportId);
-      const response = await incidentsApi.getWitnessStatements(incidentReportId);
-      return response.statements;
+      const statements = await witnessActions.getWitnessStatements(incidentReportId);
+      return statements;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch witness statements';
       log('Error fetching witness statements:', error);
@@ -104,9 +105,24 @@ export const createWitnessStatement = createAsyncThunk(
   async (data: CreateWitnessStatementRequest, { rejectWithValue }) => {
     try {
       log('Creating witness statement:', data);
-      const response = await incidentsApi.addWitnessStatement(data);
+      const result = await witnessActions.addWitnessStatement(
+        data.incidentReportId,
+        data as Partial<WitnessStatement>
+      );
+      if (!result.success) {
+        toast.error(result.error || 'Failed to add witness statement');
+        return rejectWithValue(result.error || 'Failed to add witness statement');
+      }
       toast.success('Witness statement added successfully');
-      return response.statement;
+      // Fetch the created statement if we have an ID
+      if (result.id) {
+        const statements = await witnessActions.getWitnessStatements(data.incidentReportId);
+        const createdStatement = statements.find(s => s.id === result.id);
+        if (createdStatement) {
+          return createdStatement;
+        }
+      }
+      return rejectWithValue('Failed to retrieve created witness statement');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to add witness statement';
       log('Error creating witness statement:', error);

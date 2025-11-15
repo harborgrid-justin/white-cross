@@ -1,14 +1,98 @@
 /**
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
  * Health Services Module Facade
  *
- * Purpose: Unified interface for all health-related API services
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
  *
- * Architecture:
- * - Provides single import point for all health modules
- * - Maintains backward compatibility with legacy API
- * - Implements service orchestration patterns
- * - Ensures consistent error handling and logging
+ * This unified health services interface has been replaced by Next.js Server Actions
+ * for improved security, type safety, and Next.js App Router compatibility.
  *
+ * REPLACEMENT: @/lib/actions/health-records.*
+ *
+ * UNIFIED API MIGRATION:
+ *
+ * OLD (Deprecated Unified API):
+ * ```typescript
+ * import { createUnifiedHealthApi } from '@/services/modules/health';
+ * import { apiClient } from '@/services/core/ApiClient';
+ * const healthApi = createUnifiedHealthApi(apiClient);
+ * const profile = await healthApi.getComprehensiveHealthProfile('student-id');
+ * const alerts = await healthApi.getCriticalAlerts('student-id');
+ * ```
+ *
+ * NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   getHealthRecordsAction,
+ *   getStudentAllergiesAction
+ * } from '@/lib/actions/health-records.crud';
+ * import { getHealthRecordsStats } from '@/lib/actions/health-records.stats';
+ *
+ * // In Server Component - build comprehensive profile manually
+ * const [records, allergies, stats] = await Promise.all([
+ *   getHealthRecordsAction({ studentId: 'student-id' }),
+ *   getStudentAllergiesAction({ studentId: 'student-id' }),
+ *   getHealthRecordsStats()
+ * ]);
+ * ```
+ *
+ * INDIVIDUAL MODULE MIGRATION:
+ *
+ * Allergies:
+ * OLD: import { createAllergiesApi } from '@/services/modules/health';
+ * NEW: import { createAllergyAction } from '@/lib/actions/health-records.allergies';
+ *
+ * Chronic Conditions:
+ * OLD: import { createChronicConditionsApi } from '@/services/modules/health';
+ * NEW: Available in @/lib/actions/health-records.crud
+ *
+ * Vaccinations:
+ * OLD: import { createVaccinationsApi } from '@/services/modules/health';
+ * NEW: import { createImmunizationAction } from '@/lib/actions/health-records.immunizations';
+ *
+ * Screenings:
+ * OLD: import { createScreeningsApi } from '@/services/modules/health';
+ * NEW: Available in @/lib/actions/health-records.crud
+ *
+ * Growth Measurements:
+ * OLD: import { createGrowthMeasurementsApi } from '@/services/modules/health';
+ * NEW: Available in @/lib/actions/health-records.crud
+ *
+ * Vital Signs:
+ * OLD: import { createVitalSignsApi } from '@/services/modules/health';
+ * NEW: Available in @/lib/actions/health-records.crud
+ *
+ * Main Health Records:
+ * OLD: import { createHealthRecordsApi } from '@/services/modules/health';
+ * NEW: import { createHealthRecordAction } from '@/lib/actions/health-records.crud';
+ *
+ * Statistics:
+ * OLD: import { createHealthRecordsStatisticsService } from '@/services/modules/health';
+ * NEW: import { getHealthRecordsStats } from '@/lib/actions/health-records.stats';
+ *
+ * BREAKING CHANGES:
+ * 1. No unified API facade - use individual Server Actions
+ * 2. Response format: { success, data, error } instead of direct data
+ * 3. No ApiClient required - Server Actions handle API internally
+ * 4. Orchestration methods (getComprehensiveHealthProfile, getCriticalAlerts) need manual implementation
+ *
+ * MIGRATION BENEFITS:
+ * - Enhanced security (server-side only)
+ * - Better type safety with Zod validation
+ * - Maintained HIPAA compliance and PHI logging
+ * - Improved Next.js App Router integration
+ * - Simplified client-side code
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.* instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.allergies.ts} - Allergy management
+ * @see {@link /lib/actions/health-records.immunizations.ts} - Immunization tracking
+ * @see {@link /lib/actions/health-records.stats.ts} - Statistics and analytics
+ * @see {@link ../healthRecordsApi.ts} - Detailed migration examples
  * @module services/modules/health
  */
 

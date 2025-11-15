@@ -1,22 +1,29 @@
 /**
- * WF-COMP-290 | purchaseOrderApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils, ../../types/purchaseOrders | Dependencies: ../config/apiConfig, ../utils/apiUtils, zod
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: default export, constants, classes | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
- */
-
-/**
- * Purchase Order API Client
+ * @fileoverview Purchase Order API Client
+ * @module services/modules/purchaseOrderApi
+ * @category Services - Inventory Management
+ *
+ * @deprecated MIGRATION COMPLETE - Use purchase-orders.actions.ts instead
+ * Server actions are available and recommended for all purchase order operations.
+ *
+ * MIGRATION STATUS:
+ * - Purchase order CRUD -> Available in purchase-orders.actions.ts
+ * - Approval workflow -> Available in purchase-orders.approvals.ts
+ * - Receiving items -> Available in purchase-orders.status.ts
+ * - Analytics/Dashboard -> Available in purchase-orders.dashboard.ts
+ * - Form handling -> Available in purchase-orders.forms.ts
+ * - RECOMMENDATION: Migrate all code to use purchase-orders.actions.ts
+ * - Target deprecation date: March 2026
+ *
+ * WF-COMP-290 | Purchase Order API Client
  * Handles all purchase order operations including creation, approval workflow,
- * receiving, fulfillment, and order management
+ * receiving, fulfillment, and order management.
+ *
+ * For new implementations, prefer @/lib/actions/purchase-orders.actions
  */
 
 import type { ApiClient } from '@/services/core/ApiClient';
+import { apiClient } from '@/services/core'; // Updated: Import from new centralized core
 import { API_ENDPOINTS } from '@/constants/api';
 import { ApiResponse } from '../utils/apiUtils';
 import { z } from 'zod';
@@ -537,14 +544,42 @@ export class PurchaseOrderApi {
   }
 }
 
-// Factory function for creating PurchaseOrderApi instances
+/**
+ * Factory function for creating PurchaseOrderApi instances
+ * @deprecated Use purchase-orders.actions.ts instead
+ */
 export function createPurchaseOrderApi(client: ApiClient): PurchaseOrderApi {
   return new PurchaseOrderApi(client);
 }
 
-// Singleton instance (will be initialized when ApiClient is available)
-import { apiClient } from '@/services/core/ApiClient';
+/**
+ * Singleton instance of PurchaseOrderApi
+ * Pre-configured with the default apiClient from core services
+ *
+ * @deprecated MIGRATION COMPLETE - Use purchase-orders.actions.ts instead
+ *
+ * Server actions are now available for all purchase order operations:
+ *
+ * Migration guide:
+ * - Instead of: purchaseOrderApi.createPurchaseOrder(data)
+ * - Use: createPurchaseOrderAction(data) from purchase-orders.actions.ts
+ *
+ * - Instead of: purchaseOrderApi.approvePurchaseOrder(id, approvedBy)
+ * - Use: approvePurchaseOrderAction(id, approvedBy) from purchase-orders.actions.ts
+ *
+ * - Instead of: purchaseOrderApi.receiveItems(id, data, performedBy)
+ * - Use: receiveItemsAction from purchase-orders.status.ts
+ *
+ * - Instead of: purchaseOrderApi.getPurchaseOrders(filters)
+ * - Use: getPurchaseOrders(filters) from purchase-orders.cache.ts
+ *
+ * All functionality is available with better caching, type safety, and Next.js integration.
+ *
+ * Target deprecation: March 2026
+ */
 export const purchaseOrderApi = createPurchaseOrderApi(apiClient);
 
-// Export default for convenience
+/**
+ * @deprecated Use purchase-orders.actions.ts instead
+ */
 export default purchaseOrderApi;

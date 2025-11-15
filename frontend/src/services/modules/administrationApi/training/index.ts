@@ -1,26 +1,31 @@
 /**
  * Training Management Module - Public API
  *
+ * @deprecated This module is deprecated and will be removed in a future version.
+ * Migrate to server actions for better performance and type safety.
+ *
+ * Migration Guide:
+ * - Training Modules: Use '@/lib/actions/compliance.training' server actions
+ * - API Client: Use '@/lib/api/server' for server-side operations
+ *
+ * @example Migration from legacy to server actions
+ * ```typescript
+ * // DEPRECATED: Legacy API client approach
+ * import { createTrainingService } from './services/modules/administrationApi/training';
+ * import { apiClient } from './services/core/ApiClient';
+ * const trainingService = createTrainingService(apiClient);
+ * const modules = await trainingService.modules.getTrainingModules();
+ * const progress = await trainingService.completions.getUserTrainingProgress(userId);
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getTrainingModules, getUserTrainingProgress } from '@/lib/actions/compliance.training';
+ * const modules = await getTrainingModules();
+ * const progress = await getUserTrainingProgress(userId);
+ * ```
+ *
  * This module provides comprehensive training and compliance management
  * capabilities including module creation, completion tracking, progress
  * monitoring, and reporting.
- *
- * @example
- * ```typescript
- * import { createTrainingService } from './services/modules/administrationApi/training';
- * import { apiClient } from './services/core/ApiClient';
- *
- * const trainingService = createTrainingService(apiClient);
- *
- * // Access module management
- * const modules = await trainingService.modules.getTrainingModules();
- *
- * // Access completion tracking
- * const progress = await trainingService.completions.getUserTrainingProgress(userId);
- *
- * // Get dashboard data
- * const dashboard = await trainingService.getTrainingDashboard();
- * ```
  *
  * @module services/modules/administrationApi/training
  */

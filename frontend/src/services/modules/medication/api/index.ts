@@ -5,13 +5,32 @@
  * Downstream: Components, pages, app routing | Called by: React component tree
  * Related: Other components, hooks, services, types
  * Exports: default export, constants, types, named exports | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
+ * Last Updated: 2025-11-15 | File Type: .ts
  * Critical Path: Component mount → Render → User interaction → State updates
  * LLM Context: react component or utility module, part of React frontend architecture
  */
 
 /**
  * Medication Module API Exports
+ *
+ * @deprecated This entire medication API module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to server actions at @/lib/actions/medications.* instead.
+ *
+ * MIGRATION PATH:
+ * - Formulary operations → @/lib/actions/medications.cache (getMedications, getMedicationById)
+ * - Prescription operations → @/lib/actions/medications.crud (createMedication, updateMedication)
+ * - Administration operations → @/lib/actions/medications.administration (administerMedication)
+ *
+ * WHY MIGRATE:
+ * ✓ End-to-end type safety with Zod validation
+ * ✓ Built-in Next.js cache integration
+ * ✓ Automatic HIPAA audit logging
+ * ✓ Server-side security
+ * ✓ Better error handling
+ *
+ * DUPLICATE DIRECTORY NOTE:
+ * This directory (/medication) appears to duplicate functionality from /medications.
+ * Both directories will be deprecated in favor of server actions.
  *
  * Centralized export point for all medication-related API clients
  */

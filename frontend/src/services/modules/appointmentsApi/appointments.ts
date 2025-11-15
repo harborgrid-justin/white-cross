@@ -1,6 +1,32 @@
 /**
  * Appointments API - Unified Service
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Migration example:
+ * ```typescript
+ * // OLD:
+ * import { AppointmentsService } from '@/services/modules/appointmentsApi/appointments';
+ * const service = new AppointmentsService(client);
+ * const appointment = await service.getAppointment(id);
+ *
+ * // NEW (Server Component):
+ * import { getAppointment } from '@/lib/actions/appointments.actions';
+ * const appointment = await getAppointment(id);
+ *
+ * // NEW (Client Component with React Query):
+ * import { useQuery } from '@tanstack/react-query';
+ * import { getAppointment } from '@/lib/actions/appointments.actions';
+ * const { data: appointment } = useQuery({
+ *   queryKey: ['appointment', id],
+ *   queryFn: () => getAppointment(id)
+ * });
+ * ```
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Main appointments service that composes all appointment-related functionality
  * from specialized service modules. Provides a single, cohesive interface for
  * appointment management operations.

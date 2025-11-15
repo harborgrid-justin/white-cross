@@ -1,9 +1,14 @@
 /**
  * @fileoverview Core administration operations for system management
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions from @/lib/actions/admin instead.
+ *
+ * This class-based API has been superseded by Next.js server actions.
+ * See MIGRATION.md for detailed migration instructions.
+ *
  * This module provides core administration operations including user management,
  * system settings, district/school management, and basic configuration operations.
- * 
+ *
  * @module services/modules/administrationApi/core-operations
  */
 

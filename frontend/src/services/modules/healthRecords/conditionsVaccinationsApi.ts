@@ -1,11 +1,27 @@
 /**
- * Chronic Conditions & Vaccinations API Operations
- * 
- * Combined operations for:
- * - Chronic conditions management and care plans
- * - Vaccinations and compliance tracking
- * - PHI access logging and compliance
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
  *
+ * Chronic Conditions & Vaccinations API Operations
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENTS:
+ * - Chronic Conditions: @/lib/actions/health-records.crud
+ * - Vaccinations: @/lib/actions/health-records.immunizations
+ *
+ * MIGRATION GUIDE:
+ * OLD: conditionsApi.create(data)
+ * NEW: Available in health-records.crud module
+ *
+ * OLD: vaccinationsApi.create(data)
+ * NEW: await createImmunizationAction(data)
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.* instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.crud.ts} - Conditions
+ * @see {@link /lib/actions/health-records.immunizations.ts} - Vaccinations
+ * @see {@link ../healthRecordsApi.ts} - Detailed migration guide
  * @module services/modules/healthRecords/conditionsVaccinationsApi
  */
 

@@ -8,7 +8,7 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { apiClient } from '@/services/core/ApiClient';
+import { serverPost, serverGet } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type {
@@ -33,13 +33,17 @@ export async function performPhysicalCount(
   }>
 > {
   try {
-    const response = await apiClient.post<{
+    const response = await serverPost<{
       transactionsCreated: number;
       itemsAdjusted: number;
       totalVariance: number;
     }>(
       `${API_ENDPOINTS.INVENTORY.BASE}/physical-count`,
-      data
+      data,
+      {
+        cache: 'no-store',
+        next: { tags: ['inventory-stock', 'inventory-transactions'] }
+      }
     );
 
     await auditLogWithContext({
@@ -48,8 +52,8 @@ export async function performPhysicalCount(
       resource: 'physical_count',
       details: JSON.stringify({
         locationId: data.locationId,
-        itemsAdjusted: response.data.itemsAdjusted,
-        totalVariance: response.data.totalVariance,
+        itemsAdjusted: response.itemsAdjusted,
+        totalVariance: response.totalVariance,
         countDate: data.countedAt
       }),
     });
@@ -62,8 +66,8 @@ export async function performPhysicalCount(
 
     return {
       success: true,
-      data: response.data,
-      message: `Physical count completed: ${response.data.itemsAdjusted} items adjusted`,
+      data: response,
+      message: `Physical count completed: ${response.itemsAdjusted} items adjusted`,
     };
   } catch (error) {
     console.error('Failed to perform physical count:', error);
@@ -88,9 +92,16 @@ export async function getPhysicalCountHistory(
     if (startDate) params.startDate = startDate.toISOString();
     if (endDate) params.endDate = endDate.toISOString();
 
-    const response = await apiClient.get<unknown[]>(
+    const response = await serverGet<unknown[]>(
       `${API_ENDPOINTS.INVENTORY.BASE}/physical-count/history`,
-      { params }
+      params,
+      {
+        cache: 'force-cache',
+        next: {
+          revalidate: 300, // 5 minutes
+          tags: ['physical-count-history', 'inventory-transactions']
+        }
+      }
     );
 
     await auditLogWithContext({
@@ -102,7 +113,7 @@ export async function getPhysicalCountHistory(
 
     return {
       success: true,
-      data: response.data,
+      data: response,
     };
   } catch (error) {
     console.error('Failed to fetch physical count history:', error);

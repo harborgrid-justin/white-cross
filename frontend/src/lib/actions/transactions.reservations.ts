@@ -8,7 +8,7 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { apiClient } from '@/services/core/ApiClient';
+import { serverPost } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type {
@@ -27,16 +27,26 @@ import type {
  */
 export async function reserveStock(data: ReserveStock): Promise<ActionResult<Transaction>> {
   try {
-    const response = await apiClient.post<Transaction>(
+    const transaction = await serverPost<Transaction>(
       `${API_ENDPOINTS.INVENTORY.BASE}/transactions/reserve`,
-      data
+      data,
+      {
+        cache: 'no-store',
+        next: {
+          tags: [
+            'inventory-stock',
+            `stock-item-${data.itemId}`,
+            `stock-location-${data.locationId}`
+          ]
+        }
+      }
     );
 
     await auditLogWithContext({
       userId: data.performedBy,
       action: AUDIT_ACTIONS.CREATE_APPOINTMENT,
       resource: 'inventory_transaction',
-      resourceId: response.data.id,
+      resourceId: transaction.id,
       details: JSON.stringify({
         itemId: data.itemId,
         quantity: data.quantity,
@@ -52,7 +62,7 @@ export async function reserveStock(data: ReserveStock): Promise<ActionResult<Tra
 
     return {
       success: true,
-      data: response.data,
+      data: transaction,
       message: 'Stock reserved successfully',
     };
   } catch (error) {
@@ -71,16 +81,26 @@ export async function releaseReservedStock(
   data: ReleaseReservedStock
 ): Promise<ActionResult<Transaction>> {
   try {
-    const response = await apiClient.post<Transaction>(
+    const transaction = await serverPost<Transaction>(
       `${API_ENDPOINTS.INVENTORY.BASE}/transactions/release`,
-      data
+      data,
+      {
+        cache: 'no-store',
+        next: {
+          tags: [
+            'inventory-stock',
+            `stock-item-${data.itemId}`,
+            `stock-location-${data.locationId}`
+          ]
+        }
+      }
     );
 
     await auditLogWithContext({
       userId: data.performedBy,
       action: AUDIT_ACTIONS.DELETE_APPOINTMENT,
       resource: 'inventory_transaction',
-      resourceId: response.data.id,
+      resourceId: transaction.id,
       details: JSON.stringify({
         itemId: data.itemId,
         quantity: data.quantity,
@@ -95,7 +115,7 @@ export async function releaseReservedStock(
 
     return {
       success: true,
-      data: response.data,
+      data: transaction,
       message: 'Reserved stock released successfully',
     };
   } catch (error) {

@@ -7,8 +7,9 @@
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { incidentsApi } from '@/services/modules/incidentsApi';
+import * as followUpActions from '@/lib/actions/incidents.followup';
 import type { CreateFollowUpActionRequest } from '@/types/domain/incidents';
+import type { FollowUpAction } from '@/lib/actions/incidents.types';
 import toast from 'react-hot-toast';
 import debug from 'debug';
 
@@ -44,8 +45,8 @@ export const fetchFollowUpActions = createAsyncThunk(
   async (incidentReportId: string, { rejectWithValue }) => {
     try {
       log('Fetching follow-up actions for incident:', incidentReportId);
-      const response = await incidentsApi.getFollowUpActions(incidentReportId);
-      return response.actions;
+      const actions = await followUpActions.getFollowUpActions(incidentReportId);
+      return actions;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch follow-up actions';
       log('Error fetching follow-up actions:', error);
@@ -106,9 +107,24 @@ export const createFollowUpAction = createAsyncThunk(
   async (data: CreateFollowUpActionRequest, { rejectWithValue }) => {
     try {
       log('Creating follow-up action:', data);
-      const response = await incidentsApi.addFollowUpAction(data);
+      const result = await followUpActions.addFollowUpAction(
+        data.incidentReportId,
+        data as Partial<FollowUpAction>
+      );
+      if (!result.success) {
+        toast.error(result.error || 'Failed to create follow-up action');
+        return rejectWithValue(result.error || 'Failed to create follow-up action');
+      }
       toast.success('Follow-up action created successfully');
-      return response.action;
+      // Fetch the created action if we have an ID
+      if (result.id) {
+        const actions = await followUpActions.getFollowUpActions(data.incidentReportId);
+        const createdAction = actions.find(a => a.id === result.id);
+        if (createdAction) {
+          return createdAction;
+        }
+      }
+      return rejectWithValue('Failed to retrieve created follow-up action');
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create follow-up action';
       log('Error creating follow-up action:', error);

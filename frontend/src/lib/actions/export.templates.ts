@@ -9,7 +9,7 @@
 'use server';
 
 import { revalidateTag, revalidatePath } from 'next/cache';
-import { serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverPost, NextApiClientError } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ApiResponse } from '@/types';
@@ -18,7 +18,7 @@ import type {
   CreateExportTemplateData,
   ActionResult
 } from './export.types';
-import { EXPORT_CACHE_TAGS } from './export.types';
+import { EXPORT_CACHE_TAGS } from './export.constants';
 
 // ==========================================
 // CREATE EXPORT TEMPLATE

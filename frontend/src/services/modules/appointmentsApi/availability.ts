@@ -1,9 +1,15 @@
 /**
  * Appointments API - Nurse Availability Management
- * 
+ *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Handles nurse availability scheduling, time slot management, and
  * availability queries for appointment scheduling system.
- * 
+ *
  * @module services/modules/appointmentsApi/availability
  */
 

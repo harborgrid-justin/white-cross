@@ -1,12 +1,51 @@
 /**
  * @fileoverview System API Main Service Class
- * 
+ *
+ * @deprecated This class is deprecated and will be removed on 2026-06-30.
+ * Please migrate to the new Server Actions architecture.
+ *
+ * MIGRATION PATH BY FUNCTIONALITY:
+ *
+ * Health Monitoring:
+ * ```typescript
+ * // OLD:
+ * const health = await systemApi.getHealth();
+ * const componentHealth = await systemApi.getComponentHealth('database');
+ *
+ * // NEW:
+ * import { getSystemHealth, getComponentHealth } from '@/lib/actions/admin.monitoring';
+ * const health = await getSystemHealth();
+ * const componentHealth = await getComponentHealth('database');
+ * ```
+ *
+ * Configuration Management:
+ * ```typescript
+ * // OLD:
+ * const config = await systemApi.getConfig('SECURITY');
+ * await systemApi.updateConfig('key', { value: 'new-value' });
+ *
+ * // NEW:
+ * import { getSystemSettings, updateSystemSetting } from '@/lib/actions/admin.settings';
+ * const config = await getSystemSettings('SECURITY');
+ * await updateSystemSetting('key', 'new-value');
+ * ```
+ *
+ * System Statistics:
+ * ```typescript
+ * // OLD:
+ * const stats = await systemApi.getStatistics();
+ *
+ * // NEW:
+ * import { getSystemStats } from '@/lib/actions/dashboard.actions';
+ * const stats = await getSystemStats();
+ * ```
+ *
  * Provides a unified interface for all system administration operations by combining
  * core operations and specialized operations into a single, cohesive API service.
- * 
+ *
  * This class serves as the main entry point for system administration functionality,
  * maintaining backward compatibility while providing a clean, modular architecture.
- * 
+ *
  * @module systemApi/systemApi
  * @version 1.0.0
  * @since 2025-11-11

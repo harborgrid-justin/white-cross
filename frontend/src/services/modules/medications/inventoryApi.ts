@@ -1,6 +1,43 @@
 /**
  * @fileoverview Medication Inventory API
  *
+ * @deprecated This API is deprecated. Migrate to server actions (pending implementation).
+ *
+ * NOTE: Inventory management server actions are planned for future implementation.
+ * For now, this API remains functional but will be deprecated once the new
+ * inventory server actions are available.
+ *
+ * FUTURE MIGRATION PATH (when available):
+ * ```typescript
+ * // Before: Get inventory
+ * import { MedicationInventoryApi } from '@/services/modules/medications/inventoryApi';
+ * const api = new MedicationInventoryApi(client);
+ * const inventory = await api.getInventory();
+ *
+ * // After: Use server action (pending)
+ * import { getInventory } from '@/lib/actions/inventory.cache';
+ * const inventory = await getInventory();
+ *
+ * // Before: Add to inventory
+ * const item = await api.addToInventory({
+ *   medicationId: 'med-id',
+ *   batchNumber: 'LOT123',
+ *   quantity: 500,
+ *   expirationDate: '2026-12-31'
+ * });
+ *
+ * // After: Use server action (pending)
+ * import { addInventoryItem } from '@/lib/actions/inventory.crud';
+ * const result = await addInventoryItem({ ... });
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS (when available):
+ * ✓ Real-time inventory tracking with cache invalidation
+ * ✓ Automatic audit logging for controlled substances
+ * ✓ Type-safe ActionResult pattern
+ * ✓ Server-side validation
+ * ✓ Better alert generation
+ *
  * Handles medication inventory management including stock tracking, batch
  * management, expiration monitoring, and reorder alerts.
  *

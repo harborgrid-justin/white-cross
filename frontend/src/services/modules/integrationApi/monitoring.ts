@@ -3,6 +3,27 @@
  * @module services/modules/integrationApi/monitoring
  * @category Services - System Integration & External APIs
  *
+ * @deprecated This module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.integrations instead.
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // OLD: Monitoring operations
+ * import { getLogs, getStatistics, getHealthStatus, batchEnable } from '@/services/modules/integrationApi/monitoring';
+ * const logs = await getLogs(client, 'id', filters);
+ * const stats = await getStatistics(client);
+ * const health = await getHealthStatus(client, getAll);
+ * await batchEnable(client, ['id1', 'id2']);
+ *
+ * // NEW: Server Actions
+ * import { getIntegrationLogs, getIntegrationStats, toggleIntegration } from '@/lib/actions/admin.integrations';
+ * const logs = await getIntegrationLogs('id'); // filtering built-in
+ * const stats = await getIntegrationStats();
+ * // Health status typically integrated in getIntegrations()
+ * await toggleIntegration('id1', true);
+ * await toggleIntegration('id2', true);
+ * ```
+ *
  * Monitoring, logging, statistics, and batch operations for integrations.
  * Provides comprehensive visibility into integration health and performance.
  *

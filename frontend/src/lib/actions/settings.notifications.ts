@@ -29,7 +29,7 @@ import {
   createAuditContext
 } from './settings.utils';
 import { API_ENDPOINTS } from '@/constants/api';
-import { serverPut } from '@/lib/api/nextjs-client';
+import { serverPut } from '@/lib/api/server';
 import {
   updateNotificationPreferencesSchema,
 } from '@/schemas/settings.schemas';
@@ -85,7 +85,10 @@ export async function updateNotificationPreferencesAction(
     }
 
     const result = await serverPut(`${API_ENDPOINTS.USERS.BASE}/${user.id}/notification-preferences`, validation.data, {
-      tags: ['user-settings', `user-${user.id}`]
+      cache: 'no-store',
+      next: {
+        tags: ['user-settings', `user-${user.id}`]
+      }
     });
 
     await auditLog({

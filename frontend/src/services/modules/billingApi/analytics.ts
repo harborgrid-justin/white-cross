@@ -1,6 +1,29 @@
 /**
  * Analytics & Reporting API
  *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/billing.* instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Using service module
+ * import { billingApi } from '@/services/modules/billingApi';
+ * const analytics = await billingApi.analytics.getBillingAnalytics(filters);
+ * const trends = await billingApi.analytics.getRevenueTrends(filters);
+ *
+ * // ✅ NEW: Using Server Actions (cached queries)
+ * import { getBillingAnalytics, getRevenueTrends } from '@/lib/actions/billing.cache';
+ *
+ * // In Server Component
+ * const analytics = await getBillingAnalytics(filters);
+ * const trends = await getRevenueTrends(filters);
+ * ```
+ *
+ * **REPLACEMENT ACTIONS**:
+ * - `getBillingAnalytics()` → `@/lib/actions/billing.cache::getBillingAnalytics()`
+ * - `getRevenueTrends()` → `@/lib/actions/billing.cache::getRevenueTrends()`
+ * - `getPaymentAnalytics()` → `@/lib/actions/billing.cache` (or billing.utils)
+ *
  * Provides billing analytics, revenue trends, and financial reporting capabilities.
  *
  * @module services/modules/billingApi/analytics

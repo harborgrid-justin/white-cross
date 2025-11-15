@@ -1,10 +1,20 @@
 /**
  * @fileoverview System API Core Operations
- * 
+ *
+ * @deprecated This module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to the new Server Actions architecture instead.
+ *
+ * MIGRATION GUIDE:
+ * - Health checks → @/lib/actions/admin.monitoring
+ * - Configuration → @/lib/actions/admin.settings
+ * - System stats → @/lib/actions/dashboard.actions
+ *
+ * See module documentation for detailed examples.
+ *
  * Provides core system administration operations including configuration management,
  * feature flag operations, grade transitions, system health monitoring, and basic
  * integration management.
- * 
+ *
  * @module systemApi/core-operations
  * @version 1.0.0
  * @since 2025-11-11

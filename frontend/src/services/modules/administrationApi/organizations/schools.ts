@@ -1,6 +1,28 @@
 /**
  * Schools Management Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/admin.schools' server actions instead for better performance.
+ *
+ * Migration Path:
+ * 1. Replace ApiClient-based service with server actions
+ * 2. Update imports from '@/lib/actions/admin.schools'
+ * 3. Remove service instantiation code
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy approach
+ * import { createSchoolsService } from '@/services/modules/administrationApi/organizations';
+ * const service = createSchoolsService(apiClient);
+ * const schools = await service.getSchools({ districtId });
+ * const school = await service.getSchoolById(id);
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getSchools, getSchoolById } from '@/lib/actions/admin.schools';
+ * const schools = await getSchools({ districtId });
+ * const school = await getSchoolById(id);
+ * ```
+ *
  * Provides comprehensive school management functionality including:
  * - CRUD operations for schools
  * - School statistics and reporting

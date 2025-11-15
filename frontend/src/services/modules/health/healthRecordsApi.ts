@@ -1,11 +1,18 @@
 /**
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
  * @fileoverview Main Health Records API Service Module - Core Orchestrator for Student Health Data
  * @module services/modules/health/healthRecords
  * @category Services
  *
- * Comprehensive health records management system serving as the primary orchestration point
- * for all student health data. Coordinates with specialized health modules (allergies, vaccinations,
- * vital signs, etc.) to provide unified health record management and reporting.
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.*
+ *
+ * This comprehensive health records management system has been replaced by Next.js Server Actions
+ * for improved security, type safety, and Next.js App Router integration.
  *
  * Core Features:
  * - Complete CRUD operations for general health records
@@ -42,47 +49,42 @@
  * - Aggregates screenings for compliance tracking
  * - Pulls growth data for developmental assessments
  *
- * @example
+ * @deprecated Use Server Actions from @/lib/actions/health-records.* instead. Will be removed in v2.0.0
+ *
+ * @example OLD (Deprecated):
  * ```typescript
  * import { createHealthRecordsApi } from '@/services/modules/health';
  * import { apiClient } from '@/services/core/ApiClient';
- *
- * // Initialize health records API
  * const healthApi = createHealthRecordsApi(apiClient);
- *
- * // Get comprehensive health summary for a student
  * const summary = await healthApi.getHealthSummary('student-uuid');
- * console.log(`Total Records: ${summary.overview.totalRecords}`);
- * console.log(`Active Conditions: ${summary.overview.activeConditions}`);
- * console.log(`Vaccination Status: ${summary.complianceStatus.vaccinations}`);
- *
- * // Create new health record with follow-up
- * const newRecord = await healthApi.create({
- *   studentId: 'student-uuid',
- *   type: 'ILLNESS',
- *   date: new Date().toISOString(),
- *   description: 'Student reported persistent headache',
- *   diagnosis: 'Tension headache',
- *   treatment: 'Rest, hydration, acetaminophen as needed',
- *   provider: 'School Nurse Johnson',
- *   isConfidential: false,
- *   followUpRequired: true,
- *   followUpDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
- * });
- *
- * // Export comprehensive health records
- * const pdfReport = await healthApi.exportRecords({
- *   studentId: 'student-uuid',
- *   format: 'PDF',
- *   dateFrom: '2024-01-01T00:00:00Z',
- *   dateTo: new Date().toISOString(),
- *   includeAllergies: true,
- *   includeConditions: true,
- *   includeVaccinations: true,
- *   includeSummary: true
- * });
- * // pdfReport is a Blob ready for download or printing
+ * const newRecord = await healthApi.create({ studentId, type: 'ILLNESS', ... });
  * ```
+ *
+ * @example NEW (Server Actions):
+ * ```typescript
+ * import {
+ *   createHealthRecordAction,
+ *   getHealthRecordsAction
+ * } from '@/lib/actions/health-records.crud';
+ * import { getHealthRecordsStats } from '@/lib/actions/health-records.stats';
+ *
+ * // In Server Component
+ * const result = await getHealthRecordsAction({ studentId: 'student-uuid' });
+ * const stats = await getHealthRecordsStats();
+ *
+ * // In Client Component with form
+ * 'use client';
+ * import { useActionState } from 'react';
+ * const [state, formAction] = useActionState(createHealthRecordAction, {});
+ * <form action={formAction}>...</form>
+ * ```
+ *
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.allergies.ts} - Allergy management
+ * @see {@link /lib/actions/health-records.immunizations.ts} - Immunization tracking
+ * @see {@link /lib/actions/health-records.stats.ts} - Statistics
+ * @see {@link ../healthRecordsApi.ts} - Comprehensive migration guide with all examples
  */
 
 import { API_ENDPOINTS } from '@/constants/api';

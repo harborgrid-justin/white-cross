@@ -26,7 +26,7 @@ import type { InventoryItemFilter } from '@/schemas/inventory.schemas';
 import { auditLog } from '@/lib/audit';
 import type { ActionResult } from './inventory.types';
 import { API_ENDPOINTS } from '@/constants/api';
-import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/server';
 
 // ==========================================
 // INVENTORY ITEM OPERATIONS

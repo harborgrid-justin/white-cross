@@ -1,6 +1,52 @@
 /**
  * @fileoverview Medication Query and Search API
  *
+ * @deprecated This API is deprecated. Migrate to @/lib/actions/medications.cache
+ *
+ * MIGRATION GUIDE:
+ * ```typescript
+ * // Before: Search medications
+ * import { MedicationQueryApi } from '@/services/modules/medications/queryApi';
+ * const queryApi = new MedicationQueryApi(client, getAll, getById);
+ * const results = await queryApi.search('aspirin', 10);
+ *
+ * // After: Use cached server action
+ * import { getMedications } from '@/lib/actions/medications.cache';
+ * const results = await getMedications({ search: 'aspirin', limit: 10 });
+ *
+ * // Before: Get medications by category
+ * const medications = await queryApi.getByCategory('analgesic', 20);
+ *
+ * // After: Use cached server action
+ * import { getMedications } from '@/lib/actions/medications.cache';
+ * const medications = await getMedications({ category: 'analgesic', limit: 20 });
+ *
+ * // Before: Get controlled substances
+ * const controlled = await queryApi.getControlledSubstances('II');
+ *
+ * // After: Use cached server action
+ * import { getMedications } from '@/lib/actions/medications.cache';
+ * const controlled = await getMedications({
+ *   controlledSubstance: true,
+ *   // DEA schedule filtering pending implementation
+ * });
+ *
+ * // Before: Check availability
+ * const { available, medication } = await queryApi.checkAvailability('id');
+ *
+ * // After: Use cached server action
+ * import { getMedicationById } from '@/lib/actions/medications.cache';
+ * const medication = await getMedicationById('id');
+ * const available = medication?.isActive ?? false;
+ * ```
+ *
+ * BENEFITS OF SERVER ACTIONS:
+ * ✓ Server-side caching with Next.js (faster search)
+ * ✓ Automatic HIPAA audit logging for controlled substance access
+ * ✓ Type-safe with Zod validation
+ * ✓ Unified query interface
+ * ✓ Better error handling
+ *
  * Handles medication search, filtering, and query operations including
  * full-text search, category filtering, controlled substance queries,
  * and availability checking.

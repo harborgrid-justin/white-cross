@@ -1,13 +1,25 @@
 /**
- * Health Records API - Growth Measurements Management
- * 
- * Comprehensive growth measurements management including:
- * - Growth measurement CRUD operations
- * - Growth trend analysis
- * - Percentile calculations
- * - Developmental milestone tracking
- * - PHI access logging for HIPAA compliance
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.crud
+ *
+ * MIGRATION EXAMPLES:
+ *
+ * Create Growth Measurement:
+ * OLD: await growthService.create({ studentId, height, weight, date })
+ * NEW: Available in health-records.crud module
+ *
+ * Get Student Growth Measurements:
+ * OLD: await growthService.getMeasurements(studentId)
+ * NEW: Use health-records.crud actions with growth type filters
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.crud instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
  * @module services/modules/healthRecordsApi/growth
  */
 

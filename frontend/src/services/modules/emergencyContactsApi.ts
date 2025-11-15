@@ -1,13 +1,20 @@
 /**
- * WF-COMP-277 | emergencyContactsApi.ts - React component or utility module
- * Purpose: react component or utility module
- * Upstream: ../config/apiConfig, ../utils/apiUtils | Dependencies: ../config/apiConfig, ../utils/apiUtils
- * Downstream: Components, pages, app routing | Called by: React component tree
- * Related: Other components, hooks, services, types
- * Exports: constants, interfaces, types | Key Features: Standard module
- * Last Updated: 2025-10-17 | File Type: .ts
- * Critical Path: Component mount → Render → User interaction → State updates
- * LLM Context: react component or utility module, part of React frontend architecture
+ * @fileoverview Emergency Contacts API Service
+ * @module services/modules/emergencyContactsApi
+ * @category Services - Student Management
+ *
+ * @deprecated MIGRATION PENDING - Server actions partially available
+ * Emergency contact operations are likely part of students.actions.ts module.
+ * This service may be merged with student management in future updates.
+ *
+ * MIGRATION STATUS:
+ * - Student-related emergency contacts -> Already in students.actions.ts
+ * - Standalone emergency contact ops -> Continue using this service
+ * - Migration target: Q2 2026 (consolidated into students or contacts module)
+ * - Current recommendation: Continue using this API service
+ *
+ * WF-COMP-277 | Emergency Contacts API implementation
+ * Handles emergency contact management and notifications aligned with backend EmergencyContactService
  */
 
 import type { IEmergencyContactsApi } from '../types'
@@ -51,7 +58,7 @@ export interface UpdateEmergencyContactData {
   notes?: string
 }
 import type { ApiClient } from '../core/ApiClient';
-import { apiClient } from '../core/ApiClient';
+import { apiClient } from '../core'; // Updated: Import from new centralized core
 import { extractApiData, handleApiError } from '../utils/apiUtils'
 
 /**
@@ -182,7 +189,13 @@ export function createEmergencyContactsApi(client: ApiClient): IEmergencyContact
 
 /**
  * Singleton instance of EmergencyContactsApi
- * Pre-configured with the default apiClient
+ * Pre-configured with the default apiClient from core services
+ *
+ * @deprecated Server actions migration pending. Emergency contact operations
+ * are likely already available in students.actions.ts. Review students module
+ * before using this service for new implementations.
+ *
+ * Recommendation: For student-related emergency contacts, prefer students.actions.ts
  */
 export const emergencyContactsApi = createEmergencyContactsApi(apiClient);
 

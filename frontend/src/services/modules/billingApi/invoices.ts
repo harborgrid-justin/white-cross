@@ -1,6 +1,45 @@
 /**
  * Invoice Management API
  *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/billing.* instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Using service module
+ * import { billingApi } from '@/services/modules/billingApi';
+ * const invoices = await billingApi.invoices.getInvoices(1, 20);
+ * const invoice = await billingApi.invoices.createInvoice(data);
+ *
+ * // ✅ NEW: Using Server Actions
+ * import { getInvoices } from '@/lib/actions/billing.cache';
+ * import { createInvoiceAction } from '@/lib/actions/billing.invoices';
+ *
+ * // In Server Component (queries)
+ * const invoices = await getInvoices({ page: 1, limit: 20 });
+ *
+ * // In Client Component (mutations with 'use server')
+ * const result = await createInvoiceAction(data);
+ * if (result.success) {
+ *   // Handle success with result.data
+ * }
+ * ```
+ *
+ * **REPLACEMENT ACTIONS**:
+ * - `getInvoices()` → `@/lib/actions/billing.cache` (cached query)
+ * - `getInvoiceById()` → `@/lib/actions/billing.cache` (cached query)
+ * - `createInvoice()` → `@/lib/actions/billing.invoices::createInvoiceAction()`
+ * - `updateInvoice()` → `@/lib/actions/billing.invoices::updateInvoiceAction()`
+ * - `sendInvoice()` → `@/lib/actions/billing.invoices::sendInvoiceAction()`
+ * - `voidInvoice()` → `@/lib/actions/billing.invoices::voidInvoiceAction()`
+ *
+ * **BENEFITS OF MIGRATION**:
+ * - Server Actions with 'use server' directive
+ * - Automatic cache invalidation with revalidateTag
+ * - Built-in audit logging
+ * - Type-safe error handling
+ * - HIPAA-compliant logging
+ *
  * Handles all invoice-related operations including CRUD operations,
  * email delivery, PDF generation, and status management.
  *

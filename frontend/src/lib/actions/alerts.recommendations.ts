@@ -8,7 +8,7 @@
 
 'use server';
 
-import { apiClient } from '@/services/core/ApiClient';
+import { serverGet } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type {
@@ -24,10 +24,10 @@ export async function getReorderRecommendations(
   locationId?: string
 ): Promise<ActionResult<BulkReorderRecommendations>> {
   try {
-    const params = locationId ? { locationId } : {};
-    const response = await apiClient.get<BulkReorderRecommendations>(
+    const params = locationId ? { locationId } : undefined;
+    const data = await serverGet<BulkReorderRecommendations>(
       API_ENDPOINTS.INVENTORY.REORDER,
-      { params }
+      params
     );
 
     await auditLogWithContext({
@@ -39,7 +39,7 @@ export async function getReorderRecommendations(
 
     return {
       success: true,
-      data: response.data,
+      data,
     };
   } catch (error) {
     console.error('Failed to fetch reorder recommendations:', error);
@@ -57,7 +57,7 @@ export async function getTransferRecommendations(): Promise<
   ActionResult<StockTransferRecommendation[]>
 > {
   try {
-    const response = await apiClient.get<StockTransferRecommendation[]>(
+    const data = await serverGet<StockTransferRecommendation[]>(
       `${API_ENDPOINTS.INVENTORY.BASE}/transfer-recommendations`
     );
 
@@ -69,7 +69,7 @@ export async function getTransferRecommendations(): Promise<
 
     return {
       success: true,
-      data: response.data,
+      data,
     };
   } catch (error) {
     console.error('Failed to fetch transfer recommendations:', error);

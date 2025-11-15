@@ -1,10 +1,20 @@
 /**
- * Analytics API Validation Module
+ * @fileoverview Analytics API Validation Module
+ * @module services/modules/validation
+ * @category Services - Utilities
+ *
+ * STATUS: UTILITY MODULE - Continue using as-is
+ * This validation module provides reusable Zod schemas for analytics operations.
+ * It is used by both API services and server actions for consistent validation.
+ *
+ * USAGE STATUS:
+ * - Shared validation schemas for analytics, reports, and queries
+ * - Used by both legacy API services and new server actions
+ * - No migration needed - this is a utility module
+ * - Recommendation: Continue using for validation across the codebase
  *
  * Provides comprehensive Zod validation schemas and helper functions for analytics API requests.
  * Ensures type safety and data integrity for all analytics operations.
- *
- * @module services/modules/validation
  */
 
 import { z } from 'zod';

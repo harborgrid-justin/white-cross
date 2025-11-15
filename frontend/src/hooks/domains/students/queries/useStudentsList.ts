@@ -11,19 +11,18 @@
 
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useCallback, useMemo, useEffect, useState } from 'react';
-import { studentsApi } from '@/services/modules/studentsApi';
+import { getPaginatedStudents } from '@/lib/actions/students.cache';
 import { useApiError } from '@/hooks/shared/useApiError';
 import { useCacheManager } from '@/hooks/shared/useCacheManager';
-import { useHealthcareCompliance } from '@/hooks/shared/useHealthcareCompliance';
-import { 
-  studentQueryKeys, 
+import {
+  studentQueryKeys,
   STUDENT_OPERATIONS,
   type StudentListFilters,
-  type PaginationParams 
+  type PaginationParams
 } from '../config';
-import type { 
-  Student, 
-  PaginatedStudentsResponse 
+import type {
+  Student,
+  PaginatedStudentsResponse
 } from '@/types/student.types';
 
 /**
@@ -67,18 +66,16 @@ export function useStudentsList(options: UseStudentsListOptions = {}): StudentsL
   // Enterprise hooks
   const { handleError } = useApiError({ context: 'students_list' });
   const { getCacheStrategy, prefetchWithStrategy } = useCacheManager();
-  const { logCompliantAccess, getComplianceLevel } = useHealthcareCompliance();
 
   // Cache configuration based on data sensitivity
   const cacheConfig = useMemo(() => {
-    const sensitivity = getComplianceLevel(filters);
-    const strategy = getCacheStrategy(sensitivity);
-    
+    const strategy = getCacheStrategy('phi'); // Student data is PHI
+
     return {
       staleTime: enableRealtime ? 0 : strategy.staleTime,
       gcTime: strategy.cacheTime,
     };
-  }, [filters, enableRealtime, getCacheStrategy, getComplianceLevel]);
+  }, [enableRealtime, getCacheStrategy]);
 
   // Query key generation
   const queryKey = useMemo(() => {
@@ -88,28 +85,23 @@ export function useStudentsList(options: UseStudentsListOptions = {}): StudentsL
     return studentQueryKeys.lists.paginated(pagination);
   }, [filters, pagination]);
 
-  // Query function with compliance logging
-  const queryFn = useCallback(async (): Promise<PaginatedStudentsResponse> => {
+  // Query function using server cache action
+  // Note: Server action includes HIPAA audit logging automatically
+  const queryFn = useCallback(async (): Promise<PaginatedStudentsResponse | null> => {
     try {
-      // Log compliant access
-      await logCompliantAccess(
-        'student_list',
-        'view',
-        { filters, pagination }
+      // Fetch data from server cache action
+      const response = await getPaginatedStudents(
+        pagination.page,
+        pagination.limit,
+        filters as any
       );
-
-      // Fetch data from API
-      const response = await studentsApi.getStudentsPaginated({
-        ...pagination,
-        ...filters,
-      });
 
       return response;
     } catch (error) {
       const handledError = handleError(error, STUDENT_OPERATIONS.VIEW_LIST);
       throw handledError;
     }
-  }, [filters, pagination, logCompliantAccess, handleError]);
+  }, [filters, pagination, handleError]);
 
   // Main query
   const queryResult = useQuery({
@@ -142,11 +134,12 @@ export function useStudentsList(options: UseStudentsListOptions = {}): StudentsL
 
     await prefetchWithStrategy(
       nextQueryKey,
-      () => studentsApi.getStudentsPaginated({
-        ...nextPagination,
-        ...filters,
-      }),
-      getComplianceLevel(filters)
+      () => getPaginatedStudents(
+        nextPagination.page,
+        nextPagination.limit,
+        filters as any
+      ),
+      'phi' // Student data is PHI
     );
   }, [
     enablePrefetch,
@@ -154,7 +147,6 @@ export function useStudentsList(options: UseStudentsListOptions = {}): StudentsL
     pagination,
     filters,
     prefetchWithStrategy,
-    getComplianceLevel,
   ]);
 
   // Cache invalidation

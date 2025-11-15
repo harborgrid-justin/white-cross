@@ -1,8 +1,72 @@
 /**
  * Incidents API - Core CRUD Operations
- * 
+ *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to Server Actions in @/lib/actions/incidents.* instead.
+ *
+ * **MIGRATION GUIDE**:
+ * ```typescript
+ * // ❌ OLD: Service Module Pattern
+ * import { IncidentsCore } from '@/services/modules/incidentsApi/incidents';
+ * const incidentsCore = new IncidentsCore(apiClient);
+ *
+ * const incidents = await incidentsCore.getAll({ page: 1, limit: 20, severity: 'HIGH' });
+ * const incident = await incidentsCore.getById(id);
+ * const result = await incidentsCore.create(data);
+ * await incidentsCore.update(id, updates);
+ * const stats = await incidentsCore.getStatistics({ dateFrom, dateTo });
+ *
+ * // ✅ NEW: Server Actions Pattern
+ * import {
+ *   getIncidents,
+ *   getIncident,
+ *   createIncident,
+ *   updateIncident,
+ *   deleteIncident
+ * } from '@/lib/actions/incidents.crud';
+ * import { getIncidentAnalytics } from '@/lib/actions/incidents.analytics';
+ *
+ * // CRUD operations (Server Components or Server Actions)
+ * const response = await getIncidents({ page: 1, limit: 20, severity: 'HIGH' });
+ * const incidents = response.incidents; // Note: returns { incidents, pagination }
+ *
+ * const incident = await getIncident(id);
+ *
+ * // Mutations (returns { success, id?, error? })
+ * const result = await createIncident(data);
+ * if (result.success) {
+ *   console.log('Created incident:', result.id);
+ * }
+ *
+ * const updateResult = await updateIncident(id, updates);
+ * if (updateResult.success) {
+ *   // Handle success
+ * }
+ *
+ * // Analytics
+ * const analytics = await getIncidentAnalytics({ dateFrom, dateTo });
+ * ```
+ *
+ * **METHOD MAPPING**:
+ * - `getAll()` → `getIncidents()` from `@/lib/actions/incidents.crud`
+ * - `getById()` → `getIncident()` from `@/lib/actions/incidents.crud`
+ * - `create()` → `createIncident()` from `@/lib/actions/incidents.crud`
+ * - `update()` → `updateIncident()` from `@/lib/actions/incidents.crud`
+ * - `delete()` → `deleteIncident()` from `@/lib/actions/incidents.crud`
+ * - `search()` → Use `getIncidents()` with filter parameters
+ * - `getStatistics()` → `getIncidentAnalytics()` from `@/lib/actions/incidents.analytics`
+ * - `getFollowUpRequired()` → `getIncidentsRequiringFollowUp()` from `@/lib/actions/incidents.crud`
+ * - `getStudentRecentIncidents()` → `getStudentRecentIncidents()` from `@/lib/actions/incidents.crud`
+ *
+ * **KEY DIFFERENCES**:
+ * - Server Actions use `'use server'` directive
+ * - Mutations return `{ success, id?, error? }` pattern
+ * - Queries return data directly (cached)
+ * - Automatic cache invalidation with `revalidatePath()`
+ * - No need to instantiate classes
+ *
  * Core incident report CRUD operations with search and statistics
- * 
+ *
  * @module services/modules/incidentsApi/incidents
  */
 

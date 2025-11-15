@@ -5,7 +5,7 @@
 
 'use server';
 
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import type { IncidentAnalytics, SeverityTrend } from './incidents.types';
 import { getIncidents } from './incidents.crud';
 

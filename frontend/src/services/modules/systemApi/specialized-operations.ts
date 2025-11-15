@@ -1,5 +1,10 @@
 /**
  * @fileoverview System API Specialized Operations
+ *
+ * @deprecated This module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to @/lib/actions/admin.monitoring and @/lib/actions/admin.settings instead.
+ *
+ * @fileoverview System API Specialized Operations
  * 
  * Provides advanced system administration operations including data synchronization,
  * school/district management, bulk operations, audit trails, and specialized

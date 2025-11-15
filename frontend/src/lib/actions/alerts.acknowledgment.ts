@@ -9,7 +9,7 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { apiClient } from '@/services/core/ApiClient';
+import { serverPost } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ActionResult } from './alerts.types';
@@ -23,10 +23,17 @@ export async function acknowledgeAlert(
   actionTaken?: string
 ): Promise<ActionResult<void>> {
   try {
-    await apiClient.post(`${API_ENDPOINTS.INVENTORY.ALERTS}/${alertId}/acknowledge`, {
-      userId,
-      actionTaken,
-    });
+    await serverPost<void>(
+      `${API_ENDPOINTS.INVENTORY.ALERTS}/${alertId}/acknowledge`,
+      {
+        userId,
+        actionTaken,
+      },
+      {
+        cache: 'no-store',
+        next: { tags: ['inventory-alerts', 'low-stock-alerts'] }
+      }
+    );
 
     await auditLogWithContext({
       userId,
@@ -61,7 +68,14 @@ export async function dismissAlert(
   userId: string
 ): Promise<ActionResult<void>> {
   try {
-    await apiClient.post(`${API_ENDPOINTS.INVENTORY.ALERTS}/${alertId}/dismiss`);
+    await serverPost<void>(
+      `${API_ENDPOINTS.INVENTORY.ALERTS}/${alertId}/dismiss`,
+      undefined,
+      {
+        cache: 'no-store',
+        next: { tags: ['inventory-alerts', 'expiration-alerts'] }
+      }
+    );
 
     await auditLogWithContext({
       userId,

@@ -3,6 +3,32 @@
  * @module services/modules/appointments/appointmentsApi.availability
  * @category Services
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Migration example:
+ * ```typescript
+ * // OLD:
+ * import { AppointmentsAvailabilityApiImpl } from '@/services/modules/appointments/appointmentsApi.availability';
+ * const api = new AppointmentsAvailabilityApiImpl(client);
+ * const { slots } = await api.getAvailability(nurseId, date);
+ *
+ * // NEW (Server Component):
+ * import { getNurseAvailability } from '@/lib/actions/appointments.actions';
+ * const slots = await getNurseAvailability({ nurseId, date });
+ *
+ * // NEW (Client Component with React Query):
+ * import { useQuery } from '@tanstack/react-query';
+ * import { getNurseAvailability } from '@/lib/actions/appointments.actions';
+ * const { data: slots } = useQuery({
+ *   queryKey: ['nurse-availability', nurseId, date],
+ *   queryFn: () => getNurseAvailability({ nurseId, date })
+ * });
+ * ```
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Appointment availability and nurse scheduling management API providing
  * slot availability checking, recurring appointments, and calendar operations.
  */

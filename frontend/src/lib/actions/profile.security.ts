@@ -16,7 +16,7 @@
 'use server';
 
 import { revalidateTag, revalidatePath } from 'next/cache';
-import { serverPost, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverPost, serverDelete, NextApiClientError } from '@/lib/api/server';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ApiResponse } from '@/types/core/api/responses';
 import type {

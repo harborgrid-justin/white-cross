@@ -7,7 +7,7 @@
 
 'use server';
 
-import { fetchApi } from './communications.utils';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/server';
 import type { ActionResult } from './communications.types';
 import {
   CreateTemplateSchema,
@@ -33,24 +33,22 @@ export async function getTemplates(
   try {
     const validatedFilter = filter ? TemplateFilterSchema.parse(filter) : {};
 
-    const response = await fetchApi<{ templates: Template[]; total: number }>(
-      '/communications/templates',
-      {
-        method: 'GET',
-        params: validatedFilter
+    // Convert filter to query params format
+    const params = Object.entries(validatedFilter).reduce((acc, [key, value]) => {
+      if (value !== undefined && value !== null) {
+        acc[key] = String(value);
       }
-    );
+      return acc;
+    }, {} as Record<string, string>);
 
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch templates'
-      };
-    }
+    const data = await serverGet<{ templates: Template[]; total: number }>(
+      '/communications/templates',
+      params
+    );
 
     return {
       success: true,
-      data: response.data
+      data
     };
   } catch (error) {
     console.error('Error fetching templates:', error);
@@ -68,21 +66,13 @@ export async function getTemplateById(
   templateId: string
 ): Promise<ActionResult<Template>> {
   try {
-    const response = await fetchApi<Template>(
-      `/communications/templates/${templateId}`,
-      { method: 'GET' }
+    const data = await serverGet<Template>(
+      `/communications/templates/${templateId}`
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to fetch template'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data
     };
   } catch (error) {
     console.error('Error fetching template:', error);
@@ -102,24 +92,14 @@ export async function createTemplate(
   try {
     const validatedData = CreateTemplateSchema.parse(data);
 
-    const response = await fetchApi<Template>(
+    const responseData = await serverPost<Template>(
       '/communications/templates',
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to create template'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: responseData
     };
   } catch (error) {
     console.error('Error creating template:', error);
@@ -139,24 +119,14 @@ export async function updateTemplate(
   try {
     const validatedData = UpdateTemplateSchema.parse(data);
 
-    const response = await fetchApi<Template>(
+    const responseData = await serverPut<Template>(
       `/communications/templates/${validatedData.id}`,
-      {
-        method: 'PUT',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to update template'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: responseData
     };
   } catch (error) {
     console.error('Error updating template:', error);
@@ -174,17 +144,9 @@ export async function deleteTemplate(
   templateId: string
 ): Promise<ActionResult<void>> {
   try {
-    const response = await fetchApi(
-      `/communications/templates/${templateId}`,
-      { method: 'DELETE' }
+    await serverDelete<void>(
+      `/communications/templates/${templateId}`
     );
-
-    if (!response.success) {
-      return {
-        success: false,
-        error: response.error || 'Failed to delete template'
-      };
-    }
 
     return { success: true };
   } catch (error) {
@@ -206,24 +168,14 @@ export async function duplicateTemplate(
   try {
     const validatedData = DuplicateTemplateSchema.parse({ id: templateId, name });
 
-    const response = await fetchApi<Template>(
+    const responseData = await serverPost<Template>(
       `/communications/templates/${templateId}/duplicate`,
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to duplicate template'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: responseData
     };
   } catch (error) {
     console.error('Error duplicating template:', error);
@@ -244,24 +196,14 @@ export async function renderTemplate(
   try {
     const validatedData = RenderTemplateSchema.parse({ templateId, variables });
 
-    const response = await fetchApi<RenderedTemplate>(
+    const responseData = await serverPost<RenderedTemplate>(
       `/communications/templates/${templateId}/render`,
-      {
-        method: 'POST',
-        body: validatedData
-      }
+      validatedData
     );
-
-    if (!response.success || !response.data) {
-      return {
-        success: false,
-        error: response.error || 'Failed to render template'
-      };
-    }
 
     return {
       success: true,
-      data: response.data
+      data: responseData
     };
   } catch (error) {
     console.error('Error rendering template:', error);

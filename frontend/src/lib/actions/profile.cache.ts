@@ -15,7 +15,7 @@
 'use server';
 
 import { cache } from 'react';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import { CACHE_TTL } from '@/lib/cache/constants';
 import type { ApiResponse } from '@/types/core/api/responses';
 import type {

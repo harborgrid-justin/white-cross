@@ -22,7 +22,25 @@ import React, { useCallback } from 'react'
 import { FileText, Stethoscope, Shield } from 'lucide-react'
 import { SearchAndFilter } from '../shared/SearchAndFilter'
 import { useAuthContext } from '@/hooks/utilities/AuthContext'
-import type { HealthRecord } from '@/services/modules/healthRecordsApi'
+// MIGRATION COMPLETE: Using types from cache instead of deprecated services
+// Old: import type { HealthRecord } from '@/services/modules/healthRecordsApi'
+// New: Define HealthRecord type locally (matches server action types)
+
+interface HealthRecord {
+  id: string;
+  studentId?: string;
+  recordType?: string;
+  type?: string;
+  title?: string;
+  description?: string;
+  date: string;
+  provider?: string;
+  diagnosis?: string;
+  notes?: string;
+  isConfidential?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 /**
  * Props for RecordsTab component

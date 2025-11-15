@@ -1,9 +1,24 @@
 /**
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
  * Health Records API - Main Integration
  *
- * Combines all specialized health records API modules into a single unified interface.
- * Provides backward compatibility with the original monolithic API.
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
  *
+ * REPLACEMENT: @/lib/actions/health-records.*
+ *
+ * This unified API interface has been replaced by Next.js Server Actions.
+ * All specialized modules (allergies, vaccinations, conditions, etc.) are now
+ * available as individual Server Actions with improved type safety and security.
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.* instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.allergies.ts} - Allergy management
+ * @see {@link /lib/actions/health-records.immunizations.ts} - Immunization tracking
+ * @see {@link ../../healthRecordsApi.ts} - Comprehensive migration guide
  * @module services/modules/healthRecords/api
  */
 

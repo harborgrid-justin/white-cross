@@ -1,6 +1,28 @@
 /**
  * Administration API - System Health Service
  *
+ * @deprecated This service is deprecated and will be removed in a future version.
+ * Use '@/lib/actions/admin.monitoring' server actions instead.
+ *
+ * Migration Path:
+ * 1. Replace ApiClient-based service with server actions
+ * 2. Update imports from '@/lib/actions/admin.monitoring'
+ * 3. Remove service instantiation code
+ *
+ * @example Migration example
+ * ```typescript
+ * // DEPRECATED: Legacy approach
+ * import { createSystemHealthService } from '@/services/modules/administrationApi/monitoring';
+ * const service = createSystemHealthService(apiClient);
+ * const health = await service.getSystemHealth();
+ * const status = await service.getSystemStatus();
+ *
+ * // RECOMMENDED: Server actions approach
+ * import { getSystemHealth, getSystemStatus } from '@/lib/actions/admin.monitoring';
+ * const health = await getSystemHealth();
+ * const status = await getSystemStatus();
+ * ```
+ *
  * System health monitoring service providing:
  * - System health status checks
  * - Service health monitoring

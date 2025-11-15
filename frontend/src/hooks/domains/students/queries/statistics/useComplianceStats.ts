@@ -10,9 +10,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { getStudents } from '@/lib/actions/students.cache';
 import { studentQueryKeys } from '../queryKeys';
 import { cacheConfig } from '../cacheConfig';
-import { studentsApi } from '@/services/modules/studentsApi';
 import type { Student } from '@/types/student.types';
 import type { ComplianceStats, TimeRange } from './types';
 
@@ -40,8 +40,8 @@ export const useComplianceStats = (timeRange: TimeRange = 'month') => {
   return useQuery({
     queryKey: studentQueryKeys.statistics.trends('compliance', timeRange),
     queryFn: async (): Promise<ComplianceStats> => {
-      const response = await studentsApi.getAll({});
-      const students = response.students;
+      // Fetch students from server cache action
+      const students = await getStudents() || [];
 
       // Calculate compliance metrics
       const totalStudents = students.length;

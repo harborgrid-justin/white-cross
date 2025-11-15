@@ -10,7 +10,7 @@
 
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverPost, serverPut, serverDelete, NextApiClientError } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS } from '@/lib/cache/constants';

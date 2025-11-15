@@ -6,7 +6,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { IncidentReport, IncidentsResponse } from './incidents.types';
 

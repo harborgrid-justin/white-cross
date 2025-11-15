@@ -1,21 +1,41 @@
 /**
- * Health Records API - Unified Interface
- * 
- * Comprehensive health records management system with modular architecture.
- * This module provides a unified interface for all health record operations
- * while maintaining backward compatibility with the original healthRecordsApi.
- * 
- * Features:
- * - Complete health records management
- * - Allergies tracking and safety monitoring
- * - Chronic conditions with care plan management
- * - Vaccination compliance tracking
- * - Health screenings with referral management
- * - Growth measurements with trend analysis
- * - Vital signs monitoring with alerts
- * - PHI access logging for HIPAA compliance
- * - Comprehensive validation and error handling
- * 
+ * MIGRATION STATUS: DEPRECATED - SCHEDULED FOR REMOVAL IN v2.0.0
+ *
+ * This modular health records API has been replaced by Next.js Server Actions.
+ *
+ * DEPRECATION TIMELINE:
+ * - Deprecated: v1.5.0 (Current)
+ * - Removal: v2.0.0 (Planned Q2 2025)
+ *
+ * REPLACEMENT: @/lib/actions/health-records.*
+ *
+ * QUICK MIGRATION REFERENCE:
+ *
+ * Records Module:
+ * OLD: import { createHealthRecordsService } from '@/services/modules/healthRecordsApi';
+ * NEW: import { createHealthRecordAction } from '@/lib/actions/health-records.crud';
+ *
+ * Allergies Module:
+ * OLD: import { createAllergiesService } from '@/services/modules/healthRecordsApi';
+ * NEW: import { createAllergyAction } from '@/lib/actions/health-records.allergies';
+ *
+ * Vaccinations Module:
+ * OLD: import { createVaccinationsService } from '@/services/modules/healthRecordsApi';
+ * NEW: import { createImmunizationAction } from '@/lib/actions/health-records.immunizations';
+ *
+ * Statistics:
+ * OLD: healthRecordsApi.getStats()
+ * NEW: import { getHealthRecordsStats } from '@/lib/actions/health-records.stats';
+ *
+ * See parent module documentation for complete migration guide.
+ *
+ * @deprecated Use Server Actions from @/lib/actions/health-records.* instead. Will be removed in v2.0.0
+ * @see {@link /lib/actions/health-records.actions.ts} - Main barrel export
+ * @see {@link /lib/actions/health-records.crud.ts} - CRUD operations
+ * @see {@link /lib/actions/health-records.allergies.ts} - Allergy management
+ * @see {@link /lib/actions/health-records.immunizations.ts} - Immunization tracking
+ * @see {@link /lib/actions/health-records.stats.ts} - Statistics
+ * @see {@link ../healthRecordsApi.ts} - Detailed migration examples
  * @module services/modules/healthRecordsApi
  */
 

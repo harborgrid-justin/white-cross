@@ -10,8 +10,8 @@
  * @since 2025-11-12
  */
 
-import { NextFetchOptions } from './nextjs-client.types';
-import { nextFetch } from './nextjs-client.core';
+import { NextFetchOptions } from './types';
+import { nextFetch } from './core';
 
 // ==========================================
 // HTTP CONVENIENCE METHODS

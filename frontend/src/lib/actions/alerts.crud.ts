@@ -8,7 +8,7 @@
 
 'use server';
 
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLogWithContext, AUDIT_ACTIONS } from '@/lib/audit';
 import type { ActionResult, LowStockAlert, ExpirationAlert } from './alerts.types';

@@ -1,6 +1,12 @@
 /**
  * Appointments API - Reminder Management
  *
+ * @deprecated This module is deprecated. Use server actions instead:
+ * - Server: `@/lib/actions/appointments.actions`
+ * - Client: Use React Query with server actions
+ *
+ * Will be removed in v2.0.0 (Q2 2025)
+ *
  * Unified service for managing appointment reminders. Orchestrates
  * scheduling, delivery, and query operations through specialized sub-services.
  *

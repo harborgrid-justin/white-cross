@@ -1,6 +1,45 @@
 /**
  * @fileoverview Medications API Module
  *
+ * @deprecated This service module is deprecated and will be removed on 2026-06-30.
+ * Please migrate to server actions at @/lib/actions/medications.* instead.
+ *
+ * MIGRATION PATH:
+ * - CRUD operations → @/lib/actions/medications.crud
+ * - Administration → @/lib/actions/medications.administration
+ * - Status/Queries → @/lib/actions/medications.status
+ * - Caching → @/lib/actions/medications.cache
+ *
+ * WHY MIGRATE:
+ * ✓ End-to-end type safety with Zod validation
+ * ✓ Built-in Next.js cache integration (revalidateTag, revalidatePath)
+ * ✓ Automatic HIPAA audit logging
+ * ✓ Server-side security and data protection
+ * ✓ Better error handling with ActionResult pattern
+ * ✓ Form integration with FormData support
+ *
+ * EXAMPLE MIGRATION:
+ * ```typescript
+ * // Before (deprecated):
+ * import { medicationsApi } from '@/services/modules/medications';
+ * const medication = await medicationsApi.create({
+ *   name: 'Amoxicillin',
+ *   dosage: '500mg',
+ *   // ... other fields
+ * });
+ *
+ * // After (recommended):
+ * import { createMedication } from '@/lib/actions/medications.crud';
+ * const result = await createMedication({
+ *   name: 'Amoxicillin',
+ *   dosage: '500mg',
+ *   // ... other fields
+ * });
+ * if (result.success) {
+ *   const medication = result.data;
+ * }
+ * ```
+ *
  * Unified medication management API providing comprehensive access to medication
  * operations, student assignments, administration logging, inventory management,
  * and adverse reaction reporting with full HIPAA compliance and DEA regulations.

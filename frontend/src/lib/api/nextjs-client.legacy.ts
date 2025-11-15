@@ -18,8 +18,8 @@
  * @since 2025-11-12
  */
 
-import { ApiClientOptions } from './nextjs-client.types';
-import { getApiBaseUrl } from './nextjs-client.config';
+import { ApiClientOptions } from './server/types';
+import { getApiBaseUrl } from './server/config';
 
 // ==========================================
 // LEGACY CLIENT SUPPORT

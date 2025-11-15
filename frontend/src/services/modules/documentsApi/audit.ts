@@ -1,10 +1,10 @@
 /**
- * @fileoverview Documents API Audit Trail Management
+ * MIGRATION STATUS: DEPRECATED
+ *
+ * @deprecated Use Server Actions from @/lib/actions/documents.stats
+ * @see {@link /lib/actions/documents.stats.ts}
  * @module services/modules/documentsApi/audit
  * @category Healthcare - Documents
- *
- * Audit trail management for document access, modifications, and compliance
- * tracking with HIPAA-compliant logging and reporting capabilities.
  */
 
 import type { ApiResponse } from '../../types';

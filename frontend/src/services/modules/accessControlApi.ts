@@ -3,6 +3,42 @@
  * @module services/modules/accessControlApi
  * @category Services - Security & Access Control
  *
+ * @deprecated This service API is deprecated. Server actions for access control will be added to @/lib/actions/admin.
+ *
+ * MIGRATION STATUS:
+ * =================
+ * This module handles access control and RBAC which are critical security features.
+ * Server action equivalents are being developed and will be available at:
+ * - @/lib/actions/admin.access-control.ts (planned)
+ *
+ * CURRENT FUNCTIONALITY:
+ * - Role management (create, update, delete roles)
+ * - Permission management (create and assign permissions)
+ * - Role-Permission assignments (many-to-many relationship)
+ * - User-Role assignments (dynamic role switching)
+ * - Permission checking and validation
+ * - Session management and tracking
+ * - Security incident logging and monitoring
+ * - IP restriction management (allowlist/blocklist)
+ * - Security statistics and analytics
+ * - Default role initialization
+ *
+ * PLANNED MIGRATION:
+ * ```typescript
+ * // Future server actions (when available)
+ * import {
+ *   getRoles,
+ *   createRole,
+ *   assignRoleToUser,
+ *   checkPermission,
+ *   getUserSessions,
+ *   getSecurityIncidents
+ * } from '@/lib/actions/admin';
+ * ```
+ *
+ * NOTE: Until server actions are available, continue using this service API.
+ * This is a complex security module that requires careful migration planning.
+ *
  * Provides comprehensive Role-Based Access Control (RBAC) management, security incident
  * tracking, session management, and IP restriction capabilities for the White Cross
  * healthcare platform. Implements enterprise-grade security controls with audit logging.
