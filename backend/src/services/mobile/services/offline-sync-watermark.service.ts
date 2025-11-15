@@ -34,7 +34,7 @@ export class OfflineSyncWatermarkService extends BaseService {
     @InjectModel(SyncQueueItem)
     private readonly queueModel: typeof SyncQueueItem,
   ) {
-    this.logInfo('OfflineSyncWatermarkService initialized');
+    super('OfflineSyncWatermarkService');
   }
 
   /**

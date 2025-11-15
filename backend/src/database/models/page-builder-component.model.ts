@@ -173,7 +173,7 @@ export interface CreatePageBuilderComponentAttributes {
   byType: (type: ComponentType) => ({
     where: { type, deletedAt: null },
     order: [['order', 'ASC']],
-  },
+  }),
   withChildren: {
     include: [
       {

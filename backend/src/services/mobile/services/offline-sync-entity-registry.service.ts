@@ -25,6 +25,10 @@ export class OfflineSyncEntityRegistryService extends BaseService {
     IEntitySyncService
   > = new Map();
 
+  constructor() {
+    super('OfflineSyncEntityRegistryService');
+  }
+
   /**
    * Register an entity service for sync operations
    *

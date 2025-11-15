@@ -103,7 +103,20 @@ export class CacheWarmingService extends BaseService implements OnModuleInit {
       return 0;
     }
 
-    return this.executeStrategy(strategy);
+    try {
+      const count = await this.executeStrategy(strategy);
+
+      // Update statistics
+      this.warmingStats.totalWarmed += count;
+      this.warmingStats.lastCount = count;
+      this.lastWarmingTime = new Date();
+
+      return count;
+    } catch (error) {
+      this.logError(`Failed to execute warming strategy ${strategy.name}:`, error);
+      this.warmingStats.failures++;
+      throw error;
+    }
   }
 
   /**

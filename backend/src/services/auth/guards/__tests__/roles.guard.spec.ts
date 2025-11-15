@@ -105,7 +105,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         role: UserRole.NURSE,
       };
       const context = createMockExecutionContext(nurseUser);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -158,10 +162,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         role: UserRole.VIEWER,
       };
       const context = createMockExecutionContext(viewerUser);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
-        UserRole.ADMIN,
-        UserRole.SCHOOL_ADMIN,
-      ]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN, UserRole.SCHOOL_ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -242,7 +247,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
   describe('Unauthenticated User Handling', () => {
     it('should throw ForbiddenException when user is not authenticated', () => {
       const context = createMockExecutionContext(null);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -252,7 +261,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
 
     it('should throw ForbiddenException when user is undefined', () => {
       const context = createMockExecutionContext(undefined);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.NURSE]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.NURSE];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -280,7 +293,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         // No role property
       };
       const context = createMockExecutionContext(userWithoutRole);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -293,7 +310,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         role: 'INVALID_ROLE' as any,
       };
       const context = createMockExecutionContext(userWithInvalidRole);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -306,7 +327,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         role: 'admin' as any, // lowercase instead of ADMIN
       };
       const context = createMockExecutionContext(userWithLowercaseRole);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -324,7 +349,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
       };
       const context = createMockExecutionContext(user);
       const getAllAndOverrideSpy = jest.spyOn(reflector, 'getAllAndOverride')
-        .mockReturnValue([UserRole.ADMIN]);
+        .mockImplementation((key: string) => {
+          if (key === 'isPublic') return false;
+          if (key === 'roles') return [UserRole.ADMIN];
+          return null;
+        });
 
       guard.canActivate(context);
 
@@ -341,7 +370,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         role: UserRole.ADMIN,
       };
       const context = createMockExecutionContext(user);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN];
+        return null;
+      });
 
       guard.canActivate(context);
 
@@ -388,7 +421,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         role: UserRole.NURSE,
       };
       const context = createMockExecutionContext(nurseUser);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.COUNSELOR]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.COUNSELOR];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -441,11 +478,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
       const context = createMockExecutionContext(viewerUser);
 
       // VIEWER should not have write access (ADMIN, NURSE, COUNSELOR only)
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
-        UserRole.ADMIN,
-        UserRole.NURSE,
-        UserRole.COUNSELOR,
-      ]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN, UserRole.NURSE, UserRole.COUNSELOR];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);
@@ -496,10 +533,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
         role: UserRole.NURSE,
       };
       const context = createMockExecutionContext(nurseUser);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([
-        UserRole.ADMIN,
-        UserRole.SCHOOL_ADMIN,
-      ]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN, UserRole.SCHOOL_ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow('Insufficient permissions. Required roles: ADMIN, SCHOOL_ADMIN');
@@ -546,7 +584,11 @@ describe('RolesGuard (HIGH PRIORITY SECURITY)', () => {
     it('should handle empty user object', () => {
       const emptyUser = {} as any;
       const context = createMockExecutionContext(emptyUser);
-      jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.ADMIN]);
+      jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key: string) => {
+        if (key === 'isPublic') return false;
+        if (key === 'roles') return [UserRole.ADMIN];
+        return null;
+      });
 
       expect(() => guard.canActivate(context))
         .toThrow(ForbiddenException);

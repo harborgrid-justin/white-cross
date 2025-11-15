@@ -49,7 +49,7 @@ export class OfflineSyncQueueService extends BaseService {
     @InjectModel(SyncConflict)
     private readonly conflictModel: typeof SyncConflict,
   ) {
-    this.logInfo('OfflineSyncQueueService initialized');
+    super('OfflineSyncQueueService');
   }
 
   /**

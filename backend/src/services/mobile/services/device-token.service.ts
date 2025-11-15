@@ -37,7 +37,9 @@ export class DeviceTokenService extends BaseService {
   constructor(
     @InjectModel(DeviceToken)
     private readonly deviceTokenModel: typeof DeviceToken,
-  ) {}
+  ) {
+    super('DeviceTokenService');
+  }
 
   /**
    * Register a device token for push notifications

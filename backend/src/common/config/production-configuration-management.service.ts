@@ -779,7 +779,6 @@ export class ProductionConfigurationManagementService extends EventEmitter {
     this.watchTimers = [];
     this.removeAllListeners();
   }
-}
 
   private logInfo(message: string): void {
     if (this.serviceLogger instanceof Logger) {
@@ -836,6 +835,7 @@ export class ProductionConfigurationManagementService extends EventEmitter {
       return String(error);
     }
   }
+}
 
 // Factory for easy instantiation
 export class ConfigurationFactory {

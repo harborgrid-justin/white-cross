@@ -68,8 +68,7 @@ describe('RolesGuard', () => {
         .mockReturnValueOnce([UserRole.ADMIN]);
       const context = createMockExecutionContext({ id: 'user-123', role: UserRole.NURSE });
 
-      expect(() => guard.canActivate(context)).toThrow(ForbiddenException);
-      expect(() => guard.canActivate(context)).toThrow('Insufficient permissions');
+      expect(() => guard.canActivate(context)).toThrow('Insufficient permissions. Required roles: ADMIN');
     });
 
     it('should throw ForbiddenException when user is not authenticated', () => {
@@ -78,7 +77,6 @@ describe('RolesGuard', () => {
         .mockReturnValueOnce([UserRole.ADMIN]);
       const context = createMockExecutionContext(null);
 
-      expect(() => guard.canActivate(context)).toThrow(ForbiddenException);
       expect(() => guard.canActivate(context)).toThrow('User not authenticated');
     });
 
