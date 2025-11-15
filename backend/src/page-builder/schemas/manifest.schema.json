@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://whitecross.com/schemas/page-builder/manifest.json",
+  "title": "Page Builder Export Manifest",
+  "description": "Manifest file for page builder ZIP exports",
+  "type": "object",
+  "required": [
+    "version",
+    "exportFormat",
+    "projectId",
+    "projectName",
+    "exportedAt",
+    "files"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Export format version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "exportFormat": {
+      "type": "string",
+      "enum": ["json", "zip"],
+      "description": "Export format type"
+    },
+    "projectId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Project UUID"
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Export timestamp"
+    },
+    "exportedBy": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      }
+    },
+    "files": {
+      "type": "object",
+      "required": ["project", "pages", "assets"],
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": "Path to project.json file",
+          "example": "project.json"
+        },
+        "pages": {
+          "type": "array",
+          "description": "Paths to page JSON files",
+          "items": {
+            "type": "string",
+            "example": "pages/home.json"
+          }
+        },
+        "assets": {
+          "type": "array",
+          "description": "Paths to asset files",
+          "items": {
+            "type": "object",
+            "required": ["id", "path"],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "path": { "type": "string", "example": "assets/images/hero.jpg" },
+              "type": { "type": "string" },
+              "size": { "type": "integer" }
+            }
+          }
+        },
+        "componentLibrary": {
+          "type": "string",
+          "description": "Path to component library file",
+          "example": "component-library.json"
+        },
+        "workflows": {
+          "type": "string",
+          "description": "Path to workflows file",
+          "example": "workflows.json"
+        }
+      }
+    },
+    "checksums": {
+      "type": "object",
+      "description": "File checksums for integrity verification",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional export metadata",
+      "properties": {
+        "pageCount": { "type": "integer" },
+        "componentCount": { "type": "integer" },
+        "assetCount": { "type": "integer" },
+        "totalSize": { "type": "integer" },
+        "includesAssets": { "type": "boolean" }
+      }
+    }
+  }
+}
