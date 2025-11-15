@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * @fileoverview Access Denied Page - Authorization Error Handler
  *
@@ -8,40 +6,29 @@
  * It implements RBAC (Role-Based Access Control) error messaging with clear user guidance
  * and HIPAA-compliant security practices.
  *
- * @module app/(auth)/access-denied/page
+ * @module app/access-denied/page
  * @category Authentication
  * @subcategory Authorization
  *
  * @route /access-denied - Authorization error page
  *
  * @requires next/navigation
- * @requires @/contexts/AuthContext
  *
  * @security
- * - Displays user role and email for verification without exposing PHI
+ * - Displays generic error messaging without exposing system details
  * - Does not log authorization failures with identifiable information
- * - Provides security-appropriate error messages without system details
+ * - Provides security-appropriate error messages without PHI exposure
  * - Implements proper RBAC feedback for healthcare access control
- * - Edge runtime for improved security and performance
  *
  * @compliance HIPAA
  * - No Protected Health Information (PHI) displayed or logged
- * - Authorization failures tracked in audit logs (server-side)
- * - User identification limited to email and role
+ * - Authorization failures tracked in audit logs (server-side via middleware)
  * - Complies with HIPAA Security Rule § 164.312(a)(1) - Access Control
  *
  * @example
  * ```tsx
  * // User is redirected to this page when:
- * // 1. Role doesn't have required permissions
- * router.push('/access-denied');
- *
- * // 2. Attempting to access restricted resource
- * if (!hasPermission(user.role, 'view:patients')) {
- *   redirect('/access-denied');
- * }
- *
- * // 3. Middleware blocks unauthorized access
+ * // 1. Middleware blocks unauthorized access
  * // middleware.ts:
  * if (!authorized) {
  *   return NextResponse.redirect('/access-denied');
@@ -49,85 +36,52 @@
  * ```
  *
  * @see {@link https://www.hhs.gov/hipaa/for-professionals/security/laws-regulations/index.html | HIPAA Security Rule}
- * @see {@link useAuth} for authentication context
  *
  * @since 1.0.0
  */
 
-
-
+'use client';
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/identity-access/contexts/AuthContext';
 
 /**
  * Access Denied Page Component
  *
  * Renders a comprehensive authorization error page that:
  * - Clearly communicates why access was denied
- * - Shows current user information for verification
  * - Provides actionable next steps (go back, go home, contact admin)
  * - Maintains security best practices by not exposing system details
  * - Implements accessible error messaging with proper ARIA attributes
  *
  * **User Experience Flow:**
- * 1. User attempts unauthorized action → server/middleware blocks request
+ * 1. User attempts unauthorized action → middleware blocks request
  * 2. User redirected to /access-denied page
- * 3. Page displays error with current role/email for context
+ * 3. Page displays generic error message
  * 4. User can go back, return home, or contact administrator
  *
  * **Error Scenarios Handled:**
- * - Insufficient role permissions (e.g., nurse trying to access admin panel)
- * - Resource-specific restrictions (e.g., viewing another school's data)
- * - Recently updated permissions (role changed but session not refreshed)
- * - Temporary access restrictions during maintenance
+ * - Insufficient role permissions (handled by middleware)
+ * - Resource-specific restrictions (handled by middleware)
+ * - Authentication failures (handled by middleware)
  *
  * **Security Design:**
  * - Does not expose specific permission names or system structure
  * - Uses generic error messages to prevent information disclosure
- * - Shows only non-sensitive user attributes (email, role name)
+ * - No client-side user context to prevent information leakage
  * - No logging of PHI or detailed authorization context on client
  *
- * @returns {JSX.Element} The access denied page with user context and navigation options
- *
- * @example
- * ```tsx
- * // This page is rendered when:
- * // App router automatically navigates based on authorization checks
- * <AccessDeniedPage />
- * ```
- *
- * @example
- * ```tsx
- * // Example authorization check in a protected route:
- * // app/admin/page.tsx
- * export default function AdminPage() {
- *   const { user } = useAuth();
- *
- *   if (user?.role !== 'admin') {
- *     redirect('/access-denied'); // Navigates to this page
- *   }
- *
- *   return <AdminDashboard />;
- * }
- * ```
+ * @returns {JSX.Element} The access denied page with navigation options
  *
  * @remarks
  * This is a Next.js Client Component ('use client') because it:
  * - Accesses router for navigation (useRouter)
- * - Reads authentication context (useAuth)
  * - Handles interactive button clicks
  *
- * The edge runtime is used for faster response times and reduced latency,
- * which is important for security-related error pages.
- *
- * @see {@link useAuth} - Authentication context hook providing user state
  * @see {@link useRouter} - Next.js router for navigation
  */
 export default function AccessDeniedPage() {
   const router = useRouter();
-  const { user } = useAuth();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -185,26 +139,7 @@ export default function AccessDeniedPage() {
             </li>
           </ul>
 
-          {/* User Info */}
-          {user && (
-            <div className="bg-gray-50 border border-gray-200 rounded-md p-4 mb-6">
-              <h2 className="text-sm font-medium text-gray-900 mb-2">Current User Information</h2>
-              <dl className="text-sm text-gray-600 space-y-1">
-                <div className="flex justify-between">
-                  <dt className="font-medium">Email:</dt>
-                  <dd>{user.email}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="font-medium">Role:</dt>
-                  <dd>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {user.role}
-                    </span>
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          )}
+
 
           {/* Actions */}
           <div className="flex flex-col gap-3">

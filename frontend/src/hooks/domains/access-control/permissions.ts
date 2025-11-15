@@ -8,7 +8,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { accessControlQueryKeys } from './query-keys';
-import { clientGet, clientPut } from '@/lib/api/client';
+import { serverGet, serverPut } from '@/lib/api/nextjs-client';
 
 /**
  * User permission data structure
@@ -51,7 +51,7 @@ export function useUserPermissions(userId: string) {
   return useQuery({
     queryKey: accessControlQueryKeys.userPermissions(userId),
     queryFn: async (): Promise<UserPermissions> => {
-      return await clientGet<UserPermissions>(`/api/access-control/users/${userId}/permissions`);
+      return await serverGet<UserPermissions>(`/api/access-control/users/${userId}/permissions`);
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -98,7 +98,7 @@ export function useUpdateUserPermissions() {
 
   return useMutation({
     mutationFn: async (options: UpdateUserPermissionsOptions): Promise<UserPermissions> => {
-      return await clientPut<UserPermissions>(
+      return await serverPut<UserPermissions>(
         `/api/access-control/users/${options.userId}/permissions`,
         {
           permissions: options.permissions,

@@ -8,7 +8,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { accessControlQueryKeys } from './query-keys';
-import { clientGet, clientPost } from '@/lib/api/client';
+import { serverGet, serverPost } from '@/lib/api/nextjs-client';
 
 /**
  * Permission check result
@@ -69,7 +69,7 @@ export function usePermissionCheck(
       if (options?.resourceId) params.append('resourceId', options.resourceId);
       if (options?.resourceType) params.append('resourceType', options.resourceType);
 
-      return await clientGet<PermissionCheckResult>(
+      return await serverGet<PermissionCheckResult>(
         `/api/access-control/check/${permission}?${params.toString()}`
       );
     },
@@ -108,7 +108,7 @@ export function useMultiplePermissionChecks(permissions: string[]) {
   return useQuery({
     queryKey: accessControlQueryKeys.multiplePermissionChecks(permissions),
     queryFn: async (): Promise<Record<string, PermissionCheckResult>> => {
-      return await clientPost<Record<string, PermissionCheckResult>>(
+      return await serverPost<Record<string, PermissionCheckResult>>(
         '/api/access-control/check-multiple',
         { permissions }
       );
@@ -146,7 +146,7 @@ export function useHasAnyPermission(permissions: string[]) {
   return useQuery({
     queryKey: accessControlQueryKeys.hasAnyPermission(permissions),
     queryFn: async (): Promise<PermissionCheckResult> => {
-      return await clientPost<PermissionCheckResult>(
+      return await serverPost<PermissionCheckResult>(
         '/api/access-control/has-any',
         { permissions }
       );
@@ -184,7 +184,7 @@ export function useHasAllPermissions(permissions: string[]) {
   return useQuery({
     queryKey: accessControlQueryKeys.hasAllPermissions(permissions),
     queryFn: async (): Promise<PermissionCheckResult> => {
-      return await clientPost<PermissionCheckResult>(
+      return await serverPost<PermissionCheckResult>(
         '/api/access-control/has-all',
         { permissions }
       );

@@ -47,8 +47,8 @@ interface DashboardLayoutProps {
 /**
  * Dashboard Layout Component
  *
- * Server component that provides metadata and delegates to client component
- * for interactive layout elements.
+ * Server component that provides metadata and delegates to client component.
+ * Authentication is handled by Next.js middleware.
  *
  * @param {DashboardLayoutProps} props - Component properties
  * @param {React.ReactNode} props.children - Child dashboard pages

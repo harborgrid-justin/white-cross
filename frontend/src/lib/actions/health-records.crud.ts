@@ -11,8 +11,11 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z, type ZodIssue } from 'zod';
-import { serverGet } from '@/lib/api/nextjs-client';
+import { serverGet, serverPost, serverPut, serverDelete } from '@/lib/api/nextjs-client';
 import type { ApiResponse } from '@/types';
+
+// Import audit logging functions
+import { auditLog, createAuditContext, AUDIT_ACTIONS } from '@/lib/audit';
 
 // Import schemas
 import {
@@ -20,16 +23,9 @@ import {
   healthRecordUpdateSchema
 } from '@/schemas/health-record.schemas';
 
-// Import audit logging utilities
-import {
-  auditLog,
-  AUDIT_ACTIONS
-} from '@/lib/audit';
-
 // Import shared utilities and types
 import {
   getAuthToken,
-  createAuditContext,
   enhancedFetch,
   BACKEND_URL
 } from './health-records.utils';
@@ -219,15 +215,8 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
       isArray: Array.isArray(wrappedResponse.data)
     });
 
-    // HIPAA AUDIT LOG - PHI access
-    const auditContext = await createAuditContext();
-    await auditLog({
-      ...auditContext,
-      action: AUDIT_ACTIONS.VIEW_HEALTH_RECORD,
-      resource: 'HealthRecord',
-      details: `Accessed health records for student ${studentId}`,
-      success: true
-    });
+    // HIPAA AUDIT LOG - PHI access (frontend API proxy already handles this)
+    // No need to duplicate audit logging here since the API proxy handles it
 
     // Backend wraps response in ApiResponse format: { success, statusCode, data: {...} }
     // The actual health records might be in wrappedResponse.data.data or wrappedResponse.data
@@ -239,14 +228,14 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
         healthRecords = wrappedResponse.data;
       }
       // If wrappedResponse.data has a data property (double-wrapped), extract it
-      else if (typeof wrappedResponse.data === 'object' && 'data' in wrappedResponse.data) {
+      else if (typeof wrappedResponse.data === 'object' && wrappedResponse.data !== null && 'data' in wrappedResponse.data) {
         const nested = wrappedResponse.data as { data?: unknown[] };
         if (nested.data && Array.isArray(nested.data)) {
           healthRecords = nested.data;
         }
       }
       // If wrappedResponse.data is an object with records property
-      else if (typeof wrappedResponse.data === 'object' && 'records' in wrappedResponse.data) {
+      else if (typeof wrappedResponse.data === 'object' && wrappedResponse.data !== null && 'records' in wrappedResponse.data) {
         const nested = wrappedResponse.data as { records?: unknown[] };
         if (nested.records && Array.isArray(nested.records)) {
           healthRecords = nested.records;
@@ -255,6 +244,16 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
     }
 
     console.log('[Health Records] Successfully fetched records:', healthRecords.length);
+
+    // HIPAA AUDIT LOG - PHI access
+    const auditContext = await createAuditContext();
+    await auditLog({
+      ...auditContext,
+      action: AUDIT_ACTIONS.VIEW_HEALTH_RECORD,
+      resource: 'HealthRecord',
+      details: `Accessed health records for student ${studentId}`,
+      success: true
+    });
 
     return {
       success: true,

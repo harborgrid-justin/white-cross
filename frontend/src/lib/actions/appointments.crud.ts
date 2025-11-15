@@ -17,7 +17,7 @@ import { serverPost, serverPut, serverDelete } from '@/lib/server/api-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TAGS } from '@/lib/cache/constants';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import { auth } from '@/lib/auth';
+import { getServerAuth } from '@/identity-access/lib/session';
 import { headers } from 'next/headers';
 import type { Appointment, CreateAppointmentData, UpdateAppointmentData } from './appointments.types';
 
@@ -33,7 +33,7 @@ export async function createAppointment(data: CreateAppointmentData): Promise<{
   id?: string;
   error?: string;
 }> {
-  const session = await auth();
+  const session = await getServerAuth();
   const headersList = await headers();
 
   try {
@@ -109,7 +109,7 @@ export async function updateAppointment(
   success: boolean;
   error?: string;
 }> {
-  const session = await auth();
+  const session = await getServerAuth();
   const headersList = await headers();
 
   try {
@@ -179,7 +179,7 @@ export async function deleteAppointment(id: string): Promise<{
   success: boolean;
   error?: string;
 }> {
-  const session = await auth();
+  const session = await getServerAuth();
   const headersList = await headers();
 
   try {

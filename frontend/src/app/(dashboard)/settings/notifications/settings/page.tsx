@@ -1,17 +1,17 @@
-'use client';
-
 import React from 'react';
 import { NotificationSettings } from '@/features/notifications/components';
-import { useAuth } from '@/identity-access/contexts/AuthContext';
+import { requireSession } from '@/identity-access/lib/session';
 
 /**
  * Notification Settings Page
  *
  * User notification preferences management
+ * Uses server-side authentication via middleware and session functions
  */
-export default function NotificationSettingsPage() {
-  const { user } = useAuth();
-  const userId = user?.id || '';
+export default async function NotificationSettingsPage() {
+  // Get authenticated user from server session (middleware ensures auth)
+  const session = await requireSession();
+  const userId = session.user.id;
 
   return (
     <div className="min-h-screen bg-gray-50">

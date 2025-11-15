@@ -17,7 +17,7 @@ import { serverGet } from '@/lib/server/api-client';
 import { API_ENDPOINTS } from '@/constants/api';
 import { CACHE_TAGS, CACHE_TTL } from '@/lib/cache/constants';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
-import { auth } from '@/lib/auth';
+import { getServerAuth } from '@/identity-access/lib/session';
 import { headers } from 'next/headers';
 import type { Appointment, AppointmentFilters } from './appointments.types';
 
@@ -33,7 +33,7 @@ export const getAppointments = cache(async (filters?: AppointmentFilters): Promi
   appointments: Appointment[];
   total: number;
 }> => {
-  const session = await auth();
+  const session = await getServerAuth();
   const headersList = await headers();
 
   try {
@@ -100,7 +100,7 @@ export const getAppointments = cache(async (filters?: AppointmentFilters): Promi
  * @returns Promise with appointment data or null if not found
  */
 export const getAppointment = cache(async (id: string): Promise<Appointment | null> => {
-  const session = await auth();
+  const session = await getServerAuth();
   const headersList = await headers();
 
   try {

@@ -8,7 +8,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { accessControlQueryKeys } from './query-keys';
-import { clientGet } from '@/lib/api/client';
+import { serverGet } from '@/lib/api/nextjs-client';
 
 /**
  * Role data structure
@@ -52,7 +52,7 @@ export function useRolesList() {
   return useQuery({
     queryKey: accessControlQueryKeys.roles,
     queryFn: async (): Promise<Role[]> => {
-      return await clientGet<Role[]>('/api/access-control/roles');
+      return await serverGet<Role[]>('/api/access-control/roles');
     },
     staleTime: 10 * 60 * 1000, // 10 minutes (roles rarely change)
     gcTime: 30 * 60 * 1000, // 30 minutes
@@ -91,7 +91,7 @@ export function useRole(roleId: string) {
   return useQuery({
     queryKey: accessControlQueryKeys.role(roleId),
     queryFn: async (): Promise<Role> => {
-      return await clientGet<Role>(`/api/access-control/roles/${roleId}`);
+      return await serverGet<Role>(`/api/access-control/roles/${roleId}`);
     },
     enabled: !!roleId,
     staleTime: 10 * 60 * 1000, // 10 minutes

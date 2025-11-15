@@ -139,7 +139,7 @@ export async function getServerSession(): Promise<Session | null> {
     }
 
     // Verify and decode the token
-    const payload: TokenPayload = verifyAccessToken(token);
+    const payload: TokenPayload = await verifyAccessToken(token);
 
     return {
       user: {

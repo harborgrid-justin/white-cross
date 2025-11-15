@@ -26,28 +26,21 @@
  */
 
 // ==========================================
-// CLIENT-SIDE API EXPORTS
+// NOTE: IMPORTANT SERVER/CLIENT SEPARATION
 // ==========================================
+// This file exports only what's safe for client components.
+// Server-only functions (serverGet, serverPost, etc.) should be imported directly:
+// import { serverGet } from '@/lib/api/nextjs-client';
 
-// Export client-side API functions (safe for Client Components)
-export {
-  clientFetch,
-  clientGet,
-  clientPost,
-  clientPut,
-  clientPatch,
-  clientDelete,
-  apiClient,
-  fetchApi,
-  ClientApiError
-} from './client';
+// For now, we'll provide a minimal export to prevent build errors
+// Client components should use their own API client methods
 
-// Export client types
+// Export types only (safe for both server and client)
 export type {
-  ClientFetchOptions,
-  ApiClientOptions,
-  ApiErrorResponse
-} from './client';
+  NextFetchOptions,
+  NextApiOptions,
+  NextApiResponse
+} from './nextjs-client';
 
 // ==========================================
 // SERVER-SIDE API EXPORTS

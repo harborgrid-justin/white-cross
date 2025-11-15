@@ -25,12 +25,12 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-// Fetch health record from backend using our API client
+// Fetch health record from backend using serverGet with proper authentication
 async function getHealthRecord(id: string) {
   try {
-    // Use serverGet which handles authentication automatically
+    // Use serverGet which handles authentication via identity-access module
     const wrappedResponse = await serverGet<ApiResponse<any>>(
-      `/health-record/${id}`,
+      `/api/v1/health-records/${id}`,
       undefined,
       {
         cache: 'no-store', // Don't cache for fresh data

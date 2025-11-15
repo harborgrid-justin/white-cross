@@ -105,7 +105,7 @@ export function authMiddleware(request: NextRequest): {
 
   // Verify token
   try {
-    const payload = verifyAccessToken(token);
+    const payload = await verifyAccessToken(token);
 
     // Check token expiration
     if (payload.exp && payload.exp * 1000 < Date.now()) {

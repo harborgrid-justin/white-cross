@@ -154,37 +154,51 @@
 
 import { createEntitySlice, EntityApiService } from '@/stores/sliceFactory';
 import { SystemConfiguration, ConfigurationData, ConfigCategory, ConfigValueType, ConfigScope } from '@/types/domain/administration';
-import { apiActions } from '@/lib/api';
 import type { RootState } from '@/stores/store';
+import { 
+  getSystemConfiguration, 
+  updateSystemConfiguration, 
+  type SystemConfiguration as AdminSystemConfig,
+  type ConfigurationUpdateData 
+} from '@/lib/actions/admin.configuration';
 
 // Create API service adapter for settings
 const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationData, ConfigurationData> = {
   async getAll() {
-    const response = await apiActions.administration.getSettings();
-    // Convert settings object to array of configuration items
+    const response = await getSystemConfiguration();
+    // Convert admin configuration to array of configuration items
     const configurations: SystemConfiguration[] = [];
     
-    if (response.data) {
-      Object.entries(response.data).forEach(([category, items]) => {
-        if (Array.isArray(items)) {
-          items.forEach((item: Record<string, unknown>) => {
-            configurations.push({
-              id: item.id as string || `${category}-${item.key}`,
-              key: item.key as string,
-              value: item.value as string,
-              category: category as ConfigCategory,
-              valueType: item.valueType as ConfigValueType,
-              description: item.description as string,
-              isPublic: item.isPublic as boolean ?? false,
-              isEditable: item.isEditable as boolean ?? true,
-              requiresRestart: item.requiresRestart as boolean ?? false,
-              scope: item.scope as ConfigScope || ConfigScope.SYSTEM,
-              createdAt: item.createdAt as string || new Date().toISOString(),
-              updatedAt: item.updatedAt as string || new Date().toISOString(),
-              validValues: item.validValues as string[] || undefined,
-              tags: item.tags as string[] || [],
-              sortOrder: item.sortOrder as number || 0,
-            });
+    if (response) {
+      // Transform flat config object to array format expected by slice
+      Object.entries(response).forEach(([key, value]) => {
+        if (key !== 'id' && key !== 'createdAt' && key !== 'updatedAt') {
+          configurations.push({
+            id: key,
+            key: key,
+            value: value,
+            category: ConfigCategory.SYSTEM,
+            valueType: typeof value as ConfigValueType,
+            scope: ConfigScope.SYSTEM,
+            displayName: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+            description: `System configuration for ${key}`,
+            isRequired: true,
+            isReadOnly: false,
+            createdAt: response.createdAt?.toISOString() || new Date().toISOString(),
+            updatedAt: response.updatedAt?.toISOString() || new Date().toISOString(),
+            isPublic: true,
+            isEditable: true,
+            requiresRestart: false,
+            validValues: undefined,
+            tags: ['system'],
+            defaultValue: undefined,
+            helpText: undefined,
+            validationPattern: undefined,
+            min: undefined,
+            max: undefined,
+            isEncrypted: false,
+            lastValidatedAt: undefined,
+            validationErrors: undefined
           });
         }
       });
@@ -197,31 +211,25 @@ const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationDat
   },
 
   async getById(id: string) {
-    const response = await apiActions.administration.getSettings();
+    const response = await getSystemConfiguration();
     let foundConfig: SystemConfiguration | null = null;
     
-    if (response.data) {
-      Object.entries(response.data).forEach(([category, items]) => {
-        if (Array.isArray(items)) {
-          const item = items.find((i: any) => i.id === id || `${category}-${i.key}` === id);
-          if (item) {
-            foundConfig = {
-              id: item.id || `${category}-${item.key}`,
-              key: item.key,
-              value: item.value,
-              category: category as ConfigCategory,
-              valueType: item.valueType,
-              description: item.description,
-              isPublic: item.isPublic ?? false,
-              isEditable: item.isEditable ?? true,
-              requiresRestart: item.requiresRestart ?? false,
-              scope: item.scope || 'SYSTEM',
-              createdAt: item.createdAt || new Date().toISOString(),
-              updatedAt: item.updatedAt || new Date().toISOString(),
-            };
-          }
-        }
-      });
+    if (response && response[id as keyof AdminSystemConfig] !== undefined) {
+      const value = response[id as keyof AdminSystemConfig];
+      foundConfig = {
+        id: id,
+        key: id,
+        value: value,
+        category: 'system' as ConfigCategory,
+        valueType: typeof value as ConfigValueType,
+        scope: 'global' as ConfigScope,
+        displayName: id.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+        description: `System configuration for ${id}`,
+        isRequired: true,
+        isReadOnly: false,
+        createdAt: response.createdAt?.toISOString() || new Date().toISOString(),
+        updatedAt: response.updatedAt?.toISOString() || new Date().toISOString()
+      };
     }
     
     if (!foundConfig) {
@@ -232,13 +240,62 @@ const settingsApiService: EntityApiService<SystemConfiguration, ConfigurationDat
   },
 
   async create(data: ConfigurationData) {
-    const response = await apiActions.administration.setConfiguration(data);
-    return { data: response.data };
+    // Create is implemented as update since system config keys are predefined
+    const updateData: ConfigurationUpdateData = {
+      [data.key]: data.value
+    } as ConfigurationUpdateData;
+    
+    const response = await updateSystemConfiguration(updateData);
+    
+    if (response) {
+      return {
+        data: {
+          id: data.key,
+          key: data.key,
+          value: data.value,
+          category: data.category,
+          valueType: data.valueType,
+          scope: data.scope,
+          displayName: data.displayName,
+          description: data.description,
+          isRequired: data.isRequired,
+          isReadOnly: data.isReadOnly,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      };
+    }
+    
+    throw new Error('Failed to create configuration');
   },
 
   async update(id: string, data: ConfigurationData) {
-    const response = await apiActions.administration.setConfiguration({ ...data, id });
-    return { data: response.data };
+    const updateData: ConfigurationUpdateData = {
+      [id]: data.value
+    } as ConfigurationUpdateData;
+    
+    const response = await updateSystemConfiguration(updateData);
+    
+    if (response) {
+      return {
+        data: {
+          id: id,
+          key: id,
+          value: data.value,
+          category: data.category,
+          valueType: data.valueType,
+          scope: data.scope,
+          displayName: data.displayName,
+          description: data.description,
+          isRequired: data.isRequired,
+          isReadOnly: data.isReadOnly,
+          createdAt: data.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      };
+    }
+    
+    throw new Error('Failed to update configuration');
   },
 
   async delete(id: string) {
