@@ -560,7 +560,25 @@ export class User extends Model<UserAttributes> {
    * @returns True if passwords match
    */
   async comparePassword(candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.password);
+    // Validate arguments to prevent bcrypt errors
+    if (!candidatePassword) {
+      console.error(`[User.comparePassword] candidatePassword is null/undefined for user ${this.email}`);
+      return false;
+    }
+    
+    if (!this.password) {
+      console.error(`[User.comparePassword] this.password is null/undefined for user ${this.email}`);
+      console.error(`[User.comparePassword] User attributes:`, Object.keys(this.dataValues || {}));
+      console.error(`[User.comparePassword] Password field value:`, this.password);
+      return false;
+    }
+
+    try {
+      return await bcrypt.compare(candidatePassword, this.password);
+    } catch (error) {
+      console.error(`[User.comparePassword] bcrypt.compare failed for user ${this.email}:`, error.message);
+      return false;
+    }
   }
 
   /**

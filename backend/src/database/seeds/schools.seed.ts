@@ -1,12 +1,12 @@
 /**
- * School Seed Data Generator
- * Generates realistic school data for seeding
+ * Schools Seed Data (Placeholder) 
+ * Schools seeding not yet implemented in new system
  */
 
 export interface SchoolSeedData {
   id?: string;
   name: string;
-  code: string;
+  code?: string;
   districtId: string;
   address?: string;
   city?: string;
@@ -14,102 +14,18 @@ export interface SchoolSeedData {
   zipCode?: string;
   phone?: string;
   email?: string;
-  principal?: string;
-  totalEnrollment?: number;
-  isActive?: boolean;
+  website?: string;
+  principalName?: string;
+  principalEmail?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-const SCHOOL_TYPES = [
-  'Elementary',
-  'Middle',
-  'High',
-  'Charter',
-  'Magnet',
-  'Alternative',
-];
-const FIRST_NAMES = [
-  'James',
-  'Mary',
-  'John',
-  'Patricia',
-  'Robert',
-  'Jennifer',
-  'Michael',
-  'Linda',
-  'William',
-  'Elizabeth',
-];
-const LAST_NAMES = [
-  'Smith',
-  'Johnson',
-  'Williams',
-  'Brown',
-  'Jones',
-  'Garcia',
-  'Miller',
-  'Davis',
-  'Rodriguez',
-  'Martinez',
-];
+export const generateSchools = async (): Promise<SchoolSeedData[]> => {
+  console.log('generateSchools: Placeholder - not implemented');
+  return [];
+};
 
-/**
- * Generate realistic school data for a given district
- */
-export function generateSchools(
-  districtIds: string[],
-  schoolsPerDistrict: number,
-): SchoolSeedData[] {
-  const schools: SchoolSeedData[] = [];
-  let schoolCounter = 0;
-
-  for (const districtId of districtIds) {
-    for (let i = 0; i < schoolsPerDistrict; i++) {
-      const schoolType = SCHOOL_TYPES[schoolCounter % SCHOOL_TYPES.length];
-      const schoolNumber = (schoolCounter + 1).toString().padStart(4, '0');
-
-      const cityNames = [
-        'Springfield',
-        'Madison',
-        'Franklin',
-        'Lincoln',
-        'Washington',
-        'Jefferson',
-      ];
-      const city = cityNames[schoolCounter % cityNames.length];
-
-      const firstName = FIRST_NAMES[schoolCounter % FIRST_NAMES.length];
-      const lastName = LAST_NAMES[schoolCounter % LAST_NAMES.length];
-
-      const enrollmentBase =
-        schoolType === 'Elementary'
-          ? 400
-          : schoolType === 'Middle'
-            ? 600
-            : 1200;
-
-      schools.push({
-        // id is optional, let DB assign if not provided
-        name: `${city} ${schoolType} School`,
-        code: `SCH-${schoolNumber}`,
-        districtId: districtId,
-        address: `${200 + schoolCounter * 5} School Street`,
-        city: city,
-        state: 'NY',
-        zipCode: `${10000 + schoolCounter * 50}`.substring(0, 5),
-        phone: `555-${(200 + schoolCounter).toString().padStart(3, '0')}-2000`,
-        email: `admin@${city.toLowerCase()}${schoolType.toLowerCase()}.edu`,
-        principal: `${firstName} ${lastName}`,
-        totalEnrollment: enrollmentBase + schoolCounter * 50,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      schoolCounter++;
-    }
-  }
-
-  return schools;
-}
+export const seedSchools = async (): Promise<void> => {
+  console.log('seedSchools: Placeholder - not implemented');
+};

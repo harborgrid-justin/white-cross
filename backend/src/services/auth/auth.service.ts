@@ -108,12 +108,26 @@ export class AuthService extends BaseService {
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const { email, password } = loginDto;
 
-    // Find user by email
-    const user = await this.userModel.findOne({ where: { email } });
+    // Find user by email (explicitly include password for authentication)
+    const user = await this.userModel.findOne({ 
+      where: { email },
+      // Explicitly include all fields needed for authentication
+      attributes: [
+        'id', 'email', 'password', 'firstName', 'lastName', 'role', 'isActive',
+        'failedLoginAttempts', 'lockoutUntil', 'lastLogin', 'emailVerified'
+      ]
+    });
 
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
+
+    // Debug logging to track the password field issue
+    console.log(`[AuthService.login] User found: ${user.email}`);
+    console.log(`[AuthService.login] User ID: ${user.id}`);
+    console.log(`[AuthService.login] Password field present: ${!!user.password}`);
+    console.log(`[AuthService.login] Password length: ${user.password ? user.password.length : 'N/A'}`);
+    console.log(`[AuthService.login] User attributes:`, Object.keys(user.dataValues || {}));
 
     // Check if account is locked
     if (user.isAccountLocked()) {
@@ -156,7 +170,10 @@ export class AuthService extends BaseService {
    * Verify user by ID (for token verification)
    */
   async verifyUser(userId: string): Promise<User> {
-    const user = await this.userModel.findByPk(userId);
+    const user = await this.userModel.findByPk(userId, {
+      // Don't include password for token verification
+      attributes: { exclude: ['password'] }
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -262,7 +279,11 @@ export class AuthService extends BaseService {
   ): Promise<{ message: string }> {
     const { currentPassword, newPassword } = changePasswordDto;
 
-    const user = await this.userModel.findByPk(userId);
+    const user = await this.userModel.findByPk(userId, {
+      attributes: [
+        'id', 'email', 'password', 'firstName', 'lastName', 'role', 'isActive'
+      ]
+    });
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -307,7 +328,11 @@ export class AuthService extends BaseService {
     newPassword: string,
     adminUserId?: string,
   ): Promise<{ message: string }> {
-    const user = await this.userModel.findByPk(userId);
+    const user = await this.userModel.findByPk(userId, {
+      attributes: [
+        'id', 'email', 'password', 'firstName', 'lastName', 'role', 'isActive'
+      ]
+    });
 
     if (!user) {
       throw new BadRequestException('User not found');
