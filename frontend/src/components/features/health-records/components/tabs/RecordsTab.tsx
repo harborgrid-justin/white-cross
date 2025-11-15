@@ -21,7 +21,7 @@
 import React, { useCallback } from 'react'
 import { FileText, Stethoscope, Shield } from 'lucide-react'
 import { SearchAndFilter } from '../shared/SearchAndFilter'
-import { useAuthContext } from '@/hooks/utilities/AuthContext'
+import { useAuthContext } from '@/contexts/AuthContext'
 // MIGRATION COMPLETE: Using types from cache instead of deprecated services
 // Old: import type { HealthRecord } from '@/services/modules/healthRecordsApi'
 // New: Define HealthRecord type locally (matches server action types)

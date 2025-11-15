@@ -11,12 +11,7 @@
  */
 
 import type { ConditionStatus, Vaccination, ConditionSeverity } from '@/types/healthRecords';
-// MIGRATION COMPLETE: Using types from server actions instead of deprecated services
-// Old: import type { AllergySeverity } from '@/services/modules/healthRecordsApi';
-// New: Define AllergySeverity locally or import from action types when available
-
-// AllergySeverity type definition (matching backend enum)
-export type AllergySeverity = 'LIFE_THREATENING' | 'SEVERE' | 'MODERATE' | 'MILD';
+import type { AllergySeverity } from '@/types/core/enumerations';
 
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
