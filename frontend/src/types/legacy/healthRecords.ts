@@ -15,7 +15,7 @@
  * Aligned with backend enums and service interfaces
  */
 
-import type { AllergySeverity as ServiceAllergySeverity } from '../services/modules/healthRecordsApi'
+import type { AllergySeverity } from '@/types/core/enums'
 
 // Tab Navigation Types
 export type TabType = 'overview' | 'records' | 'allergies' | 'chronic' | 'vaccinations' | 'growth' | 'screenings' | 'vitals' | 'analytics'
@@ -53,8 +53,8 @@ export type HealthRecordType =
   | 'RADIOLOGY'
   | 'OTHER'
 
-// Allergy Severity Levels - use service API enum to ensure compatibility
-export type AllergySeverity = ServiceAllergySeverity
+// Re-export AllergySeverity for backward compatibility
+export type { AllergySeverity }
 
 // Allergy Type Enum - matches backend AllergyType
 export type AllergyType =

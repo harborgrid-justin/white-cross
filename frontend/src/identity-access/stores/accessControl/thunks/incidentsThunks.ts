@@ -5,16 +5,32 @@
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { accessControlApi } from '@/services/modules/accessControlApi';
 import {
-  SecurityIncident,
-  IpRestriction,
-  AccessControlStatistics,
+  getSecurityIncidentsAction,
+  createSecurityIncidentAction,
+  updateSecurityIncidentAction,
+  getIpRestrictionsAction,
+  addIpRestrictionAction,
+  removeIpRestrictionAction,
+  getAccessControlStatisticsAction,
+  type SecurityIncident,
+  type IpRestriction,
+  type AccessControlStatistics,
+  type CreateSecurityIncidentData,
+  type UpdateSecurityIncidentArgs,
+  type CreateIpRestrictionData,
+  type SecurityIncidentQueryParams,
+  type PaginationInfo,
+} from '@/lib/actions/admin.access-control-incidents';
+import type {
+  SecurityIncident as SecurityIncidentType,
+  IpRestriction as IpRestrictionType,
+  AccessControlStatistics as AccessControlStatisticsType,
   CreateSecurityIncidentPayload,
-  UpdateSecurityIncidentArgs,
+  UpdateSecurityIncidentArgs as UpdateSecurityIncidentArgsType,
   CreateIpRestrictionPayload,
-  SecurityIncidentQueryParams,
-  PaginationInfo,
+  SecurityIncidentQueryParams as SecurityIncidentQueryParamsType,
+  PaginationInfo as PaginationInfoType,
 } from '../../types/accessControl.types';
 
 // ==========================================
@@ -28,13 +44,11 @@ export const fetchSecurityIncidents = createAsyncThunk<
 >(
   'accessControl/fetchSecurityIncidents',
   async (params, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.getSecurityIncidents(params);
-      return response;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch security incidents';
-      return rejectWithValue(message);
+    const result = await getSecurityIncidentsAction(params);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to fetch security incidents');
     }
+    return result.data!;
   }
 );
 
@@ -45,13 +59,11 @@ export const createSecurityIncident = createAsyncThunk<
 >(
   'accessControl/createSecurityIncident',
   async (incidentData, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.createSecurityIncident(incidentData);
-      return response.incident;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create security incident';
-      return rejectWithValue(message);
+    const result = await createSecurityIncidentAction(incidentData);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to create security incident');
     }
+    return result.data!;
   }
 );
 
@@ -62,13 +74,11 @@ export const updateSecurityIncident = createAsyncThunk<
 >(
   'accessControl/updateSecurityIncident',
   async ({ id, updates }, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.updateSecurityIncident(id, updates);
-      return response.incident;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update security incident';
-      return rejectWithValue(message);
+    const result = await updateSecurityIncidentAction({ id, updates });
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to update security incident');
     }
+    return result.data!;
   }
 );
 
@@ -79,13 +89,11 @@ export const updateSecurityIncident = createAsyncThunk<
 export const fetchIpRestrictions = createAsyncThunk<IpRestriction[], void, { rejectValue: string }>(
   'accessControl/fetchIpRestrictions',
   async (_, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.getIpRestrictions();
-      return response.restrictions;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch IP restrictions';
-      return rejectWithValue(message);
+    const result = await getIpRestrictionsAction();
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to fetch IP restrictions');
     }
+    return result.data!;
   }
 );
 
@@ -96,26 +104,22 @@ export const addIpRestriction = createAsyncThunk<
 >(
   'accessControl/addIpRestriction',
   async (restrictionData, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.addIpRestriction(restrictionData);
-      return response.restriction;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to add IP restriction';
-      return rejectWithValue(message);
+    const result = await addIpRestrictionAction(restrictionData);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to add IP restriction');
     }
+    return result.data!;
   }
 );
 
 export const removeIpRestriction = createAsyncThunk<string, string, { rejectValue: string }>(
   'accessControl/removeIpRestriction',
   async (id, { rejectWithValue }) => {
-    try {
-      await accessControlApi.removeIpRestriction(id);
-      return id;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to remove IP restriction';
-      return rejectWithValue(message);
+    const result = await removeIpRestrictionAction(id);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to remove IP restriction');
     }
+    return result.data!;
   }
 );
 
@@ -130,11 +134,10 @@ export const fetchAccessControlStatistics = createAsyncThunk<
 >(
   'accessControl/fetchStatistics',
   async (_, { rejectWithValue }) => {
-    try {
-      return await accessControlApi.getStatistics();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch statistics';
-      return rejectWithValue(message);
+    const result = await getAccessControlStatisticsAction();
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to fetch statistics');
     }
+    return result.data!;
   }
 );

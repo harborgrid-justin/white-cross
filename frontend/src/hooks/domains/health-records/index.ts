@@ -64,28 +64,8 @@ export {
   useDeleteScreening,
 } from './screeningHooks';
 
-// Re-export types for convenience
-export type {
-  HealthRecord,
-  Allergy,
-  ChronicCondition,
-  Vaccination,
-  VitalSigns,
-  GrowthMeasurement,
-  Screening,
-  HealthRecordFilters,
-  HealthRecordCreate,
-  HealthRecordUpdate,
-  AllergyCreate,
-  AllergyUpdate,
-  ChronicConditionCreate,
-  ChronicConditionUpdate,
-  VaccinationCreate,
-  VaccinationUpdate,
-  VitalSignsCreate,
-  VitalSignsUpdate,
-  GrowthMeasurementCreate,
-  GrowthMeasurementUpdate,
-  ScreeningCreate,
-  ScreeningUpdate,
-} from '../../../services/modules/healthRecordsApi';
+// Re-export types from server actions
+// Note: Type imports updated to use server action type definitions instead of deprecated healthRecordsApi
+export type { VitalSigns, VitalSignsCreate } from '@/lib/actions/health-records.vital-signs';
+export type { Screening, ScreeningCreate } from '@/lib/actions/health-records.screenings';
+export type { ActionResult } from '@/lib/actions/health-records.types';

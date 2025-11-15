@@ -5,13 +5,23 @@
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { accessControlApi } from '@/services/modules/accessControlApi';
 import {
-  Permission,
+  getPermissionsAction,
+  createPermissionAction,
+  getUserPermissionsAction,
+  checkUserPermissionAction,
+  type Permission,
+  type CreatePermissionData,
+  type CheckPermissionArgs,
+  type PermissionCheckResult,
+  type UserPermissionsResponse,
+} from '@/lib/actions/admin.access-control-permissions';
+import type {
+  Permission as PermissionType,
   CreatePermissionPayload,
-  CheckPermissionArgs,
-  PermissionCheckResult,
-  UserPermissionsResponse,
+  CheckPermissionArgs as CheckPermissionArgsType,
+  PermissionCheckResult as PermissionCheckResultType,
+  UserPermissionsResponse as UserPermissionsResponseType,
 } from '../../types/accessControl.types';
 
 // ==========================================
@@ -21,13 +31,11 @@ import {
 export const fetchPermissions = createAsyncThunk<Permission[], void, { rejectValue: string }>(
   'accessControl/fetchPermissions',
   async (_, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.getPermissions();
-      return response.permissions;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch permissions';
-      return rejectWithValue(message);
+    const result = await getPermissionsAction();
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to fetch permissions');
     }
+    return result.data!;
   }
 );
 
@@ -38,13 +46,11 @@ export const createPermission = createAsyncThunk<
 >(
   'accessControl/createPermission',
   async (permissionData, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.createPermission(permissionData);
-      return response.permission;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create permission';
-      return rejectWithValue(message);
+    const result = await createPermissionAction(permissionData);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to create permission');
     }
+    return result.data!;
   }
 );
 
@@ -59,12 +65,11 @@ export const fetchUserPermissions = createAsyncThunk<
 >(
   'accessControl/fetchUserPermissions',
   async (userId, { rejectWithValue }) => {
-    try {
-      return await accessControlApi.getUserPermissions(userId);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch user permissions';
-      return rejectWithValue(message);
+    const result = await getUserPermissionsAction(userId);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to fetch user permissions');
     }
+    return result.data!;
   }
 );
 
@@ -75,12 +80,10 @@ export const checkUserPermission = createAsyncThunk<
 >(
   'accessControl/checkUserPermission',
   async ({ userId, resource, action }, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.checkPermission(userId, resource, action);
-      return { userId, resource, action, hasPermission: response.hasPermission };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to check permission';
-      return rejectWithValue(message);
+    const result = await checkUserPermissionAction({ userId, resource, action });
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to check permission');
     }
+    return result.data!;
   }
 );

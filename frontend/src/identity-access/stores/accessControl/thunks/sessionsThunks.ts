@@ -5,8 +5,13 @@
  */
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { accessControlApi } from '@/services/modules/accessControlApi';
-import { UserSession } from '../../types/accessControl.types';
+import {
+  getUserSessionsAction,
+  deleteSessionAction,
+  deleteAllUserSessionsAction,
+  type UserSession,
+} from '@/lib/actions/admin.access-control-sessions';
+import type { UserSession as UserSessionType } from '../../types/accessControl.types';
 
 // ==========================================
 // SESSIONS ASYNC THUNKS
@@ -15,37 +20,32 @@ import { UserSession } from '../../types/accessControl.types';
 export const fetchUserSessions = createAsyncThunk<UserSession[], string, { rejectValue: string }>(
   'accessControl/fetchUserSessions',
   async (userId, { rejectWithValue }) => {
-    try {
-      const response = await accessControlApi.getUserSessions(userId);
-      return response.sessions;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch sessions';
-      return rejectWithValue(message);
+    const result = await getUserSessionsAction(userId);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to fetch sessions');
     }
+    return result.data!;
   }
 );
 
 export const deleteSession = createAsyncThunk<string, string, { rejectValue: string }>(
   'accessControl/deleteSession',
   async (token, { rejectWithValue }) => {
-    try {
-      await accessControlApi.deleteSession(token);
-      return token;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete session';
-      return rejectWithValue(message);
+    const result = await deleteSessionAction(token);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to delete session');
     }
+    return result.data!;
   }
 );
 
 export const deleteAllUserSessions = createAsyncThunk<void, string, { rejectValue: string }>(
   'accessControl/deleteAllUserSessions',
   async (userId, { rejectWithValue }) => {
-    try {
-      await accessControlApi.deleteAllUserSessions(userId);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete all user sessions';
-      return rejectWithValue(message);
+    const result = await deleteAllUserSessionsAction(userId);
+    if (!result.success) {
+      return rejectWithValue(result.error || 'Failed to delete all user sessions');
     }
+    return;
   }
 );

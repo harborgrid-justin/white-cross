@@ -15,7 +15,7 @@
  * Aligned with backend enums and service interfaces
  */
 
-import type { AllergySeverity as ServiceAllergySeverity } from '../services/modules/healthRecordsApi'
+import type { AllergySeverity } from '@/types/core/enums'
 
 // ==========================================
 // NAVIGATION & UI TYPES
@@ -73,9 +73,10 @@ export type HealthRecordType =
 
 /**
  * Allergy Severity Levels
- * Uses service API enum to ensure compatibility
+ * @aligned_with backend AllergySeverity enum
+ * Re-exported from canonical type location
  */
-export type AllergySeverity = ServiceAllergySeverity
+export type { AllergySeverity }
 
 /**
  * Allergy Type Enum

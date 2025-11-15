@@ -2,15 +2,16 @@
  * Health Records Hooks
  *
  * React Query hooks for fetching and managing health records.
+ * Migrated to use server actions instead of deprecated healthRecordsApi.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { healthRecordsApi } from '../../../services/modules/healthRecordsApi';
-import type {
-  HealthRecordFilters,
-  HealthRecordCreate,
-  HealthRecordUpdate,
-} from '../../../services/modules/healthRecordsApi';
+import { getHealthRecords, getHealthRecordById } from '@/lib/actions/health-records.cache';
+import {
+  createHealthRecordAction,
+  updateHealthRecordAction,
+  deleteHealthRecordAction
+} from '@/lib/actions/health-records.crud';
 import { HEALTH_RECORD_META } from '../../../config/queryClient';
 import toast from 'react-hot-toast';
 import { healthRecordsKeys } from './queryKeys';
@@ -18,10 +19,13 @@ import { healthRecordsKeys } from './queryKeys';
 /**
  * Fetch all health records for a student
  */
-export function useHealthRecords(studentId: string, filters?: HealthRecordFilters) {
+export function useHealthRecords(studentId: string) {
   return useQuery({
-    queryKey: [...healthRecordsKeys.records(studentId), filters],
-    queryFn: () => healthRecordsApi.getRecords(studentId, filters),
+    queryKey: healthRecordsKeys.records(studentId),
+    queryFn: async () => {
+      const records = await getHealthRecords(studentId);
+      return records;
+    },
     enabled: !!studentId,
     meta: HEALTH_RECORD_META,
   });
@@ -33,7 +37,10 @@ export function useHealthRecords(studentId: string, filters?: HealthRecordFilter
 export function useHealthRecord(id: string) {
   return useQuery({
     queryKey: healthRecordsKeys.record(id),
-    queryFn: () => healthRecordsApi.getRecordById(id),
+    queryFn: async () => {
+      const record = await getHealthRecordById(id);
+      return record;
+    },
     enabled: !!id,
     meta: HEALTH_RECORD_META,
   });
@@ -41,14 +48,24 @@ export function useHealthRecord(id: string) {
 
 /**
  * Create a new health record
+ * Note: Uses server action pattern with useActionState for form handling
  */
 export function useCreateHealthRecord() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: HealthRecordCreate) => healthRecordsApi.createRecord(data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: healthRecordsKeys.records(variables.studentId) });
+    mutationFn: async (formData: FormData) => {
+      const result = await createHealthRecordAction({ errors: {} }, formData);
+      if (!result.success && result.errors) {
+        throw new Error(result.errors._form?.[0] || 'Failed to create health record');
+      }
+      return result.data;
+    },
+    onSuccess: (data: any) => {
+      if (data?.studentId) {
+        queryClient.invalidateQueries({ queryKey: healthRecordsKeys.records(data.studentId) });
+      }
+      queryClient.invalidateQueries({ queryKey: healthRecordsKeys.all });
       toast.success('Health record created successfully');
     },
     onError: (error: any) => {
@@ -59,16 +76,24 @@ export function useCreateHealthRecord() {
 
 /**
  * Update a health record
+ * Note: Uses server action pattern with useActionState for form handling
  */
 export function useUpdateHealthRecord() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: HealthRecordUpdate }) =>
-      healthRecordsApi.updateRecord(id, data),
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: healthRecordsKeys.records(result.studentId) });
-      queryClient.invalidateQueries({ queryKey: healthRecordsKeys.record(result.id) });
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      const result = await updateHealthRecordAction(id, { errors: {} }, formData);
+      if (!result.success && result.errors) {
+        throw new Error(result.errors._form?.[0] || 'Failed to update health record');
+      }
+      return { id, data: result.data };
+    },
+    onSuccess: ({ id, data }: any) => {
+      if (data?.studentId) {
+        queryClient.invalidateQueries({ queryKey: healthRecordsKeys.records(data.studentId) });
+      }
+      queryClient.invalidateQueries({ queryKey: healthRecordsKeys.record(id) });
       toast.success('Health record updated successfully');
     },
     onError: (error: any) => {
@@ -84,7 +109,13 @@ export function useDeleteHealthRecord() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => healthRecordsApi.deleteRecord(id),
+    mutationFn: async (id: string) => {
+      const result = await deleteHealthRecordAction(id);
+      if (!result.success && result.errors) {
+        throw new Error(result.errors._form?.[0] || 'Failed to delete health record');
+      }
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: healthRecordsKeys.all });
       toast.success('Health record deleted successfully');
