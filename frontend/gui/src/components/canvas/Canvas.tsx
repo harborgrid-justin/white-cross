@@ -16,7 +16,8 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { shallow } from 'zustand/shallow';
 import {
   DndContext,
   DragEndEvent,
@@ -45,6 +46,7 @@ import {
   useKeyboardShortcuts,
 } from '../../hooks/usePageBuilder';
 import { usePageBuilderStore } from '../../store';
+import { selectRootComponents } from '../../store/selectors';
 import type { ComponentId, ComponentInstance } from '../../types';
 import { CanvasComponent } from './CanvasComponent';
 import { SelectionOverlay } from './SelectionOverlay';
@@ -94,12 +96,8 @@ export const Canvas: React.FC<CanvasProps> = ({
   const clearSelection = usePageBuilderStore((state) => state.clearSelection);
   const selectComponent = usePageBuilderStore((state) => state.selectComponent);
 
-  // Get root components to render
-  const rootComponents = usePageBuilderStore((state) =>
-    state.canvas.components.rootIds
-      .map((id) => state.canvas.components.byId[id])
-      .filter(Boolean)
-  );
+  // Get root components to render (optimized selector with shallow comparison)
+  const rootComponents = usePageBuilderStore(selectRootComponents, shallow);
 
   // ============================================================================
   // KEYBOARD SHORTCUTS
@@ -115,6 +113,31 @@ export const Canvas: React.FC<CanvasProps> = ({
   // ============================================================================
   // KEYBOARD NAVIGATION FOR CANVAS
   // ============================================================================
+
+  // ============================================================================
+  // ZOOM HANDLERS (Defined early for use in keyboard handler)
+  // ============================================================================
+
+  /**
+   * Zoom in by 10%
+   */
+  const handleZoomIn = useCallback(() => {
+    setZoom(Math.min(zoom * 1.1, 5));
+  }, [zoom, setZoom]);
+
+  /**
+   * Zoom out by 10%
+   */
+  const handleZoomOut = useCallback(() => {
+    setZoom(Math.max(zoom * 0.9, 0.1));
+  }, [zoom, setZoom]);
+
+  /**
+   * Reset zoom and pan to defaults
+   */
+  const handleResetViewport = useCallback(() => {
+    resetViewport();
+  }, [resetViewport]);
 
   /**
    * Handle keyboard navigation for zoom and pan
@@ -291,31 +314,6 @@ export const Canvas: React.FC<CanvasProps> = ({
     [addComponent, moveComponent, zoom, panX, panY, snapToGrid, gridSize]
   );
 
-  // ============================================================================
-  // ZOOM HANDLERS
-  // ============================================================================
-
-  /**
-   * Zoom in by 10%
-   */
-  const handleZoomIn = useCallback(() => {
-    setZoom(Math.min(zoom * 1.1, 5));
-  }, [zoom, setZoom]);
-
-  /**
-   * Zoom out by 10%
-   */
-  const handleZoomOut = useCallback(() => {
-    setZoom(Math.max(zoom * 0.9, 0.1));
-  }, [zoom, setZoom]);
-
-  /**
-   * Reset zoom and pan to defaults
-   */
-  const handleResetViewport = useCallback(() => {
-    resetViewport();
-  }, [resetViewport]);
-
   /**
    * Handle mouse wheel zoom
    */
@@ -388,11 +386,15 @@ export const Canvas: React.FC<CanvasProps> = ({
   // ============================================================================
 
   /**
-   * Generate grid background pattern as SVG
+   * Generate grid background pattern as SVG (memoized to prevent recalculation)
    */
-  const gridPattern = gridEnabled
-    ? `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${gridSize}' height='${gridSize}'%3E%3Crect width='${gridSize}' height='${gridSize}' fill='none' stroke='%23e5e7eb' stroke-width='0.5'/%3E%3C/svg%3E")`
-    : 'none';
+  const gridPattern = useMemo(
+    () =>
+      gridEnabled
+        ? `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${gridSize}' height='${gridSize}'%3E%3Crect width='${gridSize}' height='${gridSize}' fill='none' stroke='%23e5e7eb' stroke-width='0.5'/%3E%3C/svg%3E")`
+        : 'none',
+    [gridEnabled, gridSize]
+  );
 
   // ============================================================================
   // RENDER

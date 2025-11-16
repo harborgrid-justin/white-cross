@@ -1,16 +1,76 @@
 /**
- * Property Editor Component
+ * Property Editor Component (Optimized)
  * Right sidebar for editing selected component properties
  */
 
 'use client';
 
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useSelectedComponents, useUpdateComponent } from '../../hooks/usePageBuilder';
 
-export const PropertyEditor: React.FC = () => {
+/**
+ * Internal PropertyEditor component
+ */
+const PropertyEditorInternal: React.FC = () => {
   const selectedComponents = useSelectedComponents();
   const updateComponent = useUpdateComponent();
+
+  // Memoize the first selected component to prevent recalculation
+  const component = useMemo(() => selectedComponents[0], [selectedComponents]);
+
+  // Memoize update handlers to prevent recreation on every render
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (component) {
+        updateComponent(component.id, { name: e.target.value }, true);
+      }
+    },
+    [component, updateComponent]
+  );
+
+  const handlePositionXChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (component) {
+        updateComponent(component.id, {
+          position: { ...component.position, x: Number(e.target.value) },
+        });
+      }
+    },
+    [component, updateComponent]
+  );
+
+  const handlePositionYChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (component) {
+        updateComponent(component.id, {
+          position: { ...component.position, y: Number(e.target.value) },
+        });
+      }
+    },
+    [component, updateComponent]
+  );
+
+  const handleWidthChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (component) {
+        updateComponent(component.id, {
+          size: { ...component.size, width: Number(e.target.value) },
+        });
+      }
+    },
+    [component, updateComponent]
+  );
+
+  const handleHeightChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (component) {
+        updateComponent(component.id, {
+          size: { ...component.size, height: Number(e.target.value) },
+        });
+      }
+    },
+    [component, updateComponent]
+  );
 
   if (selectedComponents.length === 0) {
     return (
@@ -67,7 +127,7 @@ export const PropertyEditor: React.FC = () => {
               id="component-name"
               type="text"
               value={component.name}
-              onChange={(e) => updateComponent(component.id, { name: e.target.value }, true)}
+              onChange={handleNameChange}
               aria-describedby="component-name-description"
               className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md text-sm text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -92,11 +152,7 @@ export const PropertyEditor: React.FC = () => {
                   id="component-x"
                   type="number"
                   value={Math.round(component.position.x)}
-                  onChange={(e) =>
-                    updateComponent(component.id, {
-                      position: { ...component.position, x: Number(e.target.value) },
-                    })
-                  }
+                  onChange={handlePositionXChange}
                   aria-label="Component X position in pixels"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
                 />
@@ -109,11 +165,7 @@ export const PropertyEditor: React.FC = () => {
                   id="component-y"
                   type="number"
                   value={Math.round(component.position.y)}
-                  onChange={(e) =>
-                    updateComponent(component.id, {
-                      position: { ...component.position, y: Number(e.target.value) },
-                    })
-                  }
+                  onChange={handlePositionYChange}
                   aria-label="Component Y position in pixels"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
                 />
@@ -128,11 +180,7 @@ export const PropertyEditor: React.FC = () => {
                   id="component-width"
                   type="number"
                   value={Math.round(component.size.width)}
-                  onChange={(e) =>
-                    updateComponent(component.id, {
-                      size: { ...component.size, width: Number(e.target.value) },
-                    })
-                  }
+                  onChange={handleWidthChange}
                   aria-label="Component width in pixels"
                   min="1"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
@@ -146,11 +194,7 @@ export const PropertyEditor: React.FC = () => {
                   id="component-height"
                   type="number"
                   value={Math.round(component.size.height)}
-                  onChange={(e) =>
-                    updateComponent(component.id, {
-                      size: { ...component.size, height: Number(e.target.value) },
-                    })
-                  }
+                  onChange={handleHeightChange}
                   aria-label="Component height in pixels"
                   min="1"
                   className="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-sm text-gray-900 dark:text-gray-100"
@@ -187,3 +231,9 @@ export const PropertyEditor: React.FC = () => {
     </div>
   );
 };
+
+/**
+ * Memoized PropertyEditor to prevent unnecessary re-renders
+ * Only re-renders when selected components change
+ */
+export const PropertyEditor = React.memo(PropertyEditorInternal);
