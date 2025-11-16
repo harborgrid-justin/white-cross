@@ -4,7 +4,12 @@
  * @description API service for fetching student health records, allergies, and medications
  */
 
-import { serverGet } from '@/lib/api/nextjs-client';
+import { requireMinimumRole } from '@/identity-access/lib/session';
+import { 
+  getHealthRecordsAction, 
+  getStudentAllergiesAction 
+} from '@/lib/actions/health-records.actions';
+import { getStudentMedications as getStudentMedicationsAction } from '@/lib/actions/medications.actions';
 
 export interface HealthRecord {
   id: string;
@@ -77,45 +82,75 @@ export interface HealthSummary {
 
 /**
  * Fetch comprehensive health summary for a student
+ * Requires NURSE role or higher to access health records
  * @param studentId - Student UUID
  * @returns Promise<HealthSummary>
  */
 export async function getStudentHealthSummary(studentId: string): Promise<HealthSummary> {
   try {
-    // Fetch health records from the correct endpoint
-    const healthRecordsResponse = await serverGet<{data: HealthRecord[], pagination: Record<string, unknown>}>(
-      `/api/students/${studentId}/health-records`,
-      { page: 1, limit: 100 }
-    );
+    // Verify user has permission to access health records
+    await requireMinimumRole('NURSE');
+    
+    // Fetch all health data concurrently using Server Actions for better performance
+    const [healthRecordsResponse, allergiesResponse, medicationsResponse] = await Promise.all([
+      // Fetch health records using Server Action
+      getHealthRecordsAction(studentId).catch(() => ({ success: false, data: [] })),
+      // Fetch allergies using Server Action
+      getStudentAllergiesAction(studentId).catch(() => ({ success: false, data: [] })),
+      // Fetch medications using Server Action
+      getStudentMedicationsAction(studentId).catch(() => [])
+    ]);
 
-    // For now, return a mock summary structure until other endpoints are available
-    // TODO: Integrate with actual allergy and medication endpoints when available
+    const healthRecords = (healthRecordsResponse.success ? healthRecordsResponse.data : []) as HealthRecord[];
+    const allergies = (allergiesResponse.success ? allergiesResponse.data : []) as Allergy[];
+    const medications = medicationsResponse as StudentMedication[];
+
+    // Calculate summary statistics
+    const recentVisits = healthRecords.filter(record => {
+      const recordDate = new Date(record.recordDate);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return recordDate >= thirtyDaysAgo;
+    }).length;
+
     const healthSummary: HealthSummary = {
-      healthRecords: healthRecordsResponse.data || [],
-      allergies: [], // TODO: Fetch from allergies endpoint when available
-      medications: [], // TODO: Fetch from medications endpoint when available
+      healthRecords,
+      allergies,
+      medications,
       summary: {
-        totalRecords: healthRecordsResponse.data?.length || 0,
-        totalAllergies: 0, // TODO: Update when allergies endpoint is available
-        totalMedications: 0, // TODO: Update when medications endpoint is available
-        recentVisits: healthRecordsResponse.data?.filter(record => {
-          const recordDate = new Date(record.recordDate);
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-          return recordDate >= thirtyDaysAgo;
-        }).length || 0,
+        totalRecords: healthRecords.length,
+        totalAllergies: allergies.length,
+        totalMedications: medications.length,
+        recentVisits,
       },
     };
 
     return healthSummary;
   } catch (error) {
     console.error('Error fetching student health summary:', error);
-    throw new Error('Failed to fetch health summary');
+    
+    // Return fallback data instead of throwing
+    // This allows the UI to render gracefully when the API is unavailable
+    const fallbackSummary: HealthSummary = {
+      healthRecords: [],
+      allergies: [],
+      medications: [],
+      summary: {
+        totalRecords: 0,
+        totalAllergies: 0,
+        totalMedications: 0,
+        recentVisits: 0,
+      },
+    };
+    
+    console.warn(`Returning fallback health data for student ${studentId} due to API error`);
+    return fallbackSummary;
   }
 }
 
 /**
  * Fetch student health records with pagination
+ * Requires NURSE role or higher to access health records
  * @param studentId - Student UUID
  * @param page - Page number (default: 1)
  * @param limit - Records per page (default: 20)
@@ -127,14 +162,48 @@ export async function getStudentHealthRecords(
   limit: number = 20
 ): Promise<{data: HealthRecord[], pagination: Record<string, unknown>}> {
   try {
-    const response = await serverGet<{data: HealthRecord[], pagination: Record<string, unknown>}>(
-      `/api/students/${studentId}/health-records`,
-      { page, limit }
-    );
-    return response;
+    // Verify user has permission to access health records
+    await requireMinimumRole('NURSE');
+    
+    // Use Server Action to fetch health records
+    const response = await getHealthRecordsAction(studentId);
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to fetch health records');
+    }
+    
+    const records = response.data as HealthRecord[];
+    
+    // Simulate pagination since Server Action doesn't support it yet
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedRecords = records.slice(startIndex, endIndex);
+    
+    return {
+      data: paginatedRecords,
+      pagination: {
+        page,
+        limit,
+        total: records.length,
+        totalPages: Math.ceil(records.length / limit)
+      }
+    };
   } catch (error) {
     console.error('Error fetching health records:', error);
-    throw new Error('Failed to fetch health records');
+    
+    // Return fallback data instead of throwing
+    const fallbackResponse = {
+      data: [],
+      pagination: {
+        page,
+        limit,
+        total: 0,
+        totalPages: 0
+      }
+    };
+    
+    console.warn(`Returning fallback health records for student ${studentId} due to API error`);
+    return fallbackResponse;
   }
 }
 
@@ -145,9 +214,18 @@ export async function getStudentHealthRecords(
  */
 export async function getStudentAllergies(studentId: string): Promise<Allergy[]> {
   try {
-    // For now, fetch from health summary until separate allergy endpoint is available
-    const summary = await getStudentHealthSummary(studentId);
-    return summary.allergies || [];
+    // Verify user has permission to access health records
+    await requireMinimumRole('NURSE');
+    
+    // Use Server Action to fetch allergies directly
+    const response = await getStudentAllergiesAction(studentId);
+    
+    if (!response.success) {
+      console.warn(`Failed to fetch allergies for student ${studentId}:`, response.error);
+      return [];
+    }
+    
+    return (response.data as Allergy[]) || [];
   } catch (error) {
     console.error('Error fetching student allergies:', error);
     return [];
@@ -161,9 +239,12 @@ export async function getStudentAllergies(studentId: string): Promise<Allergy[]>
  */
 export async function getStudentMedications(studentId: string): Promise<StudentMedication[]> {
   try {
-    // For now, fetch from health summary until separate medication endpoint is available
-    const summary = await getStudentHealthSummary(studentId);
-    return summary.medications || [];
+    // Verify user has permission to access health records
+    await requireMinimumRole('NURSE');
+    
+    // Use Server Action to fetch medications directly
+    const medications = await getStudentMedicationsAction(studentId);
+    return (medications as StudentMedication[]) || [];
   } catch (error) {
     console.error('Error fetching student medications:', error);
     return [];

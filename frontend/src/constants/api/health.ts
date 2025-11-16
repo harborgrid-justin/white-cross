@@ -99,6 +99,7 @@ export const MEDICATIONS_ENDPOINTS = {
   BASE: `/api/v1/medications`,
   BY_ID: (id: string) => `/api/v1/medications/${id}`,
   DETAIL: (id: string) => `/api/v1/medications/${id}`,
+  STATS: `/api/v1/medications/stats`,
   ADMINISTER: (id: string) => `/api/v1/medications/${id}/administer`,
   DISCONTINUE: (id: string) => `/api/v1/medications/${id}/discontinue`,
   REFILL: (id: string) => `/api/v1/medications/${id}/refill`,

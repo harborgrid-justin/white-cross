@@ -19,7 +19,22 @@
  */
 
 import { ApiClientOptions } from './server/types';
-import { getApiBaseUrl } from './server/config';
+
+/**
+ * Get API base URL for client-side usage (safe for client components)
+ * 
+ * Only uses public environment variables that are available on the client.
+ * For server-side usage with server-only environment variables,
+ * use getApiBaseUrl from './server/config' instead.
+ * 
+ * @returns The API base URL for client-side requests
+ */
+function getClientApiBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:3001'
+  );
+}
 
 // ==========================================
 // LEGACY CLIENT SUPPORT
@@ -83,7 +98,7 @@ export async function apiClient(
 
   const url = endpoint.startsWith('http')
     ? endpoint
-    : `${getApiBaseUrl()}${endpoint}`;
+    : `${getClientApiBaseUrl()}${endpoint}`;
 
   const response = await fetch(url, config);
 

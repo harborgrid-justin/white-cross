@@ -32,7 +32,7 @@ import type {
 export const getMedication = cache(async (id: string): Promise<Medication | null> => {
   try {
     const response = await serverGet<ApiResponse<Medication>>(
-      `/api/medications/${id}`, // Next.js API route
+      API_ENDPOINTS.MEDICATIONS.BY_ID(id), // Use proper API endpoint constant
       undefined,
       {
         cache: 'force-cache',
@@ -187,7 +187,7 @@ export const getMedicationHistory = cache(async (medicationId: string): Promise<
 export const getMedicationStats = cache(async (): Promise<MedicationStats> => {
   try {
     const response = await serverGet<ApiResponse<MedicationStats>>(
-      `/api/medications/stats`, // Call Next.js API route, not backend directly
+      API_ENDPOINTS.MEDICATIONS.STATS, // Use proper API endpoint constant
       undefined,
       {
         cache: 'force-cache',

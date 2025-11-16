@@ -12,6 +12,7 @@ import { revalidateTag, revalidatePath } from 'next/cache';
 import { serverPost, serverPut, NextApiClientError } from '@/lib/api/server';
 import { auditLog, AUDIT_ACTIONS } from '@/lib/audit';
 import { CACHE_TAGS } from '@/lib/cache/constants';
+import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types';
 import type {
   ActionResult,
@@ -42,7 +43,7 @@ export async function createImmunizationRecordAction(
     }
 
     const response = await serverPost<ApiResponse<ImmunizationRecord>>(
-      `/api/immunizations/records`,
+      API_ENDPOINTS.IMMUNIZATIONS.BASE,
       data,
       {
         cache: 'no-store',
@@ -119,7 +120,7 @@ export async function updateImmunizationRecordAction(
     }
 
     const response = await serverPut<ApiResponse<ImmunizationRecord>>(
-      `/api/immunizations/records/${recordId}`,
+      API_ENDPOINTS.IMMUNIZATIONS.BY_ID(recordId),
       data,
       {
         cache: 'no-store',
@@ -198,7 +199,7 @@ export async function verifyImmunizationRecordAction(
     }
 
     const response = await serverPost<ApiResponse<ImmunizationRecord>>(
-      `/api/immunizations/records/${recordId}/verify`,
+      API_ENDPOINTS.IMMUNIZATIONS.VERIFY(recordId),
       {},
       {
         cache: 'no-store',
