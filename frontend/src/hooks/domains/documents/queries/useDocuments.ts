@@ -17,9 +17,14 @@ import type {
 } from '@/types/documents';
 
 /**
- * API base URL from environment
+ * Get API base URL for client-side usage
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+function getClientApiBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:3001'
+  );
+}
 
 /**
  * Documents query key factory
@@ -60,7 +65,7 @@ async function fetchDocuments(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/documents?${params}`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/documents?${params}`, {
     headers
   });
 
@@ -86,7 +91,7 @@ async function deleteDocument(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/documents/${documentId}`, {
     method: 'DELETE',
     headers
   });

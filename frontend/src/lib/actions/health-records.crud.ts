@@ -11,7 +11,7 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z, type ZodIssue } from 'zod';
-import { serverGet, serverPost, serverPut, serverDelete, getAuthToken } from '@/lib/api/server';
+import { serverGet, serverPost, serverPut, serverDelete, getAuthToken, getApiBaseUrl } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import type { ApiResponse } from '@/types';
 
@@ -259,9 +259,10 @@ export async function getHealthRecordsAction(studentId?: string, recordType?: st
 
     // Check if it's a network/connection error
     if (error instanceof TypeError && error.message.includes('fetch')) {
+      const backendUrl = getApiBaseUrl();
       return {
         success: false,
-        error: `Cannot connect to backend server at ${BACKEND_URL}. Please ensure the backend is running.`
+        error: `Cannot connect to backend server at ${backendUrl}. Please ensure the backend is running.`
       };
     }
 

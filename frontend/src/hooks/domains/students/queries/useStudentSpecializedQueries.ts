@@ -9,7 +9,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { apiActions } from '@/lib/api';
+import { serverGet } from '@/lib/api/server';
+import { STUDENTS_ENDPOINTS } from '@/constants/api/students';
+import { useApiError } from '../../../shared/useApiError';
 import { studentKeys, CACHE_CONFIG } from './studentQueryKeys';
 import type {
   UseAssignedStudentsReturn,
@@ -34,11 +36,24 @@ import type {
  * ```
  */
 export const useAssignedStudents = (): UseAssignedStudentsReturn => {
+  const { handleError } = useApiError();
+
   const queryResult = useQuery({
     queryKey: studentKeys.assigned(),
-    queryFn: () => apiActions.students.getAssignedStudents(),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(STUDENTS_ENDPOINTS.ASSIGNED);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: CACHE_CONFIG.LIST_STALE_TIME,
     gcTime: CACHE_CONFIG.DEFAULT_CACHE_TIME,
+    meta: {
+      errorMessage: 'Failed to load assigned students'
+    },
   });
 
   return {
@@ -52,9 +67,6 @@ export const useAssignedStudents = (): UseAssignedStudentsReturn => {
 
 /**
  * Hook for fetching student statistics.
- *
- * NOTE: This is a placeholder - backend endpoint needs to be implemented.
- * Currently returns mock data structure.
  *
  * @returns Student statistics with loading states
  *
@@ -73,16 +85,24 @@ export const useAssignedStudents = (): UseAssignedStudentsReturn => {
  * ```
  */
 export const useStudentStats = (): UseStudentStatsReturn => {
-  // TODO: Implement backend endpoint for student statistics
+  const { handleError } = useApiError();
+
   const queryResult = useQuery({
     queryKey: studentKeys.stats(),
     queryFn: async (): Promise<StudentStats> => {
-      // Placeholder - replace with actual API call when backend is ready
-      throw new Error('Student statistics endpoint not yet implemented');
+      try {
+        const response = await serverGet(STUDENTS_ENDPOINTS.STATISTICS('all'));
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
     },
     staleTime: CACHE_CONFIG.STATS_STALE_TIME,
     gcTime: CACHE_CONFIG.DEFAULT_CACHE_TIME,
-    enabled: false, // Disable until backend is ready
+    meta: {
+      errorMessage: 'Failed to load student statistics'
+    },
   });
 
   return {

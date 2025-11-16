@@ -705,7 +705,7 @@ export class DashboardService extends BaseService {
 
       const [medCount, incidentCount, aptCount] = await Promise.all([
         MedicationLog.count({
-          where: { timeGiven: { [Op.gte]: last24Hours } },
+          where: { administeredAt: { [Op.gte]: last24Hours } },
         }),
         IncidentReport.count({
           where: { createdAt: { [Op.gte]: last24Hours } },

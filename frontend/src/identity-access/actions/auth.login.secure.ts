@@ -12,7 +12,7 @@
 
 'use server';
 
-import { cookies } from 'next/headers';
+import { serverPost, getApiBaseUrl } from '@/lib/api/server';
 import { redirect } from 'next/navigation';
 import { createSecureLogger, auditLogger } from '@/lib/logger/secure-logger';
 
@@ -44,21 +44,14 @@ export async function loginAction(credentials: LoginCredentials): Promise<LoginR
     logger.info('Login attempt', { email: credentials.email });
 
     // Call authentication API
-    const response = await fetch(`${process.env.API_URL}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    });
-
-    if (!response.ok) {
-      logger.warn('Login failed', { status: response.status });
-      return {
-        success: false,
-        error: 'Invalid credentials',
-      };
-    }
-
-    const data = await response.json();
+    const data = await serverPost(
+      '/api/v1/auth/login',
+      credentials,
+      {
+        cache: 'no-store',
+        requiresAuth: false
+      }
+    );
 
     // ✅ SECURE: Token is automatically redacted by logger
     logger.info('Login successful', {

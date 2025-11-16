@@ -5,7 +5,9 @@ import {
   invalidateContactsQueries,
   EmergencyContact,
 } from '../config';
-import { mockEmergencyMutationAPI } from './api';
+import { serverPost, serverPut, serverDelete } from '@/lib/api/client';
+import { EMERGENCY_CONTACTS_ENDPOINTS } from '@/constants/api/students';
+import { useApiError } from '@/hooks/shared/useApiError';
 import {
   CreateContactInput,
   UpdateContactInput,
@@ -16,9 +18,17 @@ export const useCreateContact = (
   options?: UseMutationOptions<EmergencyContact, Error, CreateContactInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.createContact,
+    mutationFn: async (data: CreateContactInput) => {
+      try {
+        return await serverPost(EMERGENCY_CONTACTS_ENDPOINTS.BASE, data);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (newContact) => {
       invalidateContactsQueries(queryClient);
       toast.success(`Contact "${newContact.name}" created successfully`);
@@ -34,9 +44,17 @@ export const useUpdateContact = (
   options?: UseMutationOptions<EmergencyContact, Error, UpdateContactInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.updateContact,
+    mutationFn: async (data: UpdateContactInput) => {
+      try {
+        return await serverPut(EMERGENCY_CONTACTS_ENDPOINTS.BY_ID(data.id), data);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (updatedContact) => {
       queryClient.setQueryData(
         EMERGENCY_QUERY_KEYS.contactDetails(updatedContact.id),
@@ -56,9 +74,17 @@ export const useDeleteContact = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.deleteContact,
+    mutationFn: async (contactId: string) => {
+      try {
+        await serverDelete(EMERGENCY_CONTACTS_ENDPOINTS.BY_ID(contactId));
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       invalidateContactsQueries(queryClient);
       toast.success('Contact deleted successfully');

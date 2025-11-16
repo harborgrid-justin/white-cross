@@ -26,7 +26,9 @@
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { purchaseOrderKeys, invalidatePOQueries, POReceipt } from '../config';
-import { mockPurchaseOrderMutationAPI } from './api';
+import { serverPost, serverPut } from '@/lib/api/client';
+import { PURCHASE_ORDERS_ENDPOINTS } from '@/constants/api/admin';
+import { useApiError } from '@/hooks/shared/useApiError';
 import { CreateReceiptInput, UpdateReceiptInput } from './types';
 
 /**
@@ -103,8 +105,21 @@ export const useCreateReceipt = (
 ) => {
   const queryClient = useQueryClient();
 
+export const useCreateReceipt = (
+  options?: UseMutationOptions<POReceipt, Error, CreateReceiptInput>
+) => {
+  const queryClient = useQueryClient();
+  const { handleError } = useApiError();
+
   return useMutation({
-    mutationFn: mockPurchaseOrderMutationAPI.createReceipt,
+    mutationFn: async (data: CreateReceiptInput) => {
+      try {
+        return await serverPost(PURCHASE_ORDERS_ENDPOINTS.RECEIVE(data.purchaseOrderId), data);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, { purchaseOrderId }) => {
       queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.receipts(purchaseOrderId) });
       invalidatePOQueries(queryClient, purchaseOrderId);
@@ -113,8 +128,12 @@ export const useCreateReceipt = (
     onError: (error: Error) => {
       toast.error(`Failed to create receipt: ${error.message}`);
     },
+    meta: {
+      errorMessage: 'Failed to create receipt'
+    },
     ...options,
   });
+};
 };
 
 /**
@@ -170,7 +189,14 @@ export const useUpdateReceipt = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, updates }) => mockPurchaseOrderMutationAPI.updateReceipt(id, updates),
+    mutationFn: async ({ id, updates }) => {
+      try {
+        return await serverPut(PURCHASE_ORDERS_ENDPOINTS.RECEIVE_ITEMS(id), updates);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, { poId }) => {
       queryClient.invalidateQueries({ queryKey: purchaseOrderKeys.receipts(poId) });
       invalidatePOQueries(queryClient, poId);
@@ -178,6 +204,9 @@ export const useUpdateReceipt = (
     },
     onError: (error: Error) => {
       toast.error(`Failed to update receipt: ${error.message}`);
+    },
+    meta: {
+      errorMessage: 'Failed to update receipt'
     },
     ...options,
   });

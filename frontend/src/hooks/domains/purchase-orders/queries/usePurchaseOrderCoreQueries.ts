@@ -11,6 +11,9 @@
  */
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { serverGet } from '@/lib/api/server';
+import { PURCHASE_ORDERS_ENDPOINTS } from '@/constants/api/admin';
+import { useApiError } from '../../../shared/useApiError';
 import {
   purchaseOrderKeys,
   PURCHASE_ORDERS_CACHE_CONFIG,
@@ -51,60 +54,31 @@ export interface POVendorQuote {
   updatedAt: string;
 }
 
-// Mock API functions (replace with actual API calls)
-const mockPurchaseOrderAPI = {
-  // Purchase Order Management
-  getPurchaseOrders: async (filters?: any): Promise<PurchaseOrder[]> => {
-    return [];
-  },
-  getPurchaseOrderById: async (id: string): Promise<PurchaseOrder> => {
-    return {} as PurchaseOrder;
-  },
-  getPurchaseOrdersByStatus: async (status: string): Promise<PurchaseOrder[]> => {
-    return [];
-  },
-  getPurchaseOrdersByDepartment: async (departmentId: string): Promise<PurchaseOrder[]> => {
-    return [];
-  },
-
-  // Line Items
-  getLineItems: async (poId: string): Promise<POLineItem[]> => {
-    return [];
-  },
-  getLineItemById: async (id: string): Promise<POLineItem> => {
-    return {} as POLineItem;
-  },
-
-  // Approval Workflow
-  getApprovalWorkflows: async (filters?: any): Promise<POApprovalWorkflow[]> => {
-    return [];
-  },
-  getApprovalWorkflowById: async (id: string): Promise<POApprovalWorkflow> => {
-    return {} as POApprovalWorkflow;
-  },
-  getPendingApprovals: async (userId: string): Promise<POApprovalWorkflow[]> => {
-    return [];
-  },
-
-  // Vendor Quotes
-  getVendorQuotes: async (poId: string): Promise<POVendorQuote[]> => {
-    return [];
-  },
-  getVendorQuoteById: async (id: string): Promise<POVendorQuote> => {
-    return {} as POVendorQuote;
-  },
-};
-
 // Purchase Order Queries
 export const usePurchaseOrders = (
   filters?: any,
   options?: UseQueryOptions<PurchaseOrder[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.purchaseOrdersList(filters),
-    queryFn: () => mockPurchaseOrderAPI.getPurchaseOrders(filters),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(PURCHASE_ORDERS_ENDPOINTS.BASE, {
+          params: filters,
+        });
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.PO_STALE_TIME,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load purchase orders'
+    },
   });
 };
 
@@ -112,12 +86,25 @@ export const usePurchaseOrderDetails = (
   id: string,
   options?: UseQueryOptions<PurchaseOrder, Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.purchaseOrderDetails(id),
-    queryFn: () => mockPurchaseOrderAPI.getPurchaseOrderById(id),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(PURCHASE_ORDERS_ENDPOINTS.BY_ID(id));
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.PO_STALE_TIME,
     enabled: !!id,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load purchase order details'
+    },
   });
 };
 
@@ -125,12 +112,27 @@ export const usePurchaseOrdersByStatus = (
   status: string,
   options?: UseQueryOptions<PurchaseOrder[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.purchaseOrdersByStatus(status),
-    queryFn: () => mockPurchaseOrderAPI.getPurchaseOrdersByStatus(status),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(PURCHASE_ORDERS_ENDPOINTS.BASE, {
+          params: { status },
+        });
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.PO_STALE_TIME,
     enabled: !!status,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load purchase orders by status'
+    },
   });
 };
 
@@ -138,12 +140,27 @@ export const usePurchaseOrdersByDepartment = (
   departmentId: string,
   options?: UseQueryOptions<PurchaseOrder[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.purchaseOrdersByDepartment(departmentId),
-    queryFn: () => mockPurchaseOrderAPI.getPurchaseOrdersByDepartment(departmentId),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(PURCHASE_ORDERS_ENDPOINTS.BASE, {
+          params: { departmentId },
+        });
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.PO_STALE_TIME,
     enabled: !!departmentId,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load purchase orders by department'
+    },
   });
 };
 
@@ -152,12 +169,25 @@ export const useLineItems = (
   poId: string,
   options?: UseQueryOptions<POLineItem[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.lineItems(poId),
-    queryFn: () => mockPurchaseOrderAPI.getLineItems(poId),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(`${PURCHASE_ORDERS_ENDPOINTS.BY_ID(poId)}/line-items`);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.DEFAULT_STALE_TIME,
     enabled: !!poId,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load line items'
+    },
   });
 };
 
@@ -165,12 +195,25 @@ export const useLineItemDetails = (
   id: string,
   options?: UseQueryOptions<POLineItem, Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.lineItemDetails(id),
-    queryFn: () => mockPurchaseOrderAPI.getLineItemById(id),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(`${PURCHASE_ORDERS_ENDPOINTS.BASE}/line-items/${id}`);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.DEFAULT_STALE_TIME,
     enabled: !!id,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load line item details'
+    },
   });
 };
 
@@ -179,11 +222,26 @@ export const useApprovalWorkflows = (
   filters?: any,
   options?: UseQueryOptions<POApprovalWorkflow[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.approvalWorkflowsList(filters),
-    queryFn: () => mockPurchaseOrderAPI.getApprovalWorkflows(filters),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(`${PURCHASE_ORDERS_ENDPOINTS.BASE}/approvals`, {
+          params: filters,
+        });
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.APPROVALS_STALE_TIME,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load approval workflows'
+    },
   });
 };
 
@@ -191,12 +249,25 @@ export const useApprovalWorkflowDetails = (
   id: string,
   options?: UseQueryOptions<POApprovalWorkflow, Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.approvalWorkflowDetails(id),
-    queryFn: () => mockPurchaseOrderAPI.getApprovalWorkflowById(id),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(`${PURCHASE_ORDERS_ENDPOINTS.BASE}/approvals/${id}`);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.APPROVALS_STALE_TIME,
     enabled: !!id,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load approval workflow details'
+    },
   });
 };
 
@@ -247,13 +318,28 @@ export const usePendingApprovals = (
   userId: string,
   options?: UseQueryOptions<POApprovalWorkflow[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.pendingApprovals(userId),
-    queryFn: () => mockPurchaseOrderAPI.getPendingApprovals(userId),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(PURCHASE_ORDERS_ENDPOINTS.PENDING, {
+          params: { userId },
+        });
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.APPROVALS_STALE_TIME,
     enabled: !!userId,
     refetchInterval: 30000, // Refresh every 30 seconds for pending approvals
     ...options,
+    meta: {
+      errorMessage: 'Failed to load pending approvals'
+    },
   });
 };
 
@@ -262,12 +348,25 @@ export const useVendorQuotes = (
   poId: string,
   options?: UseQueryOptions<POVendorQuote[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.vendorQuotes(poId),
-    queryFn: () => mockPurchaseOrderAPI.getVendorQuotes(poId),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(`${PURCHASE_ORDERS_ENDPOINTS.BY_ID(poId)}/quotes`);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.DEFAULT_STALE_TIME,
     enabled: !!poId,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load vendor quotes'
+    },
   });
 };
 
@@ -275,11 +374,24 @@ export const useVendorQuoteDetails = (
   id: string,
   options?: UseQueryOptions<POVendorQuote, Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: purchaseOrderKeys.vendorQuoteDetails(id),
-    queryFn: () => mockPurchaseOrderAPI.getVendorQuoteById(id),
+    queryFn: async () => {
+      try {
+        const response = await serverGet(`${PURCHASE_ORDERS_ENDPOINTS.BASE}/quotes/${id}`);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     staleTime: PURCHASE_ORDERS_CACHE_CONFIG.DEFAULT_STALE_TIME,
     enabled: !!id,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load vendor quote details'
+    },
   });
 };

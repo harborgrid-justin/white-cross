@@ -6,8 +6,10 @@
  * Separated from type definitions for proper type-only imports.
  */
 
+import { getApiBaseUrl } from '@/lib/api/server';
+
 // ==========================================
 // CONSTANTS
 // ==========================================
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+export const API_BASE = getApiBaseUrl();

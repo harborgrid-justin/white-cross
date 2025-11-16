@@ -19,6 +19,8 @@ import {
   type DashboardLayoutConfig,
   type DashboardExportOptions
 } from '../config';
+import { serverPost } from '@/lib/api/client';
+import { DASHBOARD_ENDPOINTS } from '@/constants/api/admin';
 import toast from 'react-hot-toast';
 
 /**
@@ -41,14 +43,8 @@ export function useDashboardMutations(options: DashboardMutationOptions = {}) {
     mutationKey: [DASHBOARD_OPERATIONS.EXPORT_DATA],
     mutationFn: async (exportOptions: DashboardExportOptions) => {
       try {
-        // Mock implementation - replace with actual API call
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate export time
-        
-        return {
-          success: true,
-          downloadUrl: '/downloads/dashboard-export.pdf',
-          filename: `dashboard-export-${Date.now()}.${exportOptions.format}`,
-        };
+        // TODO: Replace with actual endpoint when implemented - /api/v1/dashboard/export
+        return await serverPost(`${DASHBOARD_ENDPOINTS.STATS}/export`, exportOptions);
       } catch (error: any) {
         throw handleError(error, DASHBOARD_OPERATIONS.EXPORT_DATA);
       }
@@ -69,12 +65,8 @@ export function useDashboardMutations(options: DashboardMutationOptions = {}) {
     mutationKey: [DASHBOARD_OPERATIONS.UPDATE_LAYOUT],
     mutationFn: async (layoutConfig: DashboardLayoutConfig) => {
       try {
-        // Mock implementation - replace with actual API call
-        return {
-          success: true,
-          layout: layoutConfig,
-          updatedAt: new Date().toISOString(),
-        };
+        // TODO: Replace with actual endpoint when implemented - /api/v1/dashboard/layout
+        return await serverPost(`${DASHBOARD_ENDPOINTS.STATS}/layout`, layoutConfig);
       } catch (error: any) {
         throw handleError(error, DASHBOARD_OPERATIONS.UPDATE_LAYOUT);
       }

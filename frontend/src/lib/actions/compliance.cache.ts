@@ -7,14 +7,14 @@
 
 import { headers } from 'next/headers';
 import type { AuditLog } from '@/schemas/compliance/compliance.schemas';
-import { serverGet } from '@/lib/api/server';
+import { serverGet, getApiBaseUrl } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 
 // ============================================================================
 // Configuration
 // ============================================================================
 
-export const BACKEND_URL = process.env.BACKEND_URL || process.env.API_BASE_URL || 'http://localhost:3001';
+export const BACKEND_URL = getApiBaseUrl();
 export const SECONDARY_LOG_ENABLED = process.env.ENABLE_SECONDARY_LOGGING === 'true';
 export const AWS_S3_BUCKET = process.env.AWS_AUDIT_LOG_BUCKET;
 export const AWS_REGION = process.env.AWS_REGION || 'us-east-1';

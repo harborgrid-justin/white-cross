@@ -7,6 +7,7 @@
 
 'use server'
 import { serverGet, serverPost, serverPut } from '@/lib/api/server'
+import { getApiBaseUrl } from '@/lib/api/server'
 
 export interface SystemConfiguration {
   id: string
@@ -94,7 +95,7 @@ export async function updateSystemConfiguration(
 ): Promise<{ success: boolean; message: string; configuration?: SystemConfiguration }> {
   try {
     const data = await serverPut<{ configuration: SystemConfiguration }>(
-      `${process.env.API_BASE_URL}/api/configuration`,
+      `${getApiBaseUrl()}/api/configuration`,
       updateData,
       {
         cache: 'no-store'
@@ -103,7 +104,7 @@ export async function updateSystemConfiguration(
 
     // Revalidate cache
     await serverPost(
-      `${process.env.API_BASE_URL}/api/revalidate`,
+      `${getApiBaseUrl()}/api/revalidate`,
       { tag: 'admin-configuration' },
       { cache: 'no-store' }
     )

@@ -14,7 +14,15 @@ import type {
   WorkflowStatus
 } from '@/types/documents';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+/**
+ * Get API base URL for client-side usage
+ */
+function getClientApiBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://localhost:3001'
+  );
+}
 
 /**
  * Signature workflow query keys
@@ -39,7 +47,7 @@ export async function fetchWorkflow(workflowId: string, token?: string): Promise
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/signatures/workflows/${workflowId}`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/signatures/workflows/${workflowId}`, {
     headers
   });
 
@@ -65,7 +73,7 @@ export async function createWorkflow(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/signatures/workflows`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/signatures/workflows`, {
     method: 'POST',
     headers,
     body: JSON.stringify(workflowData)
@@ -100,7 +108,7 @@ export async function signDocument(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/signatures/${signatureId}/sign`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/signatures/${signatureId}/sign`, {
     method: 'POST',
     headers,
     body: JSON.stringify(signatureData)
@@ -129,7 +137,7 @@ export async function declineSignature(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/signatures/${signatureId}/decline`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/signatures/${signatureId}/decline`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ reason })
@@ -158,7 +166,7 @@ export async function cancelWorkflow(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/signatures/workflows/${workflowId}/cancel`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/signatures/workflows/${workflowId}/cancel`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ reason })
@@ -188,7 +196,7 @@ export async function sendReminder(
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/signatures/workflows/${workflowId}/remind/${partyId}`,
+    `${getClientApiBaseUrl()}/signatures/workflows/${workflowId}/remind/${partyId}`,
     {
       method: 'POST',
       headers
@@ -212,7 +220,7 @@ export async function fetchPendingSignatures(token?: string) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}/signatures/pending`, {
+  const response = await fetch(`${getClientApiBaseUrl()}/signatures/pending`, {
     headers
   });
 

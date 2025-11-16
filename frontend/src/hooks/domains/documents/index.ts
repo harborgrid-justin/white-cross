@@ -63,7 +63,7 @@ export {
   useBulkDocumentUpload,
 } from './mutations/useDocumentUpload';
 export type { UploadOptions, UploadState } from './mutations/useDocumentUpload.types';
-export { API_BASE_URL } from './mutations/useDocumentUpload.types';
+export { getClientApiBaseUrl } from './mutations/useDocumentUpload.types';
 
 // Composite Hooks
 export {

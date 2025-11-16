@@ -6,9 +6,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { serverPost, serverPatch } from '@/lib/api/server';
+import { serverPost, serverPatch, getApiBaseUrl } from '@/lib/api/server';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE = getApiBaseUrl();
 
 // ==========================================
 // PARENT NOTIFICATION

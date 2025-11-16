@@ -5,7 +5,8 @@ import {
   invalidateTrainingQueries,
   EmergencyTraining,
 } from '../config';
-import { mockEmergencyMutationAPI } from './api';
+import { serverPost, serverPut, serverDelete } from '@/lib/api/server';
+import { useApiError } from '@/hooks/shared/useApiError';
 import {
   CreateTrainingInput,
   UpdateTrainingInput,
@@ -16,9 +17,19 @@ export const useCreateTraining = (
   options?: UseMutationOptions<EmergencyTraining, Error, CreateTrainingInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.createTraining,
+    mutationFn: async (data: CreateTrainingInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-training
+        const response = await serverPost('/api/v1/emergency-training', data);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (newTraining) => {
       invalidateTrainingQueries(queryClient);
       toast.success(`Training "${newTraining.title}" created successfully`);
@@ -34,9 +45,19 @@ export const useUpdateTraining = (
   options?: UseMutationOptions<EmergencyTraining, Error, UpdateTrainingInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.updateTraining,
+    mutationFn: async (data: UpdateTrainingInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-training/:id
+        const response = await serverPut(`/api/v1/emergency-training/${data.id}`, data);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (updatedTraining) => {
       queryClient.setQueryData(
         EMERGENCY_QUERY_KEYS.trainingDetails(updatedTraining.id),
@@ -56,9 +77,18 @@ export const useDeleteTraining = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.deleteTraining,
+    mutationFn: async (trainingId: string) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-training/:id
+        await serverDelete(`/api/v1/emergency-training/${trainingId}`);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       invalidateTrainingQueries(queryClient);
       toast.success('Training deleted successfully');

@@ -7,6 +7,7 @@
 
 'use server'
 import { serverGet, serverPost } from '@/lib/api/server'
+import { getApiBaseUrl } from '@/lib/api/server'
 import { CACHE_TTL } from '@/lib/cache/constants'
 
 export interface AuditLog {
@@ -66,7 +67,7 @@ export async function getAuditLogs(params: AuditLogSearchParams = {}): Promise<{
       page: number
       totalPages: number
     }>(
-      `${process.env.API_BASE_URL}/api/audit-logs`,
+      `${getApiBaseUrl()}/api/audit-logs`,
       queryParams,
       {
         cache: 'force-cache',
@@ -112,7 +113,7 @@ export async function getAuditLogStats(): Promise<{
       topActions: Array<{ action: string; count: number }>
       topUsers: Array<{ userName: string; count: number }>
     }>(
-      `${process.env.API_BASE_URL}/api/audit-logs/stats`,
+      `${getApiBaseUrl()}/api/audit-logs/stats`,
       undefined,
       {
         cache: 'force-cache',
@@ -148,7 +149,7 @@ export async function getAuditLogStats(): Promise<{
 export async function getAuditLogById(id: string): Promise<AuditLog | null> {
   try {
     const data = await serverGet<{ log: AuditLog }>(
-      `${process.env.API_BASE_URL}/api/audit-logs/${id}`,
+      `${getApiBaseUrl()}/api/audit-logs/${id}`,
       undefined,
       {
         cache: 'force-cache',
@@ -184,7 +185,7 @@ export async function exportAuditLogs(
     queryParams.format = format
 
     const data = await serverPost<{ downloadUrl: string }>(
-      `${process.env.API_BASE_URL}/api/audit-logs/export`,
+      `${getApiBaseUrl()}/api/audit-logs/export`,
       queryParams,
       {
         cache: 'no-store'
@@ -219,7 +220,7 @@ export async function getAuditLogFilterOptions(): Promise<{
       resources: string[]
       users: Array<{ id: string; name: string }>
     }>(
-      `${process.env.API_BASE_URL}/api/audit-logs/filters`,
+      `${getApiBaseUrl()}/api/audit-logs/filters`,
       undefined,
       {
         cache: 'force-cache',
@@ -253,7 +254,7 @@ export async function archiveAuditLogs(
 ): Promise<{ success: boolean; archivedCount: number; message: string }> {
   try {
     const data = await serverPost<{ archivedCount: number }>(
-      `${process.env.API_BASE_URL}/api/audit-logs/archive`,
+      `${getApiBaseUrl()}/api/audit-logs/archive`,
       { olderThanDays },
       {
         cache: 'no-store'
@@ -262,7 +263,7 @@ export async function archiveAuditLogs(
 
     // Revalidate cache
     await serverPost(
-      `${process.env.API_BASE_URL}/api/revalidate`,
+      `${getApiBaseUrl()}/api/revalidate`,
       { tag: 'admin-audit-logs' },
       { cache: 'no-store' }
     )

@@ -65,7 +65,7 @@ export {
 } from './useBulkUpload';
 
 export type { UploadOptions, UploadState } from './useDocumentUpload.types';
-export { API_BASE_URL } from './useDocumentUpload.types';
+export { getClientApiBaseUrl } from './useDocumentUpload.types';
 
 // Combined mutations object for easy import (backward compatibility)
 export const documentMutations = {

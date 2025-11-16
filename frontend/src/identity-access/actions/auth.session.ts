@@ -19,7 +19,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 // API integration
-import { serverPost } from '@/lib/api/nextjs-client';
+import { serverPost } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS, extractIPAddress, extractUserAgent } from '@/lib/audit';
 

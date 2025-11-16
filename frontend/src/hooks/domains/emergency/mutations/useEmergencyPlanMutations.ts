@@ -6,7 +6,8 @@ import {
   invalidateAllEmergencyQueries,
   EmergencyPlan,
 } from '../config';
-import { mockEmergencyMutationAPI } from './api';
+import { serverPost, serverPut, serverDelete } from '@/lib/api/server';
+import { useApiError } from '@/hooks/shared/useApiError';
 import {
   CreateEmergencyPlanInput,
   UpdateEmergencyPlanInput,
@@ -18,9 +19,19 @@ export const useCreateEmergencyPlan = (
   options?: UseMutationOptions<EmergencyPlan, Error, CreateEmergencyPlanInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.createEmergencyPlan,
+    mutationFn: async (data: CreateEmergencyPlanInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-plans
+        const response = await serverPost('/api/v1/emergency-plans', data);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (newPlan) => {
       invalidateEmergencyPlansQueries(queryClient);
       toast.success(`Emergency plan "${newPlan.name}" created successfully`);
@@ -36,9 +47,19 @@ export const useUpdateEmergencyPlan = (
   options?: UseMutationOptions<EmergencyPlan, Error, UpdateEmergencyPlanInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.updateEmergencyPlan,
+    mutationFn: async (data: UpdateEmergencyPlanInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-plans/:id
+        const response = await serverPut(`/api/v1/emergency-plans/${data.id}`, data);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (updatedPlan) => {
       queryClient.setQueryData(
         EMERGENCY_QUERY_KEYS.emergencyPlanDetails(updatedPlan.id),
@@ -58,9 +79,18 @@ export const useDeleteEmergencyPlan = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.deleteEmergencyPlan,
+    mutationFn: async (planId: string) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-plans/:id
+        await serverDelete(`/api/v1/emergency-plans/${planId}`);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       invalidateEmergencyPlansQueries(queryClient);
       toast.success('Emergency plan deleted successfully');
@@ -76,9 +106,18 @@ export const useActivatePlan = (
   options?: UseMutationOptions<void, Error, ActivatePlanInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.activatePlan,
+    mutationFn: async (data: ActivatePlanInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-plans/:planId/activate
+        await serverPost(`/api/v1/emergency-plans/${data.planId}/activate`, data);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, { planId }) => {
       queryClient.invalidateQueries({ queryKey: EMERGENCY_QUERY_KEYS.emergencyPlanDetails(planId) });
       invalidateAllEmergencyQueries(queryClient);

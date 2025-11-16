@@ -7,6 +7,7 @@
 
 'use server'
 import { serverGet, serverPost, serverPut } from '@/lib/api/server'
+import { getApiBaseUrl } from '@/lib/api/server'
 import { CACHE_TTL } from '@/lib/cache/constants'
 
 export interface Integration {
@@ -40,7 +41,7 @@ export interface IntegrationConfig {
 export async function getIntegrations(): Promise<Integration[]> {
   try {
     const data = await serverGet<{ integrations: Integration[] }>(
-      `${process.env.API_BASE_URL}/api/integrations`,
+      `${getApiBaseUrl()}/api/integrations`,
       undefined,
       {
         cache: 'force-cache',
@@ -67,7 +68,7 @@ export async function toggleIntegration(
 ): Promise<{ success: boolean; message: string; integration?: Integration }> {
   try {
     const data = await serverPost<{ integration: Integration }>(
-      `${process.env.API_BASE_URL}/api/integrations/${id}/toggle`,
+      `${getApiBaseUrl()}/api/integrations/${id}/toggle`,
       { enabled },
       {
         cache: 'no-store'
@@ -76,7 +77,7 @@ export async function toggleIntegration(
 
     // Revalidate cache
     await serverPost(
-      `${process.env.API_BASE_URL}/api/revalidate`,
+      `${getApiBaseUrl()}/api/revalidate`,
       { tag: 'admin-integrations' },
       { cache: 'no-store' }
     )
@@ -104,7 +105,7 @@ export async function updateIntegrationConfig(
 ): Promise<{ success: boolean; message: string; integration?: Integration }> {
   try {
     const data = await serverPut<{ integration: Integration }>(
-      `${process.env.API_BASE_URL}/api/integrations/${id}/config`,
+      `${getApiBaseUrl()}/api/integrations/${id}/config`,
       config,
       {
         cache: 'no-store'
@@ -113,7 +114,7 @@ export async function updateIntegrationConfig(
 
     // Revalidate cache
     await serverPost(
-      `${process.env.API_BASE_URL}/api/revalidate`,
+      `${getApiBaseUrl()}/api/revalidate`,
       { tag: 'admin-integrations' },
       { cache: 'no-store' }
     )
@@ -138,7 +139,7 @@ export async function updateIntegrationConfig(
 export async function testIntegration(id: string): Promise<{ success: boolean; message: string; details?: unknown }> {
   try {
     const data = await serverPost<{ testResults: unknown }>(
-      `${process.env.API_BASE_URL}/api/integrations/${id}/test`,
+      `${getApiBaseUrl()}/api/integrations/${id}/test`,
       undefined,
       {
         cache: 'no-store'
@@ -182,7 +183,7 @@ export async function getIntegrationLogs(
         details?: Record<string, unknown>
       }>
     }>(
-      `${process.env.API_BASE_URL}/api/integrations/${id}/logs`,
+      `${getApiBaseUrl()}/api/integrations/${id}/logs`,
       { limit },
       {
         cache: 'force-cache',
@@ -206,7 +207,7 @@ export async function getIntegrationLogs(
 export async function syncIntegration(id: string): Promise<{ success: boolean; message: string }> {
   try {
     await serverPost(
-      `${process.env.API_BASE_URL}/api/integrations/${id}/sync`,
+      `${getApiBaseUrl()}/api/integrations/${id}/sync`,
       undefined,
       {
         cache: 'no-store'
@@ -215,7 +216,7 @@ export async function syncIntegration(id: string): Promise<{ success: boolean; m
 
     // Revalidate cache
     await serverPost(
-      `${process.env.API_BASE_URL}/api/revalidate`,
+      `${getApiBaseUrl()}/api/revalidate`,
       { tag: 'admin-integrations' },
       { cache: 'no-store' }
     )
@@ -249,7 +250,7 @@ export async function getIntegrationCategories(): Promise<Array<{
         count: number
       }>
     }>(
-      `${process.env.API_BASE_URL}/api/integrations/categories`,
+      `${getApiBaseUrl()}/api/integrations/categories`,
       undefined,
       {
         cache: 'force-cache',

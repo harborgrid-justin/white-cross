@@ -20,7 +20,7 @@ import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 // API integration
-import { serverPost, NextApiClientError } from '@/lib/api/nextjs-client';
+import { serverPost, NextApiClientError } from '@/lib/api/server';
 import { API_ENDPOINTS } from '@/constants/api';
 import { auditLog, AUDIT_ACTIONS, extractIPAddress, extractUserAgent } from '@/lib/audit';
 

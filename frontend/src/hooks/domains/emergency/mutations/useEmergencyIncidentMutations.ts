@@ -7,7 +7,8 @@ import {
   EmergencyIncident,
   IncidentTimelineEntry,
 } from '../config';
-import { mockEmergencyMutationAPI } from './api';
+import { serverPost, serverPut, serverDelete } from '@/lib/api/server';
+import { useApiError } from '@/hooks/shared/useApiError';
 import {
   CreateIncidentInput,
   UpdateIncidentInput,
@@ -19,9 +20,19 @@ export const useCreateIncident = (
   options?: UseMutationOptions<EmergencyIncident, Error, CreateIncidentInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.createIncident,
+    mutationFn: async (data: CreateIncidentInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-incidents
+        const response = await serverPost('/api/v1/emergency-incidents', data);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (newIncident) => {
       invalidateIncidentsQueries(queryClient);
       invalidateAllEmergencyQueries(queryClient);
@@ -38,9 +49,19 @@ export const useUpdateIncident = (
   options?: UseMutationOptions<EmergencyIncident, Error, UpdateIncidentInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.updateIncident,
+    mutationFn: async (data: UpdateIncidentInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-incidents/:id
+        const response = await serverPut(`/api/v1/emergency-incidents/${data.id}`, data);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (updatedIncident) => {
       queryClient.setQueryData(
         EMERGENCY_QUERY_KEYS.incidentDetails(updatedIncident.id),
@@ -60,9 +81,18 @@ export const useCloseIncident = (
   options?: UseMutationOptions<void, Error, { id: string; summary: string }>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: ({ id, summary }) => mockEmergencyMutationAPI.closeIncident(id, summary),
+    mutationFn: async ({ id, summary }) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-incidents/:id/close
+        await serverPost(`/api/v1/emergency-incidents/${id}/close`, { summary });
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: EMERGENCY_QUERY_KEYS.incidentDetails(id) });
       invalidateIncidentsQueries(queryClient);
@@ -79,9 +109,19 @@ export const useAddTimelineEntry = (
   options?: UseMutationOptions<IncidentTimelineEntry, Error, AddTimelineEntryInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.addTimelineEntry,
+    mutationFn: async (data: AddTimelineEntryInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-incidents/:incidentId/timeline
+        const response = await serverPost(`/api/v1/emergency-incidents/${data.incidentId}/timeline`, data);
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, { incidentId }) => {
       queryClient.invalidateQueries({ queryKey: EMERGENCY_QUERY_KEYS.incidentTimeline(incidentId) });
       queryClient.invalidateQueries({ queryKey: EMERGENCY_QUERY_KEYS.incidentDetails(incidentId) });

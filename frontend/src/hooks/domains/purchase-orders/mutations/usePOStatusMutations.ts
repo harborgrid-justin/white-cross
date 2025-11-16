@@ -30,7 +30,9 @@
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { purchaseOrderKeys, invalidatePOQueries, PurchaseOrder } from '../config';
-import { mockPurchaseOrderMutationAPI } from './api';
+import { serverPost } from '@/lib/api/client';
+import { PURCHASE_ORDERS_ENDPOINTS } from '@/constants/api/admin';
+import { useApiError } from '@/hooks/shared/useApiError';
 import { AcknowledgePurchaseOrderInput } from './types';
 
 /**
@@ -85,8 +87,22 @@ export const useSendPurchaseOrder = (
 ) => {
   const queryClient = useQueryClient();
 
+export const useSendPurchaseOrder = (
+  options?: UseMutationOptions<PurchaseOrder, Error, string>
+) => {
+  const queryClient = useQueryClient();
+  const { handleError } = useApiError();
+
   return useMutation({
-    mutationFn: mockPurchaseOrderMutationAPI.sendPurchaseOrder,
+    mutationFn: async (poId: string) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/purchase-orders/:id/send
+        return await serverPost(`${PURCHASE_ORDERS_ENDPOINTS.BASE}/${poId}/send`, {});
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, poId) => {
       invalidatePOQueries(queryClient, poId);
       toast.success('Purchase Order sent successfully');
@@ -94,8 +110,12 @@ export const useSendPurchaseOrder = (
     onError: (error: Error) => {
       toast.error(`Failed to send purchase order: ${error.message}`);
     },
+    meta: {
+      errorMessage: 'Failed to send purchase order'
+    },
     ...options,
   });
+};
 };
 
 /**
@@ -156,14 +176,24 @@ export const useAcknowledgePurchaseOrder = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ poId, acknowledgedDate }) =>
-      mockPurchaseOrderMutationAPI.acknowledgePurchaseOrder(poId, acknowledgedDate),
+    mutationFn: async ({ poId, acknowledgedDate }) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/purchase-orders/:id/acknowledge
+        return await serverPost(`${PURCHASE_ORDERS_ENDPOINTS.BASE}/${poId}/acknowledge`, { acknowledgedDate });
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, { poId }) => {
       invalidatePOQueries(queryClient, poId);
       toast.success('Purchase Order acknowledged');
     },
     onError: (error: Error) => {
       toast.error(`Failed to acknowledge purchase order: ${error.message}`);
+    },
+    meta: {
+      errorMessage: 'Failed to acknowledge purchase order'
     },
     ...options,
   });
@@ -233,13 +263,24 @@ export const useClosePurchaseOrder = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: mockPurchaseOrderMutationAPI.closePurchaseOrder,
+    mutationFn: async (poId: string) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/purchase-orders/:id/close
+        return await serverPost(`${PURCHASE_ORDERS_ENDPOINTS.BASE}/${poId}/close`, {});
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (_, poId) => {
       invalidatePOQueries(queryClient, poId);
       toast.success('Purchase Order closed successfully');
     },
     onError: (error: Error) => {
       toast.error(`Failed to close purchase order: ${error.message}`);
+    },
+    meta: {
+      errorMessage: 'Failed to close purchase order'
     },
     ...options,
   });

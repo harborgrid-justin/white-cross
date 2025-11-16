@@ -8,8 +8,10 @@
 
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useWebSocket, useWebSocketEvent, useWebSocketChannel } from '@/services/websocket/useWebSocket';
+import { WebSocketEvent } from '@/services/websocket/WebSocketService';
 
 // ==========================================
 // REALTIME TYPES
@@ -62,6 +64,11 @@ export function useImmunizationRealtime(options: UseImmunizationRealtimeOptions 
   } = options;
 
   const queryClient = useQueryClient();
+  const { isConnected } = useWebSocket();
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  // Subscribe to immunization channel
+  useWebSocketChannel('immunizations', enabled && isConnected);
 
   // ==========================================
   // EVENT HANDLERS
@@ -110,51 +117,51 @@ export function useImmunizationRealtime(options: UseImmunizationRealtimeOptions 
   }, [queryClient, studentId, onEvent, onError]);
 
   // ==========================================
-  // WEBSOCKET INTEGRATION
+  // WEBSOCKET EVENT SUBSCRIPTIONS
+  // ==========================================
+
+  // Handle immunization administered events
+  useWebSocketEvent('immunization:administered', (data: ImmunizationEventData) => {
+    handleImmunizationEvent('administered', data);
+  }, [handleImmunizationEvent]);
+
+  // Handle immunization scheduled events
+  useWebSocketEvent('immunization:scheduled', (data: ImmunizationEventData) => {
+    handleImmunizationEvent('scheduled', data);
+  }, [handleImmunizationEvent]);
+
+  // Handle immunization overdue events
+  useWebSocketEvent('immunization:overdue', (data: ImmunizationEventData) => {
+    handleImmunizationEvent('overdue', data);
+  }, [handleImmunizationEvent]);
+
+  // Handle immunization cancelled events
+  useWebSocketEvent('immunization:cancelled', (data: ImmunizationEventData) => {
+    handleImmunizationEvent('cancelled', data);
+  }, [handleImmunizationEvent]);
+
+  // Handle health notifications that might be immunization-related
+  useWebSocketEvent(WebSocketEvent.HEALTH_NOTIFICATION, (data: any) => {
+    if (data.type === 'immunization') {
+      handleImmunizationEvent(data.action, data);
+    }
+  }, [handleImmunizationEvent]);
+
+  // ==========================================
+  // CONNECTION STATUS TRACKING
   // ==========================================
 
   useEffect(() => {
-    if (!enabled) return;
-
-    console.log('[ImmunizationRealtime] Initializing real-time updates');
-
-    // Mock WebSocket connection for development
-    // TODO: Replace with actual WebSocket service integration
-    const mockEvents = [
-      'immunization_administered',
-      'immunization_scheduled', 
-      'immunization_overdue'
-    ];
-
-    // Simulate periodic updates for development
-    const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
-        const eventType = mockEvents[Math.floor(Math.random() * mockEvents.length)];
-        const mockData = {
-          studentId: `student-${Math.floor(Math.random() * 100)}`,
-          vaccineType: ['covid19', 'flu', 'measles', 'hepatitis_b'][Math.floor(Math.random() * 4)],
-          vaccineName: ['COVID-19', 'Influenza', 'MMR', 'Hepatitis B'][Math.floor(Math.random() * 4)],
-          timestamp: new Date().toISOString(),
-          administeredBy: 'Nurse Johnson'
-        };
-
-        handleImmunizationEvent(eventType.replace('immunization_', ''), mockData);
-      }
-    }, 30000); // Every 30 seconds
-
-    // Cleanup
-    return () => {
-      clearInterval(interval);
-      console.log('[ImmunizationRealtime] Cleaned up real-time connections');
-    };
-  }, [enabled, handleImmunizationEvent]);
+    setIsSubscribed(enabled && isConnected);
+  }, [enabled, isConnected]);
 
   // ==========================================
   // HOOK RETURN
   // ==========================================
 
   return {
-    isConnected: enabled, // Mock connection status
+    isConnected,
+    isSubscribed,
     handleEvent: handleImmunizationEvent
   };
 }

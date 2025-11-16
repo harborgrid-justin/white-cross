@@ -1,9 +1,10 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { serverGet } from '@/lib/api/server';
+import { COMPLIANCE_ENDPOINTS, AUDIT_ENDPOINTS } from '@/constants/api/admin';
 import {
   COMPLIANCE_QUERY_KEYS,
   COMPLIANCE_CACHE_CONFIG,
 } from '../config';
-import { complianceApi } from '@/services';
 import { useApiError } from '../../../shared/useApiError';
 
 // Compliance Dashboard Queries
@@ -15,30 +16,36 @@ export const useComplianceDashboard = (
   return useQuery({
     queryKey: ['compliance', 'dashboard'],
     queryFn: async () => {
-      // Get data from compliance API
-      const [audits, policies, incidents, training] = await Promise.all([
-        complianceApi.getAuditLogs({ limit: 5 }).then(r => r.data),
-        complianceApi.getPolicies({ limit: 5 }).then(r => r.data),
-        Promise.resolve([]), // incidents handled elsewhere
-        Promise.resolve([]), // training handled through administration API
-      ]);
+      try {
+        // Get data from compliance API endpoints
+        const [audits, policies, metrics] = await Promise.all([
+          serverGet(AUDIT_ENDPOINTS.LOGS, { params: { limit: 5 } }),
+          serverGet(COMPLIANCE_ENDPOINTS.POLICIES, { params: { limit: 5 } }),
+          serverGet(COMPLIANCE_ENDPOINTS.METRICS),
+        ]);
 
-      return {
-        recentAudits: audits,
-        pendingPolicies: policies,
-        openIncidents: incidents,
-        requiredTraining: training,
-        stats: {
-          totalAudits: audits.length,
-          activePolicies: policies.length,
-          openIncidents: incidents.length,
-          trainingCompliance: 85, // Mock percentage
-        },
-      };
+        return {
+          recentAudits: audits.data,
+          pendingPolicies: policies.data,
+          openIncidents: [], // incidents handled elsewhere
+          requiredTraining: [], // training handled through administration API
+          stats: {
+            totalAudits: audits.data?.length || 0,
+            activePolicies: policies.data?.length || 0,
+            openIncidents: 0,
+            trainingCompliance: metrics.data?.trainingCompliance || 0,
+          },
+        };
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
     },
     staleTime: COMPLIANCE_CACHE_CONFIG.DEFAULT_STALE_TIME,
-    onError: handleError,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load compliance dashboard'
+    },
   });
 };
 
@@ -52,38 +59,21 @@ export const useComplianceStats = (
   return useQuery({
     queryKey: ['compliance', 'stats', timeframe],
     queryFn: async () => {
-      // Mock statistics calculation
-      return {
-        auditStats: {
-          completed: 12,
-          inProgress: 3,
-          scheduled: 8,
-        },
-        incidentStats: {
-          total: 5,
-          resolved: 3,
-          investigating: 2,
-        },
-        trainingStats: {
-          completionRate: 92,
-          overdue: 8,
-          expiringSoon: 15,
-        },
-        policyStats: {
-          active: 45,
-          underReview: 3,
-          expired: 2,
-        },
-        riskStats: {
-          high: 2,
-          medium: 8,
-          low: 15,
-        },
-      };
+      try {
+        const response = await serverGet(COMPLIANCE_ENDPOINTS.METRICS, {
+          params: { timeframe },
+        });
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
     },
     staleTime: COMPLIANCE_CACHE_CONFIG.DEFAULT_STALE_TIME,
-    onError: handleError,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load compliance statistics'
+    },
   });
 };
 
@@ -98,24 +88,42 @@ export const useComplianceReports = (
   return useQuery({
     queryKey: COMPLIANCE_QUERY_KEYS.reportsList({ type, ...filters }),
     queryFn: async () => {
-      // Get reports from compliance API based on type
-      switch (type) {
-        case 'audit':
-          return (await complianceApi.getAuditLogs(filters)).data;
-        case 'incident':
-          return []; // incidents handled elsewhere
-        case 'training':
-          return []; // training handled through administration API
-        case 'policy':
-          return (await complianceApi.getPolicies(filters)).data;
-        case 'risk':
-          return []; // risk assessments not available
-        default:
-          return [];
+      try {
+        let endpoint: string;
+        let params: any = filters || {};
+
+        // Get reports from compliance API endpoints based on type
+        switch (type) {
+          case 'audit':
+            endpoint = AUDIT_ENDPOINTS.LOGS;
+            break;
+          case 'incident':
+            // incidents handled elsewhere - return empty array for now
+            return [];
+          case 'training':
+            endpoint = COMPLIANCE_ENDPOINTS.TRAINING;
+            break;
+          case 'policy':
+            endpoint = COMPLIANCE_ENDPOINTS.POLICIES;
+            break;
+          case 'risk':
+            // risk assessments not available - return empty array for now
+            return [];
+          default:
+            endpoint = COMPLIANCE_ENDPOINTS.REPORTS;
+        }
+
+        const response = await serverGet(endpoint, { params });
+        return response.data;
+      } catch (error) {
+        handleError(error);
+        throw error;
       }
     },
     staleTime: COMPLIANCE_CACHE_CONFIG.REPORTS_STALE_TIME,
-    onError: handleError,
     ...options,
+    meta: {
+      errorMessage: 'Failed to load compliance reports'
+    },
   });
 };

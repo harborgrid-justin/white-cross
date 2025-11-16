@@ -53,7 +53,9 @@ import {
   SystemHealth,
   UserActivity,
 } from '../config';
-import { administrationApi } from '@/services';
+import { serverGet } from '@/lib/api/client';
+import { SYSTEM_ENDPOINTS, ADMIN_ENDPOINTS, AUDIT_ENDPOINTS } from '@/constants/api/admin';
+import { useApiError } from '@/hooks/shared/useApiError';
 
 // ==========================================
 // SYSTEM HEALTH QUERIES
@@ -67,13 +69,22 @@ import { administrationApi } from '@/services';
 export const useSystemHealth = (
   options?: UseQueryOptions<SystemHealth, Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: ['administration', 'system-health'],
     queryFn: async () => {
-      const response = await administrationApi.getSystemHealth();
-      return response;
+      try {
+        return await serverGet(SYSTEM_ENDPOINTS.HEALTH);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
     },
     staleTime: 30 * 1000, // 30 seconds for system health
+    meta: {
+      errorMessage: 'Failed to fetch system health'
+    },
     ...options,
   });
 };
@@ -125,32 +136,42 @@ export const useUserActivity = (
 export const useAdministrationDashboard = (
   options?: UseQueryOptions<any, Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: ['administration', 'dashboard'],
     queryFn: async () => {
-      const [users, departments, recentLogs, notifications, systemHealth] = await Promise.all([
-        administrationApi.getUsers({ limit: 5, status: 'ACTIVE' }).then(r => r.data),
-        Promise.resolve([]), // departments not available
-        administrationApi.getAuditLogs({ limit: 10, sortBy: 'timestamp', sortOrder: 'desc' }).then(r => r.data),
-        Promise.resolve([]), // notifications not available
-        administrationApi.getSystemHealth(),
-      ]);
+      try {
+        const [users, departments, recentLogs, notifications, systemHealth] = await Promise.all([
+          serverGet(ADMIN_ENDPOINTS.USERS, { limit: 5, status: 'ACTIVE' }),
+          serverGet(ADMIN_ENDPOINTS.DISTRICTS), // Use districts as departments
+          serverGet(AUDIT_ENDPOINTS.LOGS, { limit: 10, sortBy: 'timestamp', sortOrder: 'desc' }),
+          serverGet(ADMIN_ENDPOINTS.SETTINGS), // Use settings as notifications placeholder
+          serverGet(SYSTEM_ENDPOINTS.HEALTH),
+        ]);
 
-      return {
-        activeUsers: users,
-        departments,
-        recentAuditLogs: recentLogs,
-        unreadNotifications: notifications,
-        systemHealth,
-        stats: {
-          totalUsers: users.length,
-          activeDepartments: departments.length,
-          unreadNotifications: notifications.length,
-          systemStatus: systemHealth.status,
-        },
-      };
+        return {
+          activeUsers: users,
+          departments,
+          recentAuditLogs: recentLogs,
+          unreadNotifications: notifications,
+          systemHealth,
+          stats: {
+            totalUsers: users?.length || 0,
+            activeDepartments: departments?.length || 0,
+            unreadNotifications: notifications?.length || 0,
+            systemStatus: systemHealth?.status || 'unknown',
+          },
+        };
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
     },
     staleTime: ADMINISTRATION_CACHE_CONFIG.DEFAULT_STALE_TIME,
+    meta: {
+      errorMessage: 'Failed to fetch administration dashboard'
+    },
     ...options,
   });
 };
@@ -169,40 +190,59 @@ export const useAdministrationStats = (
   timeframe?: 'week' | 'month' | 'quarter' | 'year',
   options?: UseQueryOptions<any, Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: ['administration', 'stats', timeframe],
     queryFn: async () => {
-      // Mock statistics calculation
-      return {
-        userStats: {
-          total: 150,
-          active: 142,
-          inactive: 8,
-          newThisMonth: 12,
-        },
-        departmentStats: {
-          total: 15,
-          withBudget: 12,
-          averageStaff: 8,
-        },
-        systemStats: {
-          uptime: 99.9,
-          averageResponseTime: 120,
-          errorRate: 0.1,
-        },
-        activityStats: {
-          totalLogins: 1250,
-          uniqueUsers: 145,
-          averageSessionDuration: 45,
-        },
-        securityStats: {
-          failedLogins: 23,
-          suspiciousActivity: 2,
-          passwordResets: 8,
-        },
-      };
+      try {
+        const [metrics, users, auditLogs] = await Promise.all([
+          serverGet(ADMIN_ENDPOINTS.METRICS, { timeframe }),
+          serverGet(ADMIN_ENDPOINTS.USERS),
+          serverGet(AUDIT_ENDPOINTS.LOGS, { timeframe }),
+        ]);
+
+        return {
+          userStats: {
+            total: users?.length || 0,
+            active: users?.filter((u: any) => u.status === 'ACTIVE').length || 0,
+            inactive: users?.filter((u: any) => u.status !== 'ACTIVE').length || 0,
+            newThisMonth: users?.filter((u: any) => {
+              const created = new Date(u.createdAt);
+              const now = new Date();
+              return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+            }).length || 0,
+          },
+          departmentStats: {
+            total: metrics?.departments?.total || 0,
+            withBudget: metrics?.departments?.withBudget || 0,
+            averageStaff: metrics?.departments?.averageStaff || 0,
+          },
+          systemStats: {
+            uptime: metrics?.system?.uptime || 0,
+            averageResponseTime: metrics?.system?.averageResponseTime || 0,
+            errorRate: metrics?.system?.errorRate || 0,
+          },
+          activityStats: {
+            totalLogins: auditLogs?.filter((log: any) => log.action === 'LOGIN').length || 0,
+            uniqueUsers: new Set(auditLogs?.map((log: any) => log.userId)).size || 0,
+            averageSessionDuration: metrics?.activity?.averageSessionDuration || 0,
+          },
+          securityStats: {
+            failedLogins: auditLogs?.filter((log: any) => log.action === 'FAILED_LOGIN').length || 0,
+            suspiciousActivity: auditLogs?.filter((log: any) => log.action === 'SUSPICIOUS_ACTIVITY').length || 0,
+            passwordResets: auditLogs?.filter((log: any) => log.action === 'PASSWORD_RESET').length || 0,
+          },
+        };
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
     },
     staleTime: ADMINISTRATION_CACHE_CONFIG.DEFAULT_STALE_TIME,
+    meta: {
+      errorMessage: 'Failed to fetch administration statistics'
+    },
     ...options,
   });
 };
@@ -230,25 +270,35 @@ export const useAdministrationReports = (
   filters?: any,
   options?: UseQueryOptions<any[], Error>
 ) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: ['administration', 'reports', type, filters],
     queryFn: async () => {
-      switch (type) {
-        case 'users':
-          return (await administrationApi.getUsers(filters)).data;
-        case 'departments':
-          return []; // departments not available
-        case 'audit':
-          return (await administrationApi.getAuditLogs(filters)).data;
-        case 'notifications':
-          return []; // notifications not available
-        case 'system':
-          return [await administrationApi.getSystemHealth()];
-        default:
-          return [];
+      try {
+        switch (type) {
+          case 'users':
+            return await serverGet(ADMIN_ENDPOINTS.USERS, filters);
+          case 'departments':
+            return await serverGet(ADMIN_ENDPOINTS.DISTRICTS, filters); // Use districts as departments
+          case 'audit':
+            return await serverGet(AUDIT_ENDPOINTS.LOGS, filters);
+          case 'notifications':
+            return await serverGet(ADMIN_ENDPOINTS.SETTINGS, filters); // Use settings as notifications placeholder
+          case 'system':
+            return [await serverGet(SYSTEM_ENDPOINTS.HEALTH)];
+          default:
+            return [];
+        }
+      } catch (error) {
+        handleError(error);
+        throw error;
       }
     },
     staleTime: ADMINISTRATION_CACHE_CONFIG.DEFAULT_STALE_TIME,
+    meta: {
+      errorMessage: `Failed to fetch ${type} reports`
+    },
     ...options,
   });
 };

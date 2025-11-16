@@ -9,7 +9,7 @@
 
 // Re-export types
 export type { UploadOptions, UploadState } from './useDocumentUpload.types';
-export { API_BASE_URL } from './useDocumentUpload.types';
+export { getClientApiBaseUrl } from './useDocumentUpload.types';
 
 // Re-export single upload hook
 export { useDocumentUpload } from './useSingleUpload';

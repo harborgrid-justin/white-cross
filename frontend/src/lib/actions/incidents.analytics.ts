@@ -6,10 +6,11 @@
 'use server';
 
 import { serverGet } from '@/lib/api/server';
+import { getApiBaseUrl } from '@/lib/api/server';
 import type { IncidentAnalytics, SeverityTrend } from './incidents.types';
 import { getIncidents } from './incidents.crud';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE = getApiBaseUrl();
 
 // ==========================================
 // BASIC ANALYTICS

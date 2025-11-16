@@ -10,7 +10,7 @@
  * @module analyticsHooks
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from '../reduxStore';
@@ -81,19 +81,23 @@ export const useTrendAnalysis = (
   lookback: number = 30
 ) => {
   const dispatch = useAppDispatch();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const generateTrends = useCallback(async () => {
+    setIsGenerating(true);
     try {
       const result = await dispatch(generateTrendAnalysis({ period, lookback })).unwrap();
       return result;
     } catch (error) {
       throw handlePhase3ApiError(error);
+    } finally {
+      setIsGenerating(false);
     }
   }, [dispatch, period, lookback]);
 
   return {
     generateTrends,
-    isGenerating: false, // TODO: Add loading state tracking
+    isGenerating,
   };
 };
 
@@ -102,13 +106,17 @@ export const useTrendAnalysis = (
  */
 export const useStudentRiskAssessment = (studentIds?: string[]) => {
   const dispatch = useAppDispatch();
+  const [isAssessing, setIsAssessing] = useState(false);
 
   const assessRisks = useCallback(async () => {
+    setIsAssessing(true);
     try {
       const result = await dispatch(assessStudentRisks({ studentIds })).unwrap();
       return result;
     } catch (error) {
       throw handlePhase3ApiError(error);
+    } finally {
+      setIsAssessing(false);
     }
   }, [dispatch, studentIds]);
 
@@ -137,7 +145,7 @@ export const useStudentRiskAssessment = (studentIds?: string[]) => {
   return {
     assessRisks,
     highRiskStudents,
-    isAssessing: false, // TODO: Add loading state tracking
+    isAssessing,
   };
 };
 
@@ -146,19 +154,23 @@ export const useStudentRiskAssessment = (studentIds?: string[]) => {
  */
 export const useComplianceReporting = () => {
   const dispatch = useAppDispatch();
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const generateReport = useCallback(async (startDate: string, endDate: string) => {
+    setIsGenerating(true);
     try {
       const result = await dispatch(generateComplianceReport({ startDate, endDate })).unwrap();
       return result;
     } catch (error) {
       throw handlePhase3ApiError(error);
+    } finally {
+      setIsGenerating(false);
     }
   }, [dispatch]);
 
   return {
     generateReport,
-    isGenerating: false, // TODO: Add loading state tracking
+    isGenerating,
   };
 };
 

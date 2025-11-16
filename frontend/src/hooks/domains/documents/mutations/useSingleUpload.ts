@@ -13,7 +13,7 @@ import { createUploadService } from '@/services/documents';
 import type { Document, DocumentMetadata } from '@/types/documents';
 import { documentsKeys } from './useDocuments';
 import type { UploadOptions, UploadState } from './useDocumentUpload.types';
-import { API_BASE_URL } from './useDocumentUpload.types';
+import { getClientApiBaseUrl } from './useDocumentUpload.types';
 
 /**
  * useDocumentUpload hook for single file uploads
@@ -30,7 +30,7 @@ export function useDocumentUpload(options: UploadOptions = {}) {
 
   const uploadServiceRef = useRef(
     createUploadService({
-      endpoint: `${API_BASE_URL}/documents/upload`,
+      endpoint: `${getClientApiBaseUrl()}/documents/upload`,
       token: options.token,
       enableRetry: options.enableRetry ?? true,
       maxFileSize: options.maxFileSize,

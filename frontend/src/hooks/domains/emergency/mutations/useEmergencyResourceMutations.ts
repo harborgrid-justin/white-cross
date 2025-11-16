@@ -5,7 +5,8 @@ import {
   invalidateResourcesQueries,
   EmergencyResource,
 } from '../config';
-import { mockEmergencyMutationAPI } from './api';
+import { serverPost, serverPut, serverDelete } from '@/lib/api/server';
+import { useApiError } from '@/hooks/shared/useApiError';
 import {
   CreateResourceInput,
   UpdateResourceInput,
@@ -16,9 +17,18 @@ export const useCreateResource = (
   options?: UseMutationOptions<EmergencyResource, Error, CreateResourceInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.createResource,
+    mutationFn: async (data: CreateResourceInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-resources
+        return await serverPost('/api/v1/emergency-resources', data);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (newResource) => {
       invalidateResourcesQueries(queryClient);
       toast.success(`Resource "${newResource.name}" created successfully`);
@@ -34,9 +44,18 @@ export const useUpdateResource = (
   options?: UseMutationOptions<EmergencyResource, Error, UpdateResourceInput>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.updateResource,
+    mutationFn: async (data: UpdateResourceInput) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-resources/:id
+        return await serverPut(`/api/v1/emergency-resources/${data.id}`, data);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: (updatedResource) => {
       queryClient.setQueryData(
         EMERGENCY_QUERY_KEYS.resourceDetails(updatedResource.id),
@@ -56,9 +75,18 @@ export const useDeleteResource = (
   options?: UseMutationOptions<void, Error, string>
 ) => {
   const queryClient = useQueryClient();
+  const { handleError } = useApiError();
 
   return useMutation({
-    mutationFn: mockEmergencyMutationAPI.deleteResource,
+    mutationFn: async (resourceId: string) => {
+      try {
+        // TODO: Replace with actual endpoint when implemented - /api/v1/emergency-resources/:id
+        await serverDelete(`/api/v1/emergency-resources/${resourceId}`);
+      } catch (error) {
+        handleError(error);
+        throw error;
+      }
+    },
     onSuccess: () => {
       invalidateResourcesQueries(queryClient);
       toast.success('Resource deleted successfully');

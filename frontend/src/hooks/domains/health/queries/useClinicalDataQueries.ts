@@ -4,6 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+import { serverGet } from '@/lib/api/server';
 import {
   VitalSigns,
   Medication,
@@ -16,6 +17,11 @@ import {
   healthKeys,
   healthCacheConfig
 } from '../config';
+import {
+  VITAL_SIGNS_ENDPOINTS,
+  MEDICATIONS_ENDPOINTS,
+  ALLERGIES_ENDPOINTS
+} from '@/constants/api/health';
 
 // ============================================================================
 // VITAL SIGNS QUERIES
@@ -25,19 +31,18 @@ export const useVitalsByPatient = (patientId: string) => {
   return useQuery({
     queryKey: healthKeys.vitalsByPatient(patientId),
     queryFn: async (): Promise<VitalSigns[]> => {
-      // Mock implementation - replace with actual API call
-      return [
+      const data = await serverGet<VitalSigns[]>(
+        VITAL_SIGNS_ENDPOINTS.BY_STUDENT(patientId),
+        undefined,
         {
-          id: '1',
-          patientId,
-          type: 'blood_pressure' as VitalType,
-          value: 120,
-          unit: 'mmHg',
-          recordedAt: '2024-10-21T10:00:00Z',
-          recordedBy: 'nurse1',
-          notes: 'Normal blood pressure'
+          cache: 'force-cache',
+          next: {
+            revalidate: healthCacheConfig.staleTime.short,
+            tags: [`vitals-${patientId}`]
+          }
         }
-      ];
+      );
+      return data || [];
     },
     enabled: !!patientId,
     staleTime: healthCacheConfig.staleTime.short,
@@ -50,8 +55,18 @@ export const useVitalsByType = (patientId: string, type: VitalType) => {
   return useQuery({
     queryKey: healthKeys.vitalsByType(patientId, type),
     queryFn: async (): Promise<VitalSigns[]> => {
-      // Mock implementation - replace with actual API call
-      return [];
+      const data = await serverGet<VitalSigns[]>(
+        `${VITAL_SIGNS_ENDPOINTS.BY_STUDENT(patientId)}?type=${type}`,
+        undefined,
+        {
+          cache: 'force-cache',
+          next: {
+            revalidate: healthCacheConfig.staleTime.short,
+            tags: [`vitals-${patientId}-${type}`]
+          }
+        }
+      );
+      return data || [];
     },
     enabled: !!patientId && !!type,
     staleTime: healthCacheConfig.staleTime.short,
@@ -67,24 +82,18 @@ export const useMedicationsByPatient = (patientId: string) => {
   return useQuery({
     queryKey: healthKeys.medicationsByPatient(patientId),
     queryFn: async (): Promise<Medication[]> => {
-      // Mock implementation - replace with actual API call
-      return [
+      const data = await serverGet<Medication[]>(
+        MEDICATIONS_ENDPOINTS.BY_STUDENT(patientId),
+        undefined,
         {
-          id: '1',
-          patientId,
-          name: 'Lisinopril',
-          dosage: '10mg',
-          frequency: 'Once daily',
-          route: 'Oral',
-          startDate: '2024-01-01',
-          status: MedicationStatus.ACTIVE,
-          prescribedBy: 'Dr. Smith',
-          instructions: 'Take with food',
-          refillsRemaining: 5,
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z'
+          cache: 'force-cache',
+          next: {
+            revalidate: healthCacheConfig.staleTime.medium,
+            tags: [`medications-${patientId}`]
+          }
         }
-      ];
+      );
+      return data || [];
     },
     enabled: !!patientId,
     staleTime: healthCacheConfig.staleTime.medium,
@@ -100,20 +109,18 @@ export const useAllergiesByPatient = (patientId: string) => {
   return useQuery({
     queryKey: healthKeys.allergiesByPatient(patientId),
     queryFn: async (): Promise<Allergy[]> => {
-      // Mock implementation - replace with actual API call
-      return [
+      const data = await serverGet<Allergy[]>(
+        ALLERGIES_ENDPOINTS.BY_STUDENT(patientId),
+        undefined,
         {
-          id: '1',
-          patientId,
-          allergen: 'Penicillin',
-          type: AllergyType.DRUG,
-          severity: SeverityLevel.MODERATE,
-          reaction: 'Rash and itching',
-          verifiedBy: 'Dr. Smith',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z'
+          cache: 'force-cache',
+          next: {
+            revalidate: healthCacheConfig.staleTime.long,
+            tags: [`allergies-${patientId}`]
+          }
         }
-      ];
+      );
+      return data || [];
     },
     enabled: !!patientId,
     staleTime: healthCacheConfig.staleTime.long,
@@ -129,26 +136,19 @@ export const useLabResultsByPatient = (patientId: string) => {
   return useQuery({
     queryKey: healthKeys.labResultsByPatient(patientId),
     queryFn: async (): Promise<LabResult[]> => {
-      // Mock implementation - replace with actual API call
-      return [
+      // TODO: Update endpoint when lab results API is implemented
+      const data = await serverGet<LabResult[]>(
+        `/api/v1/students/${patientId}/lab-results`,
+        undefined,
         {
-          id: '1',
-          patientId,
-          testName: 'Complete Blood Count',
-          testCode: 'CBC',
-          result: 'Normal',
-          referenceRange: '4.5-11.0',
-          status: 'completed',
-          orderedDate: '2024-10-20T00:00:00Z',
-          resultDate: '2024-10-21T00:00:00Z',
-          orderedBy: 'Dr. Smith',
-          labFacility: 'Main Lab',
-          isAbnormal: false,
-          isCritical: false,
-          createdAt: '2024-10-21T00:00:00Z',
-          updatedAt: '2024-10-21T00:00:00Z'
+          cache: 'force-cache',
+          next: {
+            revalidate: healthCacheConfig.staleTime.medium,
+            tags: [`lab-results-${patientId}`]
+          }
         }
-      ];
+      );
+      return data || [];
     },
     enabled: !!patientId,
     staleTime: healthCacheConfig.staleTime.medium,
