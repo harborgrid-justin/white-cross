@@ -13,24 +13,15 @@
 
 'use client';
 
-import React, { useMemo, useCallback, useState } from 'react';
+import React, { useMemo, useCallback, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSelection, useUpdateComponent } from '../../hooks/usePageBuilder';
 import { usePageBuilderStore } from '../../store';
+import { useResize, calculateHandlePositions } from '../../hooks/useDragAndDrop';
 import type { ComponentInstance } from '../../types';
+import type { ResizeHandle } from '../../types/drag-drop.types';
 
-/**
- * Resize handle positions
- */
-type HandlePosition =
-  | 'top-left'
-  | 'top-center'
-  | 'top-right'
-  | 'middle-left'
-  | 'middle-right'
-  | 'bottom-left'
-  | 'bottom-center'
-  | 'bottom-right';
+// Using ResizeHandle from drag-drop types instead
 
 /**
  * Bounding box for single or multiple selected components
@@ -53,14 +44,18 @@ export const SelectionOverlay: React.FC = () => {
   // STATE & HOOKS
   // ============================================================================
 
-  const [activeHandle, setActiveHandle] = useState<HandlePosition | null>(null);
   const { selectedIds } = useSelection();
   const updateComponent = useUpdateComponent();
+  const { snapToGrid, size: gridSize } = usePageBuilderStore((state) => state.canvas.grid);
 
   // Get selected components
   const selectedComponents = usePageBuilderStore((state) =>
     selectedIds.map((id) => state.canvas.components.byId[id]).filter(Boolean)
   );
+
+  // Only enable resize for single selection
+  const canResize = selectedComponents.length === 1;
+  const selectedComponent = canResize ? selectedComponents[0] : null;
 
   // ============================================================================
   // BOUNDING BOX CALCULATION
@@ -108,6 +103,62 @@ export const SelectionOverlay: React.FC = () => {
   }, [selectedComponents]);
 
   // ============================================================================
+  // RESIZE FUNCTIONALITY
+  // ============================================================================
+
+  /**
+   * Initialize resize hook for single selection
+   */
+  const {
+    size: resizedSize,
+    position: resizedPosition,
+    isResizing,
+    activeHandle,
+    handleMouseDown,
+  } = useResize({
+    initialSize: selectedComponent?.size || { width: 0, height: 0 },
+    initialPosition: selectedComponent?.position || { x: 0, y: 0 },
+    constraints: {
+      minWidth: 20,
+      minHeight: 20,
+      snapToGrid,
+      gridSize,
+    },
+    onResize: (size, position) => {
+      if (selectedComponent) {
+        updateComponent(
+          selectedComponent.id,
+          { size, position },
+          false // immediate update during resize
+        );
+      }
+    },
+    onResizeEnd: (size, position) => {
+      if (selectedComponent) {
+        updateComponent(
+          selectedComponent.id,
+          { size, position },
+          false
+        );
+      }
+    },
+    disabled: !canResize,
+  });
+
+  // Update bounding box during resize
+  const displayBox = useMemo<BoundingBox | null>(() => {
+    if (isResizing && canResize) {
+      return {
+        x: resizedPosition.x,
+        y: resizedPosition.y,
+        width: resizedSize.width,
+        height: resizedSize.height,
+      };
+    }
+    return boundingBox;
+  }, [isResizing, canResize, resizedPosition, resizedSize, boundingBox]);
+
+  // ============================================================================
   // RESIZE HANDLE POSITIONS
   // ============================================================================
 
@@ -115,56 +166,16 @@ export const SelectionOverlay: React.FC = () => {
    * Calculate positions for all 8 resize handles
    */
   const handlePositions = useMemo(() => {
-    if (!boundingBox) return [];
+    if (!displayBox || !canResize) return [];
 
-    const handleSize = 8; // Size of handle in pixels
-    const { x, y, width, height } = boundingBox;
+    return calculateHandlePositions(
+      { width: displayBox.width, height: displayBox.height },
+      { x: displayBox.x, y: displayBox.y },
+      8 // handle size
+    );
+  }, [displayBox, canResize]);
 
-    return [
-      { position: 'top-left' as const, x: x - handleSize / 2, y: y - handleSize / 2, cursor: 'nwse-resize' },
-      { position: 'top-center' as const, x: x + width / 2 - handleSize / 2, y: y - handleSize / 2, cursor: 'ns-resize' },
-      { position: 'top-right' as const, x: x + width - handleSize / 2, y: y - handleSize / 2, cursor: 'nesw-resize' },
-      { position: 'middle-left' as const, x: x - handleSize / 2, y: y + height / 2 - handleSize / 2, cursor: 'ew-resize' },
-      { position: 'middle-right' as const, x: x + width - handleSize / 2, y: y + height / 2 - handleSize / 2, cursor: 'ew-resize' },
-      { position: 'bottom-left' as const, x: x - handleSize / 2, y: y + height - handleSize / 2, cursor: 'nesw-resize' },
-      { position: 'bottom-center' as const, x: x + width / 2 - handleSize / 2, y: y + height - handleSize / 2, cursor: 'ns-resize' },
-      { position: 'bottom-right' as const, x: x + width - handleSize / 2, y: y + height - handleSize / 2, cursor: 'nwse-resize' },
-    ];
-  }, [boundingBox]);
-
-  // ============================================================================
-  // EVENT HANDLERS
-  // ============================================================================
-
-  /**
-   * Handle resize handle mouse down
-   * Future: Implement resize functionality
-   */
-  const handleMouseDown = useCallback(
-    (position: HandlePosition, event: React.MouseEvent) => {
-      event.stopPropagation();
-      setActiveHandle(position);
-      // Future: Start resize operation
-      console.log('Resize started from:', position);
-    },
-    []
-  );
-
-  /**
-   * Handle resize handle hover
-   */
-  const handleMouseEnter = useCallback((position: HandlePosition) => {
-    // Future: Show resize preview
-  }, []);
-
-  /**
-   * Handle resize handle leave
-   */
-  const handleMouseLeave = useCallback(() => {
-    if (!activeHandle) {
-      // Clear any hover state
-    }
-  }, [activeHandle]);
+  // Event handlers integrated with useResize hook above
 
   // ============================================================================
   // RENDER HELPERS
@@ -174,22 +185,27 @@ export const SelectionOverlay: React.FC = () => {
    * Render dimension label
    */
   const renderDimensionLabel = () => {
-    if (!boundingBox) return null;
+    if (!displayBox) return null;
 
-    const { width, height } = boundingBox;
+    const { width, height } = displayBox;
 
     return (
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -10 }}
-        className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded shadow-lg whitespace-nowrap"
+        className={`
+          absolute -top-8 left-1/2 transform -translate-x-1/2
+          text-white text-xs font-medium px-2 py-1 rounded shadow-lg whitespace-nowrap
+          ${isResizing ? 'bg-green-500' : 'bg-blue-500'}
+        `}
         style={{
-          left: `${boundingBox.x + boundingBox.width / 2}px`,
-          top: `${boundingBox.y - 32}px`,
+          left: `${displayBox.x + displayBox.width / 2}px`,
+          top: `${displayBox.y - 32}px`,
         }}
       >
         {Math.round(width)} × {Math.round(height)}
+        {isResizing && ' (resizing)'}
       </motion.div>
     );
   };
@@ -198,20 +214,20 @@ export const SelectionOverlay: React.FC = () => {
    * Render resize handle
    */
   const renderHandle = (handleData: {
-    position: HandlePosition;
+    handle: ResizeHandle;
     x: number;
     y: number;
     cursor: string;
   }) => {
-    const isActive = activeHandle === handleData.position;
+    const isActive = activeHandle === handleData.handle;
 
     return (
       <motion.div
-        key={handleData.position}
+        key={handleData.handle}
         className={`
-          absolute w-2 h-2 bg-white border-2 border-blue-500 rounded-sm
-          hover:scale-150 transition-transform
-          ${isActive ? 'scale-150 bg-blue-500' : ''}
+          absolute w-2 h-2 bg-white border-2 rounded-sm
+          hover:scale-150 transition-transform cursor-pointer
+          ${isActive ? 'scale-150 bg-green-500 border-green-500' : 'border-blue-500'}
         `}
         style={{
           left: `${handleData.x}px`,
@@ -219,12 +235,11 @@ export const SelectionOverlay: React.FC = () => {
           cursor: handleData.cursor,
           zIndex: 1001,
         }}
-        onMouseDown={(e) => handleMouseDown(handleData.position, e)}
-        onMouseEnter={() => handleMouseEnter(handleData.position)}
-        onMouseLeave={handleMouseLeave}
+        onMouseDown={(e) => handleMouseDown(handleData.handle, e)}
         initial={{ scale: 0 }}
         animate={{ scale: isActive ? 1.5 : 1 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        whileHover={{ scale: 1.3 }}
       />
     );
   };
@@ -233,9 +248,11 @@ export const SelectionOverlay: React.FC = () => {
   // RENDER
   // ============================================================================
 
-  if (!boundingBox || selectedComponents.length === 0) {
+  if (!displayBox || selectedComponents.length === 0) {
     return null;
   }
+
+  const borderColor = isResizing ? '#10b981' : '#3b82f6'; // Green when resizing, blue otherwise
 
   return (
     <AnimatePresence>
@@ -246,27 +263,43 @@ export const SelectionOverlay: React.FC = () => {
         exit={{ opacity: 0 }}
         className="absolute pointer-events-none"
         style={{
-          left: `${boundingBox.x}px`,
-          top: `${boundingBox.y}px`,
-          width: `${boundingBox.width}px`,
-          height: `${boundingBox.height}px`,
-          border: '2px solid #3b82f6',
+          left: `${displayBox.x}px`,
+          top: `${displayBox.y}px`,
+          width: `${displayBox.width}px`,
+          height: `${displayBox.height}px`,
+          border: `2px solid ${borderColor}`,
           borderRadius: '4px',
-          boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.1)',
+          boxShadow: isResizing
+            ? '0 0 0 4px rgba(16, 185, 129, 0.2)'
+            : '0 0 0 1px rgba(59, 130, 246, 0.1)',
           zIndex: 1000,
         }}
       >
         {/* Corner decoration for visual feedback */}
-        <div className="absolute -top-0.5 -left-0.5 w-3 h-3 border-t-2 border-l-2 border-blue-500" />
-        <div className="absolute -top-0.5 -right-0.5 w-3 h-3 border-t-2 border-r-2 border-blue-500" />
-        <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 border-b-2 border-l-2 border-blue-500" />
-        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-b-2 border-r-2 border-blue-500" />
+        <div
+          className="absolute -top-0.5 -left-0.5 w-3 h-3 border-t-2 border-l-2"
+          style={{ borderColor }}
+        />
+        <div
+          className="absolute -top-0.5 -right-0.5 w-3 h-3 border-t-2 border-r-2"
+          style={{ borderColor }}
+        />
+        <div
+          className="absolute -bottom-0.5 -left-0.5 w-3 h-3 border-b-2 border-l-2"
+          style={{ borderColor }}
+        />
+        <div
+          className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-b-2 border-r-2"
+          style={{ borderColor }}
+        />
       </motion.div>
 
-      {/* Resize Handles */}
-      <div className="absolute inset-0 pointer-events-auto">
-        {handlePositions.map((handleData) => renderHandle(handleData))}
-      </div>
+      {/* Resize Handles - Only for single selection */}
+      {canResize && (
+        <div className="absolute inset-0 pointer-events-auto">
+          {handlePositions.map((handleData) => renderHandle(handleData))}
+        </div>
+      )}
 
       {/* Dimension Label */}
       {renderDimensionLabel()}
@@ -279,8 +312,8 @@ export const SelectionOverlay: React.FC = () => {
           exit={{ opacity: 0, scale: 0.9 }}
           className="absolute bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded-full shadow-lg"
           style={{
-            left: `${boundingBox.x}px`,
-            top: `${boundingBox.y - 40}px`,
+            left: `${displayBox.x}px`,
+            top: `${displayBox.y - 40}px`,
           }}
         >
           {selectedComponents.length} components selected
@@ -295,8 +328,8 @@ export const SelectionOverlay: React.FC = () => {
           exit={{ opacity: 0, y: 10 }}
           className="absolute bg-white border border-gray-200 rounded-lg shadow-lg p-2 max-w-xs"
           style={{
-            left: `${boundingBox.x + boundingBox.width + 16}px`,
-            top: `${boundingBox.y}px`,
+            left: `${displayBox.x + displayBox.width + 16}px`,
+            top: `${displayBox.y}px`,
           }}
         >
           <div className="text-xs font-medium text-gray-700 mb-1">Selected Components:</div>

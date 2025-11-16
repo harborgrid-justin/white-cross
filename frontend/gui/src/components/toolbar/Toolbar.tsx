@@ -29,9 +29,9 @@ interface ToolbarProps {
 }
 
 /**
- * Main toolbar component for the page builder
+ * Internal Toolbar component
  */
-export const Toolbar: React.FC<ToolbarProps> = ({
+const ToolbarInternal: React.FC<ToolbarProps> = ({
   projectName = 'Untitled Project',
   onSave,
   onExport,
@@ -46,20 +46,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   const { undo, redo, canUndo, canRedo } = useHistory();
   const { isPreviewMode, togglePreview } = usePreview();
 
-  const handleSave = () => {
+  // Memoize handlers
+  const handleSave = useCallback(() => {
     if (onSave) {
       onSave();
     }
-    // Could add auto-save notification here
-  };
+  }, [onSave]);
 
-  const handleExport = (format: 'json' | 'code' | 'zip') => {
+  const handleExport = useCallback((format: 'json' | 'code' | 'zip') => {
     if (onExport) {
       onExport(format);
     }
     setIsExportOpen(false);
     exportButtonRef.current?.focus();
-  };
+  }, [onExport]);
 
   const handleMenuKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isExportOpen) return;
@@ -308,3 +308,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
     </header>
   );
 };
+
+/**
+ * Memoized Toolbar component
+ * Only re-renders when props or toolbar state changes
+ */
+export const Toolbar = React.memo(ToolbarInternal);

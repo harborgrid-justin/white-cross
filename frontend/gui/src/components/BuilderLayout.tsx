@@ -14,7 +14,11 @@ import { PropertyEditor } from './properties/PropertyEditor';
 import { LayerTree } from './layers/LayerTree';
 import { LiveRegion } from './common/LiveRegion';
 
-export const BuilderLayout: React.FC = () => {
+/**
+ * BuilderLayout Component (Optimized)
+ * Wrapped with React.memo for performance
+ */
+const BuilderLayoutComponent: React.FC = () => {
   return (
     <div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-950">
       {/* Skip Links for Keyboard Navigation */}
@@ -128,3 +132,9 @@ export const BuilderLayout: React.FC = () => {
     </div>
   );
 };
+
+/**
+ * Memoized BuilderLayout to prevent unnecessary re-renders
+ * Since it has no props, it will only render once
+ */
+export const BuilderLayout = React.memo(BuilderLayoutComponent);

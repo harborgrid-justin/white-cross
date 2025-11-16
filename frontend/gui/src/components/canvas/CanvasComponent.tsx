@@ -34,12 +34,12 @@ interface CanvasComponentProps {
 }
 
 /**
- * Renders an individual component on the canvas
+ * Renders an individual component on the canvas (Internal Component)
  *
  * Provides drag functionality, selection visualization, and recursive child rendering.
  * Integrates with @dnd-kit for drag-and-drop operations.
  */
-export const CanvasComponent: React.FC<CanvasComponentProps> = ({
+const CanvasComponentInternal: React.FC<CanvasComponentProps> = ({
   component,
   isSelected,
   isHovered,
@@ -52,9 +52,13 @@ export const CanvasComponent: React.FC<CanvasComponentProps> = ({
   const setHoveredComponent = usePageBuilderStore((state) => state.setHoveredComponent);
   const updateComponent = usePageBuilderStore((state) => state.updateComponent);
 
-  // Get child components
-  const childComponents = usePageBuilderStore((state) =>
-    component.childIds.map((id) => state.canvas.components.byId[id]).filter(Boolean)
+  // Get child components (memoized to prevent recalculation)
+  const childComponents = usePageBuilderStore(
+    useCallback(
+      (state) =>
+        component.childIds.map((id) => state.canvas.components.byId[id]).filter(Boolean),
+      [component.childIds]
+    )
   );
 
   // Subscribe to selection state for child components (reactive)
@@ -283,3 +287,46 @@ export const CanvasComponent: React.FC<CanvasComponentProps> = ({
     </motion.div>
   );
 };
+
+/**
+ * Memoized CanvasComponent with optimized comparison
+ * Only re-renders when component data, selection, or hover state changes
+ */
+export const CanvasComponent = React.memo(
+  CanvasComponentInternal,
+  (prevProps, nextProps) => {
+    // Compare component ID (if ID changes, it's a different component)
+    if (prevProps.component.id !== nextProps.component.id) {
+      return false;
+    }
+
+    // Compare selection and hover state
+    if (prevProps.isSelected !== nextProps.isSelected) {
+      return false;
+    }
+    if (prevProps.isHovered !== nextProps.isHovered) {
+      return false;
+    }
+
+    // Compare component properties that affect rendering
+    const prev = prevProps.component;
+    const next = nextProps.component;
+
+    if (
+      prev.position.x !== next.position.x ||
+      prev.position.y !== next.position.y ||
+      prev.size.width !== next.size.width ||
+      prev.size.height !== next.size.height ||
+      prev.name !== next.name ||
+      prev.type !== next.type ||
+      prev.hidden !== next.hidden ||
+      prev.locked !== next.locked ||
+      prev.childIds.length !== next.childIds.length
+    ) {
+      return false;
+    }
+
+    // If all checks pass, props are equal - skip re-render
+    return true;
+  }
+);
